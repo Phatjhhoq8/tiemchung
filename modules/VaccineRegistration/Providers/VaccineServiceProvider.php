@@ -1,4 +1,8 @@
 <?php
+/**
+ * Chức năng: VaccineServiceProvider nạp các cấu hình của module VaccineRegistration.
+ * Lý do chỉnh sửa: Đăng ký thêm middleware admin.auth vào router để áp dụng bảo mật cho các route admin.
+ */
 
 namespace Modules\VaccineRegistration\Providers;
 
@@ -27,5 +31,8 @@ class VaccineServiceProvider extends ServiceProvider
 
         // 3. Load migrations
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
+
+        // 4. Đăng ký middleware quản trị
+        $this->app['router']->aliasMiddleware('admin.auth', \Modules\VaccineRegistration\Http\Middleware\AdminAuth::class);
     }
 }

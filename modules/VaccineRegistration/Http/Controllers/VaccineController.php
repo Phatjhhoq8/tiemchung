@@ -1,4 +1,8 @@
 <?php
+/**
+ * Chức năng: VaccineController xử lý danh mục vắc xin, giỏ hàng và quy trình đăng ký tiêm chủng của khách hàng.
+ * Lý do chỉnh sửa: Thay thế hoàn toàn dữ liệu tĩnh bằng dữ liệu động từ CSDL (danh sách trung tâm, nhóm bệnh), bổ sung trang chi tiết và hỗ trợ dọn giỏ hàng.
+ */
 
 namespace Modules\VaccineRegistration\Http\Controllers;
 
@@ -6,13 +10,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Models\Registration;
+use Modules\VaccineRegistration\Models\Center;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 class VaccineController extends Controller
 {
     /**
-     * Display the vaccine catalog and selection page.
+     * Hiển thị bảng giá vắc xin (lẻ & gói) với các bộ lọc động.
      */
     public function index(Request $request)
     {
@@ -32,25 +37,44 @@ class VaccineController extends Controller
             $query->where('age_group', 'like', '%' . $request->input('age_group') . '%');
         }
 
+        // Lọc theo loại (single / package)
+        if ($request->filled('type')) {
+            $query->where('type', $request->input('type'));
+        }
+
         $vaccines = $query->get();
         $cart = session()->get('cart', []);
 
-        // Danh sách các bệnh phổ biến để hiển thị bộ lọc nhanh trên giao diện
-        $diseases = [
-            'Bạch hầu, ho gà, uốn ván',
-            'Bại liệt, Hib, viêm gan B',
-            'Ung thư cổ tử cung',
-            'Viêm phổi, viêm màng não',
-            'Cúm mùa',
-            'Tiêu chảy cấp Rota',
-            'Bệnh thủy đậu'
-        ];
+        // Lấy danh sách các nhóm bệnh phòng ngừa động từ CSDL
+        $diseases = Vaccine::select('disease_prevention')
+            ->distinct()
+            ->get()
+            ->pluck('disease_prevention')
+            ->map(function($item) {
+                // Tách các nhóm bệnh được phân cách bởi dấu phẩy
+                return array_map('trim', explode(',', $item));
+            })
+            ->flatten()
+            ->unique()
+            ->values()
+            ->all();
 
         return view('vaccine::index', compact('vaccines', 'cart', 'diseases'));
     }
 
     /**
-     * Add a vaccine to the session-based cart.
+     * Hiển thị trang chi tiết một loại vắc xin.
+     */
+    public function show($id)
+    {
+        $vaccine = Vaccine::findOrFail($id);
+        $cart = session()->get('cart', []);
+
+        return view('vaccine::show', compact('vaccine', 'cart'));
+    }
+
+    /**
+     * Thêm vắc xin vào giỏ hàng (session).
      */
     public function addToCart(Request $request)
     {
@@ -63,11 +87,12 @@ class VaccineController extends Controller
 
         $cart = session()->get('cart', []);
 
-        // Nếu vắc xin chưa có trong giỏ hàng thì thêm vào (chỉ cần tiêm 1 mũi đăng ký mỗi loại tại 1 thời điểm)
         if (!isset($cart[$vaccineId])) {
             $cart[$vaccineId] = [
                 'name' => $vaccine->name,
                 'price' => $vaccine->price,
+                'type' => $vaccine->type,
+                'doses' => $vaccine->doses,
                 'disease_prevention' => $vaccine->disease_prevention,
                 'origin' => $vaccine->origin,
                 'image' => $vaccine->image,
@@ -84,7 +109,7 @@ class VaccineController extends Controller
     }
 
     /**
-     * Remove a vaccine from the session-based cart.
+     * Xóa vắc xin khỏi giỏ hàng.
      */
     public function removeFromCart(Request $request)
     {
@@ -105,7 +130,21 @@ class VaccineController extends Controller
     }
 
     /**
-     * Show the registration form.
+     * Xóa sạch giỏ hàng.
+     */
+    public function clearCart()
+    {
+        session()->forget('cart');
+
+        return response()->json([
+            'success' => true,
+            'cart_count' => 0,
+            'total_price' => 0
+        ]);
+    }
+
+    /**
+     * Hiển thị trang đăng ký tiêm chủng.
      */
     public function showRegister()
     {
@@ -117,22 +156,14 @@ class VaccineController extends Controller
 
         $totalPrice = collect($cart)->sum('price');
         
-        // Danh sách các trung tâm tiêm chủng VNVC giả lập
-        $centers = [
-            'VNVC Trường Chinh (Hà Nội)',
-            'VNVC Icon 4 Cầu Giấy (Hà Nội)',
-            'VNVC Hoàng Văn Thụ (TP.HCM)',
-            'VNVC Cantavil Quận 2 (TP.HCM)',
-            'VNVC Nguyễn Hữu Thọ (Đà Nẵng)',
-            'VNVC Lê Hồng Phong (Nha Trang)',
-            'VNVC Mậu Thân (Cần Thơ)'
-        ];
+        // Lấy danh sách các trung tâm đang hoạt động từ CSDL động
+        $centers = Center::active()->get();
 
         return view('vaccine::register', compact('cart', 'totalPrice', 'centers'));
     }
 
     /**
-     * Process the registration form submission.
+     * Xử lý đăng ký tiêm chủng.
      */
     public function postRegister(Request $request)
     {
@@ -142,7 +173,7 @@ class VaccineController extends Controller
             return redirect()->route('vaccine.index')->with('error', 'Giỏ hàng của bạn đang trống.');
         }
 
-        // Validate dữ liệu đầu vào
+        // Validate dữ liệu
         $validated = $request->validate([
             'patient_name' => 'required|string|max:255',
             'patient_dob' => 'required|date|before:today',
@@ -170,8 +201,8 @@ class VaccineController extends Controller
 
         $totalPrice = collect($cart)->sum('price');
         
-        // Sinh mã đăng ký duy nhất
-        $registrationCode = 'VNVC-' . strtoupper(Str::random(8));
+        // Sinh mã đăng ký duy nhất cho thương hiệu Medicare Cờ Đỏ (MCD-)
+        $registrationCode = 'MCD-' . strtoupper(Str::random(8));
 
         DB::beginTransaction();
         try {
@@ -192,7 +223,7 @@ class VaccineController extends Controller
                 'total_price' => $totalPrice,
             ]);
 
-            // 2. Liên kết các vắc xin trong giỏ hàng vào bảng pivot
+            // 2. Liên kết các vắc xin trong giỏ vào bảng pivot
             foreach ($cart as $id => $item) {
                 $registration->vaccines()->attach($id, ['price' => $item['price']]);
             }
@@ -202,7 +233,7 @@ class VaccineController extends Controller
             // Xóa giỏ hàng
             session()->forget('cart');
 
-            // Lưu mã đăng ký vào session flash để chuyển sang trang hoàn tất
+            // Lưu mã đăng ký vào session flash
             return redirect()->route('register.success')->with('success_code', $registrationCode);
 
         } catch (\Exception $e) {
@@ -212,7 +243,7 @@ class VaccineController extends Controller
     }
 
     /**
-     * Display the successful registration page.
+     * Hiển thị trang đăng ký thành công.
      */
     public function showSuccess()
     {

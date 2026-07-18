@@ -1,0 +1,55 @@
+<?php
+/**
+ * Chức năng: BannerSeeder nạp danh sách slider trang chủ Medicare Cờ Đỏ.
+ * Lý do tạo: Tự động khởi tạo dữ liệu slider động cho website.
+ */
+
+namespace Modules\VaccineRegistration\Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Modules\VaccineRegistration\Models\Banner;
+
+class BannerSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Banner::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        $banners = [
+            [
+                'title' => 'Đăng Ký Tiêm Chủng Trực Tuyến Dễ Dàng',
+                'subtitle' => 'Lựa chọn vắc xin linh hoạt, đăng ký tiêm chủng an toàn tại các trung tâm Medicare Cờ Đỏ.',
+                'image_url' => 'banner_main.jpg',
+                'link_url' => '/vaccines',
+                'sort_order' => 1,
+                'is_active' => true,
+            ],
+            [
+                'title' => 'Vắc Xin Sốt Xuất Huyết Qdenga Mới Nhất',
+                'subtitle' => 'Đã có sẵn tại Medicare Cờ Đỏ. Bảo vệ trẻ em từ 4 tuổi và người lớn khỏi virus Dengue nguy hiểm.',
+                'image_url' => 'banner_qdenga.jpg',
+                'link_url' => '/vaccines',
+                'sort_order' => 2,
+                'is_active' => true,
+            ],
+            [
+                'title' => 'Bảo Vệ Người Cao Tuổi & Người Có Bệnh Nền',
+                'subtitle' => 'Chủ động tiêm phòng Cúm mùa, Phế cầu khuẩn và Zona thần kinh để củng cố hệ miễn dịch.',
+                'image_url' => 'banner_elderly.jpg',
+                'link_url' => '/vaccines',
+                'sort_order' => 3,
+                'is_active' => true,
+            ]
+        ];
+
+        foreach ($banners as $banner) {
+            Banner::create($banner);
+        }
+    }
+}

@@ -49,57 +49,54 @@
                 <!-- STEP 1: Thông tin người tiêm -->
                 <div class="form-step-content active" id="stepContent1">
                     <h2>Thông tin cá nhân người tiêm</h2>
-                    <p class="step-desc">Vui lòng điền chính xác thông tin của người trực tiếp tiêm vắc xin.</p>
-                    
+                    <p class="step-desc">Nhập chính xác họ tên và ngày sinh của người tiêm chủng vắc xin.</p>
+
                     <div class="form-grid">
-                        <div class="form-group full-width">
+                        <div class="form-group">
                             <label for="patient_name">Họ tên người tiêm <span class="required">*</span></label>
                             <input type="text" name="patient_name" id="patient_name" value="{{ old('patient_name') }}" placeholder="Ví dụ: Nguyễn Văn A" required>
                         </div>
-                        
+
                         <div class="form-group">
-                            <label for="patient_dob">Ngày sinh <span class="required">*</span></label>
-                            <input type="date" name="patient_dob" id="patient_dob" value="{{ old('patient_dob') }}" required>
+                            <label for="patient_dob">Ngày sinh người tiêm <span class="required">*</span></label>
+                            <input type="date" name="patient_dob" id="patient_dob" value="{{ old('patient_dob') }}" max="{{ date('Y-m-d') }}" required>
                         </div>
 
                         <div class="form-group">
-                            <label>Giới tính <span class="required">*</span></label>
-                            <div class="radio-group">
-                                <label class="radio-label">
-                                    <input type="radio" name="patient_gender" value="Nam" {{ old('patient_gender', 'Nam') === 'Nam' ? 'checked' : '' }}>
-                                    <span>Nam</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="patient_gender" value="Nữ" {{ old('patient_gender') === 'Nữ' ? 'checked' : '' }}>
-                                    <span>Nữ</span>
-                                </label>
-                            </div>
+                            <label for="patient_gender">Giới tính <span class="required">*</span></label>
+                            <select name="patient_gender" id="patient_gender" required>
+                                <option value="">-- Chọn giới tính --</option>
+                                <option value="Nam" {{ old('patient_gender') === 'Nam' ? 'selected' : '' }}>Nam</option>
+                                <option value="Nữ" {{ old('patient_gender') === 'Nữ' ? 'selected' : '' }}>Nữ</option>
+                                <option value="Khác" {{ old('patient_gender') === 'Khác' ? 'selected' : '' }}>Khác</option>
+                            </select>
                         </div>
 
                         <div class="form-group">
                             <label for="patient_phone">Số điện thoại liên hệ <span class="required">*</span></label>
-                            <input type="text" name="patient_phone" id="patient_phone" value="{{ old('patient_phone') }}" placeholder="Ví dụ: 0987654321" required>
+                            <input type="text" name="patient_phone" id="patient_phone" value="{{ old('patient_phone') }}" placeholder="Ví dụ: 0938603839" required>
                         </div>
 
                         <div class="form-group full-width">
                             <label for="patient_address">Địa chỉ thường trú <span class="required">*</span></label>
-                            <input type="text" name="patient_address" id="patient_address" value="{{ old('patient_address') }}" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố" required>
+                            <input type="text" name="patient_address" id="patient_address" value="{{ old('patient_address') }}" placeholder="Số nhà, đường, phường/xã, quận/huyện..." required>
                         </div>
                     </div>
 
-                    <!-- Giám hộ (cho trẻ em) -->
-                    <div class="guardian-section" id="guardianSection" style="display: none;">
-                        <h3>Thông tin người liên hệ (Bố/Mẹ/Người giám hộ)</h3>
-                        <p class="step-desc">Yêu cầu khi người tiêm là trẻ em dưới 15 tuổi.</p>
+                    <!-- Người giám hộ (nếu người tiêm < 15 tuổi) -->
+                    <div id="guardianSection" style="display: none; margin-top: 24px; padding-top: 24px; border-top: 1px dashed var(--border-color);">
+                        <h3 style="margin-bottom: 12px; font-size: 16px; color: var(--primary-color);">Thông tin người giám hộ</h3>
+                        <p class="step-desc">Người tiêm dưới 15 tuổi cần khai báo thông tin cha/mẹ hoặc người giám hộ hợp pháp.</p>
                         
                         <div class="form-grid">
                             <div class="form-group">
                                 <label for="guardian_name">Họ tên người giám hộ</label>
                                 <input type="text" name="guardian_name" id="guardian_name" value="{{ old('guardian_name') }}" placeholder="Ví dụ: Nguyễn Văn B">
                             </div>
+
                             <div class="form-group">
                                 <label for="guardian_phone">Số điện thoại người giám hộ</label>
-                                <input type="text" name="guardian_phone" id="guardian_phone" value="{{ old('guardian_phone') }}" placeholder="Ví dụ: 0912345678">
+                                <input type="text" name="guardian_phone" id="guardian_phone" value="{{ old('guardian_phone') }}" placeholder="Ví dụ: 0932477184">
                             </div>
                         </div>
                     </div>
@@ -115,15 +112,17 @@
                 <!-- STEP 2: Địa điểm & Ngày tiêm -->
                 <div class="form-step-content" id="stepContent2">
                     <h2>Chọn địa điểm và thời gian tiêm</h2>
-                    <p class="step-desc">Chọn trung tâm tiêm chủng VNVC gần nhất và ngày mong muốn thực hiện tiêm chủng.</p>
+                    <p class="step-desc">Chọn trung tâm tiêm chủng Medicare Cờ Đỏ gần nhất và ngày mong muốn thực hiện tiêm chủng.</p>
 
                     <div class="form-grid">
                         <div class="form-group full-width">
-                            <label for="center_name">Trung tâm tiêm chủng VNVC <span class="required">*</span></label>
+                            <label for="center_name">Trung tâm tiêm chủng Medicare <span class="required">*</span></label>
                             <select name="center_name" id="center_name" required>
-                                <option value="">-- Chọn trung tâm VNVC gần bạn nhất --</option>
+                                <option value="">-- Chọn trung tâm Medicare gần bạn nhất --</option>
                                 @foreach($centers as $center)
-                                    <option value="{{ $center }}" {{ old('center_name') === $center ? 'selected' : '' }}>{{ $center }}</option>
+                                    <option value="{{ $center->name }}" {{ old('center_name') === $center->name ? 'selected' : '' }}>
+                                        {{ $center->name }} - {{ $center->address }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -177,7 +176,7 @@
                             <div class="payment-card-content">
                                 <div class="payment-icon"><i data-lucide="landmark"></i></div>
                                 <div class="payment-text">
-                                    <strong>Thanh toán trực tiếp tại trung tâm VNVC</strong>
+                                    <strong>Thanh toán trực tiếp tại trung tâm Medicare</strong>
                                     <span>Thanh toán bằng tiền mặt/quẹt thẻ khi đến tiêm chủng</span>
                                 </div>
                             </div>
@@ -225,7 +224,7 @@
 
             <div class="summary-note">
                 <i data-lucide="sparkles"></i>
-                <p>Giá vắc xin đã bao gồm: phí khám lâm sàng trước tiêm, phí dịch vụ tiêm chủng và các tiện ích đi kèm tại VNVC.</p>
+                <p>Giá vắc xin đã bao gồm: phí khám lâm sàng trước tiêm, phí dịch vụ tiêm chủng và các tiện ích đi kèm tại Medicare Cờ Đỏ.</p>
             </div>
         </div>
     </div>
@@ -287,11 +286,9 @@
     }
 
     function updateStepperUI() {
-        // Ẩn/Hiện nội dung các bước
         document.querySelectorAll('.form-step-content').forEach(el => el.classList.remove('active'));
         document.getElementById('stepContent' + currentStep).classList.add('active');
 
-        // Cập nhật Stepper Indicator
         for (let i = 1; i <= 3; i++) {
             const ind = document.getElementById('stepIndicator' + i);
             const line = document.getElementById('stepLine' + i);
@@ -322,7 +319,6 @@
         let isValid = true;
 
         inputs.forEach(input => {
-            // Kiểm tra tính hợp lệ của input HTML5
             if (!input.checkValidity()) {
                 input.reportValidity();
                 isValid = false;

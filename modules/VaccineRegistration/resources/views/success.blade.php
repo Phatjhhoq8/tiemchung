@@ -21,7 +21,7 @@
         <div class="ticket-card">
             <div class="ticket-header">
                 <h3>PHIẾU ĐĂNG KÝ TIÊM CHỦNG</h3>
-                <span>Hệ thống tiêm chủng trẻ em & người lớn VNVC</span>
+                <span>Hệ thống phòng tiêm chủng Medicare Cờ Đỏ</span>
             </div>
             
             <div class="ticket-body">
@@ -70,7 +70,7 @@
                         </tr>
                         <tr>
                             <th>Thời gian làm việc:</th>
-                            <td>Sáng: 7h30 - 11h30 | Chiều: 13h30 - 17h30 (Không nghỉ trưa thứ 7 & CN)</td>
+                            <td>Sáng: 7h30 - 11h30 | Chiều: 13h30 - 17h30 (Mở cửa tất cả các ngày trong tuần)</td>
                         </tr>
                     </table>
                 </div>
@@ -82,7 +82,7 @@
                             <div class="ticket-vaccine-item">
                                 <div class="vaccine-info">
                                     <strong>{{ $vaccine->name }}</strong>
-                                    <span>{{ $vaccine->origin }}</span>
+                                    <span>{{ $vaccine->origin }} ({{ $vaccine->doses }} mũi tiêm)</span>
                                 </div>
                                 <span class="vaccine-price">{{ number_format($vaccine->pivot->price, 0, ',', '.') }} đ</span>
                             </div>
@@ -127,9 +127,9 @@
                 <div class="payment-success-box">
                     <div class="payment-success-icon"><i data-lucide="credit-card"></i></div>
                     <h3>Thanh Toán Thành Công!</h3>
-                    <p>Giao dịch của bạn đã hoàn tất trực tuyến. VNVC đã dành riêng và lưu trữ các liều vắc xin của bạn trong hệ thống lưu trữ lạnh tiêu chuẩn quốc tế GSP.</p>
+                    <p>Giao dịch của bạn đã hoàn tất trực tuyến. Medicare Cờ Đỏ đã dành riêng và lưu trữ các liều vắc xin của bạn trong hệ thống bảo quản lạnh tiêu chuẩn GSP.</p>
                     <div class="action-buttons">
-                        <a href="{{ route('vaccine.index') }}" class="btn-primary">Về trang chủ</a>
+                        <a href="{{ route('home') }}" class="btn-primary">Về trang chủ</a>
                         <button onclick="window.print()" class="btn-secondary"><i data-lucide="printer"></i> In phiếu đăng ký</button>
                     </div>
                 </div>
@@ -142,7 +142,7 @@
                         
                         <!-- VietQR API giả lập -->
                         <div class="qr-code-wrapper">
-                            <img src="https://api.vietqr.io/image/970415-113113113-qr_only.jpg?amount={{ $registration->total_price }}&addInfo={{ $registration->registration_code }}&accountName=VNVC%20TIEM%20CHUNG" alt="Mã VietQR Thanh Toán">
+                            <img src="https://api.vietqr.io/image/970415-113113113-qr_only.jpg?amount={{ $registration->total_price }}&addInfo={{ $registration->registration_code }}&accountName=MEDICARE%20CO%20DO" alt="Mã VietQR Thanh Toán">
                         </div>
 
                         <div class="payment-transfer-details">
@@ -156,7 +156,7 @@
                             </div>
                             <div class="detail-row">
                                 <span>Chủ tài khoản:</span>
-                                <strong>CONG TY CO PHAN TIEM CHUNG VNVC</strong>
+                                <strong>PHONG TIEM CHUNG MEDICARE CO DO</strong>
                             </div>
                             <div class="detail-row">
                                 <span>Số tiền chuyển khoản:</span>
@@ -169,7 +169,7 @@
                         </div>
 
                         <div class="action-buttons">
-                            <a href="{{ route('vaccine.index') }}" class="btn-primary">Hoàn thành</a>
+                            <a href="{{ route('home') }}" class="btn-primary">Hoàn thành</a>
                             <button onclick="window.print()" class="btn-secondary"><i data-lucide="printer"></i> In phiếu</button>
                         </div>
                     </div>
@@ -190,7 +190,7 @@
                         </div>
 
                         <div class="action-buttons">
-                            <a href="{{ route('vaccine.index') }}" class="btn-primary">Về trang chủ</a>
+                            <a href="{{ route('home') }}" class="btn-primary">Về trang chủ</a>
                             <button onclick="window.print()" class="btn-secondary"><i data-lucide="printer"></i> In phiếu</button>
                         </div>
                     </div>
