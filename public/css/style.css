@@ -1,0 +1,1741 @@
+/* ==========================================================================
+   DESIGN SYSTEM & VARIABLES
+   ========================================================================== */
+:root {
+    --primary-color: #0A58CA;       /* Royal Blue */
+    --primary-hover: #084aa8;
+    --secondary-color: #00A896;     /* Teal */
+    --secondary-hover: #008f7f;
+    --accent-color: #FF5A5F;        /* Coral red for badges/alerts */
+    
+    --bg-main: #F8FAFD;             /* Very light slate blue background */
+    --bg-card: #FFFFFF;
+    --bg-header: rgba(255, 255, 255, 0.85);
+    
+    --text-primary: #1E293B;        /* Slate 800 */
+    --text-muted: #64748B;          /* Slate 500 */
+    --text-light: #94A3B8;          /* Slate 400 */
+    
+    --border-color: #E2E8F0;        /* Slate 200 */
+    --border-focus: #93C5FD;        /* Blue 300 */
+    
+    --shadow-sm: 0 2px 4px rgba(10, 88, 202, 0.04);
+    --shadow-md: 0 10px 25px rgba(10, 88, 202, 0.06);
+    --shadow-lg: 0 20px 40px rgba(10, 88, 202, 0.1);
+    
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+}
+
+/* ==========================================================================
+   RESET & BASE STYLES
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+
+button, select, input {
+    font-family: inherit;
+    outline: none;
+}
+
+/* ==========================================================================
+   HEADER & FOOTER (LAYOUT)
+   ========================================================================== */
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: var(--bg-header);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition-normal);
+}
+
+.header-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    font-family: 'Outfit', sans-serif;
+    color: var(--primary-color);
+}
+
+.logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: #FFF;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 10px rgba(10, 88, 202, 0.2);
+}
+
+.logo-text span {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 1.1rem;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-link {
+    font-weight: 500;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    padding: 0.5rem 0;
+    border-bottom: 2px solid transparent;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.hotline-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: rgba(10, 88, 202, 0.08);
+    color: var(--primary-color);
+    padding: 0.7rem 1.2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 1px solid rgba(10, 88, 202, 0.15);
+}
+
+.hotline-btn:hover {
+    background-color: var(--primary-color);
+    color: #FFF;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(10, 88, 202, 0.15);
+}
+
+.app-main {
+    min-height: calc(100vh - 80px - 250px);
+    padding: 2rem 0 6rem 0;
+}
+
+.app-footer {
+    background-color: #0F172A; /* Deep slate */
+    color: #F8FAFC;
+    padding: 4rem 2rem 2rem 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 4rem;
+}
+
+.footer-info h3 {
+    color: #FFF;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+}
+
+.footer-info p {
+    color: var(--text-light);
+    max-width: 450px;
+    margin-bottom: 1.5rem;
+}
+
+.contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.contact-details p {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.footer-links h4 {
+    color: #FFF;
+    font-size: 1.1rem;
+    margin-bottom: 1.2rem;
+}
+
+.footer-links ul {
+    list-style: none;
+}
+
+.footer-links li {
+    margin-bottom: 0.8rem;
+}
+
+.footer-links a {
+    color: var(--text-light);
+}
+
+.footer-links a:hover {
+    color: var(--secondary-color);
+    padding-left: 5px;
+}
+
+.footer-tagline {
+    grid-column: span 2;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* ==========================================================================
+   HERO BANNER
+   ========================================================================== */
+.hero-banner {
+    background: linear-gradient(135deg, rgba(10, 88, 202, 0.04) 0%, rgba(0, 168, 150, 0.04) 100%);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    padding: 3.5rem 3rem;
+    margin: 0 auto 3rem auto;
+    max-width: 1280px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-banner h1 {
+    font-size: 2.8rem;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-banner p {
+    color: var(--text-muted);
+    font-size: 1.15rem;
+    max-width: 700px;
+    margin: 0 auto 2rem auto;
+}
+
+.search-bar-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: #FFF;
+    padding: 6px;
+    border-radius: 50px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.search-icon {
+    color: var(--text-light);
+    margin-left: 1rem;
+}
+
+.search-form input {
+    border: none;
+    padding: 0.8rem 1rem;
+    flex-grow: 1;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.search-btn {
+    background-color: var(--primary-color);
+    color: #FFF;
+    border: none;
+    padding: 0.8rem 1.8rem;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.search-btn:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 4px 10px rgba(10, 88, 202, 0.2);
+}
+
+/* ==========================================================================
+   VACCINE SELECTION PAGE (MAIN LAYOUT)
+   ========================================================================== */
+.vaccine-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.main-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+}
+
+/* Filters Sidebar */
+.sidebar-filters {
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+}
+
+.filter-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    padding: 1.8rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.filter-card h3 {
+    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.8rem;
+}
+
+.filter-group {
+    margin-bottom: 2rem;
+}
+
+.filter-group h4 {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.8rem;
+}
+
+.filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-chip {
+    padding: 0.6rem 1rem;
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem;
+    font-weight: 500;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.filter-chip:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.filter-chip.active {
+    background-color: var(--primary-color);
+    color: #FFF;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(10, 88, 202, 0.15);
+}
+
+.disease-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.disease-list a {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    display: block;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--radius-sm);
+}
+
+.disease-list a:hover, .disease-list a.active {
+    color: var(--primary-color);
+    background-color: rgba(10, 88, 202, 0.05);
+    font-weight: 600;
+}
+
+/* Vaccine Grid section */
+.vaccine-grid-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+}
+
+.clear-filters-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.9rem;
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.empty-vaccines {
+    text-align: center;
+    background-color: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--border-color);
+    padding: 4rem 2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.empty-icon {
+    width: 60px;
+    height: 60px;
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+}
+
+.empty-vaccines p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Vaccine Cards */
+.vaccines-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.vaccine-card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+.vaccine-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.vaccine-card.selected {
+    border: 2px solid var(--secondary-color);
+    box-shadow: 0 10px 20px rgba(0, 168, 150, 0.05);
+}
+
+.vaccine-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background-color: rgba(10, 88, 202, 0.08);
+    color: var(--primary-color);
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+}
+
+.vaccine-card-body {
+    flex-grow: 1;
+    margin-top: 1.2rem;
+}
+
+.vaccine-name {
+    font-size: 1.15rem;
+    margin-bottom: 0.8rem;
+    padding-right: 4rem; /* Để trống cho badge */
+}
+
+.vaccine-prevent, .vaccine-age {
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+}
+
+.vaccine-prevent strong, .vaccine-age strong {
+    color: var(--text-primary);
+}
+
+.vaccine-prevent {
+    color: var(--secondary-color);
+}
+
+.vaccine-age {
+    color: var(--text-muted);
+}
+
+.vaccine-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.8rem;
+}
+
+.vaccine-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.vaccine-price {
+    display: flex;
+    flex-direction: column;
+}
+
+.vaccine-price span {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+}
+
+.vaccine-price strong {
+    font-size: 1.15rem;
+    color: var(--primary-color);
+    font-family: 'Outfit', sans-serif;
+}
+
+.btn-select-vaccine {
+    border: 1px solid var(--primary-color);
+    background-color: transparent;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: var(--transition-fast);
+}
+
+.btn-select-vaccine:hover {
+    background-color: var(--primary-color);
+    color: #FFF;
+}
+
+.btn-selected {
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
+    color: #FFF !important;
+}
+
+/* ==========================================================================
+   FLOATING CART (CART SYSTEM)
+   ========================================================================== */
+.floating-cart {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    width: 380px;
+    background-color: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    transition: transform var(--transition-normal), opacity var(--transition-normal);
+}
+
+.floating-cart.hidden {
+    transform: translateY(100px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cart-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem;
+    background: linear-gradient(135deg, var(--primary-color), #094cb0);
+    color: #FFF;
+    cursor: pointer;
+}
+
+.cart-icon-wrapper {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background-color: var(--accent-color);
+    color: #FFF;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.4rem;
+    border-radius: 10px;
+}
+
+.cart-toggle-text {
+    flex-grow: 1;
+    margin-left: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-toggle-text span {
+    font-size: 0.75rem;
+    opacity: 0.85;
+}
+
+.cart-toggle-text strong {
+    font-size: 1.1rem;
+    font-family: 'Outfit', sans-serif;
+}
+
+.chevron-icon {
+    transition: transform var(--transition-normal);
+}
+
+.floating-cart.expanded .chevron-icon {
+    transform: rotate(180deg);
+}
+
+/* Cart Drawer */
+.cart-drawer {
+    height: 0;
+    transition: height var(--transition-normal);
+    display: flex;
+    flex-direction: column;
+}
+
+.floating-cart.expanded .cart-drawer {
+    height: 380px;
+}
+
+.drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.drawer-header h4 {
+    font-size: 1rem;
+}
+
+.clear-cart-text-btn {
+    border: none;
+    background: none;
+    color: var(--accent-color);
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.drawer-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.cart-item-info h5 {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.cart-item-info span {
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.remove-item-btn {
+    border: none;
+    background: none;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0.4rem;
+}
+
+.remove-item-btn:hover {
+    color: var(--accent-color);
+}
+
+.drawer-footer {
+    padding: 1.2rem;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-main);
+}
+
+.drawer-total {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.drawer-total strong {
+    font-size: 1.15rem;
+    color: var(--primary-color);
+    font-family: 'Outfit', sans-serif;
+}
+
+.btn-checkout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: var(--secondary-color);
+    color: #FFF;
+    width: 100%;
+    padding: 0.9rem;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 168, 150, 0.2);
+}
+
+.btn-checkout:hover {
+    background-color: var(--secondary-hover);
+}
+
+/* ==========================================================================
+   REGISTRATION FORM & STEPPER
+   ========================================================================== */
+.registration-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* Stepper progress */
+.stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 3rem auto;
+    max-width: 700px;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    gap: 0.5rem;
+    width: 140px;
+}
+
+.step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #FFF;
+    border: 2px solid var(--border-color);
+    color: var(--text-muted);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    transition: var(--transition-normal);
+}
+
+.step-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.step.active .step-num {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #FFF;
+    box-shadow: 0 0 0 4px rgba(10, 88, 202, 0.15);
+}
+
+.step.active .step-label {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.step.completed .step-num {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: #FFF;
+}
+
+.step.completed .step-label {
+    color: var(--secondary-color);
+}
+
+.step-line {
+    flex-grow: 1;
+    height: 2px;
+    background-color: var(--border-color);
+    margin-bottom: 1.5rem; /* Canh giữa với hình tròn */
+    position: relative;
+    z-index: 1;
+}
+
+.step-line.active {
+    background-color: var(--secondary-color);
+}
+
+/* Form Layout */
+.registration-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 2rem;
+    align-items: start;
+}
+
+.form-card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    padding: 2.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.form-step-content {
+    display: none;
+}
+
+.form-step-content.active {
+    display: block;
+    animation: fadeIn var(--transition-fast) ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.form-step-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.step-desc {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.full-width {
+    grid-column: span 2;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.required {
+    color: var(--accent-color);
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group select {
+    border: 1px solid var(--border-color);
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    transition: var(--transition-fast);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(10, 88, 202, 0.1);
+}
+
+.radio-group {
+    display: flex;
+    gap: 2rem;
+    margin-top: 0.5rem;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.radio-label input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+
+.guardian-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px dashed var(--border-color);
+}
+
+.guardian-section h3 {
+    font-size: 1.15rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Payment selection */
+.payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.2rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.payment-card:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(10, 88, 202, 0.02);
+}
+
+.payment-card input[type="radio"] {
+    margin-top: 0.3rem;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+
+.payment-card input[type="radio"]:checked + .payment-card-content {
+    color: var(--primary-color);
+}
+
+.payment-card input[type="radio"]:checked {
+    /* Apply borders dynamically in client-side JS or CSS selector sibling */
+}
+
+.payment-card-content {
+    display: flex;
+    gap: 1rem;
+}
+
+.payment-icon {
+    color: var(--primary-color);
+    width: 24px;
+}
+
+.payment-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.payment-text strong {
+    font-size: 0.95rem;
+}
+
+.payment-text span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.payment-info-box {
+    display: flex;
+    gap: 0.8rem;
+    background-color: rgba(10, 88, 202, 0.05);
+    border: 1px solid rgba(10, 88, 202, 0.1);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    color: var(--primary-color);
+    font-size: 0.85rem;
+    margin-bottom: 2rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+
+.btn-primary, .btn-secondary, .btn-submit-registration {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.8rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: var(--transition-fast);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: #FFF;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+}
+
+.btn-submit-registration {
+    background-color: var(--secondary-color);
+    color: #FFF;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(0, 168, 150, 0.2);
+}
+
+.btn-submit-registration:hover {
+    background-color: var(--secondary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 168, 150, 0.3);
+}
+
+/* Sidebar Order Summary */
+.summary-card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    padding: 1.8rem;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 100px;
+}
+
+.summary-card h3 {
+    font-size: 1.15rem;
+    margin-bottom: 1.2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.8rem;
+}
+
+.summary-items {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+}
+
+.item-name {
+    display: flex;
+    flex-direction: column;
+    max-width: 70%;
+}
+
+.item-name strong {
+    font-weight: 600;
+}
+
+.item-name span {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.item-price {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.summary-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 1.5rem 0;
+}
+
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.summary-total span {
+    font-weight: 600;
+}
+
+.summary-total strong {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+    font-family: 'Outfit', sans-serif;
+}
+
+.summary-note {
+    display: flex;
+    gap: 0.5rem;
+    background-color: rgba(0, 168, 150, 0.05);
+    padding: 0.8rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    color: var(--secondary-color);
+}
+
+.summary-note p {
+    margin: 0;
+}
+
+/* Alert styles */
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.alert-danger {
+    background-color: rgba(255, 90, 95, 0.08);
+    border: 1px solid rgba(255, 90, 95, 0.15);
+    color: var(--accent-color);
+}
+
+.alert-danger ul {
+    margin-left: 1rem;
+}
+
+/* ==========================================================================
+   SUCCESS & TICKET PAGE
+   ========================================================================== */
+.success-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.success-banner {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.success-icon-animation {
+    color: var(--secondary-color);
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.success-icon-animation i {
+    width: 64px;
+    height: 64px;
+    animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}
+
+.success-banner h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.success-banner p {
+    color: var(--text-muted);
+}
+
+.registration-code-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: #FFF;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    margin-top: 1rem;
+    box-shadow: 0 4px 15px rgba(10, 88, 202, 0.2);
+}
+
+/* Grid Layout Success */
+.success-layout {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 2.5rem;
+}
+
+/* Premium Ticket */
+.ticket-card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.ticket-card::before, .ticket-card::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: var(--bg-main);
+    border-radius: 50%;
+    top: 50px; /* Định vị điểm cắt vé */
+    z-index: 3;
+    border: 1px solid var(--border-color);
+}
+
+.ticket-card::before { left: -10px; }
+.ticket-card::after { right: -10px; }
+
+.ticket-header {
+    background: linear-gradient(to right, #0A58CA, #00A896);
+    color: #FFF;
+    padding: 1.8rem 2rem;
+    text-align: center;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.ticket-header h3 {
+    color: #FFF;
+    font-size: 1.3rem;
+    letter-spacing: 0.05em;
+}
+
+.ticket-header span {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    text-transform: uppercase;
+}
+
+.ticket-body {
+    padding: 2rem;
+}
+
+.ticket-section {
+    margin-bottom: 1.8rem;
+}
+
+.ticket-section h4 {
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding-bottom: 0.4rem;
+}
+
+.ticket-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ticket-table th, .ticket-table td {
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.ticket-table th {
+    width: 160px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.ticket-table td {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.highlight-date {
+    color: var(--secondary-color) !important;
+    font-size: 1.05rem;
+}
+
+.ticket-vaccines-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.ticket-vaccine-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.ticket-vaccine-item .vaccine-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.ticket-vaccine-item .vaccine-info strong {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.ticket-vaccine-item .vaccine-info span {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.ticket-vaccine-item .vaccine-price {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.ticket-section-total {
+    background-color: var(--bg-main);
+    padding: 1.2rem;
+    border-radius: var(--radius-sm);
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+}
+
+.total-row strong {
+    font-size: 1.15rem;
+    color: var(--primary-color);
+    font-family: 'Outfit', sans-serif;
+}
+
+.status-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+}
+
+.status-paid {
+    background-color: rgba(0, 168, 150, 0.12);
+    color: var(--secondary-color);
+}
+
+.status-pending {
+    background-color: rgba(255, 90, 95, 0.12);
+    color: var(--accent-color);
+}
+
+.ticket-footer {
+    border-top: 1px dashed var(--border-color);
+    padding: 1.8rem 2rem;
+    text-align: center;
+    background-color: #FAFBFD;
+}
+
+.barcode-mock {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.barcode-lines {
+    display: flex;
+    height: 40px;
+    gap: 1.5px;
+}
+
+.barcode-lines span {
+    display: block;
+    width: 2px;
+    background-color: #1E293B;
+}
+
+/* Tạo độ rộng giả lập khác nhau cho vạch mã vạch */
+.barcode-lines span:nth-child(3n) { width: 4px; }
+.barcode-lines span:nth-child(4n) { width: 1px; }
+.barcode-lines span:nth-child(5n) { width: 3px; }
+
+.barcode-text {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    margin-top: 0.25rem;
+}
+
+.ticket-footer p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Payment box / Action Box */
+.payment-action-card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    padding: 2.2rem;
+    box-shadow: var(--shadow-sm);
+    height: fit-content;
+}
+
+.payment-success-box {
+    text-align: center;
+}
+
+.payment-success-icon {
+    color: var(--secondary-color);
+    margin-bottom: 1.2rem;
+}
+
+.payment-success-icon i {
+    width: 48px;
+    height: 48px;
+}
+
+.payment-success-box h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.8rem;
+}
+
+.payment-success-box p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+.qr-payment-box {
+    text-align: center;
+}
+
+.qr-payment-box h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.qr-payment-box p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.qr-code-wrapper {
+    background-color: #FFF;
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    display: inline-block;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+.qr-code-wrapper img {
+    width: 200px;
+    height: 200px;
+    display: block;
+}
+
+.payment-transfer-details {
+    background-color: var(--bg-main);
+    border-radius: var(--radius-sm);
+    padding: 1.2rem;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    margin-bottom: 2rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    padding-bottom: 0.4rem;
+}
+
+.detail-row:last-child {
+    border: none;
+    padding: 0;
+}
+
+.detail-row span {
+    color: var(--text-muted);
+}
+
+.detail-row strong {
+    color: var(--text-primary);
+}
+
+.price-highlight {
+    color: var(--accent-color) !important;
+    font-size: 1rem;
+}
+
+.code-highlight {
+    color: var(--primary-color) !important;
+    font-size: 1rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.counter-payment-box {
+    text-align: center;
+}
+
+.later-payment-icon {
+    color: var(--primary-color);
+    margin-bottom: 1.2rem;
+}
+
+.later-payment-icon i {
+    width: 48px;
+    height: 48px;
+}
+
+.counter-payment-box h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.8rem;
+}
+
+.counter-payment-box p {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.step-guide {
+    text-align: left;
+    font-size: 0.88rem;
+    padding-left: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.step-guide li {
+    margin-bottom: 0.6rem;
+    color: var(--text-primary);
+}
+
+.warning-alert {
+    display: flex;
+    gap: 0.6rem;
+    background-color: rgba(255, 90, 95, 0.05);
+    border: 1px solid rgba(255, 90, 95, 0.1);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    color: #b82d31;
+    font-size: 0.8rem;
+    text-align: left;
+    margin-bottom: 2rem;
+}
+
+/* ==========================================================================
+   RESPONSIVE MEDIA QUERIES
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar-filters {
+        position: static;
+        margin-bottom: 1.5rem;
+    }
+    
+    .registration-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-card {
+        position: static;
+        order: -1; /* Hiển thị tóm tắt lên trước trên mobile */
+    }
+    
+    .success-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .footer-tagline {
+        grid-column: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-container {
+        padding: 1rem;
+    }
+    
+    .nav-menu {
+        display: none; /* Ẩn menu trên mobile cho đơn giản */
+    }
+    
+    .hero-banner {
+        padding: 2rem 1.5rem;
+    }
+    
+    .hero-banner h1 {
+        font-size: 2rem;
+    }
+    
+    .form-card {
+        padding: 1.5rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .full-width {
+        grid-column: 1;
+    }
+    
+    .stepper {
+        margin-bottom: 2rem;
+    }
+    
+    .step-label {
+        font-size: 0.7rem;
+    }
+    
+    .floating-cart {
+        width: calc(100vw - 2rem);
+        right: 1rem;
+        bottom: 1rem;
+    }
+    
+    .ticket-table th {
+        width: 120px;
+    }
+}
