@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v1.0.4] - 2026-07-19
+
+### MySQL-Only Database Configuration
+
+* Standardize application, cache, queue, session, and test persistence on MySQL; remove SQLite, MariaDB, Redis, Memcached, SQS, Beanstalk, and DynamoDB configuration paths that are not used by the project.
+* Remove the SQLite database file and document `medicare_codo` and `medicare_codo_test` as the only supported databases.
+
 ## [v1.0.3] - 2026-07-19
 
 ### AI Configuration and Workspace Rules Setup & Admin Font Optimization

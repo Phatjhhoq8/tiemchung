@@ -27,11 +27,7 @@
     
     <!-- Dark Mode Check -->
     <script>
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
+        document.documentElement.classList.remove('dark');
     </script>
     @yield('styles')
 </head>
@@ -47,6 +43,9 @@
                 <a href="mailto:{{ $email }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='inherit'">
                     <i data-lucide="mail"></i> {{ $email }}
                 </a>
+            </div>
+            <div class="topbar-social">
+                <!-- Mạng xã hội hoặc text khác -->
             </div>
         </div>
     </div>
@@ -65,7 +64,7 @@
             </nav>
             
             <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
-                <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode" style="background: none; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; padding: 10px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; transition: all 0.2s;">
+                <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode" style="display: none !important; background: none; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; padding: 10px; border-radius: 8px; align-items: center; justify-content: center; width: 40px; height: 40px; transition: all 0.2s;">
                     <i data-lucide="sun" class="sun-icon" style="width: 20px; height: 20px; display: none; color: #eaaa00;"></i>
                     <i data-lucide="moon" class="moon-icon" style="width: 20px; height: 20px;"></i>
                 </button>

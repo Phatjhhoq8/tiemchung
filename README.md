@@ -23,7 +23,7 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
 
 ## Local MySQL Setup
 
-The application uses MySQL by default. Configure the credentials in `.env`, then create the development and isolated test databases:
+The application uses MySQL only. Configure the credentials in `.env`, then create the development and isolated test databases:
 
 ```bash
 php database/create_db.php
@@ -31,7 +31,7 @@ php artisan migrate --seed
 php artisan test
 ```
 
-`php artisan test` uses `medicare_codo_test`, never `medicare_codo`. The test database is recreated by the test suite, so do not place application data in it.
+`php artisan test` uses MySQL database `medicare_codo_test`, never `medicare_codo`. The test database is recreated by the test suite, so do not place application data in it.
 
 The sample local configuration uses the XAMPP/Herd default MySQL account (`root` with an empty password). Replace it with a dedicated database user and a password outside local development.
 

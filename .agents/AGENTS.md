@@ -8,7 +8,7 @@
 - **Backend**: Laravel 11.x (PHP >= 8.2).
 - **Dependency**: Composer (composer.json).
 - **Frontend**: Vite 6.x, Tailwind CSS 3.x, Axios.
-- **Database**: MySQL (primary), SQLite (test/local).
+- **Database**: MySQL only, including the isolated test database.
 
 ## 3. Communication & Responses
 - Keep responses concise, direct, and in Vietnamese.
