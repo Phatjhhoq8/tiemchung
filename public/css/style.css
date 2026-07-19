@@ -35,20 +35,31 @@
    DARK MODE
    ========================================================================== */
 html.dark {
-    --bg-main: #0b0f19;             /* Slate 955 */
-    --bg-card: #111827;             /* Slate 900 */
-    --bg-header: rgba(17, 24, 39, 0.85);
+    /* Backgrounds */
+    --bg-main: #090d16;             /* Ultra deep dark canvas */
+    --bg-card: #111827;             /* Slate 900 for containers/cards */
+    --bg-header: rgba(17, 24, 39, 0.85); /* Glassmorphism header */
     
-    --text-primary: #f3f4f6;        /* Slate 100 */
-    --text-muted: #9ca3af;          /* Slate 400 */
-    --text-light: #6b7280;          /* Slate 500 */
+    /* Text colors hierarchy */
+    --text-primary: #f8fafc;        /* Slate 50 (bright and clear) */
+    --text-muted: #94a3b8;          /* Slate 400 (description text) */
+    --text-light: #64748b;          /* Slate 500 (small captions) */
     
-    --border-color: #1f2937;        /* Slate 800 */
-    --border-focus: #3b82f6;        /* Blue 500 */
+    /* Adaptive Brand Colors for Dark Canvas */
+    --primary-color: #ef4444;       /* High-contrast Red (Red 500) */
+    --primary-hover: #f87171;
+    --secondary-color: #fbbf24;     /* High-contrast Gold (Amber 400) */
+    --secondary-hover: #fef08a;
+    --accent-color: #3b82f6;        /* Bright Navy/Blue (Blue 500) */
     
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
+    /* Borders & Focus colors */
+    --border-color: #1f2937;        /* Slate 800 (subtle separators) */
+    --border-focus: #3b82f6;        /* Focus border */
+    
+    /* Premium dark shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 body, header, aside, .app-header, .top-bar, .app-footer, .card, .vaccine-card, .btn-primary-header, .hotline-btn, .admin-header, .admin-content, .admin-sidebar, input, select, textarea, .sidebar-brand {
@@ -2416,6 +2427,10 @@ html.dark .text-gray-600 {
 html.dark .bg-gray-50,
 html.dark .bg-gray-100 {
     background-color: var(--bg-main) !important;
+}
+
+html.dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
 }
 
 

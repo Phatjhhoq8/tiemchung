@@ -93,12 +93,12 @@
                         <div class="vaccine-card {{ isset($cart[$vaccine->id]) ? 'selected' : '' }}" data-id="{{ $vaccine->id }}" style="display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 0;">
                             <a href="{{ route('vaccine.show', $vaccine->id) }}" style="text-decoration: none; color: inherit; display: block;">
                                 <div>
-                                    <div class="vaccine-card-img" style="height: 160px; width: 100%; background: #f8fafc; display: flex; align-items: center; justify-content: center; overflow: hidden; border-bottom: 1px solid var(--border-color);">
+                                    <div class="vaccine-card-img" style="height: 160px; width: 100%; background: var(--bg-main); display: flex; align-items: center; justify-content: center; overflow: hidden; border-bottom: 1px solid var(--border-color);">
                                         <img src="{{ asset('images/vaccines/' . ($vaccine->image ?: 'default_vaccine.jpg')) }}" alt="{{ $vaccine->name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                     </div>
                                 </div>
                                 <div class="vaccine-card-body" style="padding: 20px;">
-                                    <div style="display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--primary-color); background-color: rgba(200, 16, 46, 0.08); padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; letter-spacing: 0.05em;">
+                                    <div style="display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--primary-color); background-color: rgba(239, 68, 68, 0.08); padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; letter-spacing: 0.05em;">
                                         {{ $vaccine->origin }}
                                     </div>
                                     <h3 class="vaccine-name" style="margin-top: 0; padding-right: 0;">
@@ -112,13 +112,13 @@
                                     </div>
                                 </div>
                             </a>
-                            <div class="vaccine-card-footer" style="padding: 15px 12px; border-top: 1px solid var(--border-color); background: #fafafa; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <div class="vaccine-card-footer" style="padding: 15px 12px; border-top: 1px solid var(--border-color); background: var(--bg-card); display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                 <div class="vaccine-price" style="flex-shrink: 0;">
                                     <span style="font-size: 11px; color: var(--text-light); text-transform: uppercase; display: block; line-height: 1.2;">Giá tiêm:</span>
                                     <strong style="font-size: 16px; color: var(--primary-color); font-family: 'Roboto', sans-serif; white-space: nowrap;">{{ number_format($vaccine->price, 0, ',', '.') }} đ</strong>
                                 </div>
                                 <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
-                                    <a href="{{ route('vaccine.show', $vaccine->id) }}" class="btn-view-detail-card" style="width: 34px; height: 34px; border-radius: 6px; border: 1px solid var(--border-color); color: var(--text-primary); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; background: #ffffff; flex-shrink: 0; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='#ffffff'"><i data-lucide="info" style="width: 16px; height: 16px;"></i></a>
+                                    <a href="{{ route('vaccine.show', $vaccine->id) }}" class="btn-view-detail-card" style="width: 34px; height: 34px; border-radius: 6px; border: 1px solid var(--border-color); color: var(--text-primary); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; background: var(--bg-card); flex-shrink: 0; transition: all 0.2s;"><i data-lucide="info" style="width: 16px; height: 16px;"></i></a>
                                     <button class="btn-select-vaccine {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" onclick="toggleCart({{ $vaccine->id }})" style="padding: 8px 12px; font-size: 12.5px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;">
                                         @if(isset($cart[$vaccine->id]))
                                             <i data-lucide="check" style="width: 14px; height: 14px;"></i> <span>Đã chọn</span>

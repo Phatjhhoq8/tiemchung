@@ -5,8 +5,13 @@
  */
 
 try {
-    // Kết nối đến MySQL (root và mật khẩu rỗng mặc định)
-    $pdo = new PDO('mysql:host=127.0.0.1;port=3306', 'root', '');
+    $host = getenv('DB_HOST') ?: '127.0.0.1';
+    $port = getenv('DB_PORT') ?: '3306';
+    $username = getenv('DB_USERNAME') ?: 'root';
+    $password = getenv('DB_PASSWORD') ?: '';
+
+    // Kết nối bằng cấu hình môi trường để dùng được cả Docker và MySQL cục bộ.
+    $pdo = new PDO("mysql:host={$host};port={$port}", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
     // Tạo cơ sở dữ liệu ứng dụng và database tách biệt cho PHPUnit.

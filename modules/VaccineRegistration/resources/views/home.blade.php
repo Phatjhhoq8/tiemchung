@@ -55,7 +55,7 @@
         <div class="recommendations-grid">
             <div class="rec-card" style="display: flex; flex-direction: column; justify-content: space-between;">
                 <div>
-                    <div class="rec-card-img" style="height: 180px; width: 100%; overflow: hidden; border-bottom: 1px solid var(--border-color); background: #f8fafc; position: relative;">
+                    <div class="rec-card-img" style="height: 180px; width: 100%; overflow: hidden; border-bottom: 1px solid var(--border-color); background: var(--bg-main); position: relative;">
                         <img src="{{ asset('images/vaccines/vaxigrip.jpg') }}" alt="Vắc Xin Cúm Mùa" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div class="rec-card-body" style="padding: 24px;">
@@ -72,7 +72,7 @@
             </div>
             <div class="rec-card" style="display: flex; flex-direction: column; justify-content: space-between;">
                 <div>
-                    <div class="rec-card-img" style="height: 180px; width: 100%; overflow: hidden; border-bottom: 1px solid var(--border-color); background: #f8fafc; position: relative;">
+                    <div class="rec-card-img" style="height: 180px; width: 100%; overflow: hidden; border-bottom: 1px solid var(--border-color); background: var(--bg-main); position: relative;">
                         <img src="{{ asset('images/vaccines/prevenar13.jpg') }}" alt="Vắc Xin Phế Cầu" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div class="rec-card-body" style="padding: 24px;">
@@ -89,7 +89,7 @@
             </div>
             <div class="rec-card" style="display: flex; flex-direction: column; justify-content: space-between;">
                 <div>
-                    <div class="rec-card-img" style="height: 180px; width: 100%; overflow: hidden; border-bottom: 1px solid var(--border-color); background: #f8fafc; position: relative;">
+                    <div class="rec-card-img" style="height: 180px; width: 100%; overflow: hidden; border-bottom: 1px solid var(--border-color); background: var(--bg-main); position: relative;">
                         <img src="{{ asset('images/vaccines/shingrix.jpg') }}" alt="Vắc Xin Zona Thần Kinh" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div class="rec-card-body" style="padding: 24px;">
@@ -142,7 +142,7 @@
                 <div class="vaccine-card" style="display: flex; flex-direction: column; justify-content: space-between; overflow: hidden;">
                     <a href="{{ route('vaccine.show', $vaccine->id) }}" style="text-decoration: none; color: inherit; display: block;">
                         <div>
-                            <div class="vaccine-card-img" style="height: 180px; width: 100%; background: #f8fafc; display: flex; align-items: center; justify-content: center; overflow: hidden; border-bottom: 1px solid var(--border-color);">
+                            <div class="vaccine-card-img" style="height: 180px; width: 100%; background: var(--bg-main); display: flex; align-items: center; justify-content: center; overflow: hidden; border-bottom: 1px solid var(--border-color);">
                                 <img src="{{ asset('images/vaccines/' . ($vaccine->image ?: 'default_vaccine.jpg')) }}" alt="{{ $vaccine->name }}" style="width: 100%; height: 100%; object-fit: cover;">
                             </div>
                         </div>
@@ -155,7 +155,7 @@
                             <div class="vaccine-age"><strong>Độ tuổi:</strong> {{ $vaccine->age_group }}</div>
                         </div>
                     </a>
-                    <div class="vaccine-card-footer" style="padding: 20px; border-top: 1px solid var(--border-color); background: #fafafa;">
+                    <div class="vaccine-card-footer" style="padding: 20px; border-top: 1px solid var(--border-color); background: var(--bg-card);">
                         <div class="vaccine-price"><strong>{{ number_format($vaccine->price, 0, ',', '.') }} đ</strong></div>
                         <a href="{{ route('vaccine.show', $vaccine->id) }}" class="btn-view-detail">Chi tiết</a>
                     </div>
@@ -180,7 +180,7 @@
                 <div class="package-promo-card" style="padding: 0; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden;">
                     <a href="{{ route('vaccine.show', $package->id) }}" style="text-decoration: none; color: inherit; display: block;">
                         <div>
-                            <div class="package-card-img" style="height: 180px; width: 100%; background: #f8fafc; display: flex; align-items: center; justify-content: center; overflow: hidden; border-bottom: 1px solid var(--border-color);">
+                            <div class="package-card-img" style="height: 180px; width: 100%; background: var(--bg-main); display: flex; align-items: center; justify-content: center; overflow: hidden; border-bottom: 1px solid var(--border-color);">
                                 <img src="{{ asset('images/vaccines/' . ($package->image ?: 'default_vaccine.jpg')) }}" alt="{{ $package->name }}" style="width: 100%; height: 100%; object-fit: cover;">
                             </div>
                         </div>
@@ -196,7 +196,7 @@
                             </div>
                         </div>
                     </a>
-                    <div class="package-footer" style="padding: 24px; border-top: 1px solid var(--border-color); background: #fafafa; margin-top: 0;">
+                    <div class="package-footer" style="padding: 24px; border-top: 1px solid var(--border-color); background: var(--bg-card); margin-top: 0;">
                         <div class="package-price">
                             <span>Giá trọn gói:</span>
                             <strong>{{ number_format($package->price, 0, ',', '.') }} đ</strong>

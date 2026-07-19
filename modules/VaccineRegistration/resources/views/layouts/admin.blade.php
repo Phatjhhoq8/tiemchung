@@ -184,6 +184,11 @@
                         <i data-lucide="map-pinned"></i> Quản lý Trung Tâm
                     </a>
                 </li>
+                <li class="{{ str_contains(Route::currentRouteName(), 'admin.banners') ? 'active' : '' }}">
+                    <a href="{{ route('admin.banners.index') }}">
+                        <i data-lucide="image"></i> Quản lý Banner
+                    </a>
+                </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.settings') ? 'active' : '' }}">
                     <a href="{{ route('admin.settings.index') }}">
                         <i data-lucide="settings"></i> Cấu Hình Website

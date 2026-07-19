@@ -76,4 +76,56 @@ class AdminRegistrationController extends Controller
         return redirect()->route('admin.registrations.show', $id)
             ->with('success', 'Cập nhật trạng thái đơn đăng ký thành công.');
     }
+
+    /**
+     * Xuất danh sách đăng ký ra file CSV.
+     */
+    public function exportCsv(Request $request)
+    {
+        $registrations = Registration::with('vaccines')->latest()->get();
+
+        $filename = 'don_dang_ky_tiem_' . date('Y-m-d_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() use ($registrations) {
+            $file = fopen('php://output', 'w');
+            // BOM for UTF-8 Excel compatibility
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Header row
+            fputcsv($file, [
+                'Mã đơn', 'Họ tên', 'Số điện thoại', 'Email',
+                'Năm sinh', 'Giới tính', 'Địa chỉ',
+                'Trung tâm tiêm', 'Ngày tiêm', 'Tổng tiền',
+                'Trạng thái', 'Vắc xin đã chọn', 'Ngày đăng ký'
+            ]);
+
+            foreach ($registrations as $reg) {
+                $vaccineNames = $reg->vaccines->pluck('name')->implode(', ');
+                fputcsv($file, [
+                    $reg->registration_code,
+                    $reg->patient_name,
+                    $reg->patient_phone,
+                    $reg->patient_email ?? '',
+                    $reg->patient_birth_year ?? '',
+                    $reg->patient_gender ?? '',
+                    $reg->patient_address ?? '',
+                    $reg->center_name,
+                    $reg->injection_date,
+                    $reg->total_price,
+                    $reg->status,
+                    $vaccineNames,
+                    $reg->created_at->format('d/m/Y H:i'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

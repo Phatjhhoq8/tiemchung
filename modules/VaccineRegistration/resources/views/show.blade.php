@@ -14,7 +14,7 @@
     <!-- Main Detail Card -->
     <div class="detail-card" style="background-color: var(--bg-card); border-radius: var(--radius-md); box-shadow: var(--shadow-md); display: flex; overflow: hidden; border: 1px solid var(--border-color); flex-wrap: wrap;">
         <!-- Left Image Section -->
-        <div class="detail-image" style="flex: 1 1 350px; background: #ffffff; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; min-height: 350px;">
+        <div class="detail-image" style="flex: 1 1 350px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; min-height: 350px;">
             <img src="{{ asset('images/vaccines/' . ($vaccine->image ?: 'default_vaccine.jpg')) }}" alt="{{ $vaccine->name }}" style="width: 100%; height: 100%; object-fit: cover;">
             <div class="badge-type" style="position: absolute; top: 20px; left: 20px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; background-color: {{ $vaccine->type === 'package' ? 'var(--secondary-color)' : 'var(--primary-color)' }}; color: #ffffff; z-index: 10;">
                 {{ $vaccine->type === 'package' ? 'Gói vắc xin' : 'Vắc xin lẻ' }}
@@ -56,7 +56,7 @@
                 </div>
                 
                 <div style="display: flex; gap: 12px;">
-                    <a href="{{ route('vaccine.index') }}" class="btn-secondary" style="text-decoration: none; padding: 14px 24px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); color: var(--text-primary); font-weight: 600; display: inline-flex; align-items: center; gap: 8px; background: #ffffff; transition: all 0.2s ease;">
+                    <a href="{{ route('vaccine.index') }}" class="btn-secondary" style="text-decoration: none; padding: 14px 24px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); color: var(--text-primary); font-weight: 600; display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card); transition: all 0.2s ease;">
                         <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
                         <span>Quay lại</span>
                     </a>

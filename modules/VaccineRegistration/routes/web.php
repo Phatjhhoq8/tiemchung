@@ -13,6 +13,7 @@ use Modules\VaccineRegistration\Http\Controllers\Admin\AdminVaccineController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminRegistrationController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminCenterController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSettingController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminBannerController;
 
 Route::middleware('web')->group(function () {
     // --- Giao diện Khách hàng (Client) ---
@@ -60,8 +61,14 @@ Route::middleware('web')->group(function () {
         // Quản lý Trung tâm
         Route::resource('centers', AdminCenterController::class)->except(['show']);
 
+        // Quản lý Banner trang chủ
+        Route::resource('banners', AdminBannerController::class)->except(['show']);
+
         // Quản lý Cấu hình động (Settings)
         Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
+
+        // Xuất CSV đơn đăng ký
+        Route::get('/registrations/export/csv', [AdminRegistrationController::class, 'exportCsv'])->name('registrations.export.csv');
     });
 });

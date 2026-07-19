@@ -35,6 +35,10 @@
             @if(request()->anyFilled(['search', 'status']))
                 <a href="{{ route('admin.registrations.index') }}" class="btn-secondary" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; text-decoration: none; color: #475569; font-weight: 600;">Xóa bộ lọc</a>
             @endif
+
+            <a href="{{ route('admin.registrations.export.csv') }}" class="btn-secondary" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #10b981; background: #ecfdf5; text-decoration: none; color: #059669; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                <i data-lucide="download" style="width: 16px; height: 16px;"></i> Xuất CSV
+            </a>
         </form>
     </div>
 
