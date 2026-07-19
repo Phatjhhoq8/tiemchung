@@ -1,5 +1,22 @@
 # Release Notes
 
+## [v1.0.6] - 2026-07-19
+
+### Deployment Credential Handling
+
+* Move FTP credentials from project rules to the Git-ignored `.env` file and add empty FTP variables to `.env.example`.
+* Retain the deployment rule that FTP uploads must contain only files changed for the current task.
+
+## [v1.0.5] - 2026-07-19
+
+### Admin Panel Enhancements & Product Management
+
+* Add new fields to vaccines table and model (`sale_price`, `stock_status`, `manufacturer`, `dosage`, `is_featured`, `sort_order`, `category`) to support advanced product tracking.
+* Redesign the Vaccine Admin index page with new data columns, filter dropdowns (by type, status, category), and a visual search bar.
+* Rebuild the Vaccine Admin create/edit form with a structured layout and inputs for the newly added product fields.
+* Implement Homepage Banner Management in the Admin panel (added Banner Controller, views, and sidebar menu).
+* Add CSV export functionality for vaccine registration orders.
+
 ## [v1.0.4] - 2026-07-19
 
 ### MySQL-Only Database Configuration

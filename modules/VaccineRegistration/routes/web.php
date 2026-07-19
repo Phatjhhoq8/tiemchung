@@ -55,6 +55,7 @@ Route::middleware('web')->group(function () {
 
         // Quản lý Đăng ký tiêm chủng
         Route::get('/registrations', [AdminRegistrationController::class, 'index'])->name('registrations.index');
+        Route::get('/registrations/export/csv', [AdminRegistrationController::class, 'exportCsv'])->name('registrations.export.csv');
         Route::get('/registrations/{id}', [AdminRegistrationController::class, 'show'])->name('registrations.show');
         Route::patch('/registrations/{id}/status', [AdminRegistrationController::class, 'updateStatus'])->name('registrations.status');
 
@@ -67,8 +68,5 @@ Route::middleware('web')->group(function () {
         // Quản lý Cấu hình động (Settings)
         Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
-
-        // Xuất CSV đơn đăng ký
-        Route::get('/registrations/export/csv', [AdminRegistrationController::class, 'exportCsv'])->name('registrations.export.csv');
     });
 });
