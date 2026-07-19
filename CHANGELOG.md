@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v1.0.7] - 2026-07-19
+
+### User Experience Enhancements
+
+* Added custom error pages (403, 404, 419, 429, 500) extending the main application layout to improve user experience during application errors.
+
 ## [v1.0.6] - 2026-07-19
 
 ### Deployment Credential Handling
