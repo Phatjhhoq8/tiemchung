@@ -32,6 +32,31 @@
 }
 
 /* ==========================================================================
+   DARK MODE
+   ========================================================================== */
+html.dark {
+    --bg-main: #0b0f19;             /* Slate 955 */
+    --bg-card: #111827;             /* Slate 900 */
+    --bg-header: rgba(17, 24, 39, 0.85);
+    
+    --text-primary: #f3f4f6;        /* Slate 100 */
+    --text-muted: #9ca3af;          /* Slate 400 */
+    --text-light: #6b7280;          /* Slate 500 */
+    
+    --border-color: #1f2937;        /* Slate 800 */
+    --border-focus: #3b82f6;        /* Blue 500 */
+    
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+body, header, aside, .app-header, .top-bar, .app-footer, .card, .vaccine-card, .btn-primary-header, .hotline-btn, .admin-header, .admin-content, .admin-sidebar, input, select, textarea, .sidebar-brand {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+/* ==========================================================================
    RESET & BASE STYLES
    ========================================================================== */
 * {
@@ -2311,4 +2336,86 @@ nav[role="navigation"] p.text-sm {
     font-size: 14px;
     margin: 0;
 }
+
+
+/* ==========================================================================
+   DARK MODE OVERRIDES FOR INLINE STYLES & SPECIAL UTILITIES
+   ========================================================================== */
+html.dark [style*="background-color: #ffffff"], 
+html.dark [style*="background-color: #fff"], 
+html.dark [style*="background-color: rgb(255, 255, 255)"], 
+html.dark [style*="background: #ffffff"], 
+html.dark [style*="background: #fff"], 
+html.dark [style*="background: rgb(255, 255, 255)"],
+html.dark .card,
+html.dark .vaccine-card,
+html.dark .stat-card,
+html.dark .alert,
+html.dark .alert-success,
+html.dark .alert-danger,
+html.dark .alert-warning,
+html.dark .alert-info,
+html.dark .top-bar {
+    background-color: var(--bg-card) !important;
+    background: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+html.dark [style*="color: #1e293b"],
+html.dark [style*="color: #334155"],
+html.dark [style*="color: #475569"],
+html.dark [style*="color: #0f172a"],
+html.dark [style*="color: #1e2229"] {
+    color: var(--text-primary) !important;
+}
+
+html.dark [style*="color: #64748b"],
+html.dark [style*="color: #94a3b8"] {
+    color: var(--text-muted) !important;
+}
+
+html.dark [style*="border: 1px solid #e2e8f0"],
+html.dark [style*="border: 1px solid #cbd5e1"],
+html.dark [style*="border: 1px solid #cbd5e1;"],
+html.dark [style*="border-bottom: 1px solid #e2e8f0"],
+html.dark [style*="border-bottom: 2px solid #cbd5e1"] {
+    border-color: var(--border-color) !important;
+}
+
+html.dark table tr, html.dark table td, html.dark table th {
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+html.dark table thead tr {
+    color: var(--text-muted) !important;
+    border-bottom: 2px solid var(--border-color) !important;
+}
+
+html.dark table tbody tr {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+html.dark table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark input, 
+html.dark select, 
+html.dark textarea {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+html.dark .text-gray-500,
+html.dark .text-gray-600 {
+    color: var(--text-muted) !important;
+}
+html.dark .bg-gray-50,
+html.dark .bg-gray-100 {
+    background-color: var(--bg-main) !important;
+}
+
 

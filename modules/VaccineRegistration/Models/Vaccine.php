@@ -16,14 +16,52 @@ class Vaccine extends Model
     protected $fillable = [
         'name',
         'price',
-        'type', // 'single' (lẻ) hoặc 'package' (gói)
-        'doses', // số mũi tiêm
+        'sale_price',       // Giá ưu đãi (nullable)
+        'type',             // 'single' (lẻ) hoặc 'package' (gói)
+        'doses',            // số mũi tiêm
+        'stock_status',     // available, limited, out_of_stock
         'description',
         'disease_prevention',
+        'category',         // Danh mục bệnh (VD: Cúm, HPV)
         'age_group',
         'origin',
+        'manufacturer',     // Hãng sản xuất
+        'dosage',           // Quy cách đóng gói
         'image',
+        'is_featured',      // Vắc xin nổi bật
+        'sort_order',       // Thứ tự hiển thị
     ];
+
+    /**
+     * Casts cho các trường đặc biệt
+     */
+    protected $casts = [
+        'is_featured' => 'boolean',
+        'sale_price' => 'integer',
+        'price' => 'integer',
+        'sort_order' => 'integer',
+    ];
+
+    /**
+     * Kiểm tra có đang giảm giá không
+     */
+    public function hasSalePrice(): bool
+    {
+        return !empty($this->sale_price) && $this->sale_price < $this->price;
+    }
+
+    /**
+     * Lấy nhãn tình trạng kho
+     */
+    public function getStockLabel(): string
+    {
+        return match($this->stock_status) {
+            'available' => 'Đầy đủ',
+            'limited' => 'Còn ít',
+            'out_of_stock' => 'Hết hàng',
+            default => 'Đầy đủ',
+        };
+    }
 
     /**
      * Scope lọc vắc xin lẻ
@@ -39,6 +77,22 @@ class Vaccine extends Model
     public function scopePackage($query)
     {
         return $query->where('type', 'package');
+    }
+
+    /**
+     * Scope lọc vắc xin nổi bật
+     */
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
+    }
+
+    /**
+     * Scope lọc theo tình trạng kho
+     */
+    public function scopeInStock($query)
+    {
+        return $query->where('stock_status', '!=', 'out_of_stock');
     }
 
     /**

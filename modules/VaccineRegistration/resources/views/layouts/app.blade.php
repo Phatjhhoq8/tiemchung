@@ -24,6 +24,15 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    
+    <!-- Dark Mode Check -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     @yield('styles')
 </head>
 <body>
@@ -56,6 +65,10 @@
             </nav>
             
             <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
+                <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode" style="background: none; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; padding: 10px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; transition: all 0.2s;">
+                    <i data-lucide="sun" class="sun-icon" style="width: 20px; height: 20px; display: none; color: #eaaa00;"></i>
+                    <i data-lucide="moon" class="moon-icon" style="width: 20px; height: 20px;"></i>
+                </button>
                 <a href="tel:{{ str_replace(' ', '', $hotline) }}" class="hotline-btn">
                     <i data-lucide="phone-call"></i>
                     <span>Tư vấn: {{ $hotline }}</span>
@@ -166,6 +179,36 @@
     <script>
         // Khởi tạo các Lucide Icons
         lucide.createIcons();
+
+        // Dark Mode Toggle Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            const sunIcon = themeToggle.querySelector('.sun-icon');
+            const moonIcon = themeToggle.querySelector('.moon-icon');
+
+            function updateToggleIcons() {
+                if (document.documentElement.classList.contains('dark')) {
+                    sunIcon.style.display = 'block';
+                    moonIcon.style.display = 'none';
+                } else {
+                    sunIcon.style.display = 'none';
+                    moonIcon.style.display = 'block';
+                }
+            }
+
+            updateToggleIcons();
+
+            themeToggle.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+                updateToggleIcons();
+            });
+        }
     </script>
     @yield('scripts')
 </body>

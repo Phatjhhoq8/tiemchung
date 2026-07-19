@@ -21,6 +21,20 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Local MySQL Setup
+
+The application uses MySQL by default. Configure the credentials in `.env`, then create the development and isolated test databases:
+
+```bash
+php database/create_db.php
+php artisan migrate --seed
+php artisan test
+```
+
+`php artisan test` uses `medicare_codo_test`, never `medicare_codo`. The test database is recreated by the test suite, so do not place application data in it.
+
+The sample local configuration uses the XAMPP/Herd default MySQL account (`root` with an empty password). Replace it with a dedicated database user and a password outside local development.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.

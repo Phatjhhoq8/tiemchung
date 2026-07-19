@@ -22,7 +22,7 @@
         .admin-wrapper {
             display: flex;
             min-height: 100vh;
-            background-color: #f4f6f9;
+            background-color: var(--bg-main);
         }
         .admin-sidebar {
             width: 260px;
@@ -112,8 +112,8 @@
         }
         .admin-header {
             height: 70px;
-            background-color: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -126,14 +126,14 @@
             font-family: 'Roboto', sans-serif;
             font-size: 20px;
             font-weight: 700;
-            color: #1e293b;
+            color: var(--text-primary);
         }
         .admin-user {
             display: flex;
             align-items: center;
             gap: 10px;
             font-weight: 500;
-            color: #64748b;
+            color: var(--text-muted);
         }
         .admin-body {
             padding: 40px;
@@ -144,6 +144,14 @@
             padding-right: 40px;
         }
     </style>
+    <!-- Dark Mode Check -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     @yield('styles')
 </head>
 <body>
@@ -202,7 +210,11 @@
         <div class="admin-content">
             <header class="admin-header">
                 <div class="admin-title">@yield('page_title', 'Bảng Điều Khiển')</div>
-                <div class="admin-user">
+                <div class="admin-user" style="display: flex; align-items: center; gap: 15px;">
+                    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode" style="background: none; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; padding: 6px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.2s;">
+                        <i data-lucide="sun" class="sun-icon" style="width: 16px; height: 16px; display: none; color: #eaaa00;"></i>
+                        <i data-lucide="moon" class="moon-icon" style="width: 16px; height: 16px;"></i>
+                    </button>
                     <i data-lucide="circle-user"></i>
                     <span>Xin chào, Admin</span>
                 </div>
@@ -231,6 +243,36 @@
     <script>
         // Khởi tạo các Lucide Icons
         lucide.createIcons();
+
+        // Dark Mode Toggle Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            const sunIcon = themeToggle.querySelector('.sun-icon');
+            const moonIcon = themeToggle.querySelector('.moon-icon');
+
+            function updateToggleIcons() {
+                if (document.documentElement.classList.contains('dark')) {
+                    sunIcon.style.display = 'block';
+                    moonIcon.style.display = 'none';
+                } else {
+                    sunIcon.style.display = 'none';
+                    moonIcon.style.display = 'block';
+                }
+            }
+
+            updateToggleIcons();
+
+            themeToggle.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+                updateToggleIcons();
+            });
+        }
     </script>
     @yield('scripts')
 </body>
