@@ -115,7 +115,7 @@
                             <div class="vaccine-card-footer" style="padding: 15px 12px; border-top: 1px solid var(--border-color); background: #fafafa; display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                 <div class="vaccine-price" style="flex-shrink: 0;">
                                     <span style="font-size: 11px; color: var(--text-light); text-transform: uppercase; display: block; line-height: 1.2;">Giá tiêm:</span>
-                                    <strong style="font-size: 16px; color: var(--primary-color); font-family: 'Outfit', sans-serif; white-space: nowrap;">{{ number_format($vaccine->price, 0, ',', '.') }} đ</strong>
+                                    <strong style="font-size: 16px; color: var(--primary-color); font-family: 'Roboto', sans-serif; white-space: nowrap;">{{ number_format($vaccine->price, 0, ',', '.') }} đ</strong>
                                 </div>
                                 <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
                                     <a href="{{ route('vaccine.show', $vaccine->id) }}" class="btn-view-detail-card" style="width: 34px; height: 34px; border-radius: 6px; border: 1px solid var(--border-color); color: var(--text-primary); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; background: #ffffff; flex-shrink: 0; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='#ffffff'"><i data-lucide="info" style="width: 16px; height: 16px;"></i></a>

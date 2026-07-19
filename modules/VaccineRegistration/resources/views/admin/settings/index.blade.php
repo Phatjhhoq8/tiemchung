@@ -5,7 +5,7 @@
 
 @section('admin_content')
 <div style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; padding: 40px; max-width: 700px; margin: 0 auto;">
-    <h2 style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 24px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;"><i data-lucide="settings" style="color:var(--primary-color);"></i> Thay đổi thông tin hiển thị</h2>
+    <h2 style="font-family: 'Roboto', sans-serif; font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 24px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;"><i data-lucide="settings" style="color:var(--primary-color);"></i> Thay đổi thông tin hiển thị</h2>
 
     @if ($errors->any())
         <div class="alert alert-danger" style="margin-bottom: 24px; padding: 16px; border-radius: 8px; background-color: #fde8e8; color: #9b1c1c; border: 1px solid #fbd5d5;">

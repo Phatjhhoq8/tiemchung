@@ -7,7 +7,6 @@
 namespace Modules\VaccineRegistration\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Modules\VaccineRegistration\Models\Vaccine;
 
 class VaccineSeeder extends Seeder
@@ -17,11 +16,6 @@ class VaccineSeeder extends Seeder
      */
     public function run(): void
     {
-        // Tắt khóa ngoại tạm thời và làm sạch bảng trước khi seed
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        Vaccine::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
         $vaccines = [
             // --- VẮC XIN LẺ ---
             [
@@ -194,7 +188,7 @@ class VaccineSeeder extends Seeder
         ];
 
         foreach ($vaccines as $vaccine) {
-            Vaccine::create($vaccine);
+            Vaccine::updateOrCreate(['name' => $vaccine['name']], $vaccine);
         }
     }
 }

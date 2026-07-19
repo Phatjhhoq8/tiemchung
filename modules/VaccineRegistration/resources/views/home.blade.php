@@ -15,7 +15,7 @@
                 
                 <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; width: 100%; position: relative; z-index: 3;">
                     <div class="slide-content" style="max-width: 550px; padding: 40px 0;">
-                        <h1 style="font-family: 'Outfit', sans-serif; font-size: 42px; font-weight: 800; color: #1e293b; margin-bottom: 16px; line-height: 1.2;">Phòng Tiêm Chủng Medicare Cờ Đỏ</h1>
+                        <h1 style="font-family: 'Roboto', sans-serif; font-size: 42px; font-weight: 800; color: #1e293b; margin-bottom: 16px; line-height: 1.2;">Phòng Tiêm Chủng Medicare Cờ Đỏ</h1>
                         <p style="color: #475569; font-size: 16px; margin-bottom: 28px; line-height: 1.6; font-weight: 500;">Dịch vụ tiêm chủng vắc xin an toàn, chất lượng hàng đầu cho trẻ em và người lớn.</p>
                         <a href="{{ route('vaccine.index') }}" class="btn-cta" style="background-color: var(--primary-color); color: #ffffff; padding: 14px 28px; border-radius: 8px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(200, 16, 46, 0.2);" onmouseover="this.style.backgroundColor='var(--primary-hover)'; this.style.transform='translateY(-1px)';" onmouseout="this.style.backgroundColor='var(--primary-color)'; this.style.transform='translateY(0)';">Xem bảng giá vắc xin <i data-lucide="arrow-right"></i></a>
                     </div>
@@ -33,7 +33,7 @@
                         <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; width: 100%; position: relative; z-index: 3;">
                             <div class="slide-content" style="max-width: 550px; padding: 40px 0;">
                                 <span class="slide-badge" style="background-color: var(--primary-color); color: #ffffff; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 20px; display: inline-block; letter-spacing: 0.05em;">Medicare Cờ Đỏ</span>
-                                <h2 style="font-family: 'Outfit', sans-serif; font-size: 42px; font-weight: 800; color: #1e293b; margin-bottom: 16px; line-height: 1.2;">{{ $banner->title }}</h2>
+                                <h2 style="font-family: 'Roboto', sans-serif; font-size: 42px; font-weight: 800; color: #1e293b; margin-bottom: 16px; line-height: 1.2;">{{ $banner->title }}</h2>
                                 <p style="color: #475569; font-size: 16px; margin-bottom: 28px; line-height: 1.6; font-weight: 500;">{{ $banner->subtitle }}</p>
                                 <a href="{{ $banner->link_url ?: route('vaccine.index') }}" class="btn-cta" style="background-color: var(--primary-color); color: #ffffff; padding: 14px 28px; border-radius: 8px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(200, 16, 46, 0.2);" onmouseover="this.style.backgroundColor='var(--primary-hover)'; this.style.transform='translateY(-1px)';" onmouseout="this.style.backgroundColor='var(--primary-color)'; this.style.transform='translateY(0)';">Tìm hiểu thêm <i data-lucide="arrow-right"></i></a>
                             </div>
@@ -59,7 +59,7 @@
                         <img src="{{ asset('images/vaccines/vaxigrip.jpg') }}" alt="Vắc Xin Cúm Mùa" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div class="rec-card-body" style="padding: 24px;">
-                        <h3 style="font-family: 'Outfit', sans-serif; font-size: 19px; font-weight: 700; color: #1e293b; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <h3 style="font-family: 'Roboto', sans-serif; font-size: 19px; font-weight: 700; color: #1e293b; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                             <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; background-color: rgba(200, 16, 46, 0.08); color: var(--primary-color); border-radius: 50%; font-size: 13px;"><i data-lucide="thermometer-snowflake" style="width:14px;height:14px;"></i></span>
                             1. Vắc Xin Cúm Mùa
                         </h3>
@@ -76,7 +76,7 @@
                         <img src="{{ asset('images/vaccines/prevenar13.jpg') }}" alt="Vắc Xin Phế Cầu" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div class="rec-card-body" style="padding: 24px;">
-                        <h3 style="font-family: 'Outfit', sans-serif; font-size: 19px; font-weight: 700; color: #1e293b; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <h3 style="font-family: 'Roboto', sans-serif; font-size: 19px; font-weight: 700; color: #1e293b; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                             <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; background-color: rgba(200, 16, 46, 0.08); color: var(--primary-color); border-radius: 50%; font-size: 13px;"><i data-lucide="shield-alert" style="width:14px;height:14px;"></i></span>
                             2. Vắc Xin Phế Cầu
                         </h3>
@@ -93,7 +93,7 @@
                         <img src="{{ asset('images/vaccines/shingrix.jpg') }}" alt="Vắc Xin Zona Thần Kinh" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div class="rec-card-body" style="padding: 24px;">
-                        <h3 style="font-family: 'Outfit', sans-serif; font-size: 19px; font-weight: 700; color: #1e293b; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <h3 style="font-family: 'Roboto', sans-serif; font-size: 19px; font-weight: 700; color: #1e293b; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                             <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; background-color: rgba(200, 16, 46, 0.08); color: var(--primary-color); border-radius: 50%; font-size: 13px;"><i data-lucide="zap" style="width:14px;height:14px;"></i></span>
                             3. Vắc Xin Zona Thần Kinh
                         </h3>

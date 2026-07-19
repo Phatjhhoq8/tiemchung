@@ -7,7 +7,6 @@
 namespace Modules\VaccineRegistration\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Modules\VaccineRegistration\Models\Setting;
 
 class SettingSeeder extends Seeder
@@ -17,10 +16,6 @@ class SettingSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        Setting::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
         $settings = [
             ['key' => 'site_name', 'value' => 'Medicare Cờ Đỏ'],
             ['key' => 'hotline', 'value' => '0938 60 38 39'],
@@ -31,7 +26,7 @@ class SettingSeeder extends Seeder
         ];
 
         foreach ($settings as $setting) {
-            Setting::create($setting);
+            Setting::updateOrCreate(['key' => $setting['key']], $setting);
         }
     }
 }

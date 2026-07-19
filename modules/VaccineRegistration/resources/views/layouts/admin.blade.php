@@ -9,7 +9,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap" rel="stylesheet">
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -38,7 +38,7 @@
         }
         .sidebar-brand {
             padding: 24px;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Roboto', sans-serif;
             font-size: 20px;
             font-weight: 700;
             border-bottom: 1px solid #2d323e;
@@ -123,7 +123,7 @@
             z-index: 99;
         }
         .admin-title {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Roboto', sans-serif;
             font-size: 20px;
             font-weight: 700;
             color: #1e293b;

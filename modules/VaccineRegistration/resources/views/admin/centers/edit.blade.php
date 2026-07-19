@@ -6,7 +6,7 @@
 @section('admin_content')
 <div style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; padding: 40px; max-width: 700px; margin: 0 auto;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px;">
-        <h2 style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Cập nhật thông tin chi nhánh</h2>
+        <h2 style="font-family: 'Roboto', sans-serif; font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Cập nhật thông tin chi nhánh</h2>
         <a href="{{ route('admin.centers.index') }}" style="color: #64748b; text-decoration: none; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
             <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Quay lại danh sách
         </a>

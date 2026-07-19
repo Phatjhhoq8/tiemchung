@@ -7,7 +7,6 @@
 namespace Modules\VaccineRegistration\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Modules\VaccineRegistration\Models\Banner;
 
 class BannerSeeder extends Seeder
@@ -17,10 +16,6 @@ class BannerSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        Banner::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
         $banners = [
             [
                 'title' => 'Đăng Ký Tiêm Chủng Trực Tuyến Dễ Dàng',
@@ -49,7 +44,7 @@ class BannerSeeder extends Seeder
         ];
 
         foreach ($banners as $banner) {
-            Banner::create($banner);
+            Banner::updateOrCreate(['title' => $banner['title']], $banner);
         }
     }
 }

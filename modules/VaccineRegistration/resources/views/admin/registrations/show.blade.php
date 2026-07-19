@@ -31,7 +31,7 @@
         
         <!-- Cột 1: Thông tin người tiêm & người giám hộ -->
         <div style="background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 30px;">
-            <h3 style="font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;"><i data-lucide="user" style="color:var(--primary-color);"></i> Thông tin người tiêm</h3>
+            <h3 style="font-family: 'Roboto', sans-serif; font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;"><i data-lucide="user" style="color:var(--primary-color);"></i> Thông tin người tiêm</h3>
             <table style="width: 100%; border-collapse: collapse; font-size: 14px; line-height: 2;">
                 <tr>
                     <td style="color: #64748b; font-weight: 500; width: 140px;">Mã đơn:</td>
@@ -60,7 +60,7 @@
             </table>
 
             @if($registration->guardian_name)
-                <h3 style="font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 700; color: #1e293b; margin-top: 30px; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;"><i data-lucide="users" style="color:var(--primary-color);"></i> Thông tin người giám hộ</h3>
+                <h3 style="font-family: 'Roboto', sans-serif; font-size: 17px; font-weight: 700; color: #1e293b; margin-top: 30px; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;"><i data-lucide="users" style="color:var(--primary-color);"></i> Thông tin người giám hộ</h3>
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px; line-height: 2;">
                     <tr>
                         <td style="color: #64748b; font-weight: 500; width: 140px;">Người giám hộ:</td>
@@ -76,7 +76,7 @@
 
         <!-- Cột 2: Thông tin lịch tiêm & thanh toán -->
         <div style="background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 30px;">
-            <h3 style="font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;"><i data-lucide="calendar" style="color:var(--primary-color);"></i> Lịch tiêm & Thanh toán</h3>
+            <h3 style="font-family: 'Roboto', sans-serif; font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;"><i data-lucide="calendar" style="color:var(--primary-color);"></i> Lịch tiêm & Thanh toán</h3>
             <table style="width: 100%; border-collapse: collapse; font-size: 14px; line-height: 2;">
                 <tr>
                     <td style="color: #64748b; font-weight: 500; width: 150px;">Trung tâm tiêm:</td>
@@ -116,7 +116,7 @@
 
     <!-- Danh sách Vắc xin đã đăng ký tiêm -->
     <div style="background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 30px;">
-        <h3 style="font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;"><i data-lucide="syringe" style="color:var(--primary-color);"></i> Danh sách vắc xin chọn tiêm ({{ $registration->vaccines->count() }})</h3>
+        <h3 style="font-family: 'Roboto', sans-serif; font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;"><i data-lucide="syringe" style="color:var(--primary-color);"></i> Danh sách vắc xin chọn tiêm ({{ $registration->vaccines->count() }})</h3>
         
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
             <thead>

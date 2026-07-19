@@ -6,7 +6,7 @@
 @section('admin_content')
 <div style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; padding: 30px;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
-        <h2 style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Danh sách các trung tâm tiêm chủng</h2>
+        <h2 style="font-family: 'Roboto', sans-serif; font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Danh sách các trung tâm tiêm chủng</h2>
         <a href="{{ route('admin.centers.create') }}" class="btn-primary" style="padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
             <i data-lucide="plus-circle"></i> Thêm Chi Nhánh Mới
         </a>

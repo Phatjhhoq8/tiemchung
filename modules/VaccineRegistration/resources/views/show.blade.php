@@ -24,7 +24,7 @@
         <!-- Right Info Section -->
         <div class="detail-info" style="flex: 1 1 450px; padding: 40px; display: flex; flex-direction: column; justify-content: space-between;">
             <div>
-                <h1 style="font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">{{ $vaccine->name }}</h1>
+                <h1 style="font-family: 'Roboto', sans-serif; font-size: 32px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">{{ $vaccine->name }}</h1>
                 <p style="color: var(--text-muted); font-size: 15px; margin-bottom: 24px;">{{ $vaccine->description }}</p>
 
                 <!-- Basic Specs Table -->

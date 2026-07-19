@@ -41,7 +41,7 @@
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Roboto', sans-serif;
     background-color: var(--bg-main);
     color: var(--text-primary);
     line-height: 1.6;
@@ -50,7 +50,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-weight: 700;
     color: var(--text-primary);
 }
@@ -95,7 +95,7 @@ button, select, input {
     gap: 0.5rem;
     font-size: 1.5rem;
     font-weight: 800;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
     color: var(--primary-color);
 }
 
@@ -593,7 +593,7 @@ button, select, input {
 .vaccine-price strong {
     font-size: 1.1rem;
     color: var(--primary-color);
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
     white-space: nowrap;
 }
 
@@ -694,7 +694,7 @@ button, select, input {
 
 .cart-toggle-text strong {
     font-size: 1.1rem;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
 }
 
 .chevron-icon {
@@ -794,7 +794,7 @@ button, select, input {
 .drawer-total strong {
     font-size: 1.15rem;
     color: var(--primary-color);
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
 }
 
 .btn-checkout {
@@ -1216,7 +1216,7 @@ button, select, input {
 .summary-total strong {
     font-size: 1.25rem;
     color: var(--primary-color);
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
 }
 
 .summary-note {
@@ -1301,7 +1301,7 @@ button, select, input {
     color: #FFF;
     padding: 0.5rem 1.5rem;
     border-radius: 50px;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-size: 1.3rem;
     font-weight: 800;
     letter-spacing: 0.05em;
@@ -1460,7 +1460,7 @@ button, select, input {
 .total-row strong {
     font-size: 1.15rem;
     color: var(--primary-color);
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
 }
 
 .status-badge {
@@ -1856,7 +1856,7 @@ button, select, input {
     display: inline-block;
 }
 .slide h2 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-size: 38px;
     font-weight: 800;
     color: #1e293b;
@@ -1905,7 +1905,7 @@ button, select, input {
     margin-bottom: 10px;
 }
 .section-title-wrapper h2 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-size: 32px;
     font-weight: 800;
     color: #1e293b;
@@ -1959,7 +1959,7 @@ button, select, input {
     height: 32px;
 }
 .rec-card h3 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-size: 20px;
     font-weight: 700;
     color: #1e293b;
@@ -2019,7 +2019,7 @@ button, select, input {
     margin-bottom: 12px;
 }
 .promo-content h2 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-size: 28px;
     font-weight: 800;
     color: #1e293b;
@@ -2102,7 +2102,7 @@ button, select, input {
     font-weight: 700;
 }
 .package-body h3 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-size: 20px;
     font-weight: 800;
     color: #1e293b;
@@ -2207,7 +2207,7 @@ button, select, input {
     height: 30px;
 }
 .feature-item h4 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-size: 19px;
     font-weight: 700;
     color: #1e293b;

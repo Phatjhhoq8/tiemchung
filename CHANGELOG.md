@@ -1,5 +1,20 @@
 # Release Notes
 
+## [v1.0.3] - 2026-07-19
+
+### AI Configuration and Workspace Rules Setup & Admin Font Optimization
+
+* Create project-scoped AI rules: Add and refine English instructions in `.agents/AGENTS.md` to define concise workspace-specific instructions for AI agents (focusing on stack versions, changelog/doc maintenance, and communication style).
+* Update all customer-facing and admin view templates: Replace inline styling overrides of 'Outfit' font with 'Roboto' font, ensuring font consistency across all layouts.
+
+## [v1.0.2] - 2026-07-19
+
+### Vaccine Registration Project Optimization and Interface Update
+
+* Synchronize font styling with VNVC main site: Update default font to **Roboto** by updating Google Fonts loader in layout files (`app.blade.php`, `admin.blade.php`, `welcome.blade.php`), replacing old font variables in `public/css/style.css`, and updating `tailwind.config.js`.
+* Improve local environment database testing: Update table clean & data seeding logic in `SettingSeeder`, `BannerSeeder`, `CenterSeeder`, and `VaccineSeeder` to dynamically support SQLite and MySQL foreign key constraints toggle.
+* Version control updates: Append `.DS_Store` and `Thumbs.db` exclusion rules in `.gitignore`.
+
 ## [Unreleased](https://github.com/laravel/laravel/compare/v11.6.1...11.x)
 
 ## [v11.6.1](https://github.com/laravel/laravel/compare/v11.6.0...v11.6.1) - 2025-01-24

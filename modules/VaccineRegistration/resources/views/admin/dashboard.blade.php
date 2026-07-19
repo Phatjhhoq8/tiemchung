@@ -10,7 +10,7 @@
     <div class="stat-card" style="background-color: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
         <div>
             <span style="color: #64748b; font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px; text-transform: uppercase;">Tổng Đăng Ký</span>
-            <strong style="font-size: 28px; color: #1e293b; font-family: 'Outfit', sans-serif;">{{ $totalRegistrations }}</strong>
+            <strong style="font-size: 28px; color: #1e293b; font-family: 'Roboto', sans-serif;">{{ $totalRegistrations }}</strong>
         </div>
         <div style="background-color: #e2f0fd; color: #0a58ca; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i data-lucide="clipboard-list"></i></div>
     </div>
@@ -19,7 +19,7 @@
     <div class="stat-card" style="background-color: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
         <div>
             <span style="color: #64748b; font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px; text-transform: uppercase;">Doanh Thu (Dự Kiến)</span>
-            <strong style="font-size: 24px; color: #10b981; font-family: 'Outfit', sans-serif;">{{ number_format($totalRevenue, 0, ',', '.') }} đ</strong>
+            <strong style="font-size: 24px; color: #10b981; font-family: 'Roboto', sans-serif;">{{ number_format($totalRevenue, 0, ',', '.') }} đ</strong>
         </div>
         <div style="background-color: #ecfdf5; color: #10b981; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i data-lucide="dollar-sign"></i></div>
     </div>
@@ -28,7 +28,7 @@
     <div class="stat-card" style="background-color: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
         <div>
             <span style="color: #64748b; font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px; text-transform: uppercase;">Chờ Thanh Toán</span>
-            <strong style="font-size: 28px; color: #f59e0b; font-family: 'Outfit', sans-serif;">{{ $pendingCount }}</strong>
+            <strong style="font-size: 28px; color: #f59e0b; font-family: 'Roboto', sans-serif;">{{ $pendingCount }}</strong>
         </div>
         <div style="background-color: #fffbeb; color: #f59e0b; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i data-lucide="clock"></i></div>
     </div>
@@ -37,7 +37,7 @@
     <div class="stat-card" style="background-color: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
         <div>
             <span style="color: #64748b; font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px; text-transform: uppercase;">Đã Hoàn Tất</span>
-            <strong style="font-size: 28px; color: #8b5cf6; font-family: 'Outfit', sans-serif;">{{ $completedCount }}</strong>
+            <strong style="font-size: 28px; color: #8b5cf6; font-family: 'Roboto', sans-serif;">{{ $completedCount }}</strong>
         </div>
         <div style="background-color: #f5f3ff; color: #8b5cf6; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i data-lucide="shield-check"></i></div>
     </div>
@@ -64,7 +64,7 @@
 <!-- Danh sách đăng ký gần đây -->
 <div class="recent-registrations-card" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; padding: 30px;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
-        <h2 style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Đơn Đăng Ký Tiêm Mới Nhất</h2>
+        <h2 style="font-family: 'Roboto', sans-serif; font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Đơn Đăng Ký Tiêm Mới Nhất</h2>
         <a href="{{ route('admin.registrations.index') }}" style="color: var(--primary-color); font-weight: 600; text-decoration: none; font-size: 14px;">Xem tất cả <i data-lucide="chevron-right" style="width:16px; height:16px; display:inline-block; vertical-align:middle;"></i></a>
     </div>
 
