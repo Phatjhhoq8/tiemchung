@@ -43,21 +43,28 @@
     </div>
 </div>
 
-<!-- Khung phụ thống kê nhanh -->
+<!-- Khung phụ thống kê nhanh & Quản trị nhanh -->
 <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 40px;">
-    <div style="flex: 1 1 200px; background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 16px;">
-        <div style="background-color: #fff1f2; color: #e11d48; padding: 12px; border-radius: 8px;"><i data-lucide="syringe"></i></div>
-        <div>
-            <span style="display:block; color:#64748b; font-size:14px;">Danh mục vắc xin</span>
-            <strong style="font-size: 20px; color:#1e293b;">{{ $vaccinesCount }} loại</strong>
+    <div style="flex: 1 1 200px; background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="background-color: #fff1f2; color: #e11d48; padding: 12px; border-radius: 8px;"><i data-lucide="syringe"></i></div>
+            <div>
+                <span style="display:block; color:#64748b; font-size:14px;">Danh mục Vắc Xin</span>
+                <strong style="font-size: 20px; color:#1e293b;">{{ $vaccinesCount }} loại</strong>
+            </div>
         </div>
+        <a href="{{ route('admin.vaccines.index', ['featured' => 1]) }}" style="color: var(--primary-color); font-weight: 700; font-size: 13px; text-decoration: none; background: #fff1f2; padding: 6px 12px; border-radius: 6px;">⭐ Quản lý Nổi Bật</a>
     </div>
-    <div style="flex: 1 1 200px; background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 16px;">
-        <div style="background-color: #f0fdf4; color: #16a34a; padding: 12px; border-radius: 8px;"><i data-lucide="map-pin"></i></div>
-        <div>
-            <span style="display:block; color:#64748b; font-size:14px;">Chi nhánh hoạt động</span>
-            <strong style="font-size: 20px; color:#1e293b;">{{ $centersCount }} trung tâm</strong>
+
+    <div style="flex: 1 1 200px; background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="background-color: #e0f2fe; color: #0284c7; padding: 12px; border-radius: 8px;"><i data-lucide="image"></i></div>
+            <div>
+                <span style="display:block; color:#64748b; font-size:14px;">Banner Trang Chủ</span>
+                <strong style="font-size: 20px; color:#1e293b;">Slider Hero</strong>
+            </div>
         </div>
+        <a href="{{ route('admin.banners.index') }}" style="color: #0284c7; font-weight: 700; font-size: 13px; text-decoration: none; background: #e0f2fe; padding: 6px 12px; border-radius: 6px;">🖼️ Quản lý Banner</a>
     </div>
 </div>
 

@@ -1,10 +1,10 @@
 @php
-    $site_name = \Modules\VaccineRegistration\Models\Setting::get('site_name', 'Medicare Cờ Đỏ');
+    $site_name = \Modules\VaccineRegistration\Models\Setting::get('site_name', 'Medicare');
     $hotline = \Modules\VaccineRegistration\Models\Setting::get('hotline', '0938 60 38 39');
     $hotline_2 = \Modules\VaccineRegistration\Models\Setting::get('hotline_2', '0932 477 184');
-    $email = \Modules\VaccineRegistration\Models\Setting::get('email', 'cskh@medicarecodo.vn');
-    $address = \Modules\VaccineRegistration\Models\Setting::get('address', 'Ấp Thới Hòa, Thị trấn Cờ Đỏ, Huyện Cờ Đỏ, TP. Cần Thơ');
-    $footer_text = \Modules\VaccineRegistration\Models\Setting::get('footer_text', '© 2026 Medicare Cờ Đỏ. Đảm bảo an toàn - chất lượng hàng đầu.');
+    $email = \Modules\VaccineRegistration\Models\Setting::get('email', 'cskh@medicare.vn');
+    $address = \Modules\VaccineRegistration\Models\Setting::get('address', 'Chi nhánh 1: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ');
+    $footer_text = \Modules\VaccineRegistration\Models\Setting::get('footer_text', '© 2026 Medicare - Hệ Thống Tiêm Chủng Vắc Xin Trẻ Em và Người Lớn.');
 @endphp
 <!DOCTYPE html>
 <html lang="vi">
@@ -12,7 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Phòng Tiêm Chủng Medicare Cờ Đỏ')</title>
+    <title>@yield('title', 'Hệ Thống Tiêm Chủng Medicare')</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,20 +32,22 @@
     @yield('styles')
 </head>
 <body>
-    <!-- Topbar liên hệ nhanh -->
+    <!-- Topbar liên hệ nhanh hệ thống nhiều chi nhánh -->
     <div class="top-bar">
         <div class="topbar-container">
-            <div class="topbar-info">
-                <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($address) }}" target="_blank" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='inherit'">
-                    <i data-lucide="map-pin"></i> {{ $address }}
+            <div class="topbar-info" style="display: flex; gap: 16px; align-items: center; font-size: 13px;">
+                <a href="{{ route('contact') }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    <i data-lucide="map-pin" style="color: var(--secondary-color);"></i> <strong>Chi nhánh 1:</strong> Cờ Đỏ (Hotline: 0938 60 38 39)
                 </a>
                 <span class="divider">|</span>
-                <a href="mailto:{{ $email }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='inherit'">
-                    <i data-lucide="mail"></i> {{ $email }}
+                <a href="{{ route('contact') }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    <i data-lucide="map-pin" style="color: #0284c7;"></i> <strong>Chi nhánh 2:</strong> Thới Lai (Hotline: 0932 477 184)
                 </a>
             </div>
             <div class="topbar-social">
-                <!-- Mạng xã hội hoặc text khác -->
+                <a href="{{ route('contact') }}" style="color: #ffffff; text-decoration: none; font-size: 12.5px; font-weight: 700; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 12px;">
+                    Mạng lưới chi nhánh Medicare →
+                </a>
             </div>
         </div>
     </div>
@@ -59,15 +61,14 @@
             
             <nav class="nav-menu">
                 <a href="{{ route('home') }}" class="nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}">Trang Chủ</a>
+                <a href="{{ route('about') }}" class="nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}">Giới Thiệu</a>
                 <a href="{{ route('vaccine.index') }}" class="nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}">Bảng Giá Vắc Xin</a>
-                <a href="{{ route('register.show') }}" class="nav-link {{ Route::currentRouteName() === 'register.show' ? 'active' : '' }}">Đăng Ký Tiêm</a>
+                <a href="{{ route('services') }}" class="nav-link {{ Route::currentRouteName() === 'services' ? 'active' : '' }}">Dịch Vụ</a>
+                <a href="{{ route('news.index') }}" class="nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}">Tin Tức</a>
+                <a href="{{ route('contact') }}" class="nav-link {{ Route::currentRouteName() === 'contact' ? 'active' : '' }}">Liên Hệ</a>
             </nav>
             
             <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
-                <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode" style="display: none !important; background: none; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; padding: 10px; border-radius: 8px; align-items: center; justify-content: center; width: 40px; height: 40px; transition: all 0.2s;">
-                    <i data-lucide="sun" class="sun-icon" style="width: 20px; height: 20px; display: none; color: #eaaa00;"></i>
-                    <i data-lucide="moon" class="moon-icon" style="width: 20px; height: 20px;"></i>
-                </button>
                 <a href="tel:{{ str_replace(' ', '', $hotline) }}" class="hotline-btn">
                     <i data-lucide="phone-call"></i>
                     <span>Tư vấn: {{ $hotline }}</span>
@@ -79,6 +80,7 @@
             </div>
         </div>
     </header>
+
 
     <!-- Main Content -->
     <main class="app-main {{ Route::currentRouteName() === 'home' ? 'home-main' : '' }}">
@@ -173,40 +175,55 @@
         </div>
     </footer>
 
+    <!-- Floating Contact & Zalo Widget (Bong bóng Chat tư vấn góc dưới bên phải) -->
+    <div class="floating-chat-widget" style="position: fixed; bottom: 28px; right: 28px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; align-items: flex-end;">
+        <!-- Nút Chat Zalo Bác Sĩ -->
+        <a href="https://zalo.me/0938603839" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 10px; background-color: #0068ff; color: #ffffff; padding: 12px 20px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0, 104, 255, 0.4); text-decoration: none; font-weight: 700; font-size: 14px; transition: all 0.3s ease; border: 2px solid #ffffff;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'" title="Chat Zalo Tư Vấn Vắc Xin Tức Thì">
+            <div style="width: 26px; height: 26px; background: #ffffff; color: #0068ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 11px; flex-shrink: 0;">Zalo</div>
+            <span>Chat Zalo Bác Sĩ</span>
+        </a>
+
+        <!-- Nút Hotline Tư Vấn 24/7 -->
+        <a href="tel:0938603839" style="display: flex; align-items: center; gap: 10px; background-color: var(--primary-color, #c8102e); color: #ffffff; padding: 12px 20px; border-radius: 30px; box-shadow: 0 8px 24px rgba(200, 16, 46, 0.4); text-decoration: none; font-weight: 700; font-size: 14px; transition: all 0.3s ease; border: 2px solid #ffffff;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'" title="Gọi Hotline 0938 60 38 39">
+            <i data-lucide="phone-call" style="width: 20px; height: 20px; flex-shrink: 0;"></i>
+            <span>0938 60 38 39</span>
+        </a>
+    </div>
+
     <!-- JS Custom -->
     <script src="{{ asset('js/app.js') }}"></script>
     <script>
         // Khởi tạo các Lucide Icons
         lucide.createIcons();
 
-        // Dark Mode Toggle Logic
-        const themeToggle = document.getElementById('theme-toggle');
-        if (themeToggle) {
-            const sunIcon = themeToggle.querySelector('.sun-icon');
-            const moonIcon = themeToggle.querySelector('.moon-icon');
-
-            function updateToggleIcons() {
-                if (document.documentElement.classList.contains('dark')) {
-                    sunIcon.style.display = 'block';
-                    moonIcon.style.display = 'none';
-                } else {
-                    sunIcon.style.display = 'none';
-                    moonIcon.style.display = 'block';
-                }
+        // Hàm cuộn mượt SPA (Single-Page Navigation)
+        function smoothScrollTo(elementId, event) {
+            if (event) {
+                event.preventDefault();
             }
-
-            updateToggleIcons();
-
-            themeToggle.addEventListener('click', () => {
-                if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
+            const targetElement = document.getElementById(elementId);
+            if (targetElement) {
+                // Cập nhật trạng thái active trên menu
+                document.querySelectorAll('.nav-menu .nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                if (event && event.currentTarget) {
+                    event.currentTarget.classList.add('active');
                 }
-                updateToggleIcons();
-            });
+                
+                // Cuộn mượt màng đến section
+                const headerOffset = 80;
+                const elementPosition = targetElement.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            } else {
+                // Nếu đang ở trang khác, chuyển về trang chủ kèm anchor
+                window.location.href = "{{ route('home') }}#" + elementId;
+            }
         }
     </script>
     @yield('scripts')

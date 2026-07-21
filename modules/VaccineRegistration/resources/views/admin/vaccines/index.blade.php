@@ -176,11 +176,17 @@
 
                             {{-- Hành động --}}
                             <td style="padding: 12px 14px; text-align: center;">
-                                <div style="display: inline-flex; gap: 8px;">
+                                <div style="display: inline-flex; gap: 6px; align-items: center;">
+                                    <form action="{{ route('admin.vaccines.toggle-featured', $vac->id) }}" method="POST" style="margin: 0;">
+                                        @csrf
+                                        <button type="submit" title="{{ $vac->is_featured ? 'Bỏ nổi bật' : 'Đánh dấu NỔI BẬT trang chủ' }}" style="padding: 5px 10px; border-radius: 6px; border: 1px solid {{ $vac->is_featured ? '#fef3c7' : '#e2e8f0' }}; background: {{ $vac->is_featured ? '#fffbeb' : '#ffffff' }}; color: {{ $vac->is_featured ? '#d97706' : '#94a3b8' }}; font-weight: 700; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                            ⭐ {{ $vac->is_featured ? 'Nổi bật' : 'Thường' }}
+                                        </button>
+                                    </form>
                                     <a href="{{ route('admin.vaccines.edit', $vac->id) }}" class="btn-secondary" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; background:#ffffff; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; color: #475569;">
                                         <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i> Sửa
                                     </a>
-                                    <form action="{{ route('admin.vaccines.destroy', $vac->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa vắc xin này? Tất cả dữ liệu liên kết giỏ hàng sẽ bị xóa.')">
+                                    <form action="{{ route('admin.vaccines.destroy', $vac->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa vắc xin này? Tất cả dữ liệu liên kết giỏ hàng sẽ bị xóa.')" style="margin: 0;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn-secondary" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #fbd5d5; background:#fff5f5; color: #c8102e; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">

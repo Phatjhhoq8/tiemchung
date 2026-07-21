@@ -1,5 +1,177 @@
 # Release Notes
 
+## [v2.0.0] - 2026-07-21
+
+### Facebook-Style Live Visual Page Customizer
+
+* **Interactive Live Edit Overlay Frames**: Display glowing interactive frame borders around home banners and featured product grids.
+* **Smart Facebook-Style Edit Modal**:
+  - **Upload Files from PC**: Direct image preview with JavaScript `FileReader` before uploading.
+  - **Choose Existing Library Images**: Quick-pick pre-existing banner and vaccine graphics.
+  - **Db-Connected Product Dropdown**: Instant select from 40 real-world vaccine products with live auto-fill price, prevention details, and featured toggles.
+* **AJAX Single-Page Experience (SPA)**: Real-time save updates back to MySQL database without page reloads.
+
+## [v1.9.0] - 2026-07-21
+
+### Admin Management for Home Banners & Featured Vaccines
+
+* **Home Banner Management**: Admin CRUD interface to customize Hero Slider Banners (titles, subtitles, image URLs, target links, active toggles, and sorting order).
+* **Featured Vaccines Toggle**: Add 1-click `toggleFeatured` action and ⭐ status badges directly inside the Admin Vaccine Management view.
+* **Admin Dashboard Integration**: Quick action shortcuts on the Admin Dashboard leading directly to Banner Management & Featured Product Management.
+
+## [v1.8.0] - 2026-07-21
+
+### Multi-Branch Infrastructure & Dynamic Topbar Display
+
+* Replace single headquarter reference with multi-branch system configuration.
+* Update Topbar to dynamically display active branch locations:
+  - **Chi nhánh 1**: Cờ Đỏ (`Hotline: 0938 60 38 39`)
+  - **Chi nhánh 2**: Thới Lai (`Hotline: 0932 477 184`)
+* Update `SettingSeeder.php` with multi-branch network details.
+
+## [v1.7.0] - 2026-07-21
+
+### Floating Zalo & Hotline Chat Bubble Widget
+
+* Add a fixed bottom-right floating chat widget available across all pages.
+* **Chat Zalo Button**: Direct link to Zalo consultation (`https://zalo.me/0938603839`).
+* **Hotline Call Button**: Direct click-to-call link for Hotline `0938 60 38 39`.
+
+## [v1.6.2] - 2026-07-21
+
+### 5-Step Process Section CSS Fix
+
+* Convert 5-step vaccination process cards to 100% inline CSS Grid (`grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))`).
+* Render 5 balanced horizontal step cards with badges (1 to 5), icons, and step descriptions.
+
+## [v1.6.1] - 2026-07-21
+
+### Quick Action Toolbar CSS Fix
+
+* Convert Quick Action Toolbar to 100% inline CSS Flex/Grid container (`grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))`).
+* Resolve item stacking bug, rendering a sleek 4-column white card widget directly beneath the Hero Slider Banner.
+
+## [v1.6.0] - 2026-07-21
+
+### VNVC Layout Alignment & Medical Standard UI Upgrade
+
+* **Quick Utility Action Toolbar**: Integrate direct navigation widgets ("Đặt Mua Vắc Xin Online", "Đăng Ký Tiêm Chủng", "Bảng Giá Vắc Xin Niêm Yết", "Tìm Chi Nhánh Gần Bạn") floating directly below the main Slider Banner.
+* **5-Step Medical Safety Process**: Implement the official 5-step vaccination process (Registration & Screening -> Regimen Consultation -> GSP Vaccination -> 30-min Monitoring -> Post-vaccination Examination).
+* **Vaccine Catalog & Recommendations**: Re-align recommended medical vaccine sections and real-world vaccine catalog matching official VNVC layout practices.
+
+## [v1.5.0] - 2026-07-21
+
+### Multi-Branch Registration & Contact Integration
+
+* **Registration Form (`/register`)**: Enforce mandatory branch selection (`center_name`) allowing users to choose between **Medicare Cờ Đỏ (Chi nhánh 1)** and **Medicare Thới Lai (Chi nhánh 2)**.
+* **Home Page (`/`)**: Streamline contact section with a high-impact branch network banner leading directly to the dedicated Contact page.
+* **Contact Page (`/contact`)**: Move 100% of detailed branch information (Address, Hotline, Google Maps, Business Hours) into structured Cards for both branch locations.
+
+## [v1.4.0] - 2026-07-21
+
+### Pure Real-World Database Refresh Completed
+
+* Reset and refresh MySQL database (`migrate:fresh --force`).
+* Remove all auto-generated mock/test data (test registrations, mock packages, fake centers).
+* Retain strictly real-world data:
+  - Exactly 40 real vaccines from official PDF `DANH MỤC VACCIN MEDICARE CỜ ĐỎ (3.6.2026).pdf`.
+  - Exactly 2 active real branches: Medicare Cờ Đỏ & Medicare Thới Lai.
+  - Clean state ready for real customer registrations.
+
+## [v1.3.1] - 2026-07-21
+
+### Admin Article Layout Extension Bugfix
+
+* Fix view inheritance in `articles/index.blade.php` and `articles/create.blade.php` to target `@extends('vaccine::layouts.admin')` and `@section('admin_content')`.
+* Verify 100% clean runtime error log in `storage/logs/laravel.log`.
+
+## [v1.3.0] - 2026-07-21
+
+### Brand Renaming & Multi-Center System Optimization
+
+* Update brand title to **"Medicare"** (`Hệ Thống Tiêm Chủng Medicare`) across system settings and view templates.
+* Update `CenterSeeder.php` to officially manage 2 active branch centers:
+  1. **Medicare Cờ Đỏ (Chi nhánh 1)**: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ.
+  2. **Medicare Thới Lai (Chi nhánh 2)**: Thị trấn Thới Lai, Huyện Thới Lai, TP. Cần Thơ.
+* Synchronize multi-branch contact cards and registration selection choices.
+
+## [v1.2.0] - 2026-07-21
+
+### Multi-Page Dedicated Route & View Architecture Completed
+
+* Split application into dedicated, modular pages:
+  - **Home**: `/` (Main Overview & Featured Showcase)
+  - **About Us**: `/about` (Mission, GSP Cold Storage, Medical Standards)
+  - **Vaccine Catalog & Pricing**: `/vaccines` (Interactive Filter & SPA Cart)
+  - **Services**: `/services` (Children, Adults, Packages, Screening)
+  - **News & Knowledge**: `/news` & `/news/{slug}` (Medical Articles)
+  - **Contact & Map**: `/contact` (Clinic Address & Google Maps)
+  - **Registration**: `/register` (Multi-step Appointment Form)
+* Update Header navigation links dynamically to reflect current active routes.
+
+## [v1.1.2] - 2026-07-21
+
+### Admin News & Article Management Completed (Requirement 10 Verification)
+
+* Add `AdminArticleController.php`, `admin.articles` routes, and CRUD views (`index.blade.php`, `create.blade.php`).
+* Add "Quản lý Bài Viết" link to Admin Sidebar menu, guaranteeing 100% full content management capability across all 10 minimal homepage sections.
+
+## [v1.1.1] - 2026-07-21
+
+### 100% Dynamic MySQL Real-world Data Architecture
+
+* Migrate all news/knowledge articles to dynamic MySQL `articles` table with `ArticleSeeder.php`.
+* Eliminate all mock/hardcoded data across all views, ensuring 100% database-driven content for Banners, Vaccines, Articles, and System Settings.
+
+## [v1.1.0] - 2026-07-21
+
+### Commercial Production 10 Minimal Requirements & SPA Navigation Completed
+
+* Implement complete 10 Minimal Homepage Requirements (Header, Banner Slider, About Us, Vaccine Catalog, Services, News/Knowledge, Testimonials, Contact & Google Maps, Footer, Content Management).
+* Build seamless Single-Page Navigation (`smoothScrollTo` SPA anchors) across header links without full page reloads.
+* Integrate dynamic database management for Banners (`/admin/banners`), Vaccines (`/admin/vaccines`), and System Settings (`/admin/settings`).
+
+## [v1.0.13] - 2026-07-21
+
+### Real-world PDF Vaccine Catalog Integration
+
+* Import complete 40 real-world vaccines and prices from official PDF `DANH MỤC VACCIN MEDICARE CỜ ĐỎ (3.6.2026).pdf` into `VaccineSeeder.php` and MySQL database.
+* Synchronize official clinic address (`Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP Cần Thơ`) and Hotline (`0938 60 38 39`) in `SettingSeeder.php`.
+
+## [v1.0.12] - 2026-07-21
+
+### Image Alias & Windows Environment Compatibility Fix
+
+* Create short-name file aliases (`vaxigrip.jpg`, `prevenar13.jpg`, `shingrix.jpg`, `qdenga.jpg`, `gardasil9.jpg`) matching database records.
+* Optimize asset routing to serve directly from `public/images/` to bypass Windows PHP Built-in Web Server Symbolic Link restrictions, ensuring 100% image rendering across all environments.
+
+## [v1.0.11] - 2026-07-21
+
+### Storage Architecture Optimization (Method 1)
+
+* Migrate asset storage architecture to Laravel Standard Method 1 (`storage/app/public/`).
+* Execute `php artisan storage:link` to create a public symbolic link (`public/storage` -> `storage/app/public`).
+* Update image references across all views (`home.blade.php`, `index.blade.php`, `show.blade.php`, `app.blade.php`) to use `asset('storage/...')`, ensuring 100% data safety during deployment updates.
+
+## [v1.0.10] - 2026-07-21
+
+### Database Seeding & Clean Up
+
+* Clean up obsolete SQLite database file (`database.sqlite`) and unneeded logo script files from the `database/` directory.
+* Run advanced database migrations and populate seed data (`VaccineSeeder`, `CenterSeeder`, `SettingSeeder`, `BannerSeeder`) for full system simulation.
+
+## [v1.0.9] - 2026-07-21
+
+### Commercial Production Standards & Rules Update
+
+* Update `.agents/AGENTS.md` with explicit **Commercial Production Notice**, enforcing strict commercial-grade security, code simplicity, function reusability, database-driven architecture, and zero-defect quality standards for client deployment.
+
+## [v1.0.8] - 2026-07-21
+
+### Commercial Production Standards & Rules Update
+
+* Update `.agents/AGENTS.md` with explicit **Commercial Production Notice**, enforcing strict commercial-grade security, code simplicity, function reusability, database-driven architecture, and zero-defect quality standards for client deployment.
+
 ## [v1.0.7] - 2026-07-19
 
 ### User Experience Enhancements

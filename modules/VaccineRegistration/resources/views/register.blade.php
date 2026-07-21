@@ -111,17 +111,17 @@
 
                 <!-- STEP 2: Địa điểm & Ngày tiêm -->
                 <div class="form-step-content" id="stepContent2">
-                    <h2>Chọn địa điểm và thời gian tiêm</h2>
-                    <p class="step-desc">Chọn trung tâm tiêm chủng Medicare Cờ Đỏ gần nhất và ngày mong muốn thực hiện tiêm chủng.</p>
+                    <h2>Chọn chi nhánh và thời gian tiêm</h2>
+                    <p class="step-desc">Vui lòng chọn chi nhánh trung tâm tiêm chủng Medicare thuận tiện nhất cho bạn và gia đình.</p>
 
                     <div class="form-grid">
                         <div class="form-group full-width">
-                            <label for="center_name">Trung tâm tiêm chủng Medicare <span class="required">*</span></label>
-                            <select name="center_name" id="center_name" required>
-                                <option value="">-- Chọn trung tâm Medicare gần bạn nhất --</option>
+                            <label for="center_name">Chi nhánh trung tâm tiêm chủng Medicare <span class="required">*</span></label>
+                            <select name="center_name" id="center_name" required style="padding: 12px; font-size: 15px; border-radius: 8px;">
+                                <option value="">-- Vui lòng chọn 1 trong 2 chi nhánh Medicare --</option>
                                 @foreach($centers as $center)
                                     <option value="{{ $center->name }}" {{ old('center_name') === $center->name ? 'selected' : '' }}>
-                                        {{ $center->name }} - {{ $center->address }}
+                                        📍 {{ $center->name }} — Địa chỉ: {{ $center->address }} (Hotline: {{ $center->phone }})
                                     </option>
                                 @endforeach
                             </select>

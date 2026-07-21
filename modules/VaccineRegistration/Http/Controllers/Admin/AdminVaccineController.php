@@ -142,6 +142,19 @@ class AdminVaccineController extends Controller
     }
 
     /**
+     * Bật / Tắt trạng thái Vắc xin Nổi bật hiển thị trên Trang chủ.
+     */
+    public function toggleFeatured($id)
+    {
+        $vaccine = Vaccine::findOrFail($id);
+        $vaccine->is_featured = !$vaccine->is_featured;
+        $vaccine->save();
+
+        $statusMessage = $vaccine->is_featured ? 'Đã bật hiển thị NỔI BẬT trên Trang chủ.' : 'Đã bỏ trạng thái NỔI BẬT.';
+        return redirect()->back()->with('success', "Vắc xin '{$vaccine->name}': {$statusMessage}");
+    }
+
+    /**
      * Xóa vắc xin.
      */
     public function destroy($id)

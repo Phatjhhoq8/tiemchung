@@ -14,10 +14,20 @@ use Modules\VaccineRegistration\Http\Controllers\Admin\AdminRegistrationControll
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminCenterController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSettingController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminBannerController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminLiveEditorController;
+use Modules\VaccineRegistration\Http\Controllers\AdminArticleController;
+use Modules\VaccineRegistration\Http\Controllers\ArticleController;
 
 Route::middleware('web')->group(function () {
-    // --- Giao diện Khách hàng (Client) ---
+    // --- Giao diện Khách hàng (Client Multi-Page SPA) ---
     Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::get('/about', [HomeController::class, 'about'])->name('about');
+    Route::get('/services', [HomeController::class, 'services'])->name('services');
+    Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+
+    // Tin tức & Kiến thức y khoa
+    Route::get('/news', [ArticleController::class, 'index'])->name('news.index');
+    Route::get('/news/{slug}', [ArticleController::class, 'show'])->name('news.show');
     
     // Danh mục vắc xin & chi tiết
     Route::get('/vaccines', [VaccineController::class, 'index'])->name('vaccine.index');
@@ -51,6 +61,7 @@ Route::middleware('web')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
         // Quản lý Vắc xin
+        Route::post('/vaccines/{id}/toggle-featured', [AdminVaccineController::class, 'toggleFeatured'])->name('vaccines.toggle-featured');
         Route::resource('vaccines', AdminVaccineController::class)->except(['show']);
 
         // Quản lý Đăng ký tiêm chủng
@@ -64,6 +75,14 @@ Route::middleware('web')->group(function () {
 
         // Quản lý Banner trang chủ
         Route::resource('banners', AdminBannerController::class)->except(['show']);
+
+        // Quản lý Bài viết / Tin tức y tế (Mục 10)
+        Route::resource('articles', AdminArticleController::class)->except(['show']);
+
+        // Trình Chỉnh Sửa Trực Quan Xem Trước (Visual Live Page Customizer)
+        Route::get('/live-editor', [AdminLiveEditorController::class, 'index'])->name('live-editor');
+        Route::post('/live-editor/banner', [AdminLiveEditorController::class, 'updateBanner'])->name('live-editor.banner');
+        Route::post('/live-editor/vaccine', [AdminLiveEditorController::class, 'updateVaccine'])->name('live-editor.vaccine');
 
         // Quản lý Cấu hình động (Settings)
         Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');

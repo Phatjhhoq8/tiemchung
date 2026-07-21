@@ -165,6 +165,11 @@
                         <i data-lucide="layout-dashboard"></i> Dashboard
                     </a>
                 </li>
+                <li class="{{ Route::currentRouteName() === 'admin.live-editor' ? 'active' : '' }}" style="background: rgba(2, 132, 199, 0.15); border-left: 4px solid #0284c7;">
+                    <a href="{{ route('admin.live-editor') }}" style="color: #38bdf8; font-weight: 700;">
+                        <i data-lucide="layout-template" style="color: #38bdf8;"></i> Chỉnh Sửa Trực Quan (Live)
+                    </a>
+                </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.vaccines') ? 'active' : '' }}">
                     <a href="{{ route('admin.vaccines.index') }}">
                         <i data-lucide="syringe"></i> Quản lý Vắc Xin
@@ -183,6 +188,11 @@
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.banners') ? 'active' : '' }}">
                     <a href="{{ route('admin.banners.index') }}">
                         <i data-lucide="image"></i> Quản lý Banner
+                    </a>
+                </li>
+                <li class="{{ str_contains(Route::currentRouteName(), 'admin.articles') ? 'active' : '' }}">
+                    <a href="{{ route('admin.articles.index') }}">
+                        <i data-lucide="newspaper"></i> Quản lý Bài Viết
                     </a>
                 </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.settings') ? 'active' : '' }}">

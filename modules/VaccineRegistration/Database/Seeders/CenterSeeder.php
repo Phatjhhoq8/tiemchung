@@ -1,7 +1,7 @@
 <?php
 /**
- * Chức năng: CenterSeeder nạp danh sách trung tâm tiêm chủng Medicare Cờ Đỏ.
- * Lý do tạo: Tự động khởi tạo dữ liệu trung tâm động để khách hàng chọn khi đăng ký.
+ * Chức năng: CenterSeeder nạp danh sách 2 chi nhánh trung tâm tiêm chủng chính thức thuộc hệ thống Medicare.
+ * Lý do chỉnh sửa: Quản lý 2 chi nhánh hoạt động thực tế theo đúng yêu cầu hệ thống Medicare.
  */
 
 namespace Modules\VaccineRegistration\Database\Seeders;
@@ -18,41 +18,17 @@ class CenterSeeder extends Seeder
     {
         $centers = [
             [
-                'name' => 'Medicare Cờ Đỏ (Trụ sở chính)',
-                'address' => 'Ấp Thới Hòa, Thị trấn Cờ Đỏ, Huyện Cờ Đỏ, TP. Cần Thơ',
-                'phone' => '0938603839',
+                'name' => 'Medicare Cờ Đỏ (Chi nhánh 1)',
+                'address' => 'Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ',
+                'phone' => '0938 60 38 39',
                 'is_active' => true,
             ],
             [
-                'name' => 'Medicare Thới Lai',
+                'name' => 'Medicare Thới Lai (Chi nhánh 2)',
                 'address' => 'Thị trấn Thới Lai, Huyện Thới Lai, TP. Cần Thơ',
-                'phone' => '0932477184',
+                'phone' => '0932 477 184',
                 'is_active' => true,
             ],
-            [
-                'name' => 'Medicare Ô Môn',
-                'address' => 'Đường 26 Tháng 3, Phường Châu Văn Liêm, Quận Ô Môn, TP. Cần Thơ',
-                'phone' => '0938603839',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Medicare Vĩnh Thạnh',
-                'address' => 'Thị trấn Vĩnh Thạnh, Huyện Vĩnh Thạnh, TP. Cần Thơ',
-                'phone' => '0932477184',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Medicare Ninh Kiều',
-                'address' => 'Đường Nguyễn Văn Cừ, Phường An Khánh, Quận Ninh Kiều, TP. Cần Thơ',
-                'phone' => '0938603839',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Medicare Cái Răng',
-                'address' => 'Phường Hưng Thạnh, Quận Cái Răng, TP. Cần Thơ',
-                'phone' => '0932477184',
-                'is_active' => true,
-            ]
         ];
 
         foreach ($centers as $center) {

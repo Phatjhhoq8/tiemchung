@@ -1,7 +1,7 @@
 <?php
 /**
- * Chức năng: SettingSeeder nạp cấu hình hệ thống mặc định của phòng tiêm chủng.
- * Lý do tạo: Tự động khởi tạo dữ liệu cấu hình key-value cho website.
+ * Chức năng: SettingSeeder nạp cấu hình hệ thống thương hiệu Medicare quản lý chuỗi nhiều chi nhánh.
+ * Lý do chỉnh sửa: Thay địa chỉ trụ sở chính đơn lẻ thành danh sách các chi nhánh trụ sở trong hệ thống.
  */
 
 namespace Modules\VaccineRegistration\Database\Seeders;
@@ -17,16 +17,21 @@ class SettingSeeder extends Seeder
     public function run(): void
     {
         $settings = [
-            ['key' => 'site_name', 'value' => 'Medicare Cờ Đỏ'],
-            ['key' => 'hotline', 'value' => '0938 60 38 39'],
-            ['key' => 'hotline_2', 'value' => '0932 477 184'],
-            ['key' => 'email', 'value' => 'cskh@medicarecodo.vn'],
-            ['key' => 'address', 'value' => 'Ấp Thới Hòa, Thị trấn Cờ Đỏ, Huyện Cờ Đỏ, TP. Cần Thơ'],
-            ['key' => 'footer_text' , 'value' => '© 2026 Phòng tiêm chủng vắc xin Medicare Cờ Đỏ. Đảm bảo an toàn - chất lượng hàng đầu.'],
+            'site_name' => 'Medicare',
+            'brand_title' => 'Hệ Thống Tiêm Chủng Medicare',
+            'hotline' => '0938 60 38 39',
+            'hotline_2' => '0932 477 184',
+            'email' => 'cskh@medicare.vn',
+            'address' => 'Chi nhánh 1: Cờ Đỏ (Cổng BV Quân Dân Y TP Cần Thơ) | Chi nhánh 2: Thới Lai (Thị trấn Thới Lai, TP Cần Thơ)',
+            'working_hours' => 'Tất cả các ngày trong tuần (Từ 7:00 - 17:00 kể cả Chủ Nhật và ngày Lễ)',
+            'footer_text' => '© 2026 Medicare - Hệ Thống Tiêm Chủng Vắc Xin Trẻ Em và Người Lớn với chuỗi chi nhánh phục vụ tận tâm.',
         ];
 
-        foreach ($settings as $setting) {
-            Setting::updateOrCreate(['key' => $setting['key']], $setting);
+        foreach ($settings as $key => $value) {
+            Setting::updateOrCreate(
+                ['key' => $key],
+                ['value' => $value]
+            );
         }
     }
 }
