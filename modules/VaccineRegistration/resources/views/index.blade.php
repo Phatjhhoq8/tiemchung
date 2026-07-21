@@ -94,7 +94,7 @@
                             <a href="{{ route('vaccine.show', $vaccine->id) }}" style="text-decoration: none; color: inherit; display: block;">
                                 <div>
                                     <div class="vaccine-card-img" style="height: 160px; width: 100%; background: var(--bg-main); display: flex; align-items: center; justify-content: center; overflow: hidden; border-bottom: 1px solid var(--border-color);">
-                                        <img src="{{ asset('images/vaccines/' . ($vaccine->image ?: '1-hexaxim.jpg')) }}" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/1-hexaxim.jpg') }}';" alt="{{ $vaccine->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        <img src="{{ asset('images/vaccines/' . ($vaccine->image ?: 'hexaxim.jpg')) }}" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/hexaxim.jpg') }}';" alt="{{ $vaccine->name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                     </div>
                                 </div>
                                 <div class="vaccine-card-body" style="padding: 20px;">

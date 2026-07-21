@@ -61,6 +61,7 @@ Route::middleware('web')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
         // Quản lý Vắc xin
+        Route::get('/vaccin', function() { return redirect()->route('admin.vaccines.index'); });
         Route::post('/vaccines/{id}/toggle-featured', [AdminVaccineController::class, 'toggleFeatured'])->name('vaccines.toggle-featured');
         Route::resource('vaccines', AdminVaccineController::class)->except(['show']);
 
