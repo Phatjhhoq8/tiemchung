@@ -51,7 +51,7 @@ class AdminVaccineController extends Controller
             $query->where('is_featured', true);
         }
 
-        $vaccines = $query->orderBy('sort_order', 'asc')
+        $vaccines = $query->orderBy('id', 'asc')
                           ->orderBy('type', 'asc')
                           ->orderBy('name', 'asc')
                           ->paginate(15)

@@ -34,7 +34,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Bạch hầu, Ho gà, Uốn ván, Bại liệt, Viêm gan B, Hib',
                 'age_group' => 'Trẻ em (6 tuần – 24 tháng)',
                 'origin' => 'Pháp',
-                'image' => '1. Hexaxim.jpg',
+                'image' => '1-hexaxim.jpg',
             ],
             [
                 'name' => 'Infanrix Hexa',
@@ -52,7 +52,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Bạch hầu, Ho gà, Uốn ván, Bại liệt, Viêm gan B, Hib',
                 'age_group' => 'Trẻ em (6 tuần – 24 tháng)',
                 'origin' => 'Bỉ',
-                'image' => '2. Infanrix Hexa.jfif',
+                'image' => '2-infanrix-hexa.jfif',
             ],
             [
                 'name' => 'Rotarix',
@@ -70,7 +70,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Tiêu chảy cấp do Rotavirus',
                 'age_group' => 'Trẻ em (6 tuần – 24 tuần)',
                 'origin' => 'Bỉ',
-                'image' => '3. Rotarix.jpg',
+                'image' => '3-rotarix.jpg',
             ],
             [
                 'name' => 'Rotavin',
@@ -88,7 +88,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Tiêu chảy cấp do Rotavirus',
                 'age_group' => 'Trẻ em (6 tuần – 24 tuần)',
                 'origin' => 'Việt Nam',
-                'image' => '4. Rotavin.jpg',
+                'image' => '4-rotavin.jpg',
             ],
             [
                 'name' => 'BCG',
@@ -106,7 +106,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Bệnh Lao',
                 'age_group' => 'Trẻ em sơ sinh (<1 tháng)',
                 'origin' => 'Việt Nam',
-                'image' => '5. BCG.jpg',
+                'image' => '5-bcg.jpg',
             ],
             [
                 'name' => 'Jeev 3mcg',
@@ -124,7 +124,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm não Nhật Bản',
                 'age_group' => 'Trẻ em 1-3 tuổi',
                 'origin' => 'Ấn Độ',
-                'image' => '6. Jeev 3mcg.png',
+                'image' => '6-jeev-3mcg.png',
             ],
             [
                 'name' => 'Jeev 6mcg',
@@ -142,7 +142,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm não Nhật Bản',
                 'age_group' => '3 tuổi đến 49 tuổi',
                 'origin' => 'Ấn Độ',
-                'image' => '7. Jeev 6mcg.webp',
+                'image' => '7-jeev-6mcg.webp',
             ],
             [
                 'name' => 'Jevax',
@@ -160,7 +160,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm não Nhật Bản',
                 'age_group' => '1 tuổi trở lên',
                 'origin' => 'Việt Nam',
-                'image' => '8. Jevax.jpg',
+                'image' => '8-jevax.jpg',
             ],
             [
                 'name' => 'Imojev',
@@ -178,7 +178,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm não Nhật Bản',
                 'age_group' => '9 tháng tuổi trở lên',
                 'origin' => 'Thái Lan',
-                'image' => '9. Imojev.jpg',
+                'image' => '9-imojev.jpg',
             ],
             [
                 'name' => 'Prevenar 13',
@@ -196,7 +196,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Phế cầu 13 (Viêm phổi, viêm màng não)',
                 'age_group' => '6 tuần tuổi trở lên',
                 'origin' => 'Bỉ',
-                'image' => '10. Prevenar 13.jpg',
+                'image' => '10-prevenar-13.jpg',
             ],
             [
                 'name' => 'Prevenar 20',
@@ -214,7 +214,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Phế cầu 20 (Bảo vệ diện rộng)',
                 'age_group' => '6 tuần tuổi trở lên',
                 'origin' => 'Bỉ',
-                'image' => '11. Prevenar 20.jfif',
+                'image' => '11-prevenar-20.jfif',
             ],
             [
                 'name' => 'Influvac Tetra',
@@ -232,7 +232,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Cúm mùa tứ giá',
                 'age_group' => '6 tháng tuổi trở lên',
                 'origin' => 'Hà Lan',
-                'image' => '12. Influvac Tetra.jpg',
+                'image' => '12-influvac-tetra.jpg',
             ],
             [
                 'name' => 'Vaxigrip Tetra',
@@ -250,7 +250,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Cúm mùa tứ giá',
                 'age_group' => '6 tháng tuổi trở lên',
                 'origin' => 'Pháp',
-                'image' => '13. Vaxigrip Tetra.jpg',
+                'image' => '13-vaxigrip-tetra.jpg',
             ],
             [
                 'name' => 'IVACFLU-S',
@@ -268,7 +268,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Cúm mùa',
                 'age_group' => '6 tháng tuổi trở lên',
                 'origin' => 'Việt Nam',
-                'image' => '14. Ivacflu-S.jpg',
+                'image' => '14-ivacflu-s.jpg',
             ],
             [
                 'name' => 'GC Flus',
@@ -286,7 +286,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Cúm mùa',
                 'age_group' => '6 tháng tuổi trở lên',
                 'origin' => 'Hàn Quốc',
-                'image' => '15. GC Flus.jpg',
+                'image' => '15-gc-flus.jpg',
             ],
             [
                 'name' => 'Mengoc BC',
@@ -304,7 +304,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm màng não mô cầu BC',
                 'age_group' => '6 tháng đến 45 tuổi',
                 'origin' => 'Cuba',
-                'image' => '16. Mengoc BC.jpg',
+                'image' => '16-mengoc-bc.jpg',
             ],
             [
                 'name' => 'Bexsero',
@@ -322,7 +322,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm màng não mô cầu B',
                 'age_group' => '2 tháng đến 50 tuổi',
                 'origin' => 'Ý',
-                'image' => '17. Bexsero.jpg',
+                'image' => '17-bexsero.jpg',
             ],
             [
                 'name' => 'Nimerix',
@@ -340,7 +340,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm màng não mô cầu A, C, Y, W',
                 'age_group' => '2 tháng trở lên',
                 'origin' => 'Bỉ',
-                'image' => '18. Nimerix.jpg',
+                'image' => '18-nimerix.jpg',
             ],
             [
                 'name' => 'MMR',
@@ -358,7 +358,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Sởi, Quai bị, Rubella',
                 'age_group' => '12 tháng – 10 tuổi',
                 'origin' => 'Ấn Độ',
-                'image' => '19. MMR.jpg',
+                'image' => '19-mmr.jpg',
             ],
             [
                 'name' => 'Priorix',
@@ -376,7 +376,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Sởi, Quai bị, Rubella',
                 'age_group' => '9 tháng – người lớn',
                 'origin' => 'Bỉ',
-                'image' => '20. Priorix.png',
+                'image' => '20-priorix.png',
             ],
             [
                 'name' => 'MMR II',
@@ -394,7 +394,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Sởi, Quai bị, Rubella',
                 'age_group' => '12 tháng – người lớn',
                 'origin' => 'Mỹ',
-                'image' => '21. MMR II.png',
+                'image' => '21-mmr-ii.png',
             ],
             [
                 'name' => 'Barycela',
@@ -412,7 +412,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Thủy đậu',
                 'age_group' => '12 tháng – 12 tuổi',
                 'origin' => 'Hàn Quốc',
-                'image' => '22. Barycela.webp',
+                'image' => '22-barycela.webp',
             ],
             [
                 'name' => 'Varilrix',
@@ -430,7 +430,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Thủy đậu',
                 'age_group' => '9 tháng tuổi trở lên',
                 'origin' => 'Bỉ',
-                'image' => '23. Varilrix.jpg',
+                'image' => '23-varilrix.jpg',
             ],
             [
                 'name' => 'Varivax',
@@ -448,7 +448,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Thủy đậu',
                 'age_group' => '12 tháng tuổi trở lên',
                 'origin' => 'Mỹ',
-                'image' => '24. Varivax.jpg',
+                'image' => '24-varivax.jpg',
             ],
             [
                 'name' => 'Twinrix',
@@ -466,7 +466,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm gan A – B',
                 'age_group' => '12 tháng trở lên',
                 'origin' => 'Bỉ',
-                'image' => '25. Twinrix.jfif',
+                'image' => '25-twinrix.jfif',
             ],
             [
                 'name' => 'Havax',
@@ -484,7 +484,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm gan A',
                 'age_group' => '2 tuổi trở lên',
                 'origin' => 'Việt Nam',
-                'image' => '26. Havax.png',
+                'image' => '26-havax.png',
             ],
             [
                 'name' => 'Avaxim 80U',
@@ -502,7 +502,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm gan A',
                 'age_group' => '12 tháng đến 15 tuổi',
                 'origin' => 'Pháp',
-                'image' => '27. Avaxim 80U.jpg',
+                'image' => '27-avaxim-80u.jpg',
             ],
             [
                 'name' => 'Gene-Hbvax 0,5ml',
@@ -520,7 +520,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm gan B',
                 'age_group' => 'Trẻ em (Sơ sinh – 10 tuổi)',
                 'origin' => 'Việt Nam',
-                'image' => '28. Gene Hbvax 0.5ml.jpg',
+                'image' => '28-gene-hbvax-0-5ml.jpg',
             ],
             [
                 'name' => 'Gene-Hbvax 1ml',
@@ -538,7 +538,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm gan B',
                 'age_group' => '10 tuổi trở lên',
                 'origin' => 'Việt Nam',
-                'image' => '29. Gene Hbvax 1ml.jpg',
+                'image' => '29-gene-hbvax-1ml.jpg',
             ],
             [
                 'name' => 'Heberbiovac 0,5 ml',
@@ -556,7 +556,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm gan B',
                 'age_group' => 'Trẻ em (Sơ sinh – 10 tuổi)',
                 'origin' => 'Cuba',
-                'image' => '30. Heberbiovac 0.5ml.jpg',
+                'image' => '30-heberbiovac-0-5ml.jpg',
             ],
             [
                 'name' => 'Heberbiovac 1 ml',
@@ -574,7 +574,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Viêm gan B',
                 'age_group' => '10 tuổi trở lên',
                 'origin' => 'Cuba',
-                'image' => '31. Heberbiovac 1ml.webp',
+                'image' => '31-heberbiovac-1ml.webp',
             ],
             [
                 'name' => 'mORcvax',
@@ -592,7 +592,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Bệnh Tả',
                 'age_group' => '2 tuổi trở lên',
                 'origin' => 'Việt Nam',
-                'image' => '32. Morcvax.jfif',
+                'image' => '32-morcvax.jfif',
             ],
             [
                 'name' => 'Qdenga',
@@ -610,7 +610,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Sốt xuất huyết Dengue',
                 'age_group' => '4 tuổi trở lên',
                 'origin' => 'Nhật Bản',
-                'image' => '33. Qdenga.jfif',
+                'image' => '33-qdenga.jfif',
             ],
             [
                 'name' => 'Gardasil 4',
@@ -628,7 +628,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'HPV – UTCTC',
                 'age_group' => '9 đến 26 tuổi',
                 'origin' => 'Mỹ',
-                'image' => '34. Garadasil 4.jpg',
+                'image' => '34-garadasil-4.jpg',
             ],
             [
                 'name' => 'Gardasil 9',
@@ -646,7 +646,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'HPV – UTCTC (9 chủng)',
                 'age_group' => '9 đến 45 tuổi',
                 'origin' => 'Mỹ',
-                'image' => '35. Gardasil 9.jpg',
+                'image' => '35-gardasil-9.jpg',
             ],
             [
                 'name' => 'TT/VAT',
@@ -664,7 +664,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Uốn ván hấp phụ',
                 'age_group' => '2 tháng tuổi trở lên',
                 'origin' => 'Việt Nam',
-                'image' => '36. Uốn ván TT.jpg',
+                'image' => '36-u-n-v-n-tt.jpg',
             ],
             [
                 'name' => 'Boostrix',
@@ -682,7 +682,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Bạch hầu – Ho gà – Uốn ván',
                 'age_group' => '4 tuổi trở lên',
                 'origin' => 'Bỉ',
-                'image' => '37. Boostrix.jpg',
+                'image' => '37-boostrix.jpg',
             ],
             [
                 'name' => 'Abhayrab',
@@ -700,7 +700,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Vắc xin phòng Dại',
                 'age_group' => 'Mọi lứa tuổi',
                 'origin' => 'Ấn Độ',
-                'image' => '38. Abhayrab.jpg',
+                'image' => '38-abhayrab.jpg',
             ],
             [
                 'name' => 'Indirab',
@@ -718,7 +718,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Vắc xin phòng Dại',
                 'age_group' => 'Mọi lứa tuổi',
                 'origin' => 'Ấn Độ',
-                'image' => '39. Indirab.jpg',
+                'image' => '39-indirab.jpg',
             ],
             [
                 'name' => 'Shingrix',
@@ -736,7 +736,7 @@ class VaccineSeeder extends Seeder
                 'disease_prevention' => 'Zona thần kinh',
                 'age_group' => '50 tuổi trở lên',
                 'origin' => 'Bỉ',
-                'image' => '40. Shingrix.jfif',
+                'image' => '40-shingrix.jfif',
             ],
         ];
 
