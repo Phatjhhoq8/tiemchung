@@ -93,8 +93,8 @@
         <section class="recommendations-section" id="recommendations-section">
             <div class="section-title-wrapper">
                 <span class="section-badge">Lời khuyên Y khoa</span>
-                <h2>Vắc Xin Khuyến Nghị Cho Người Cao Tuổi & Bệnh Nền</h2>
-                <p>Chủ động bảo vệ sức khỏe trước các tác nhân gây suy giảm hệ miễn dịch nguy hiểm.</p>
+                <h2>{{ $settings['rec_section_title'] ?? 'Vắc Xin Khuyến Nghị Cho Người Cao Tuổi & Bệnh Nền' }}</h2>
+                <p>{{ $settings['rec_section_desc'] ?? 'Chủ động bảo vệ sức khỏe trước các tác nhân gây suy giảm hệ miễn dịch nguy hiểm.' }}</p>
             </div>
 
             <div class="recommendations-grid">
@@ -260,8 +260,8 @@
             <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
                 <div class="section-title-wrapper" style="text-align: center;">
                     <span class="section-badge">Chuẩn Y Tế An Toàn</span>
-                    <h2>Quy Trình Tiêm Chủng 5 Bước An Toàn Mẫu Mực</h2>
-                    <p>Medicare áp dụng nghiêm ngặt quy trình tiêm chủng an toàn bảo vệ sức khỏe tối đa cho khách hàng.</p>
+                    <h2>{{ $settings['process_section_title'] ?? 'Quy Trình Tiêm Chủng 5 Bước An Toàn Mẫu Mực' }}</h2>
+                    <p>{{ $settings['process_section_desc'] ?? 'Medicare áp dụng nghiêm ngặt quy trình tiêm chủng an toàn bảo vệ sức khỏe tối đa cho khách hàng.' }}</p>
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 40px;">
@@ -316,8 +316,8 @@
             <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
                 <div class="section-title-wrapper">
                     <span class="section-badge">Dịch vụ chính</span>
-                    <h2>Dịch Vụ Tiêm Chủng Tại Phòng Khám</h2>
-                    <p>Giải pháp phòng ngừa bệnh tật toàn diện dành cho mọi lứa tuổi và gia đình.</p>
+                    <h2>{{ $settings['service_section_title'] ?? 'Dịch Vụ Tiêm Chủng Tại Phòng Khám' }}</h2>
+                    <p>{{ $settings['service_section_desc'] ?? 'Giải pháp phòng ngừa bệnh tật toàn diện dành cho mọi lứa tuổi và gia đình.' }}</p>
                 </div>
 
                 <div class="services-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-top: 36px;">
@@ -365,8 +365,8 @@
             <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
                 <div class="section-title-wrapper">
                     <span class="section-badge">Góc y khoa</span>
-                    <h2>Kiến Thức Tiêm Chủng & Tin Tức</h2>
-                    <p>Cập nhật những thông tin y tế chính thống và lời khuyên hữu ích từ chuyên gia.</p>
+                    <h2>{{ $settings['news_section_title'] ?? 'Kiến Thức Tiêm Chủng & Tin Tức' }}</h2>
+                    <p>{{ $settings['news_section_desc'] ?? 'Cập nhật những thông tin y tế chính thống và lời khuyên hữu ích từ chuyên gia.' }}</p>
                 </div>
 
                 <div class="news-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 28px; margin-top: 36px;">

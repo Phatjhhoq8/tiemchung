@@ -13,8 +13,8 @@
     <!-- Banner Header -->
     <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #ffffff; padding: 48px; border-radius: 16px; margin-bottom: 40px; text-align: center;">
         <span style="background-color: var(--primary-color); color: #ffffff; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Về Chúng Tôi</span>
-        <h1 style="font-family: 'Roboto', sans-serif; font-size: 36px; font-weight: 800; margin-top: 16px; margin-bottom: 12px;">Phòng Tiêm Chủng Vắc Xin Medicare Cờ Đỏ</h1>
-        <p style="color: #94a3b8; font-size: 16px; max-width: 700px; margin: 0 auto; line-height: 1.6;">Đơn vị y tế uy tín hàng đầu chuyên cung cấp giải pháp phòng bệnh toàn diện bằng vắc xin chất lượng cao cho trẻ em và người lớn tại Huyện Cờ Đỏ, TP Cần Thơ.</p>
+        <h1 style="font-family: 'Roboto', sans-serif; font-size: 36px; font-weight: 800; margin-top: 16px; margin-bottom: 12px;">{{ $settings['about_hero_title'] ?? 'Phòng Tiêm Chủng Vắc Xin Medicare' }}</h1>
+        <p style="color: #94a3b8; font-size: 16px; max-width: 700px; margin: 0 auto; line-height: 1.6;">{{ $settings['about_hero_desc'] ?? 'Đơn vị y tế uy tín hàng đầu chuyên cung cấp giải pháp phòng bệnh toàn diện bằng vắc xin chất lượng cao cho trẻ em và người lớn với chuỗi chi nhánh tại Cờ Đỏ và Thới Lai.' }}</p>
     </div>
 
     <!-- Khối Tầm Nhìn & Sứ Mệnh -->
@@ -23,16 +23,16 @@
             <div style="width: 48px; height: 48px; background-color: rgba(200, 16, 46, 0.08); color: var(--primary-color); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
                 <i data-lucide="target" style="width: 24px; height: 24px;"></i>
             </div>
-            <h3 style="font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 12px;">Sứ Mệnh Bảo Vệ Sức Khỏe</h3>
-            <p style="color: #64748b; font-size: 15px; line-height: 1.7; margin: 0;">Mang lại dịch vụ tiêm chủng an toàn tuyệt đối, nhanh chóng và tiếp cận dễ dàng cho mọi gia đình. Giúp cộng đồng chủ động phòng ngừa các bệnh truyền nhiễm nguy hiểm.</p>
+            <h3 style="font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 12px;">{{ $settings['about_mission_title'] ?? 'Sứ Mệnh Bảo Vệ Sức Khỏe' }}</h3>
+            <p style="color: #64748b; font-size: 15px; line-height: 1.7; margin: 0;">{{ $settings['about_mission_desc'] ?? 'Mang lại dịch vụ tiêm chủng an toàn tuyệt đối, nhanh chóng và tiếp cận dễ dàng cho mọi gia đình. Giúp cộng đồng chủ động phòng ngừa các bệnh truyền nhiễm nguy hiểm.' }}</p>
         </div>
 
         <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 32px;">
             <div style="width: 48px; height: 48px; background-color: rgba(2, 132, 199, 0.08); color: #0284c7; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
                 <i data-lucide="shield-check" style="width: 24px; height: 24px;"></i>
             </div>
-            <h3 style="font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 12px;">Kho Lạnh GSP Đạt Chuẩn</h3>
-            <p style="color: #64748b; font-size: 15px; line-height: 1.7; margin: 0;">100% vắc xin được lưu trữ trong kho lạnh dây chuyền lạnh GSP đạt tiêu chuẩn Bộ Y tế, bảo quản nghiêm ngặt ở nhiệt độ 2 - 8°C để duy trì chất lượng vắc xin tối đa.</p>
+            <h3 style="font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 12px;">{{ $settings['about_gsp_title'] ?? 'Kho Lạnh GSP Đạt Chuẩn' }}</h3>
+            <p style="color: #64748b; font-size: 15px; line-height: 1.7; margin: 0;">{{ $settings['about_gsp_desc'] ?? '100% vắc xin được lưu trữ trong kho lạnh dây chuyền lạnh GSP đạt tiêu chuẩn Bộ Y tế, bảo quản nghiêm ngặt ở nhiệt độ 2 - 8°C để duy trì chất lượng vắc xin tối đa.' }}</p>
         </div>
     </div>
 

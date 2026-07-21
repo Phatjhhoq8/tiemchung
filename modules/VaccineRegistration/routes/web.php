@@ -83,6 +83,7 @@ Route::middleware('web')->group(function () {
         Route::get('/live-editor', [AdminLiveEditorController::class, 'index'])->name('live-editor');
         Route::post('/live-editor/banner', [AdminLiveEditorController::class, 'updateBanner'])->name('live-editor.banner');
         Route::post('/live-editor/vaccine', [AdminLiveEditorController::class, 'updateVaccine'])->name('live-editor.vaccine');
+        Route::post('/live-editor/settings', [AdminLiveEditorController::class, 'updateSettings'])->name('live-editor.settings');
 
         // Quản lý Cấu hình động (Settings)
         Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');

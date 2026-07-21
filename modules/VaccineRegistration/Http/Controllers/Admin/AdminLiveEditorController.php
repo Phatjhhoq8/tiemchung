@@ -1,7 +1,8 @@
 <?php
 /**
- * Chức năng: AdminLiveEditorController quản lý trình chỉnh sửa trực quan Live Editor chuẩn Facebook.
- * Lý do tạo: Cho phép Admin xem trước trang chủ dạng khung tương tác, bấm vào khung để chọn hình/sản phẩm có sẵn hoặc tải ảnh từ máy lên, nhập mô tả.
+ * Chức năng: AdminLiveEditorController quản lý trình chỉnh sửa trực quan Live Editor toàn bộ các trang.
+ * Lý do chỉnh sửa: Mở rộng Live Editor cho tất cả các trang (Home, About, Services, Contact, Vaccines, News, Global Shell),
+ *                   thu gọn các thành phần trùng lặp (Header, Topbar, Footer, Chat Zalo) thành nhóm Cấu hình chung.
  */
 
 namespace Modules\VaccineRegistration\Http\Controllers\Admin;
@@ -11,26 +12,32 @@ use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Banner;
 use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Models\Article;
+use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\Setting;
 
 class AdminLiveEditorController extends Controller
 {
     /**
-     * Hiển thị trình chỉnh sửa trực quan (Live Page Customizer).
+     * Hiển thị trình chỉnh sửa trực quan toàn hệ thống (Universal Live Page Customizer).
      */
-    public function index()
+    public function index(Request $request)
     {
+        $currentPage = $request->get('page', 'home');
+
         $banners = Banner::ordered()->get();
         $featuredVaccines = Vaccine::where('is_featured', true)->get();
         $allVaccines = Vaccine::orderBy('name', 'asc')->get();
         $articles = Article::orderBy('created_at', 'desc')->take(6)->get();
+        $centers = Center::where('is_active', true)->orderBy('id', 'asc')->get();
         $settings = Setting::all()->pluck('value', 'key')->toArray();
 
         return view('vaccine::admin.live_editor', compact(
+            'currentPage',
             'banners',
             'featuredVaccines',
             'allVaccines',
             'articles',
+            'centers',
             'settings'
         ));
     }
@@ -50,10 +57,8 @@ class AdminLiveEditorController extends Controller
         ]);
 
         $banner = Banner::findOrFail($request->banner_id);
-
         $imagePath = $banner->image_url;
 
-        // Ưu tiên tải ảnh từ máy lên
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
             $filename = 'banner_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
@@ -78,7 +83,7 @@ class AdminLiveEditorController extends Controller
     }
 
     /**
-     * Cập nhật Sản phẩm / Vắc Xin Nổi Bật từ Live Editor.
+     * Cập nhật Sản phẩm / Vắc Xin từ Live Editor.
      */
     public function updateVaccine(Request $request)
     {
@@ -94,10 +99,8 @@ class AdminLiveEditorController extends Controller
         ]);
 
         $vaccine = Vaccine::findOrFail($request->vaccine_id);
-
         $imageName = $vaccine->image;
 
-        // Ưu tiên tải ảnh từ máy
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
             $filename = 'vac_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
@@ -120,6 +123,28 @@ class AdminLiveEditorController extends Controller
             'success' => true,
             'message' => 'Cập nhật Vắc xin thành công!',
             'vaccine' => $vaccine
+        ]);
+    }
+
+    /**
+     * Cập nhật Cài Đặt Động Toàn Hệ Thống (Settings) cho từng Trang & Khung Chung.
+     */
+    public function updateSettings(Request $request)
+    {
+        $settingsData = $request->except(['_token', 'page']);
+
+        foreach ($settingsData as $key => $value) {
+            if ($value !== null) {
+                Setting::updateOrCreate(
+                    ['key' => $key],
+                    ['value' => $value]
+                );
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Lưu cài đặt trực quan thành công!'
         ]);
     }
 }

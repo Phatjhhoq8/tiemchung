@@ -1,15 +1,54 @@
 @extends('vaccine::layouts.admin')
 
-@section('title', 'Chỉnh Sửa Trực Quan Trang Chủ - Medicare')
-@section('page_title', '🎨 Trình Chỉnh Sửa Trực Quan (Facebook Style Page Editor)')
+@section('title', 'Chỉnh Sửa Trực Quan Toàn Bộ Tất Cả Các Trang - Medicare')
+@section('page_title', '🎨 Trình Chỉnh Sửa Trực Quan Toàn Bộ Các Trang (Universal All-Page Live Editor)')
 
 @section('styles')
 <style>
+    /* Page Switcher Navigation Tabs */
+    .live-page-tabs {
+        display: flex;
+        gap: 8px;
+        background: #ffffff;
+        padding: 8px;
+        border-radius: 12px;
+        border: 1px solid #cbd5e1;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+    .live-page-tab {
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 13.5px;
+        color: #475569;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+    .live-page-tab:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+    }
+    .live-page-tab.active {
+        background: var(--primary-color, #c8102e);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(200, 16, 46, 0.25);
+    }
+    .live-page-tab.active-global {
+        background: #0284c7;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+    }
+
     /* Facebook Customizer Overlay Frames */
     .live-edit-frame {
         position: relative;
         border: 2px dashed #0284c7;
-        border-radius: 12px;
+        border-radius: 14px;
         transition: all 0.3s ease;
         cursor: pointer;
         margin-bottom: 24px;
@@ -28,7 +67,7 @@
         color: #ffffff;
         padding: 6px 14px;
         border-radius: 20px;
-        font-size: 12.5px;
+        font-size: 12px;
         font-weight: 700;
         z-index: 50;
         display: inline-flex;
@@ -90,279 +129,209 @@
         justify-content: flex-end;
         gap: 12px;
     }
-    .image-picker-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 12px;
-        margin-top: 12px;
-    }
-    .image-picker-item {
-        width: 100%;
-        height: 75px;
-        border-radius: 8px;
-        object-fit: cover;
-        border: 2px solid #e2e8f0;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .image-picker-item.selected, .image-picker-item:hover {
-        border-color: var(--primary-color);
-        transform: scale(1.05);
-    }
 </style>
 @endsection
 
 @section('admin_content')
-<!-- Thanh Thông Báo Trình Chỉnh Sửa Xem Trước -->
-<div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; padding: 16px 24px; border-radius: 14px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-    <div>
-        <h3 style="margin: 0 0 4px 0; font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
-            <i data-lucide="layout-template"></i> Chế Độ Chỉnh Sửa Trực Quan (Live Visual Page Editor)
-        </h3>
-        <p style="margin: 0; font-size: 13.5px; opacity: 0.9;">Nhấp chuột trực tiếp vào bất kỳ khung nào bên dưới để chọn hình ảnh từ máy/thư viện, chỉnh sửa thông tin hoặc chọn sản phẩm vắc xin có sẵn.</p>
-    </div>
-    <div style="display: flex; gap: 10px;">
-        <a href="{{ route('home') }}" target="_blank" class="btn-secondary" style="background: #ffffff; color: #0284c7; padding: 10px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 13.5px; display: inline-flex; align-items: center; gap: 6px;">
-            <i data-lucide="external-link" style="width: 16px; height: 16px;"></i> Xem Trang Thực Tế
-        </a>
-    </div>
+<!-- BAR CHUYỂN ĐỔI CÁC TRANG CẦN CHỈNH SỬA LIVE -->
+<div class="live-page-tabs">
+    <a href="{{ route('admin.live-editor', ['page' => 'home']) }}" class="live-page-tab {{ $currentPage === 'home' ? 'active' : '' }}">
+        <i data-lucide="home" style="width: 16px; height: 16px;"></i> 🏠 Trang Chủ (7 Khung)
+    </a>
+    <a href="{{ route('admin.live-editor', ['page' => 'about']) }}" class="live-page-tab {{ $currentPage === 'about' ? 'active' : '' }}">
+        <i data-lucide="building-2" style="width: 16px; height: 16px;"></i> 🏢 Giới Thiệu (3 Khung)
+    </a>
+    <a href="{{ route('admin.live-editor', ['page' => 'services']) }}" class="live-page-tab {{ $currentPage === 'services' ? 'active' : '' }}">
+        <i data-lucide="stethoscope" style="width: 16px; height: 16px;"></i> 🛠️ Dịch Vụ (2 Khung)
+    </a>
+    <a href="{{ route('admin.live-editor', ['page' => 'contact']) }}" class="live-page-tab {{ $currentPage === 'contact' ? 'active' : '' }}">
+        <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i> 📍 Liên Hệ & Chi Nhánh
+    </a>
+    <a href="{{ route('admin.live-editor', ['page' => 'vaccines']) }}" class="live-page-tab {{ $currentPage === 'vaccines' ? 'active' : '' }}">
+        <i data-lucide="syringe" style="width: 16px; height: 16px;"></i> 💉 Vắc Xin CSDL
+    </a>
+    <a href="{{ route('admin.live-editor', ['page' => 'global']) }}" class="live-page-tab {{ $currentPage === 'global' ? 'active-global' : '' }}" style="margin-left: auto; border: 1px solid #0284c7;">
+        <i data-lucide="settings-2" style="width: 16px; height: 16px;"></i> ⚙️ Khung Chung System Shell
+    </a>
 </div>
 
-<!-- GIAO DIỆN XEM TRƯỚC VỚI CÁC KHUNG CHỈNH SỬA INTERACTIVE -->
-
-<!-- 1. Khung Slider Banner -->
-<div class="live-edit-frame" onclick="openBannerModal()" title="Nhấp vào để chỉnh sửa Banner Slider">
-    <div class="edit-frame-badge"><i data-lucide="edit-3" style="width: 14px; height: 14px;"></i> Bấm sửa Banner Slider</div>
-    
-    <div style="padding: 24px; background: #ffffff; border-radius: 10px;">
-        <h4 style="margin: 0 0 12px 0; color: #475569; font-size: 14px; text-transform: uppercase; font-weight: 700;">[Khung 1: Hero Banner Slider]</h4>
-        <div style="position: relative; height: 260px; border-radius: 12px; overflow: hidden; background: #000000;">
+<!-- ================= 1. TAB TRANG CHỦ ================= -->
+@if($currentPage === 'home')
+    <!-- Khung 1: Hero Banner Slider -->
+    <div class="live-edit-frame" onclick="openBannerModal()">
+        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Hero Banner Slider</div>
+        <div style="padding: 24px; background: #ffffff; border-radius: 10px;">
+            <h4 style="margin: 0 0 12px 0; color: #475569; font-size: 13px; text-transform: uppercase; font-weight: 700;">[Khung 1: Hero Banner Slider Trang Chủ]</h4>
             @php $firstBanner = $banners->first(); @endphp
-            <img id="preview-banner-img" src="{{ asset($firstBanner ? $firstBanner->image_url : 'images/banners/banner_family.jpg') }}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
-            <div style="position: absolute; bottom: 30px; left: 30px; color: #ffffff; max-width: 500px;">
-                <span style="background: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">HỆ THỐNG MEDICARE</span>
-                <h2 id="preview-banner-title" style="font-size: 26px; margin: 8px 0; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{{ $firstBanner->title ?? 'Hệ Thống Tiêm Chủng Medicare' }}</h2>
-                <p id="preview-banner-subtitle" style="font-size: 14px; opacity: 0.9; margin: 0;">{{ $firstBanner->subtitle ?? 'Cung cấp vắc xin an toàn cho trẻ em và người lớn' }}</p>
+            <div style="position: relative; height: 180px; border-radius: 12px; overflow: hidden; background: #000;">
+                <img src="{{ asset($firstBanner ? $firstBanner->image_url : 'images/banners/banner_family.jpg') }}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
+                <div style="position: absolute; bottom: 20px; left: 20px; color: #fff;">
+                    <h3 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 800;">{{ $firstBanner->title ?? 'Hệ Thống Tiêm Chủng Medicare' }}</h3>
+                    <p style="margin: 0; font-size: 13px; opacity: 0.9;">{{ $firstBanner->subtitle ?? 'Chăm sóc sức khỏe gia đình' }}</p>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- 2. Khung Sản Phẩm / Vắc Xin Nổi Bật -->
-<div class="live-edit-frame" onclick="openVaccineModal()" title="Nhấp vào để chọn/chỉnh sửa Vắc xin nổi bật">
-    <div class="edit-frame-badge"><i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> Bấm chọn Vắc Xin Nổi Bật</div>
-    
-    <div style="padding: 24px; background: #ffffff; border-radius: 10px;">
-        <h4 style="margin: 0 0 16px 0; color: #475569; font-size: 14px; text-transform: uppercase; font-weight: 700;">[Khung 2: Danh Mục Vắc Xin Nổi Bật Trên Trang Chủ]</h4>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-            @foreach($featuredVaccines->take(4) as $vac)
-                <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; background: #f8fafc; position: relative;">
-                    <span style="position: absolute; top: 10px; right: 10px; background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700;">⭐ Nổi Bật</span>
-                    <img src="{{ asset('images/vaccines/' . ($vac->image ?: 'default_vaccine.jpg')) }}" style="width: 100%; height: 110px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
-                    <div style="font-weight: 700; font-size: 14px; color: #1e293b;">{{ $vac->name }}</div>
-                    <div style="color: var(--primary-color); font-weight: 800; font-size: 14px; margin-top: 4px;">{{ number_format($vac->price, 0, ',', '.') }} đ</div>
+    <!-- Khung 2: Thanh 4 Ô Tiện Ích Thao Tác Nhanh (Quick Action Toolbar) -->
+    <div class="live-edit-frame" onclick="openSettingModal('quick_toolbar', 'Thanh 4 Tiện Ích Nhanh', ['quick_t1_title', 'quick_t1_sub', 'quick_t2_title', 'quick_t2_sub'])">
+        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 2: Bảng 4 Tiện Ích Nhanh</div>
+        <div style="padding: 24px; background: #ffffff; border-radius: 10px;">
+            <h4 style="margin: 0 0 14px 0; color: #475569; font-size: 13px; text-transform: uppercase; font-weight: 700;">[Khung 2: Thanh Bảng 4 Tiện Ích Nhanh Nổi Bật]</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
+                    <strong style="color: var(--primary-color); font-size: 13.5px;">1. Đặt Mua Vắc Xin Online</strong>
                 </div>
-            @endforeach
+                <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
+                    <strong style="color: #0284c7; font-size: 13.5px;">2. Đăng Ký Tiêm Chủng</strong>
+                </div>
+                <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
+                    <strong style="color: #eaaa00; font-size: 13.5px;">3. Bảng Giá Vắc Xin</strong>
+                </div>
+                <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
+                    <strong style="color: #16a34a; font-size: 13.5px;">4. Tìm Chi Nhánh Gần Bạn</strong>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+@endif
 
-<!-- ================= MODAL CHỈNH SỬA BANNER ================= -->
-<div id="bannerModal" class="fb-modal-overlay">
+<!-- ================= 2. TAB TRANG GIỚI THIỆU (/about) ================= -->
+@if($currentPage === 'about')
+    <!-- Khung 1: Hero Banner Giới Thiệu -->
+    <div class="live-edit-frame" onclick="openSettingModal('about_hero', 'Banner Đầu Trang Giới Thiệu', ['about_hero_title', 'about_hero_desc'])">
+        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 1: Banner Giới Thiệu</div>
+        <div style="padding: 28px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #ffffff; border-radius: 12px; text-align: center;">
+            <span style="background-color: var(--primary-color); color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase;">Về Chúng Tôi</span>
+            <h2 style="font-size: 26px; font-weight: 800; margin: 12px 0 8px 0; color: #fff;">{{ $settings['about_hero_title'] ?? 'Phòng Tiêm Chủng Vắc Xin Medicare' }}</h2>
+            <p style="color: #94a3b8; font-size: 14.5px; max-width: 650px; margin: 0 auto;">{{ $settings['about_hero_desc'] ?? 'Đơn vị y tế uy tín hàng đầu cung cấp giải pháp phòng bệnh toàn diện bằng vắc xin chất lượng cao cho trẻ em và người lớn tại Cờ Đỏ và Thới Lai.' }}</p>
+        </div>
+    </div>
+
+    <!-- Khung 2: Sứ Mệnh Bảo Vệ Sức Khỏe -->
+    <div class="live-edit-frame" onclick="openSettingModal('about_mission', 'Sứ Mệnh Bảo Vệ Sức Khỏe', ['about_mission_title', 'about_mission_desc'])">
+        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 2: Sứ Mệnh Bảo Vệ Sức Khỏe</div>
+        <div style="padding: 24px; background: #ffffff; border-radius: 12px;">
+            <h4 style="margin: 0 0 10px 0; color: var(--primary-color); font-size: 18px; font-weight: 700;">🎯 {{ $settings['about_mission_title'] ?? 'Sứ Mệnh Bảo Vệ Sức Khỏe' }}</h4>
+            <p style="color: #64748b; font-size: 14.5px; margin: 0; line-height: 1.6;">{{ $settings['about_mission_desc'] ?? 'Mang lại dịch vụ tiêm chủng an toàn tuyệt đối, nhanh chóng và tiếp cận dễ dàng cho mọi gia đình. Giúp cộng đồng chủ động phòng ngừa bệnh truyền nhiễm.' }}</p>
+        </div>
+    </div>
+
+    <!-- Khung 3: Dây Chuyền Dược Kho Lạnh GSP -->
+    <div class="live-edit-frame" onclick="openSettingModal('about_gsp', 'Kho Lạnh GSP Đạt Chuẩn', ['about_gsp_title', 'about_gsp_desc'])">
+        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 3: Kho Lạnh GSP</div>
+        <div style="padding: 24px; background: #ffffff; border-radius: 12px;">
+            <h4 style="margin: 0 0 10px 0; color: #0284c7; font-size: 18px; font-weight: 700;">🛡️ {{ $settings['about_gsp_title'] ?? 'Kho Lạnh GSP Đạt Chuẩn' }}</h4>
+            <p style="color: #64748b; font-size: 14.5px; margin: 0; line-height: 1.6;">{{ $settings['about_gsp_desc'] ?? '100% vắc xin lưu trữ trong kho lạnh dây chuyền lạnh GSP đạt tiêu chuẩn Bộ Y tế, duy trì nhiệt độ chuẩn 2 - 8°C cho chất lượng vắc xin tối đa.' }}</p>
+        </div>
+    </div>
+@endif
+
+<!-- ================= 3. TAB TRANG DỊCH VỤ (/services) ================= -->
+@if($currentPage === 'services')
+    <div class="live-edit-frame" onclick="openSettingModal('services_hero', 'Banner Đầu Trang Dịch Vụ', ['services_hero_title', 'services_hero_desc'])">
+        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 1: Banner Dịch Vụ</div>
+        <div style="padding: 28px; background: #ffffff; border-radius: 12px;">
+            <h2 style="font-size: 24px; font-weight: 800; color: #1e293b; margin: 0 0 8px 0;">{{ $settings['services_hero_title'] ?? 'Dịch Vụ Tiêm Chủng Toàn Diện' }}</h2>
+            <p style="color: #64748b; font-size: 15px; margin: 0;">{{ $settings['services_hero_desc'] ?? 'Cung cấp đầy đủ gói tiêm vắc xin cho Trẻ em, Người lớn, Phụ nữ chuẩn bị mang thai và Tiêm chủng lưu động doanh nghiệp.' }}</p>
+        </div>
+    </div>
+@endif
+
+<!-- ================= 4. TAB TRANG LIÊN HỆ (/contact) ================= -->
+@if($currentPage === 'contact')
+    <div class="live-edit-frame" onclick="openSettingModal('contact_branches', 'Thông Tin 2 Chi Nhánh', ['branch1_name', 'branch1_phone', 'branch2_name', 'branch2_phone'])">
+        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Thông Tin 2 Chi Nhánh</div>
+        <div style="padding: 24px; background: #ffffff; border-radius: 12px;">
+            <h4 style="margin: 0 0 14px 0; color: #475569; font-size: 13px; text-transform: uppercase; font-weight: 700;">[Khung: Chi Nhánh Medicare Cờ Đỏ & Thới Lai]</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="padding: 14px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc;">
+                    <strong style="color: var(--primary-color);">📍 {{ $settings['branch1_name'] ?? 'Chi nhánh 1: Medicare Cờ Đỏ' }}</strong>
+                    <div style="font-size: 13px; color: #475569; margin-top: 4px;">Phone: {{ $settings['branch1_phone'] ?? '0938 60 38 39' }}</div>
+                </div>
+                <div style="padding: 14px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc;">
+                    <strong style="color: #0284c7;">📍 {{ $settings['branch2_name'] ?? 'Chi nhánh 2: Medicare Thới Lai' }}</strong>
+                    <div style="font-size: 13px; color: #475569; margin-top: 4px;">Phone: {{ $settings['branch2_phone'] ?? '0932 477 184' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+<!-- ================= TAB KHUNG CHUNG SYSTEM SHELL ================= -->
+@if($currentPage === 'global')
+    <div class="live-edit-frame" onclick="openSettingModal('global_shell', 'Khung Chung Toàn Hệ Thống', ['site_name', 'brand_title', 'hotline', 'email', 'footer_text'])">
+        <div class="edit-frame-badge" style="background: #0284c7;"><i data-lucide="settings-2"></i> Sửa Khung Dùng Chung System Shell</div>
+        <div style="padding: 28px; background: #ffffff; border-radius: 12px;">
+            <h4 style="margin: 0 0 16px 0; color: #0284c7; font-size: 13px; text-transform: uppercase; font-weight: 800;">[Khung Dùng Chung: Header, Topbar, Footer, Bong bóng Chat Zalo]</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
+                    <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Tên Thương Hiệu:</strong>
+                    <span>{{ $settings['brand_title'] ?? 'Hệ Thống Tiêm Chủng Medicare' }}</span>
+                </div>
+                <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
+                    <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Hotline Tổng:</strong>
+                    <span>{{ $settings['hotline'] ?? '0938 60 38 39' }}</span>
+                </div>
+                <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
+                    <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Bản Quyền Footer:</strong>
+                    <span style="font-size: 12.5px;">{{ $settings['footer_text'] ?? '© 2026 Medicare' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+<!-- MODAL CẤU HÌNH -->
+<div id="settingModal" class="fb-modal-overlay">
     <div class="fb-modal-content">
         <div class="fb-modal-header">
-            <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="image" style="color: #0284c7;"></i> Tùy Chỉnh Hero Banner
-            </h3>
-            <button onclick="closeModal('bannerModal')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
+            <h3 id="settingModalTitle" style="margin: 0; font-size: 17px; font-weight: 700; color: #1e293b;">Chỉnh Sửa Trực Quan Cài Đặt</h3>
+            <button onclick="closeModal('settingModal')" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
         </div>
-        <form id="bannerForm" enctype="multipart/form-data">
+        <form id="settingForm">
             @csrf
-            <input type="hidden" name="banner_id" id="banner_id" value="{{ $firstBanner->id ?? 1 }}">
-            <input type="hidden" name="image_existing" id="banner_image_existing" value="{{ $firstBanner->image_url ?? '' }}">
-            
-            <div class="fb-modal-body">
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13.5px;">Tiêu đề Banner:</label>
-                    <input type="text" name="title" id="banner_title" class="form-control" value="{{ $firstBanner->title ?? '' }}" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;" required>
-                </div>
-
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13.5px;">Phụ đề mô tả:</label>
-                    <textarea name="subtitle" id="banner_subtitle" class="form-control" rows="2" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">{{ $firstBanner->subtitle ?? '' }}</textarea>
-                </div>
-
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13.5px;">Hình Ảnh Banner:</label>
-                    
-                    <!-- Lựa chọn 1: Tải từ máy tính -->
-                    <div style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-bottom: 12px;">
-                        <span style="font-size: 12.5px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">📤 Tải ảnh mới từ máy tính:</span>
-                        <input type="file" name="image_file" id="banner_file_input" accept="image/*" onchange="previewFileImage(this, 'banner_preview_img_el')">
-                    </div>
-
-                    <!-- Lựa chọn 2: Chọn ảnh có sẵn trong thư viện -->
-                    <span style="font-size: 12.5px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">🖼️ Hoặc chọn ảnh có sẵn trong thư viện:</span>
-                    <div class="image-picker-grid">
-                        <img src="{{ asset('images/banners/banner_family.jpg') }}" class="image-picker-item" onclick="selectLibraryImage(this, 'banner_image_existing', 'banner_preview_img_el')">
-                        <img src="{{ asset('images/banners/banner_child.jpg') }}" class="image-picker-item" onclick="selectLibraryImage(this, 'banner_image_existing', 'banner_preview_img_el')">
-                        <img src="{{ asset('images/banners/banner_adult.jpg') }}" class="image-picker-item" onclick="selectLibraryImage(this, 'banner_image_existing', 'banner_preview_img_el')">
-                    </div>
-                </div>
-
-                <div style="margin-top: 16px; text-align: center;">
-                    <span style="font-size: 12px; color: #64748b; display: block; margin-bottom: 4px;">Xem trước hình ảnh đã chọn:</span>
-                    <img id="banner_preview_img_el" src="{{ asset($firstBanner ? $firstBanner->image_url : 'images/banners/banner_family.jpg') }}" style="max-height: 120px; border-radius: 8px; border: 1px solid #cbd5e1;">
-                </div>
-            </div>
-
+            <div class="fb-modal-body" id="settingModalFields"></div>
             <div class="fb-modal-footer">
-                <button type="button" onclick="closeModal('bannerModal')" class="btn-secondary" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; cursor: pointer;">Hủy</button>
-                <button type="button" onclick="saveBannerSubmit()" class="btn-primary" style="padding: 10px 22px; border-radius: 8px; background: var(--primary-color); color: #ffffff; border: none; font-weight: 700; cursor: pointer;">Lưu Thay Đổi</button>
+                <button type="button" onclick="closeModal('settingModal')" class="btn-secondary" style="padding: 9px 16px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff;">Hủy</button>
+                <button type="button" onclick="saveSettingsSubmit()" class="btn-primary" style="padding: 9px 20px; border-radius: 8px; background: #0284c7; color: #fff; border: none; font-weight: 700;">Lưu Cấu Hình</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- ================= MODAL CHỈNH SỬA VẮC XIN NỔI BẬT ================= -->
-<div id="vaccineModal" class="fb-modal-overlay">
-    <div class="fb-modal-content">
-        <div class="fb-modal-header">
-            <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="syringe" style="color: var(--primary-color);"></i> Chọn & Chỉnh Sửa Vắc Xin Nổi Bật
-            </h3>
-            <button onclick="closeModal('vaccineModal')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
-        </div>
-        <form id="vaccineForm" enctype="multipart/form-data">
-            @csrf
-            
-            <div class="fb-modal-body">
-                <!-- Chọn sản phẩm có sẵn từ CSDL -->
-                <div class="form-group" style="margin-bottom: 16px; background: #e0f2fe; padding: 14px; border-radius: 10px; border: 1px solid #bae6fd;">
-                    <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13.5px; color: #0369a1;">🎯 Chọn nhanh vắc xin sẵn có từ CSDL 40 loại:</label>
-                    <select id="vaccine_select_dropdown" onchange="onSelectVaccineFromDb(this)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #0284c7; font-weight: 600;">
-                        @foreach($allVaccines as $v)
-                            <option value="{{ $v->id }}" data-name="{{ $v->name }}" data-price="{{ $v->price }}" data-saleprice="{{ $v->sale_price }}" data-disease="{{ $v->disease_prevention }}" data-image="{{ $v->image }}" data-featured="{{ $v->is_featured ? 1 : 0 }}">
-                                {{ $v->name }} ({{ number_format($v->price, 0, ',', '.') }} đ) {{ $v->is_featured ? '⭐ Nổi bật' : '' }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <input type="hidden" name="vaccine_id" id="vaccine_id" value="{{ $allVaccines->first()->id ?? 1 }}">
-                <input type="hidden" name="image_existing" id="vac_image_existing" value="">
-
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13.5px;">Tên Vắc Xin:</label>
-                    <input type="text" name="name" id="vac_name" class="form-control" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;" required>
-                </div>
-
-                <div style="display: flex; gap: 14px; margin-bottom: 16px;">
-                    <div style="flex: 1;">
-                        <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13.5px;">Giá Bán Lẻ (VNĐ):</label>
-                        <input type="number" name="price" id="vac_price" class="form-control" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;" required>
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13.5px;">Giá Ưu Đãi (Khuyến mại):</label>
-                        <input type="number" name="sale_price" id="vac_saleprice" class="form-control" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
-                    </div>
-                </div>
-
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13.5px;">Mô tả công dụng phòng bệnh:</label>
-                    <input type="text" name="disease_prevention" id="vac_disease" class="form-control" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;" required>
-                </div>
-
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13.5px;">Hình Ảnh Vắc Xin:</label>
-                    <div style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px dashed #cbd5e1;">
-                        <span style="font-size: 12.5px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">📤 Tải ảnh đại diện mới từ máy tính:</span>
-                        <input type="file" name="image_file" id="vac_file_input" accept="image/*" onchange="previewFileImage(this, 'vac_preview_img_el')">
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" name="is_featured" id="vac_is_featured" value="1" style="width: 18px; height: 18px; cursor: pointer;">
-                    <label for="vac_is_featured" style="font-weight: 700; font-size: 14px; color: #d97706; cursor: pointer;">⭐ Đặt hiển thị NỔI BẬT trên Trang Chủ</label>
-                </div>
-
-                <div style="text-align: center;">
-                    <img id="vac_preview_img_el" src="{{ asset('images/vaccines/default_vaccine.jpg') }}" style="max-height: 100px; border-radius: 8px; border: 1px solid #cbd5e1;">
-                </div>
-            </div>
-
-            <div class="fb-modal-footer">
-                <button type="button" onclick="closeModal('vaccineModal')" class="btn-secondary" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; cursor: pointer;">Hủy</button>
-                <button type="button" onclick="saveVaccineSubmit()" class="btn-primary" style="padding: 10px 22px; border-radius: 8px; background: var(--primary-color); color: #ffffff; border: none; font-weight: 700; cursor: pointer;">Lưu Vắc Xin Này</button>
-            </div>
-        </form>
-    </div>
-</div>
+@include('vaccine::admin.live_editor_modals')
 
 @endsection
 
 @section('scripts')
 <script>
-    function openBannerModal() {
-        document.getElementById('bannerModal').style.display = 'flex';
+    const settingsData = @json($settings);
+
+    function openSettingModal(type, title, fields) {
+        document.getElementById('settingModalTitle').innerText = 'Chỉnh Sửa Live: ' + title;
+        const container = document.getElementById('settingModalFields');
+        container.innerHTML = '';
+
+        fields.forEach(field => {
+            const val = settingsData[field] || '';
+            const fieldGroup = document.createElement('div');
+            fieldGroup.style.marginBottom = '14px';
+            fieldGroup.innerHTML = `
+                <label style="display:block; font-weight:700; font-size:13px; margin-bottom:4px; color:#334155;">Nội dung [${field}]:</label>
+                <textarea name="${field}" class="form-control" rows="2" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1;">${val}</textarea>
+            `;
+            container.appendChild(fieldGroup);
+        });
+
+        document.getElementById('settingModal').style.display = 'flex';
     }
 
-    function openVaccineModal() {
-        document.getElementById('vaccineModal').style.display = 'flex';
-        // Nạp vắc xin đầu tiên
-        const select = document.getElementById('vaccine_select_dropdown');
-        if (select) {
-            onSelectVaccineFromDb(select);
-        }
-    }
-
-    function closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
-    }
-
-    // Tải & Xem trước ảnh từ máy tính
-    function previewFileImage(input, previewElementId) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById(previewElementId).src = e.target.result;
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    // Chọn ảnh từ thư viện
-    function selectLibraryImage(imgEl, inputId, previewElementId) {
-        document.querySelectorAll('.image-picker-item').forEach(el => el.classList.remove('selected'));
-        imgEl.classList.add('selected');
-        document.getElementById(inputId).value = imgEl.src;
-        document.getElementById(previewElementId).src = imgEl.src;
-    }
-
-    // Đổi vắc xin từ Dropdown CSDL
-    function onSelectVaccineFromDb(selectEl) {
-        const option = selectEl.options[selectEl.selectedIndex];
-        document.getElementById('vaccine_id').value = option.value;
-        document.getElementById('vac_name').value = option.getAttribute('data-name') || '';
-        document.getElementById('vac_price').value = option.getAttribute('data-price') || 0;
-        document.getElementById('vac_saleprice').value = option.getAttribute('data-saleprice') || '';
-        document.getElementById('vac_disease').value = option.getAttribute('data-disease') || '';
-        
-        const isFeatured = option.getAttribute('data-featured') === '1';
-        document.getElementById('vac_is_featured').checked = isFeatured;
-
-        const imgName = option.getAttribute('data-image') || 'default_vaccine.jpg';
-        const imgUrl = "{{ asset('images/vaccines') }}/" + imgName;
-        document.getElementById('vac_preview_img_el').src = imgUrl;
-        document.getElementById('vac_image_existing').value = imgUrl;
-    }
-
-    // AJAX Lưu Banner
-    function saveBannerSubmit() {
-        const form = document.getElementById('bannerForm');
+    function saveSettingsSubmit() {
+        const form = document.getElementById('settingForm');
         const formData = new FormData(form);
 
-        fetch("{{ route('admin.live-editor.banner') }}", {
+        fetch("{{ route('admin.live-editor.settings') }}", {
             method: "POST",
             body: formData,
             headers: {
@@ -374,45 +343,14 @@
         .then(data => {
             if (data.success) {
                 alert("🎉 " + data.message);
-                closeModal('bannerModal');
+                closeModal('settingModal');
                 window.location.reload();
-            } else {
-                alert("Có lỗi xảy ra, vui lòng kiểm tra lại.");
             }
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Lỗi cập nhật banner.");
         });
     }
 
-    // AJAX Lưu Vắc Xin
-    function saveVaccineSubmit() {
-        const form = document.getElementById('vaccineForm');
-        const formData = new FormData(form);
-
-        fetch("{{ route('admin.live-editor.vaccine') }}", {
-            method: "POST",
-            body: formData,
-            headers: {
-                "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                "Accept": "application/json"
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert("🎉 " + data.message);
-                closeModal('vaccineModal');
-                window.location.reload();
-            } else {
-                alert("Có lỗi xảy ra, vui lòng kiểm tra lại.");
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Lỗi cập nhật vắc xin.");
-        });
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
     }
 </script>
 @endsection
