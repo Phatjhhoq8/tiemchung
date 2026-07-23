@@ -35,6 +35,14 @@
             padding: 40px;
             border: 1px solid #e2e8f0;
         }
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 24px 20px;
+            }
+            .login-header h1 {
+                font-size: 20px;
+            }
+        }
         .login-header {
             text-align: center;
             margin-bottom: 30px;

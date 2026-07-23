@@ -28,7 +28,7 @@
         </div>
 
         <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 32px;">
-            <div style="width: 48px; height: 48px; background-color: rgba(2, 132, 199, 0.08); color: #0284c7; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <div style="width: 48px; height: 48px; background-color: rgba(0, 75, 143, 0.08); color: var(--accent-color); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
                 <i data-lucide="shield-check" style="width: 24px; height: 24px;"></i>
             </div>
             <h3 style="font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 12px;">{{ $settings['about_gsp_title'] ?? 'Kho Lạnh GSP Đạt Chuẩn' }}</h3>

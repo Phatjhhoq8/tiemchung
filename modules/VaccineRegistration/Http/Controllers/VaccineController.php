@@ -59,16 +59,47 @@ class VaccineController extends Controller
             ->values()
             ->all();
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'html' => view('vaccine::partials.grid', compact('vaccines', 'cart'))->render(),
+                'count' => $vaccines->count(),
+            ]);
+        }
+
         return view('vaccine::index', compact('vaccines', 'cart', 'diseases'));
     }
 
     /**
-     * Hiển thị trang chi tiết một loại vắc xin.
+     * Hiển thị trang chi tiết một loại vắc xin (hoặc trả về JSON cho Quick View Modal).
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $vaccine = Vaccine::findOrFail($id);
         $cart = session()->get('cart', []);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'vaccine' => [
+                    'id' => $vaccine->id,
+                    'name' => $vaccine->name,
+                    'price' => $vaccine->price,
+                    'formatted_price' => number_format($vaccine->price, 0, ',', '.') . ' đ',
+                    'type' => $vaccine->type,
+                    'type_label' => $vaccine->type === 'package' ? 'Gói vắc xin' : 'Vắc xin lẻ',
+                    'doses' => $vaccine->doses,
+                    'disease_prevention' => $vaccine->disease_prevention,
+                    'age_group' => $vaccine->age_group,
+                    'origin' => $vaccine->origin,
+                    'manufacturer' => $vaccine->manufacturer,
+                    'dosage' => $vaccine->dosage,
+                    'description' => $vaccine->description,
+                    'image' => asset('images/vaccines/' . ($vaccine->image ?: 'hexaxim.jpg')),
+                    'is_in_cart' => isset($cart[$vaccine->id]),
+                ]
+            ]);
+        }
 
         return view('vaccine::show', compact('vaccine', 'cart'));
     }
@@ -144,20 +175,35 @@ class VaccineController extends Controller
     }
 
     /**
-     * Hiển thị trang đăng ký tiêm chủng.
+     * Hiển thị trang đăng ký tiêm chủng (hoặc JSON cho SPA Modal).
      */
-    public function showRegister()
+    public function showRegister(Request $request)
     {
         $cart = session()->get('cart', []);
+
+        if (empty($cart) && ($request->ajax() || $request->wantsJson())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vui lòng chọn ít nhất một loại vắc xin để đăng ký tiêm.'
+            ], 400);
+        }
 
         if (empty($cart)) {
             return redirect()->route('vaccine.index')->with('warning', 'Vui lòng chọn ít nhất một loại vắc xin để đăng ký.');
         }
 
         $totalPrice = collect($cart)->sum('price');
-        
-        // Lấy danh sách các trung tâm đang hoạt động từ CSDL động
         $centers = Center::active()->get();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'cart' => $cart,
+                'total_price' => $totalPrice,
+                'formatted_total_price' => number_format($totalPrice, 0, ',', '.') . ' đ',
+                'centers' => $centers
+            ]);
+        }
 
         return view('vaccine::register', compact('cart', 'totalPrice', 'centers'));
     }
@@ -170,11 +216,14 @@ class VaccineController extends Controller
         $cart = session()->get('cart', []);
 
         if (empty($cart)) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Giỏ hàng của bạn đang trống.'], 400);
+            }
             return redirect()->route('vaccine.index')->with('error', 'Giỏ hàng của bạn đang trống.');
         }
 
         // Validate dữ liệu
-        $validated = $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'patient_name' => 'required|string|max:255',
             'patient_dob' => 'required|date|before:today',
             'patient_gender' => 'required|string|in:Nam,Nữ,Khác',
@@ -199,9 +248,18 @@ class VaccineController extends Controller
             'payment_method.required' => 'Vui lòng chọn phương thức thanh toán.'
         ]);
 
+        if ($validator->fails()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $validated = $validator->validated();
         $totalPrice = collect($cart)->sum('price');
-        
-        // Sinh mã đăng ký duy nhất cho thương hiệu Medicare Cờ Đỏ (MCD-)
         $registrationCode = 'MCD-' . strtoupper(Str::random(8));
 
         DB::beginTransaction();
@@ -233,11 +291,27 @@ class VaccineController extends Controller
             // Xóa giỏ hàng
             session()->forget('cart');
 
-            // Lưu mã đăng ký vào session flash
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'registration_code' => $registrationCode,
+                    'patient_name' => $validated['patient_name'],
+                    'patient_phone' => $validated['patient_phone'],
+                    'center_name' => $validated['center_name'],
+                    'injection_date' => date('d/m/Y', strtotime($validated['injection_date'])),
+                    'total_price_formatted' => number_format($totalPrice, 0, ',', '.') . ' đ',
+                    'payment_method' => $validated['payment_method'],
+                    'status' => $registration->status,
+                ]);
+            }
+
             return redirect()->route('register.success')->with('success_code', $registrationCode);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Có lỗi xảy ra trong quá trình đăng ký: ' . $e->getMessage()], 500);
+            }
             return back()->withInput()->with('error', 'Có lỗi xảy ra trong quá trình đăng ký: ' . $e->getMessage());
         }
     }

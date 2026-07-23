@@ -22,6 +22,9 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
+    <!-- Vite & Flowbite -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     
@@ -41,7 +44,7 @@
                 </a>
                 <span class="divider">|</span>
                 <a href="{{ route('contact') }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                    <i data-lucide="map-pin" style="color: #0284c7;"></i> <strong>Chi nhánh 2:</strong> Thới Lai (Hotline: 0932 477 184)
+                    <i data-lucide="map-pin" style="color: var(--accent-color);"></i> <strong>Chi nhánh 2:</strong> Thới Lai (Hotline: 0932 477 184)
                 </a>
             </div>
             <div class="topbar-social">
@@ -73,7 +76,7 @@
                     <i data-lucide="phone-call"></i>
                     <span>Tư vấn: {{ $hotline }}</span>
                 </a>
-                <a href="{{ route('register.show') }}" class="btn-primary-header" style="background-color: var(--primary-color); color: #ffffff; padding: 10px 18px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(200, 16, 46, 0.15);" onmouseover="this.style.backgroundColor='var(--primary-hover)'; this.style.transform='translateY(-1px)';" onmouseout="this.style.backgroundColor='var(--primary-color)'; this.style.transform='translateY(0)';">
+                <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-primary-header" style="background-color: var(--primary-color); color: #ffffff; padding: 10px 18px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(200, 16, 46, 0.15);" onmouseover="this.style.backgroundColor='var(--primary-hover)'; this.style.transform='translateY(-1px)';" onmouseout="this.style.backgroundColor='var(--primary-color)'; this.style.transform='translateY(0)';">
                     <i data-lucide="calendar-plus" style="width: 16px; height: 16px;"></i>
                     <span>Đăng ký tiêm</span>
                 </a>
@@ -189,6 +192,11 @@
             <span>0938 60 38 39</span>
         </a>
     </div>
+
+    <!-- SPA Modals & Toast Container -->
+    @include('vaccine::partials.modal-detail')
+    @include('vaccine::partials.modal-register')
+    <div id="toast-container" style="position: fixed; top: 24px; right: 24px; z-index: 9999999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
 
     <!-- JS Custom -->
     <script src="{{ asset('js/app.js') }}"></script>

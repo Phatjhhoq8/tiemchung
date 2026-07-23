@@ -3,6 +3,64 @@
 @section('title', 'Admin Dashboard - Medicare Cờ Đỏ')
 @section('page_title', 'Bảng Điều Khiển Quản Trị')
 
+@section('styles')
+<style>
+    .quick-action-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+    .quick-action-card {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .quick-action-card:hover {
+        box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+    }
+    .quick-action-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .quick-action-btn {
+        font-weight: 700;
+        font-size: 13px;
+        text-decoration: none;
+        padding: 8px 14px;
+        border-radius: 8px;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+    @media (max-width: 576px) {
+        .quick-action-card {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 14px;
+            padding: 16px;
+        }
+        .quick-action-btn {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+            box-sizing: border-box;
+            padding: 10px;
+        }
+    }
+</style>
+@endsection
+
 @section('admin_content')
 <!-- Thẻ thống kê Widgets -->
 <div class="stats-widgets-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 40px;">
@@ -44,27 +102,27 @@
 </div>
 
 <!-- Khung phụ thống kê nhanh & Quản trị nhanh -->
-<div style="display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 40px;">
-    <div style="flex: 1 1 200px; background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 16px;">
+<div class="quick-action-grid">
+    <div class="quick-action-card">
+        <div class="quick-action-left">
             <div style="background-color: #fff1f2; color: #e11d48; padding: 12px; border-radius: 8px;"><i data-lucide="syringe"></i></div>
             <div>
-                <span style="display:block; color:#64748b; font-size:14px;">Danh mục Vắc Xin</span>
+                <span style="display:block; color:#64748b; font-size:14px; font-weight: 500;">Danh mục Vắc Xin</span>
                 <strong style="font-size: 20px; color:#1e293b;">{{ $vaccinesCount }} loại</strong>
             </div>
         </div>
-        <a href="{{ route('admin.vaccines.index', ['featured' => 1]) }}" style="color: var(--primary-color); font-weight: 700; font-size: 13px; text-decoration: none; background: #fff1f2; padding: 6px 12px; border-radius: 6px;">⭐ Quản lý Nổi Bật</a>
+        <a href="{{ route('admin.vaccines.index', ['featured' => 1]) }}" class="quick-action-btn" style="color: var(--primary-color, #c8102e); background: #fff1f2; border: 1px solid #fecdd3;">⭐ Quản lý Nổi Bật</a>
     </div>
 
-    <div style="flex: 1 1 200px; background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 16px;">
+    <div class="quick-action-card">
+        <div class="quick-action-left">
             <div style="background-color: #e0f2fe; color: #0284c7; padding: 12px; border-radius: 8px;"><i data-lucide="image"></i></div>
             <div>
-                <span style="display:block; color:#64748b; font-size:14px;">Banner Trang Chủ</span>
+                <span style="display:block; color:#64748b; font-size:14px; font-weight: 500;">Banner Trang Chủ</span>
                 <strong style="font-size: 20px; color:#1e293b;">Slider Hero</strong>
             </div>
         </div>
-        <a href="{{ route('admin.banners.index') }}" style="color: #0284c7; font-weight: 700; font-size: 13px; text-decoration: none; background: #e0f2fe; padding: 6px 12px; border-radius: 6px;">🖼️ Quản lý Banner</a>
+        <a href="{{ route('admin.banners.index') }}" class="quick-action-btn" style="color: #0284c7; background: #e0f2fe; border: 1px solid #bae6fd;">🖼️ Quản lý Banner</a>
     </div>
 </div>
 

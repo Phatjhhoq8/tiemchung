@@ -60,6 +60,7 @@
             list-style: none;
             padding: 20px 0;
             flex-grow: 1;
+            overflow-y: auto;
         }
         .sidebar-menu li a {
             display: flex;
@@ -112,8 +113,8 @@
         }
         .admin-header {
             height: 70px;
-            background-color: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-card, #ffffff);
+            border-bottom: 1px solid var(--border-color, #e2e8f0);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -126,14 +127,14 @@
             font-family: 'Roboto', sans-serif;
             font-size: 20px;
             font-weight: 700;
-            color: var(--text-primary);
+            color: var(--text-primary, #1e293b);
         }
         .admin-user {
             display: flex;
             align-items: center;
             gap: 10px;
             font-weight: 500;
-            color: var(--text-muted);
+            color: var(--text-muted, #64748b);
         }
         .admin-body {
             padding: 40px;
@@ -143,6 +144,98 @@
             position: relative;
             padding-right: 40px;
         }
+
+        /* Responsive Mobile & Tablet Utilities */
+        .mobile-sidebar-toggle {
+            display: none;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #1e293b;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            transition: all 0.2s ease;
+        }
+        .mobile-sidebar-toggle:hover {
+            background-color: #e2e8f0;
+        }
+
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-backdrop.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .table-responsive table {
+            min-width: 650px;
+        }
+
+        @media (max-width: 1023px) {
+            .mobile-sidebar-toggle {
+                display: inline-flex;
+            }
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+                z-index: 1000;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+            }
+            .admin-sidebar.sidebar-open {
+                transform: translateX(0);
+            }
+            .admin-content {
+                margin-left: 0 !important;
+                width: 100%;
+            }
+            .admin-header {
+                padding: 0 20px;
+            }
+            .admin-body {
+                padding: 24px 20px;
+            }
+        }
+
+        @media (max-width: 639px) {
+            .admin-header {
+                padding: 0 12px;
+                height: 60px;
+            }
+            .admin-title {
+                font-size: 16px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .admin-user span {
+                display: none;
+            }
+            .admin-body {
+                padding: 16px 12px;
+            }
+        }
     </style>
     <!-- Dark Mode Check -->
     <script>
@@ -151,6 +244,7 @@
     @yield('styles')
 </head>
 <body>
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
     <div class="admin-wrapper">
         <!-- Sidebar quản trị -->
         <aside class="admin-sidebar">
@@ -220,7 +314,12 @@
         <!-- Khung nội dung bên phải -->
         <div class="admin-content">
             <header class="admin-header">
-                <div class="admin-title">@yield('page_title', 'Bảng Điều Khiển')</div>
+                <div style="display: flex; align-items: center;">
+                    <button id="sidebarToggle" class="mobile-sidebar-toggle" aria-label="Toggle navigation">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <div class="admin-title">@yield('page_title', 'Bảng Điều Khiển')</div>
+                </div>
                 <div class="admin-user" style="display: flex; align-items: center; gap: 15px;">
                     <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode" style="display: none !important; background: none; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; padding: 6px; border-radius: 6px; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.2s;">
                         <i data-lucide="sun" class="sun-icon" style="width: 16px; height: 16px; display: none; color: #eaaa00;"></i>
@@ -254,6 +353,30 @@
     <script>
         // Khởi tạo các Lucide Icons
         lucide.createIcons();
+
+        // Mobile Sidebar Toggle Logic
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+        const adminSidebar = document.querySelector('.admin-sidebar');
+
+        function toggleSidebar() {
+            if (!adminSidebar) return;
+            const isOpen = adminSidebar.classList.contains('sidebar-open');
+            if (isOpen) {
+                adminSidebar.classList.remove('sidebar-open');
+                if (sidebarBackdrop) sidebarBackdrop.classList.remove('show');
+            } else {
+                adminSidebar.classList.add('sidebar-open');
+                if (sidebarBackdrop) sidebarBackdrop.classList.add('show');
+            }
+        }
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', toggleSidebar);
+        }
+        if (sidebarBackdrop) {
+            sidebarBackdrop.addEventListener('click', toggleSidebar);
+        }
 
         // Dark Mode Toggle Logic
         const themeToggle = document.getElementById('theme-toggle');
