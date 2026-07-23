@@ -30,7 +30,7 @@
             <article style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;">
                 <div style="height: 200px; overflow: hidden;">
                     <a href="{{ route('news.show', $article->slug) }}">
-                        <img src="{{ asset('images/vaccines/' . ($article->image ?: 'default_vaccine.jpg')) }}" alt="{{ $article->title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        <img src="{{ asset('images/vaccines/' . ($article->image ?: 'vaxigrip.jpg')) }}" alt="{{ $article->title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
                     </a>
                 </div>
                 <div style="padding: 28px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">

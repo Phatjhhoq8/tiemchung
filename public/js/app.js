@@ -232,6 +232,13 @@ async function openVaccineDetailModal(vaccineId, event) {
 
         if (data.success) {
             const v = data.vaccine;
+
+            // Cập nhật số lượt xem hiển thị trên thẻ card ngoài trang chủ / danh mục (Cộng +1 khi click)
+            const viewsEl = document.getElementById(`vaccine-views-count-${v.id}`);
+            if (viewsEl) {
+                viewsEl.textContent = (v.views || 0).toLocaleString('vi-VN');
+            }
+
             content.innerHTML = `
                 <div style="display: flex; flex-wrap: wrap; overflow: hidden; border-radius: 16px;">
                     <div style="flex: 1 1 300px; background: #f8fafc; display: flex; align-items: center; justify-content: center; position: relative; min-height: 280px; padding: 20px;">
@@ -239,11 +246,17 @@ async function openVaccineDetailModal(vaccineId, event) {
                         <span style="position: absolute; top: 16px; left: 16px; background: ${v.type === 'package' ? '#0284c7' : '#c8102e'}; color: #ffffff; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase;">
                             ${v.type_label}
                         </span>
+                        <span style="position: absolute; bottom: 16px; left: 16px; background: rgba(0,0,0,0.6); color: #ffffff; padding: 4px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 5px;">
+                            <i data-lucide="eye" style="width: 13px; height: 13px;"></i> ${v.formatted_views || (v.views + ' lượt xem')}
+                        </span>
                     </div>
 
                     <div style="flex: 1 1 400px; padding: 32px; display: flex; flex-direction: column; justify-content: space-between;">
                         <div>
-                            <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Xuất xứ: ${v.origin}</span>
+                            <div style="display: flex; items-center; justify-content: space-between;">
+                                <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Xuất xứ: ${v.origin}</span>
+                                <span style="font-size: 12px; font-weight: 600; color: #64748b; display: flex; align-items: center; gap: 4px;"><i data-lucide="eye" style="width: 14px; height: 14px;"></i> ${v.formatted_views || (v.views + ' lượt xem')}</span>
+                            </div>
                             <h2 style="font-size: 24px; font-weight: 800; color: #1e293b; margin: 6px 0 12px 0; line-height: 1.3;">${v.name}</h2>
                             <p style="font-size: 14px; color: #475569; line-height: 1.6; margin-bottom: 20px;">${v.description || 'Vắc xin an toàn, đã được kiểm định nghiêm ngặt theo tiêu chuẩn của Bộ Y Tế.'}</p>
 

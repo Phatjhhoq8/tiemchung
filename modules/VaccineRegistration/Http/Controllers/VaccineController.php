@@ -76,6 +76,10 @@ class VaccineController extends Controller
     public function show(Request $request, $id)
     {
         $vaccine = Vaccine::findOrFail($id);
+        
+        // Tăng số lượt xem sản phẩm khi xem chi tiết
+        $vaccine->increment('views');
+        
         $cart = session()->get('cart', []);
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -97,6 +101,8 @@ class VaccineController extends Controller
                     'description' => $vaccine->description,
                     'image' => asset('images/vaccines/' . ($vaccine->image ?: 'hexaxim.jpg')),
                     'is_in_cart' => isset($cart[$vaccine->id]),
+                    'views' => $vaccine->views,
+                    'formatted_views' => number_format($vaccine->views, 0, ',', '.') . ' lượt xem',
                 ]
             ]);
         }

@@ -21,14 +21,14 @@ class HomeController extends Controller
         // Lấy danh sách banner đang hoạt động và sắp xếp thứ tự
         $banners = Banner::active()->ordered()->get();
 
-        // Lấy 6 vắc xin lẻ nổi bật để quảng bá
-        $featuredVaccines = Vaccine::single()->take(6)->get();
+        // Lấy 8 vắc xin lẻ nổi bật để quảng bá (khung 2 hàng 4 cột)
+        $featuredVaccines = Vaccine::single()->take(8)->get();
 
         // Lấy 3 gói vắc xin gia đình phổ biến
         $vaccinePackages = Vaccine::package()->take(3)->get();
 
-        // Lấy 3 bài viết tin tức / kiến thức y tế mới nhất từ CSDL
-        $articles = Article::where('is_published', true)->latest()->take(3)->get();
+        // Lấy 4 bài viết tin tức / kiến thức y tế mới nhất từ CSDL (1 bài lớn + 3 bài nhỏ)
+        $articles = Article::where('is_published', true)->latest()->take(4)->get();
 
         return view('vaccine::home', compact('banners', 'featuredVaccines', 'vaccinePackages', 'articles'));
     }

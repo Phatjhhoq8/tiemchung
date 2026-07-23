@@ -24,7 +24,7 @@
     <!-- Article Featured Image -->
     @if($article->image)
         <div style="border-radius: 16px; overflow: hidden; max-height: 420px; margin-bottom: 36px; border: 1px solid var(--border-color);">
-            <img src="{{ asset('images/vaccines/' . $article->image) }}" alt="{{ $article->title }}" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="{{ asset('images/vaccines/' . $article->image) }}" alt="{{ $article->title }}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
         </div>
     @endif
 

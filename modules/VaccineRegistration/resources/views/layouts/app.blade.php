@@ -12,15 +12,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="@yield('meta_description', 'Medicare - Hệ thống tiêm chủng vắc xin an toàn, chất lượng hàng đầu tại Cần Thơ cho trẻ em và người lớn.')">
     <title>@yield('title', 'Hệ Thống Tiêm Chủng Medicare')</title>
     
-    <!-- Google Fonts -->
+    <!-- Google Fonts (Roboto + Inter for headings) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap" rel="stylesheet">
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- AOS Scroll Animation -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
     
     <!-- Vite & Flowbite -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -62,7 +66,7 @@
                 <img src="{{ asset('images/logo.png') }}" alt="{{ $site_name }}" style="max-height: 48px; width: auto; object-fit: contain;">
             </a>
             
-            <nav class="nav-menu">
+            <nav class="nav-menu" id="nav-menu">
                 <a href="{{ route('home') }}" class="nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}">Trang Chủ</a>
                 <a href="{{ route('about') }}" class="nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}">Giới Thiệu</a>
                 <a href="{{ route('vaccine.index') }}" class="nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}">Bảng Giá Vắc Xin</a>
@@ -72,17 +76,50 @@
             </nav>
             
             <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
-                <a href="tel:{{ str_replace(' ', '', $hotline) }}" class="hotline-btn">
+                <a href="tel:{{ str_replace(' ', '', $hotline) }}" class="hotline-btn hotline-btn-desktop">
                     <i data-lucide="phone-call"></i>
                     <span>Tư vấn: {{ $hotline }}</span>
                 </a>
-                <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-primary-header" style="background-color: var(--primary-color); color: #ffffff; padding: 10px 18px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(200, 16, 46, 0.15);" onmouseover="this.style.backgroundColor='var(--primary-hover)'; this.style.transform='translateY(-1px)';" onmouseout="this.style.backgroundColor='var(--primary-color)'; this.style.transform='translateY(0)';">
+                <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-primary-header">
                     <i data-lucide="calendar-plus" style="width: 16px; height: 16px;"></i>
                     <span>Đăng ký tiêm</span>
                 </a>
+                <!-- Mobile Hamburger Button -->
+                <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Menu">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
             </div>
         </div>
     </header>
+
+    <!-- Mobile Drawer Menu -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+    <nav class="mobile-drawer" id="mobile-drawer">
+        <div class="mobile-drawer-header">
+            <a href="{{ route('home') }}" class="logo" style="display: flex; align-items: center;">
+                <img src="{{ asset('images/logo.png') }}" alt="{{ $site_name }}" style="max-height: 40px; width: auto;">
+            </a>
+            <button onclick="toggleMobileMenu()" class="mobile-close-btn" aria-label="Đóng menu">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <div class="mobile-drawer-links">
+            <a href="{{ route('home') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}"><i data-lucide="home" class="w-5 h-5"></i> Trang Chủ</a>
+            <a href="{{ route('about') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}"><i data-lucide="info" class="w-5 h-5"></i> Giới Thiệu</a>
+            <a href="{{ route('vaccine.index') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}"><i data-lucide="syringe" class="w-5 h-5"></i> Bảng Giá Vắc Xin</a>
+            <a href="{{ route('services') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'services' ? 'active' : '' }}"><i data-lucide="briefcase-medical" class="w-5 h-5"></i> Dịch Vụ</a>
+            <a href="{{ route('news.index') }}" class="mobile-nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}"><i data-lucide="newspaper" class="w-5 h-5"></i> Tin Tức</a>
+            <a href="{{ route('contact') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'contact' ? 'active' : '' }}"><i data-lucide="map-pin" class="w-5 h-5"></i> Liên Hệ</a>
+        </div>
+        <div class="mobile-drawer-footer">
+            <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event); toggleMobileMenu();" class="mobile-cta-btn">
+                <i data-lucide="calendar-plus" class="w-5 h-5"></i> Đăng ký tiêm chủng
+            </a>
+            <a href="tel:{{ str_replace(' ', '', $hotline) }}" class="mobile-hotline-btn">
+                <i data-lucide="phone-call" class="w-5 h-5"></i> Hotline: {{ $hotline }}
+            </a>
+        </div>
+    </nav>
 
 
     <!-- Main Content -->
@@ -122,60 +159,143 @@
         @yield('content')
     </main>
 
-    <!-- Footer chính -->
-    <footer class="app-footer">
-        <div class="footer-container">
-            <div class="footer-info">
-                <h3>{{ $site_name }}</h3>
-                <p>Medicare Cờ Đỏ cung cấp dịch vụ tiêm chủng vắc xin trẻ em và người lớn chất lượng cao, an toàn và hiệu quả hàng đầu.</p>
-                <div class="contact-details">
-                    <p style="display: flex; align-items: flex-start; gap: 10px; line-height: 1.6;">
-                        <i data-lucide="phone" style="flex-shrink: 0; margin-top: 3px; color: var(--secondary-color); width: 16px; height: 16px;"></i>
-                        <span>
-                            <strong>Hotline:</strong> 
-                            <a href="tel:{{ str_replace([' ', '.', '-'], '', $hotline) }}" style="color: inherit; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--secondary-color)'" onmouseout="this.style.color='inherit'">{{ $hotline }}</a> - 
-                            <a href="tel:{{ str_replace([' ', '.', '-'], '', $hotline_2) }}" style="color: inherit; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--secondary-color)'" onmouseout="this.style.color='inherit'">{{ $hotline_2 }}</a>
-                        </span>
-                    </p>
-                    <p style="display: flex; align-items: flex-start; gap: 10px; line-height: 1.6;">
-                        <i data-lucide="mail" style="flex-shrink: 0; margin-top: 3px; color: var(--secondary-color); width: 16px; height: 16px;"></i>
-                        <span>
-                            <strong>Email:</strong> 
-                            <a href="mailto:{{ $email }}" style="color: inherit; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--secondary-color)'" onmouseout="this.style.color='inherit'">{{ $email }}</a>
-                        </span>
-                    </p>
-                    <p style="display: flex; align-items: flex-start; gap: 10px; line-height: 1.6;">
-                        <i data-lucide="map-pin" style="flex-shrink: 0; margin-top: 3px; color: var(--secondary-color); width: 16px; height: 16px;"></i>
-                        <span>
-                            <strong>Địa chỉ:</strong> 
-                            <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($address) }}" target="_blank" style="color: inherit; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--secondary-color)'" onmouseout="this.style.color='inherit'">{{ $address }}</a>
-                        </span>
-                    </p>
+    <!-- Footer chính — VNVC Style Mẫu Hình 2 -->
+    <footer class="app-footer-vnvc">
+        <!-- Footer Top Header Bar -->
+        <div class="footer-top-header">
+            <div class="footer-header-container">
+                <div class="footer-brand-title">
+                    <a href="{{ route('home') }}" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+                        <img src="{{ asset('images/logo.png') }}" alt="{{ $site_name }}" style="max-height: 40px; width: auto; filter: brightness(0) invert(1);">
+                    </a>
+                    <h3>HỆ THỐNG TRUNG TÂM TIÊM CHỦNG VẮC XIN CHO TRẺ EM & NGƯỜI LỚN AN TOÀN – UY TÍN – CHẤT LƯỢNG HÀNG ĐẦU VIỆT NAM</h3>
+                </div>
+                <div class="footer-top-actions">
+                    <a href="{{ route('contact') }}" class="footer-top-item">
+                        <i data-lucide="map-pin" style="width: 16px; height: 16px; color: var(--secondary-color);"></i>
+                        <span>Tìm trung tâm Medicare</span>
+                    </a>
+                    <span style="opacity: 0.3;">|</span>
+                    <a href="tel:{{ str_replace([' ', '.', '-'], '', $hotline) }}" class="footer-top-item">
+                        <i data-lucide="phone-call" style="width: 16px; height: 16px; color: var(--secondary-color);"></i>
+                        <span>Hotline: <strong>{{ $hotline }}</strong></span>
+                    </a>
+                    <span style="opacity: 0.3;">|</span>
+                    <div class="footer-top-item">
+                        <i data-lucide="clock" style="width: 16px; height: 16px; color: var(--secondary-color);"></i>
+                        <span>Mở cửa 7:30 – 17:00 (không nghỉ trưa)</span>
+                    </div>
                 </div>
             </div>
-            
-            <div class="footer-links">
-                <h4>Dịch Vụ Tiêm Chủng</h4>
-                <ul style="list-style: none; padding-left: 0;">
-                    <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.8rem;">
-                        <i data-lucide="chevron-right" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0;"></i>
-                        <a href="{{ route('vaccine.index', ['type' => 'single']) }}">Vắc xin lẻ trẻ em & người lớn</a>
-                    </li>
-                    <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.8rem;">
-                        <i data-lucide="chevron-right" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0;"></i>
-                        <a href="{{ route('vaccine.index', ['type' => 'package']) }}">Gói vắc xin toàn diện</a>
-                    </li>
-                    <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.8rem;">
-                        <i data-lucide="chevron-right" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0;"></i>
-                        <a href="{{ route('register.show') }}">Đặt lịch tiêm trực tuyến</a>
-                    </li>
-                </ul>
+        </div>
+
+        <!-- Footer Body: Branch Network & Legal Info -->
+        <div class="footer-body-container">
+            <!-- Mạng Lưới Chi Nhánh -->
+            <div class="footer-branches-title">
+                HỆ THỐNG CHI NHÁNH TIÊM CHỦNG MEDICARE CẦN THƠ
             </div>
             
-            <div class="footer-tagline">
-                <p>{{ $footer_text }}</p>
+            <div class="footer-branch-grid">
+                <!-- Chi nhánh 1 -->
+                <div class="footer-branch-card">
+                    <span class="footer-branch-badge">Chi nhánh 1 - Cờ Đỏ</span>
+                    <h4>Medicare Cờ Đỏ</h4>
+                    <div class="footer-branch-info">
+                        <p><i data-lucide="map-pin" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ</p>
+                        <p><i data-lucide="phone" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Hotline: <strong>0938 60 38 39</strong></p>
+                        <p><i data-lucide="clock" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Thứ 2 – Thứ 7: 7:30 – 17:00</p>
+                    </div>
+                    <div class="footer-branch-actions">
+                        <a href="{{ route('contact') }}" class="footer-branch-btn footer-branch-btn-primary">
+                            <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Xem bản đồ & chỉ đường
+                        </a>
+                        <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="footer-branch-btn footer-branch-btn-secondary">
+                            Đặt lịch tại CN1 →
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Chi nhánh 2 -->
+                <div class="footer-branch-card">
+                    <span class="footer-branch-badge" style="background-color: rgba(0, 75, 143, 0.3); color: #60a5fa; border-color: rgba(96, 165, 250, 0.4);">Chi nhánh 2 - Thới Lai</span>
+                    <h4>Medicare Thới Lai</h4>
+                    <div class="footer-branch-info">
+                        <p><i data-lucide="map-pin" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Trung tâm Y tế Huyện Thới Lai, Thị trấn Thới Lai, Huyện Thới Lai, TP. Cần Thơ</p>
+                        <p><i data-lucide="phone" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Hotline: <strong>0932 477 184</strong></p>
+                        <p><i data-lucide="clock" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Thứ 2 – Thứ 7: 7:30 – 17:00</p>
+                    </div>
+                    <div class="footer-branch-actions">
+                        <a href="{{ route('contact') }}" class="footer-branch-btn footer-branch-btn-primary">
+                            <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Xem bản đồ & chỉ đường
+                        </a>
+                        <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="footer-branch-btn footer-branch-btn-secondary">
+                            Đặt lịch tại CN2 →
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Main Layout: Legal Info & Policy Links (Left) + QR Code (Right) -->
+            <div class="footer-main-layout">
+                <div class="footer-left-col">
+                    <div class="footer-policy-links">
+                        <a href="{{ route('about') }}">Chính sách bảo mật</a>
+                        <span>•</span>
+                        <a href="{{ route('services') }}">Khảo sát tiêm chủng</a>
+                        <span>•</span>
+                        <a href="{{ route('vaccine.index') }}">Chính sách thanh toán</a>
+                        <span>•</span>
+                        <a href="{{ route('contact') }}">Điều khoản sử dụng</a>
+                    </div>
+                    <div class="footer-company-details">
+                        <h3>CÔNG TY CỔ PHẦN VẮC XIN MEDICARE</h3>
+                        <p>Giấy chứng nhận ĐKKD số 0107631488 do Sở Kế hoạch và Đầu tư TP. Cần Thơ cấp ngày 11/11/2016</p>
+                        <p><strong>Chi Nhánh 1:</strong> Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ</p>
+                        <p><strong>Chi Nhánh 2:</strong> Trung tâm Y tế Huyện Thới Lai, Thị trấn Thới Lai, Huyện Thới Lai, TP. Cần Thơ</p>
+                        <p><strong>Email:</strong> {{ $email }} | <strong>Số điện thoại:</strong> {{ $hotline }} - {{ $hotline_2 }}</p>
+                        <p>Chịu trách nhiệm nội dung: Ban Giám Đốc HỆ THỐNG TIÊM CHỦNG MEDICARE</p>
+                        <p style="margin-top: 10px; opacity: 0.75; font-size: 0.8rem;">Bản quyền ©2026 thuộc về CÔNG TY CỔ PHẦN VẮC XIN MEDICARE</p>
+                    </div>
+                </div>
+
+                <div class="footer-right-col" style="display: flex; justify-content: flex-end;">
+                    <div class="footer-qr-card">
+                        <div class="footer-qr-title">SỬ DỤNG SỔ TIÊM CHỦNG ĐIỆN TỬ</div>
+                        <div class="footer-qr-img-wrapper">
+                            <!-- Clean SVG QR Code Representation -->
+                            <svg viewBox="0 0 100 100" width="140" height="140" fill="#0f172a" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="100" height="100" fill="#ffffff" />
+                                <rect x="8" y="8" width="28" height="28" fill="#0f172a" />
+                                <rect x="12" y="12" width="20" height="20" fill="#ffffff" />
+                                <rect x="16" y="16" width="12" height="12" fill="#c8102e" />
+                                
+                                <rect x="64" y="8" width="28" height="28" fill="#0f172a" />
+                                <rect x="68" y="12" width="20" height="20" fill="#ffffff" />
+                                <rect x="72" y="16" width="12" height="12" fill="#c8102e" />
+                                
+                                <rect x="8" y="64" width="28" height="28" fill="#0f172a" />
+                                <rect x="12" y="68" width="20" height="20" fill="#ffffff" />
+                                <rect x="16" y="72" width="12" height="12" fill="#c8102e" />
+                                
+                                <rect x="42" y="10" width="14" height="6" fill="#0f172a" />
+                                <rect x="42" y="20" width="8" height="16" fill="#0f172a" />
+                                <rect x="10" y="42" width="18" height="8" fill="#0f172a" />
+                                <rect x="34" y="42" width="16" height="16" fill="#004b8f" />
+                                <rect x="56" y="42" width="12" height="8" fill="#0f172a" />
+                                <rect x="74" y="42" width="16" height="16" fill="#0f172a" />
+                                <rect x="42" y="64" width="8" height="28" fill="#0f172a" />
+                                <rect x="56" y="64" width="16" height="8" fill="#0f172a" />
+                                <rect x="78" y="64" width="14" height="14" fill="#c8102e" />
+                                <rect x="56" y="78" width="16" height="14" fill="#0f172a" />
+                            </svg>
+                        </div>
+                        <div class="footer-qr-subtext">Quét mã để tra cứu lịch tiêm & đăng ký tiêm chủng online</div>
+                    </div>
+                </div>
             </div>
         </div>
+
     </footer>
 
     <!-- Floating Contact & Zalo Widget (Bong bóng Chat tư vấn góc dưới bên phải) -->
@@ -200,9 +320,28 @@
 
     <!-- JS Custom -->
     <script src="{{ asset('js/app.js') }}"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
         // Khởi tạo các Lucide Icons
         lucide.createIcons();
+
+        // Khởi tạo AOS Scroll Animation
+        AOS.init({
+            once: true,
+            offset: 50,
+            easing: 'ease-out-cubic'
+        });
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const drawer = document.getElementById('mobile-drawer');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            drawer.classList.toggle('open');
+            overlay.classList.toggle('open');
+            document.body.style.overflow = drawer.classList.contains('open') ? 'hidden' : '';
+            // Re-init lucide icons for drawer
+            setTimeout(() => lucide.createIcons(), 100);
+        }
 
         // Hàm cuộn mượt SPA (Single-Page Navigation)
         function smoothScrollTo(elementId, event) {

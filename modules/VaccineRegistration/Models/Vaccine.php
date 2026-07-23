@@ -30,6 +30,7 @@ class Vaccine extends Model
         'image',
         'is_featured',      // Vắc xin nổi bật
         'sort_order',       // Thứ tự hiển thị
+        'views',            // Lượt xem vắc xin
     ];
 
     /**
@@ -40,6 +41,7 @@ class Vaccine extends Model
         'sale_price' => 'integer',
         'price' => 'integer',
         'sort_order' => 'integer',
+        'views' => 'integer',
     ];
 
     /**
