@@ -322,15 +322,27 @@
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        // Khởi tạo các Lucide Icons
-        lucide.createIcons();
+        // Khởi tạo các Lucide Icons an toàn
+        if (typeof lucide !== 'undefined') {
+            try {
+                lucide.createIcons();
+            } catch (e) {
+                console.error('Lỗi khởi tạo Lucide icons:', e);
+            }
+        }
 
-        // Khởi tạo AOS Scroll Animation
-        AOS.init({
-            once: true,
-            offset: 50,
-            easing: 'ease-out-cubic'
-        });
+        // Khởi tạo AOS Scroll Animation an toàn
+        if (typeof AOS !== 'undefined') {
+            try {
+                AOS.init({
+                    once: true,
+                    offset: 50,
+                    easing: 'ease-out-cubic'
+                });
+            } catch (e) {
+                console.error('Lỗi khởi tạo AOS:', e);
+            }
+        }
 
         // Mobile Menu Toggle
         function toggleMobileMenu() {

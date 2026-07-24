@@ -1,3 +1,10 @@
+// Fallback an toàn cho Lucide Icon nếu thư viện CDN không tải được
+if (typeof window.lucide === 'undefined') {
+    window.lucide = {
+        createIcons: () => console.warn('Thư viện Lucide không được tải thành công từ CDN.')
+    };
+}
+
 // Quản lý CSRF Token trong Laravel cho các request AJAX
 const getCsrfToken = () => {
     const meta = document.querySelector('meta[name="csrf-token"]');

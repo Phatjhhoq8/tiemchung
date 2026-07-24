@@ -1874,6 +1874,34 @@ button, select, input {
     overflow: hidden;
     position: relative;
     border-bottom: 1px solid var(--border-color);
+    min-height: 460px;
+}
+@media (min-width: 640px) {
+    .banner-slider {
+        min-height: 500px;
+    }
+}
+@media (min-width: 1024px) {
+    .banner-slider {
+        min-height: 520px;
+    }
+}
+
+.hero-carousel-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    height: 460px;
+}
+@media (min-width: 640px) {
+    .hero-carousel-wrapper {
+        height: 500px;
+    }
+}
+@media (min-width: 1024px) {
+    .hero-carousel-wrapper {
+        height: 520px;
+    }
 }
 .slider-wrapper {
     position: relative;

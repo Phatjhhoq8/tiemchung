@@ -1,5 +1,24 @@
 # Release Notes
 
+## [v2.7.4] - 2026-07-24
+
+### Homepage Display Recovery, Lucide & AOS JS Fallbacks, Banner Image Path Fix
+
+* **Fixed Homepage Blank Display (AOS / Lucide JS Crash)**: Wrapped the `lucide.createIcons()` and `AOS.init()` function calls inside safe `typeof` checks and `try...catch` blocks in `app.blade.php` and `app.js`. Added a global fallback object for `window.lucide` to prevent JavaScript ReferenceErrors from halting script execution when the CDN is slow or offline, restoring full homepage section visibility.
+* **Resolved Banner Height Collapse**: Defined a custom class `.hero-carousel-wrapper` with media-query-based heights (`460px`, `500px`, `520px`) inside `style.css` and added it to `home.blade.php`. This bypasses any Tailwind JIT compilation omissions and guarantees the Flowbite Carousel always maintains its exact container height.
+* **Fixed Blade View Banner Image Attribute**: Changed `$banner->image_path` to `$banner->image_url` on line 82 in `home.blade.php` to match the schema defined in the database migration and Model.
+* **Updated Seed Data Image Paths**: Updated `BannerSeeder.php` to reference actual, existing images inside `public/images/banners/` (`banner_family.jpg`, `banner1.jpg`, `banner2.jpg`) and re-seeded the database to eliminate 404 image load errors.
+
+## [v2.7.3] - 2026-07-24
+
+### Homepage Hero Banner Height, Gradient Tone & Image Fit Refinement
+
+* **Fixed Carousel Wrapper Height Collapse**: Replaced `min-h-` with explicit fixed height classes (`h-[460px] sm:h-[500px] lg:h-[520px]`) and `h-full w-full` on inner slides in `home.blade.php`. Prevents Flowbite Carousel absolute positioning from collapsing wrapper container height to 0.
+* **Expanded Banner Vertical Space**: Set banner height to `520px` and optimized padding (`py-6`), completely resolving bottom text clipping and overlap with slider indicators.
+* **Proportional Right Image Frame**: Set right image frame height to `lg:h-[320px]` with `object-cover object-center` scaling and `border-2 border-white/30`, ensuring perfect visual balance on wide desktop viewports (`1920px`).
+* **Vibrant Medicare Red Gradient Background**: Updated homepage hero banner gradient from gloomy dark slate/red to vibrant Medicare Red (`#c8102e`) transitioning smoothly into deep crimson (`#a00d24` to `#6d0515`), maintaining high color richness and warmth without being dark or dull. Added ambient background light glow accents.
+* **Flawless Image Frame Fitting**: Removed inner frame padding (`p-1.5`) and switched image scaling from `object-contain` to `object-cover object-center` within a `rounded-2xl overflow-hidden border-2 border-white/30` frame, ensuring banner images fill 100% of their parent container perfectly without gaps or overflowing.
+
 ## [v2.7.2] - 2026-07-23
 
 ### VNVC-Style Footer Redesign & Branch Contact Address Integration
