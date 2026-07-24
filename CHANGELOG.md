@@ -1,5 +1,41 @@
 # Release Notes
 
+## [v2.9.0] - 2026-07-24
+
+### Dynamic 2x2 Featured Vaccines Grid, Hover Transitions & Button Loading Feedback
+
+* **Built Dynamic 2x2 Featured Grid**: Replaced the hardcoded Qdenga promo banner (`qdenga_promo.blade.php`) with a dynamic 2x2 grid displaying 4 featured single vaccines selected via admin toggles, styled as detailed horizontal cards with key information (disease prevention, target, origin, price/sale price, CTA). Added automatic fallback selection if fewer than 4 vaccines are featured.
+* **Standardized Admin Layout Editor Labels**: Cleaned up the layout registry display names in [AdminLiveEditorController.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/Http/Controllers/Admin/AdminLiveEditorController.php): renamed `qdenga_promo` to "Vắc-xin nổi bật" and `featured_vaccines` to "Danh mục vắc-xin".
+* **Removed Parentheses & Cleaned Labels**: Removed all parenthetical comments from buttons and dropdown selections inside the visual editor layout page (e.g., changed `Khôi Phục (Reset)` to `Khôi Phục`, `Áp Dụng (Xuất bản)` to `Áp Dụng`, `🟢 Hiện (Ghim)` to `🟢 Hiện`, and simplified padding/background option labels).
+* **Added Hover & Active Button Styles**: Defined custom classes (`.editor-btn-primary`, `.editor-btn-secondary`, `.editor-btn-secondary-outline`) in [live_editor.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/admin/live_editor.blade.php) with CSS hover transitions, dark-red brand states, shadow modifications, and button translation transforms (`transform: translateY(-1px)`).
+* **Implemented Spinning Loader & Disabled States**: Added dynamic JavaScript loading feedback on layout action buttons (Disables button, sets opacity, and replaces content with spinning loader icon and loading text like "Đang áp dụng..." or "Đang khôi phục..."). Shows a checkmark icon with success text before reloading the page.
+
+## [v2.8.0] - 2026-07-24
+
+### Dynamic Homepage Layout Customizer, Section Sorting & Safe Preview Simulator
+
+* **Refactored Homepage Content Structure**: Extracted all 11 hardcoded sections of [home.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/home.blade.php) into separate, modular blade partial views under [views/partials/home/](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/partials/home/).
+* **Implemented Dynamic Layout Loader**: Rebuilt [home.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/home.blade.php) to automatically load, order, and toggle the visibility of the homepage sections based on configuration stored in the database.
+* **Added Extensible Section Registry**: Integrated a central registry `$defaultSections` in [AdminLiveEditorController.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/Http/Controllers/Admin/AdminLiveEditorController.php) to map and manage sections. Added automatic initialization to auto-merge new custom sections in future updates.
+* **Added Dynamic Background & Padding Controls**: Created wrapper classes in [style.css](file:///d:/Projects/tiemchung/public/css/style.css) (`.section-style-white`, `.section-style-red`, `.section-style-dark`) that enforce strict brand color compliance and contrast. Made spacing configurable using Tailwind padding options (`py-6`, `py-12`, `py-20`).
+* **Designed Safe Preview Simulator (Draft Mode)**: Created a draft-based editing system storing layout modifications in a temporary configuration key `homepage_layout_config_draft`. Implemented a secure preview mode accessible via `/?preview=1` only for logged-in administrators, showing a yellow simulator notice bar.
+* **Implemented Publishing Controls**: Added a direct "Xuất Bản Chính Thức" capability inside the Live Editor to deploy the draft homepage layout configuration to all public visitors in one click.
+* **Enforced Emojis & Icon Constraints**: Integrated a new restriction rule under Section 9 in [AGENTS.md](file:///d:/Projects/tiemchung/.agents/AGENTS.md) to strictly regulate the addition of emojis and custom icons without permission.
+* **Cleaned Up Live Editor Toolbar**: Completely removed all Lucide icons and emojis from navigation tab items and header titles in [live_editor.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/admin/live_editor.blade.php) for a clean, brand-consistent design.
+
+## [v2.7.5] - 2026-07-24
+
+### Brand Contrast & Theme Colors Alignment (Red-White-Yellow Style Compliance)
+
+* **Aligned Homepage Elements to Theme Palette**: Replaced all unapproved navy blue (`#004b8f`) classes on text titles and background badges with Medicare Red (`#c8102e`), slate dark tones (`text-slate-800` / `text-slate-600`), and gold/yellow gradients to enforce the target Red-White-Yellow color hierarchy on `home.blade.php`.
+* **Standardized Contrast on Red Gradients**: Fixed contrast issue on the Qdenga banner heading by adding the `text-white` class explicitly, ensuring optimal readability on red background gradients.
+* **Refactored Footer Secondary Buttons & Badges**: Updated `.footer-branch-btn-secondary` inside `style.css` to feature a gold border, transparent background, and gold background on hover. Replaced the Branch 2 (Thoi Lai) badge inline styles inside `app.blade.php` to use a gold/yellow color scheme instead of blue.
+* **Aligned Testimonials Section to Brand Theme**: Rebuilt the Testimonials section background with a vibrant Medicare Red gradient (`bg-gradient-to-br from-red-900 via-[#c8102e] to-red-800`) and unified all client initials avatars to a consistent style (white background with red text: `bg-white text-[#c8102e]`), completely removing yellow background fills on avatars.
+* **Removed Yellow Background Fills**: Converted main hero banner action buttons from yellow background fill (`bg-yellow-400`) to white background with red text (`bg-white text-[#c8102e] hover:bg-red-50`). Converted the featured news category pill from yellow background (`bg-[#eaaa00]`) to red background with white text (`bg-[#c8102e] text-white`).
+* **Corrected Header Top Bar Branch Icon**: Updated the Branch 2 top bar map-pin icon style to use `var(--secondary-color)` (Medicare Gold) for visual consistency with Branch 1.
+* **Separated Guidelines Documentation**: Extracted and refined the custom color rules to a dedicated `COLOR_RULE.md` file under the `.agents/` folder.
+* **Integrated TinyMCE 6 for Articles**: Integrated a feature-dense TinyMCE 6 editor with support for colors, tables, custom alignments, HTML source editing, preview, and fullscreen views into article creation and edit forms. Created the missing `edit.blade.php` view for articles. Updated the frontend article detail view `show.blade.php` to render content raw to support HTML WYSIWYG tags.
+
 ## [v2.7.4] - 2026-07-24
 
 ### Homepage Display Recovery, Lucide & AOS JS Fallbacks, Banner Image Path Fix

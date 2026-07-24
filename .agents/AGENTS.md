@@ -44,5 +44,15 @@
 | **Accent** | Medicare Navy | `#004b8f` (hover: `#00386c`) | `var(--accent-color)` | Structural borders, branch indicators, medical info frames, section titles. |
 
 
+## 8. Session Data & Temporary Files
+- **Workspace Cleanliness**: Any temporary scripts, code generation helpers, draft reports, or intermediate generated assets (images, videos, etc.) created during a development session must be saved exclusively under the `session_data/` directory (which is ignored by Git). Never put them in the project root or functional folders to avoid repository clutter.
+
+
+## 9. Icon & Emoji Usage Constraints
+- **Strict Permission for Emojis & Icons**: Never add, modify, or inject icons (e.g., Lucide, FontAwesome) or emojis (e.g., 🏠, 🧩, 🏢, ⚙️) into any user interface components (including admin tab bars, buttons, sidebars) unless explicitly requested and approved by the USER. 
+- **No Icon-Emoji Mixing**: Do not mix emojis and custom icons together in tabs or text labels. Keep the design clean, professional, and consistent with the brand theme.
+
+
+
 
 
