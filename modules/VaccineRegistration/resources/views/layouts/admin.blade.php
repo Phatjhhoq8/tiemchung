@@ -15,7 +15,15 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
+    @php
+        $css_ver = '1.0.0';
+        try {
+            if (file_exists(public_path('css/style.css'))) {
+                $css_ver = filemtime(public_path('css/style.css'));
+            }
+        } catch (\Exception $e) {}
+    @endphp
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ $css_ver }}">
     
     <style>
         /* CSS nội bộ bổ trợ cho Admin Layout (các class riêng) */

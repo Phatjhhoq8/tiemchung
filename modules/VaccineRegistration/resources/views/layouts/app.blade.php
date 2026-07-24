@@ -30,7 +30,15 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
+    @php
+        $css_ver = '1.0.0';
+        try {
+            if (file_exists(public_path('css/style.css'))) {
+                $css_ver = filemtime(public_path('css/style.css'));
+            }
+        } catch (\Exception $e) {}
+    @endphp
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ $css_ver }}">
     
     <!-- Dark Mode Check -->
     <script>
