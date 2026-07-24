@@ -1,5 +1,5 @@
 <!-- 1. Flowbite Hero Slider Banner (FULL WIDTH - TRÀN VIỀN 100%) -->
-<section class="banner-slider relative w-full overflow-hidden shadow-xl" id="hero-banner" data-aos="fade-up" data-aos-duration="600">
+<section class="banner-slider relative w-full overflow-hidden shadow-xl snap-section" id="hero-banner" data-aos="fade-up" data-aos-duration="600">
     @if($banners->isEmpty())
         <div class="hero-carousel-wrapper bg-gradient-to-br from-[#c8102e] via-[#a00d24] to-[#6d0515] text-white w-full h-[460px] sm:h-[500px] lg:h-[520px] border-y border-red-800/40 shadow-xl overflow-hidden relative flex items-center">
             <!-- Background ambient glow effect -->
@@ -20,7 +20,7 @@
                             Hệ thống trung tâm tiêm chủng vắc xin an toàn, chất lượng hàng đầu cho trẻ em và người lớn với phác đồ y khoa chuẩn GSP.
                         </p>
                         <div class="flex flex-wrap gap-4 pt-1">
-                            <a href="{{ route('vaccine.index') }}" class="inline-flex items-center gap-2 bg-white hover:bg-red-50 text-[#c8102e] font-extrabold py-3 px-6 rounded-xl shadow-lg hover:shadow-white/20 transition-all duration-200">
+                            <a href="{{ route('vaccine.index') }}" class="inline-flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-[#6d0515] font-extrabold py-3 px-6 rounded-xl shadow-lg hover:shadow-yellow-400/30 transition-all duration-200">
                                 Xem bảng giá vắc xin <i data-lucide="arrow-right" class="w-5 h-5"></i>
                             </a>
                             <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="inline-flex items-center gap-2 bg-white/10 border border-white/30 text-white hover:bg-white/20 font-bold py-3 px-6 rounded-xl backdrop-blur-sm transition-all duration-200">
@@ -64,7 +64,7 @@
                                             {{ $banner->subtitle }}
                                         </p>
                                         <div class="pt-1">
-                                            <a href="{{ $banner->link_url ?: route('vaccine.index') }}" class="inline-flex items-center gap-2 bg-white hover:bg-red-50 text-[#c8102e] font-extrabold py-3 px-6 rounded-xl shadow-lg hover:shadow-white/20 transition-all duration-200">
+                                            <a href="{{ $banner->link_url ?: route('vaccine.index') }}" class="inline-flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-[#6d0515] font-extrabold py-3 px-6 rounded-xl shadow-lg hover:shadow-yellow-400/30 transition-all duration-200">
                                                 Tìm hiểu thêm <i data-lucide="arrow-right" class="w-5 h-5"></i>
                                             </a>
                                         </div>
@@ -88,6 +88,17 @@
                     <button type="button" class="w-3 h-3 rounded-full bg-white/50 hover:bg-yellow-400 transition-colors" aria-current="{{ $index === 0 ? 'true' : 'false' }}" aria-label="Slide {{ $index + 1 }}" data-carousel-slide-to="{{ $index }}"></button>
                 @endforeach
             </div>
+            <!-- Slider controls -->
+            <button type="button" class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
+                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-black/30 group-hover:bg-[#c8102e] group-hover:text-white transition-all backdrop-blur-xs">
+                    <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                </span>
+            </button>
+            <button type="button" class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
+                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-black/30 group-hover:bg-[#c8102e] group-hover:text-white transition-all backdrop-blur-xs">
+                    <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                </span>
+            </button>
         </div>
     @endif
 </section>

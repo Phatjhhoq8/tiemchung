@@ -1,5 +1,15 @@
 # Release Notes
 
+## [v2.9.1] - 2026-07-25
+
+### Unified Hero Banner Layout, CSS Scroll Snapping & Section Dividers
+
+* **Aligned Hero Banner Design**: Replaced the default hero slider layout on `nmkiet` branch with the premium gold-accented style from `hongphuoc` branch, including the signature yellow action buttons (`bg-yellow-400 text-[#6d0515]`) and standard Flowbite carousel navigation controls (previous/next buttons).
+* **Implemented CSS Scroll Snapping**: Added scroll snapping behaviors (`scroll-snap-type: y proximity` and `scroll-snap-align: start`) on homepage containers and section wrappers, with custom `scroll-padding-top` to prevent overlapping with the sticky app header.
+* **Added Premium Section Separation (VNVC Style)**: Replaced physical line dividers with elegant alternating backgrounds (clean white `#ffffff` and premium medical light blue `#f4f8fa`). Implemented Zebra Contrast Rules (light blue cards on white sections, white cards with soft shadows on light blue sections) to completely prevent card elements from merging with section backgrounds.
+* **Aligned Topbar Design (VNVC Light Style)**: Refined the topbar to feature a clean premium medical light blue background (`#f4f8fa`) with navy text (`#004b8f`) and red accent map-pin icons. Upgraded the quick action badge to a solid Medicare Red button (`#c8102e`) with hover transitions, delivering a bright, medical-grade, and brand-consistent header area.
+* **Upgraded Floating Contact Widgets**: Redesigned Zalo and Hotline bubbles in [app.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php) as compact, tidy circles (`floating-btn-expandable`) by default. Integrated clean CSS hover transitions that slide out details ("Chat Zalo Bác Sĩ" and phone number) on mouse enter, delivering interactive and elegant float buttons.
+
 ## [v2.9.0] - 2026-07-24
 
 ### Dynamic 2x2 Featured Vaccines Grid, Hover Transitions & Button Loading Feedback

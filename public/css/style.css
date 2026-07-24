@@ -1826,11 +1826,32 @@ button, select, input {
    MEDICARE BRAND & HOME PAGE STYLES
    ========================================================================== */
 .top-bar {
-    background-color: #1e2229;
-    color: #cbd5e1;
+    background-color: #f4f8fa; /* Premium Medical Light Blue */
+    color: #475569;
     font-size: 13px;
     padding: 8px 0;
-    border-bottom: 1px solid #2d323e;
+    border-bottom: 1px solid #e2e8f0;
+}
+.topbar-info a {
+    color: #004b8f !important; /* Navy text for links */
+}
+.topbar-info a:hover {
+    color: #c8102e !important; /* Hover transitions to Medicare Red */
+}
+.topbar-info i, .topbar-info svg {
+    color: #c8102e !important; /* Overwrite map-pin icon to Medicare Red */
+}
+.topbar-social a {
+    color: #ffffff !important;
+    background-color: #c8102e !important; /* Red badge button */
+    border: 1px solid #b00d25 !important;
+    transition: all 0.2s ease-in-out;
+}
+.topbar-social a:hover {
+    background-color: #a00d24 !important;
+}
+.topbar-info .divider {
+    color: #cbd5e1 !important;
 }
 .topbar-container {
     max-width: 1280px;
@@ -3197,4 +3218,67 @@ div.section-badge,
     text-transform: uppercase !important; /* uppercase */
     letter-spacing: 0.05em !important; /* tracking-wider */
     box-shadow: 0 2px 8px rgba(234, 170, 0, 0.2) !important;
+}
+
+/* Floating Expandable Contact Widget */
+.floating-chat-widget {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.floating-btn-expandable {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 48px; /* Default round button */
+    height: 48px;
+    border-radius: 24px;
+    border: 2px solid #ffffff !important;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 0;
+    color: #ffffff !important;
+    cursor: pointer;
+}
+
+.floating-btn-expandable .btn-icon {
+    width: 44px; /* Matches height subtract border */
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.floating-btn-expandable .btn-text {
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-out, padding 0.3s;
+    font-family: 'Inter', sans-serif;
+    padding-right: 0;
+}
+
+/* Hover state: expands width smooth transition */
+.floating-btn-expandable:hover {
+    width: auto;
+    padding-left: 0;
+    padding-right: 18px; /* Right padding when expanded */
+    transform: translateY(-2px);
+}
+
+.floating-btn-expandable:hover .btn-text {
+    max-width: 180px;
+    opacity: 1;
+    padding-left: 4px;
 }

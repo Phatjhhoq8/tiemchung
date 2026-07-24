@@ -303,17 +303,21 @@
     </footer>
 
     <!-- Floating Contact & Zalo Widget (Bong bóng Chat tư vấn góc dưới bên phải) -->
-    <div class="floating-chat-widget" style="position: fixed; bottom: 28px; right: 28px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; align-items: flex-end;">
+    <div class="floating-chat-widget">
         <!-- Nút Chat Zalo Bác Sĩ -->
-        <a href="https://zalo.me/0938603839" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 10px; background-color: #0068ff; color: #ffffff; padding: 12px 20px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0, 104, 255, 0.4); text-decoration: none; font-weight: 700; font-size: 14px; transition: all 0.3s ease; border: 2px solid #ffffff;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'" title="Chat Zalo Tư Vấn Vắc Xin Tức Thì">
-            <div style="width: 26px; height: 26px; background: #ffffff; color: #0068ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 11px; flex-shrink: 0;">Zalo</div>
-            <span>Chat Zalo Bác Sĩ</span>
+        <a href="https://zalo.me/0938603839" target="_blank" rel="noopener noreferrer" class="floating-btn-expandable" style="background-color: #0068ff; box-shadow: 0 8px 24px rgba(0, 104, 255, 0.35);" title="Chat Zalo Tư Vấn Vắc Xin Tức Thì">
+            <div class="btn-icon">
+                <div style="width: 26px; height: 26px; background: #ffffff; color: #0068ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 11px;">Zalo</div>
+            </div>
+            <span class="btn-text">Chat Zalo Bác Sĩ</span>
         </a>
 
         <!-- Nút Hotline Tư Vấn 24/7 -->
-        <a href="tel:0938603839" style="display: flex; align-items: center; gap: 10px; background-color: var(--primary-color, #c8102e); color: #ffffff; padding: 12px 20px; border-radius: 30px; box-shadow: 0 8px 24px rgba(200, 16, 46, 0.4); text-decoration: none; font-weight: 700; font-size: 14px; transition: all 0.3s ease; border: 2px solid #ffffff;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'" title="Gọi Hotline 0938 60 38 39">
-            <i data-lucide="phone-call" style="width: 20px; height: 20px; flex-shrink: 0;"></i>
-            <span>0938 60 38 39</span>
+        <a href="tel:0938603839" class="floating-btn-expandable" style="background-color: var(--primary-color, #c8102e); box-shadow: 0 8px 24px rgba(200, 16, 46, 0.35);" title="Gọi Hotline 0938 60 38 39">
+            <div class="btn-icon">
+                <i data-lucide="phone-call" style="width: 20px; height: 20px;"></i>
+            </div>
+            <span class="btn-text">0938 60 38 39</span>
         </a>
     </div>
 
