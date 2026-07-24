@@ -17,6 +17,67 @@ use Modules\VaccineRegistration\Models\Setting;
 
 class AdminLiveEditorController extends Controller
 {
+    public static $defaultSections = [
+        'quick_booking' => 'Form Đăng ký nhanh',
+        'centers' => 'Hệ thống Trung tâm',
+        'recommendations' => 'Khuyến nghị Y khoa',
+        'qdenga_promo' => 'Vắc-xin nổi bật',
+        'featured_vaccines' => 'Danh mục vắc-xin',
+        'safe_process' => 'Quy trình 5 bước',
+        'services' => 'Dịch vụ chính',
+        'testimonials' => 'Đánh giá khách hàng',
+        'news' => 'Tin tức y khoa',
+        'faq' => 'Câu hỏi thường gặp'
+    ];
+
+    public static function getLayoutConfig($isDraft = true)
+    {
+        $key = $isDraft ? 'homepage_layout_config_draft' : 'homepage_layout_config';
+        $stored = Setting::get($key);
+        $config = $stored ? json_decode($stored, true) : [];
+        
+        $merged = [];
+        $index = 1;
+        foreach (self::$defaultSections as $keyName => $displayName) {
+            if (isset($config[$keyName])) {
+                $merged[$keyName] = $config[$keyName];
+            } else {
+                $merged[$keyName] = [
+                    'order' => $index * 10,
+                    'is_visible' => true,
+                    'bg' => ($keyName === 'qdenga_promo' || $keyName === 'testimonials') ? 'red' : 'white',
+                    'padding' => 'standard'
+                ];
+            }
+            
+            $merged[$keyName]['name'] = $displayName;
+            
+            if ($merged[$keyName]['bg'] === 'red') {
+                $merged[$keyName]['bg_class'] = 'section-style-red';
+            } elseif ($merged[$keyName]['bg'] === 'dark') {
+                $merged[$keyName]['bg_class'] = 'section-style-dark';
+            } else {
+                $merged[$keyName]['bg_class'] = 'section-style-white';
+            }
+            
+            if ($merged[$keyName]['padding'] === 'compact') {
+                $merged[$keyName]['padding_class'] = 'py-12';
+            } elseif ($merged[$keyName]['padding'] === 'spacious') {
+                $merged[$keyName]['padding_class'] = 'py-28';
+            } else {
+                $merged[$keyName]['padding_class'] = 'py-20';
+            }
+            
+            $index++;
+        }
+        
+        uasort($merged, function($a, $b) {
+            return $a['order'] - $b['order'];
+        });
+        
+        return $merged;
+    }
+
     /**
      * Hiển thị trình chỉnh sửa trực quan toàn hệ thống (Universal Live Page Customizer).
      */
@@ -30,6 +91,7 @@ class AdminLiveEditorController extends Controller
         $articles = Article::orderBy('created_at', 'desc')->take(6)->get();
         $centers = Center::where('is_active', true)->orderBy('id', 'asc')->get();
         $settings = Setting::all()->pluck('value', 'key')->toArray();
+        $layoutConfig = self::getLayoutConfig(true); // load draft config for edit
 
         return view('vaccine::admin.live_editor', compact(
             'currentPage',
@@ -38,7 +100,8 @@ class AdminLiveEditorController extends Controller
             'allVaccines',
             'articles',
             'centers',
-            'settings'
+            'settings',
+            'layoutConfig'
         ));
     }
 
@@ -145,6 +208,88 @@ class AdminLiveEditorController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Lưu cài đặt trực quan thành công!'
+        ]);
+    }
+
+    /**
+     * Lưu cấu hình sắp xếp và phong cách nháp cho Trang Chủ.
+     */
+    public function saveLayoutConfig(Request $request)
+    {
+        $layoutData = $request->input('layout', []);
+        
+        $config = [];
+        foreach (self::$defaultSections as $keyName => $displayName) {
+            if (isset($layoutData[$keyName])) {
+                $config[$keyName] = [
+                    'order' => (int)($layoutData[$keyName]['order'] ?? 100),
+                    'is_visible' => isset($layoutData[$keyName]['is_visible']) && ($layoutData[$keyName]['is_visible'] == '1' || $layoutData[$keyName]['is_visible'] == 'true'),
+                    'bg' => $layoutData[$keyName]['bg'] ?? 'white',
+                    'padding' => $layoutData[$keyName]['padding'] ?? 'standard'
+                ];
+            }
+        }
+        
+        Setting::set('homepage_layout_config_draft', json_encode($config));
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Lưu cấu hình nháp trang chủ thành công!'
+        ]);
+    }
+    
+    /**
+     * Xuất bản cấu hình nháp thành chính thức.
+     */
+    public function publishLayoutConfig(Request $request)
+    {
+        $layoutData = $request->input('layout', []);
+        
+        $config = [];
+        foreach (self::$defaultSections as $keyName => $displayName) {
+            if (isset($layoutData[$keyName])) {
+                $config[$keyName] = [
+                    'order' => (int)($layoutData[$keyName]['order'] ?? 100),
+                    'is_visible' => isset($layoutData[$keyName]['is_visible']) && ($layoutData[$keyName]['is_visible'] == '1' || $layoutData[$keyName]['is_visible'] == 'true'),
+                    'bg' => $layoutData[$keyName]['bg'] ?? 'white',
+                    'padding' => $layoutData[$keyName]['padding'] ?? 'standard'
+                ];
+            }
+        }
+        
+        $json = json_encode($config);
+        Setting::set('homepage_layout_config', $json);
+        Setting::set('homepage_layout_config_draft', $json);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Áp dụng cấu hình và xuất bản trang chủ thành công!'
+        ]);
+    }
+
+    /**
+     * Khôi phục cấu hình nháp về cấu hình chính thức (Reset).
+     */
+    public function resetLayoutConfig(Request $request)
+    {
+        $live = Setting::get('homepage_layout_config');
+        if ($live) {
+            Setting::set('homepage_layout_config_draft', $live);
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã khôi phục cấu hình nháp về cấu hình đang hiển thị chính thức!'
+            ]);
+        }
+        
+        // If there's no live config yet, clear the draft to restore system defaults
+        Setting::updateOrCreate(
+            ['key' => 'homepage_layout_config_draft'],
+            ['value' => null]
+        );
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã đặt lại cấu hình nháp về mặc định hệ thống!'
         ]);
     }
 }

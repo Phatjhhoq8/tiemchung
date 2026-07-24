@@ -1,7 +1,7 @@
 @extends('vaccine::layouts.admin')
 
 @section('title', 'Chỉnh Sửa Trực Quan Toàn Bộ Tất Cả Các Trang - Medicare')
-@section('page_title', '🎨 Trình Chỉnh Sửa Trực Quan Toàn Bộ Các Trang (Universal All-Page Live Editor)')
+@section('page_title', 'Trình Chỉnh Sửa Trực Quan Toàn Bộ Các Trang (Universal All-Page Live Editor)')
 
 @section('styles')
 <style>
@@ -136,22 +136,25 @@
 <!-- BAR CHUYỂN ĐỔI CÁC TRANG CẦN CHỈNH SỬA LIVE -->
 <div class="live-page-tabs">
     <a href="{{ route('admin.live-editor', ['page' => 'home']) }}" class="live-page-tab {{ $currentPage === 'home' ? 'active' : '' }}">
-        <i data-lucide="home" style="width: 16px; height: 16px;"></i> 🏠 Trang Chủ (7 Khung)
+        Trang Chủ (7 Khung)
+    </a>
+    <a href="{{ route('admin.live-editor', ['page' => 'layout']) }}" class="live-page-tab {{ $currentPage === 'layout' ? 'active' : '' }}" style="border: 1px dashed #eaaa00;">
+        Sắp Xếp Trang Chủ
     </a>
     <a href="{{ route('admin.live-editor', ['page' => 'about']) }}" class="live-page-tab {{ $currentPage === 'about' ? 'active' : '' }}">
-        <i data-lucide="building-2" style="width: 16px; height: 16px;"></i> 🏢 Giới Thiệu (3 Khung)
+        Giới Thiệu (3 Khung)
     </a>
     <a href="{{ route('admin.live-editor', ['page' => 'services']) }}" class="live-page-tab {{ $currentPage === 'services' ? 'active' : '' }}">
-        <i data-lucide="stethoscope" style="width: 16px; height: 16px;"></i> 🛠️ Dịch Vụ (2 Khung)
+        Dịch Vụ (2 Khung)
     </a>
     <a href="{{ route('admin.live-editor', ['page' => 'contact']) }}" class="live-page-tab {{ $currentPage === 'contact' ? 'active' : '' }}">
-        <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i> 📍 Liên Hệ & Chi Nhánh
+        Liên Hệ & Chi Nhánh
     </a>
     <a href="{{ route('admin.live-editor', ['page' => 'vaccines']) }}" class="live-page-tab {{ $currentPage === 'vaccines' ? 'active' : '' }}">
-        <i data-lucide="syringe" style="width: 16px; height: 16px;"></i> 💉 Vắc Xin CSDL
+        Vắc Xin CSDL
     </a>
     <a href="{{ route('admin.live-editor', ['page' => 'global']) }}" class="live-page-tab {{ $currentPage === 'global' ? 'active-global' : '' }}" style="margin-left: auto; border: 1px solid #0284c7;">
-        <i data-lucide="settings-2" style="width: 16px; height: 16px;"></i> ⚙️ Khung Chung System Shell
+        Khung Chung System Shell
     </a>
 </div>
 
@@ -282,6 +285,172 @@
     </div>
 @endif
 
+<!-- ================= TAB SẮP XẾP TRANG CHỦ ================= -->
+@if($currentPage === 'layout')
+    <style>
+        .editor-btn-secondary {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .editor-btn-secondary:hover:not(:disabled) {
+            background: #e2e8f0;
+            color: #334155;
+            border-color: #94a3b8;
+            transform: translateY(-1px);
+        }
+        .editor-btn-secondary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .editor-btn-secondary-outline {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .editor-btn-secondary-outline:hover:not(:disabled) {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #0f172a;
+            transform: translateY(-1px);
+        }
+        .editor-btn-secondary-outline:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .editor-btn-primary {
+            padding: 10px 18px;
+            border-radius: 8px;
+            background: #c8102e;
+            color: #fff;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 10px rgba(200, 16, 46, 0.15);
+            transition: all 0.2s ease-in-out;
+        }
+        .editor-btn-primary:hover:not(:disabled) {
+            background: #a00d24;
+            box-shadow: 0 6px 14px rgba(200, 16, 46, 0.25);
+            transform: translateY(-1px);
+        }
+        .editor-btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+
+    <div style="background: #ffffff; padding: 28px; border-radius: 16px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
+        <div style="display: flex; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; margin-bottom: 24px;">
+            <div>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #1e293b;">🧩 Sắp xếp & Cấu hình các phần Trang Chủ</h3>
+                <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">Thay đổi thứ tự hiển thị, bật/tắt (ghim), đổi màu nền và khoảng giãn của từng phần trên trang chủ.</p>
+            </div>
+            <div style="display: flex; gap: 8px; margin-left: auto;">
+                <button type="button" onclick="resetLayoutConfig()" class="editor-btn-secondary" id="btn-reset-layout">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Khôi Phục
+                </button>
+                <button type="button" onclick="previewLayoutConfig()" class="editor-btn-secondary-outline" id="btn-preview-layout">
+                    <i data-lucide="eye" class="w-4 h-4"></i> Xem Giả Lập
+                </button>
+                <button type="button" onclick="publishLayoutConfigLive()" class="editor-btn-primary" id="btn-publish-layout">
+                    <i data-lucide="send" class="w-4 h-4"></i> Áp Dụng
+                </button>
+            </div>
+        </div>
+
+        <form id="homepageLayoutForm">
+            @csrf
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: grid; grid-template-columns: 80px 1fr 150px 180px 150px; gap: 16px; padding: 12px 16px; background: #f8fafc; border-radius: 8px; font-weight: 700; color: #475569; font-size: 13px;">
+                    <div>Thứ Tự</div>
+                    <div>Tên Phân Phần (Section)</div>
+                    <div>Trạng Thái</div>
+                    <div>Màu Nền</div>
+                    <div>Khoảng Cách</div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;" id="sortable-sections-list">
+                    @foreach($layoutConfig as $key => $section)
+                        <div class="layout-section-row" data-key="{{ $key }}" draggable="true" style="display: grid; grid-template-columns: 80px 1fr 150px 180px 150px; gap: 16px; align-items: center; padding: 14px 16px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; transition: all 0.2s; cursor: grab;">
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <button type="button" onclick="moveSectionRow(this, 'up')" class="p-1.5 hover:bg-slate-100 rounded text-slate-600 transition-colors" title="Di chuyển lên">
+                                    <i data-lucide="chevron-up" class="w-4 h-4"></i>
+                                </button>
+                                <button type="button" onclick="moveSectionRow(this, 'down')" class="p-1.5 hover:bg-slate-100 rounded text-slate-600 transition-colors" title="Di chuyển xuống">
+                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <div style="font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="grip-vertical" class="w-4 h-4 text-slate-400 cursor-move"></i>
+                                <span>{{ $section['name'] }}</span>
+                                <span style="font-family: monospace; font-size: 11px; font-weight: 500; color: #94a3b8; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">{{ $key }}</span>
+                            </div>
+                            <input type="hidden" class="section-order-input" name="layout[{{ $key }}][order]" value="{{ $section['order'] }}">
+                            <div>
+                                <select name="layout[{{ $key }}][is_visible]" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px; font-weight: 600;">
+                                    <option value="1" {{ $section['is_visible'] ? 'selected' : '' }}>🟢 Hiện</option>
+                                    <option value="0" {{ !$section['is_visible'] ? 'selected' : '' }}>🔴 Ẩn</option>
+                                </select>
+                            </div>
+                            <div>
+                                @if($key === 'hero_slider' || $key === 'quick_booking')
+                                    <span style="font-size: 12px; color: #94a3b8; font-style: italic;">Mặc định phần</span>
+                                    <input type="hidden" name="layout[{{ $key }}][bg]" value="{{ $section['bg'] }}">
+                                @else
+                                    <select name="layout[{{ $key }}][bg]" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px; font-weight: 600;">
+                                        <option value="white" {{ $section['bg'] === 'white' ? 'selected' : '' }}>⚪ Trắng</option>
+                                        <option value="red" {{ $section['bg'] === 'red' ? 'selected' : '' }}>🔴 Đỏ</option>
+                                        <option value="dark" {{ $section['bg'] === 'dark' ? 'selected' : '' }}>🔵 Tối</option>
+                                    </select>
+                                @endif
+                            </div>
+                            <div>
+                                @if($key === 'hero_slider' || $key === 'quick_booking')
+                                    <span style="font-size: 12px; color: #94a3b8; font-style: italic;">Mặc định phần</span>
+                                    <input type="hidden" name="layout[{{ $key }}][padding]" value="{{ $section['padding'] }}">
+                                @else
+                                    <select name="layout[{{ $key }}][padding]" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px; font-weight: 600;">
+                                        <option value="compact" {{ $section['padding'] === 'compact' ? 'selected' : '' }}>Hẹp</option>
+                                        <option value="standard" {{ $section['padding'] === 'standard' ? 'selected' : '' }}>Vừa</option>
+                                        <option value="spacious" {{ $section['padding'] === 'spacious' ? 'selected' : '' }}>Rộng</option>
+                                    </select>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </form>
+    </div>
+@endif
+
 <!-- MODAL CẤU HÌNH -->
 <div id="settingModal" class="fb-modal-overlay">
     <div class="fb-modal-content">
@@ -352,5 +521,231 @@
     function closeModal(id) {
         document.getElementById(id).style.display = 'none';
     }
+
+    function saveLayoutConfigDraft() {
+        const form = document.getElementById('homepageLayoutForm');
+        const formData = new FormData(form);
+
+        fetch("{{ route('admin.live-editor.layout.save') }}", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Accept": "application/json"
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("🎉 " + data.message);
+                window.location.reload();
+            } else {
+                alert("❌ Lỗi: " + data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("❌ Đã xảy ra lỗi khi lưu cấu hình nháp.");
+        });
+    }
+
+    function previewLayoutConfig() {
+        const btn = document.getElementById('btn-preview-layout');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+        btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Đang tải...';
+        if (window.lucide) { lucide.createIcons(); }
+
+        const form = document.getElementById('homepageLayoutForm');
+        const formData = new FormData(form);
+
+        fetch("{{ route('admin.live-editor.layout.save') }}", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Accept": "application/json"
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerHTML = originalHtml;
+            if (window.lucide) { lucide.createIcons(); }
+            if (data.success) {
+                window.open("{{ url('/?preview=1') }}", "_blank");
+            } else {
+                alert("❌ Lỗi lưu cấu hình: " + data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("❌ Đã xảy ra lỗi khi lưu cấu hình nháp trước khi xem giả lập.");
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerHTML = originalHtml;
+            if (window.lucide) { lucide.createIcons(); }
+        });
+    }
+
+    function resetLayoutConfig() {
+        const btn = document.getElementById('btn-reset-layout');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+        btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Đang khôi phục...';
+        if (window.lucide) { lucide.createIcons(); }
+
+        fetch("{{ route('admin.live-editor.layout.reset') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Thành công!';
+                if (window.lucide) { lucide.createIcons(); }
+                setTimeout(() => {
+                    window.location.reload();
+                }, 600);
+            } else {
+                alert("❌ Lỗi: " + data.message);
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.innerHTML = originalHtml;
+                if (window.lucide) { lucide.createIcons(); }
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("❌ Đã xảy ra lỗi khi khôi phục cấu hình.");
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerHTML = originalHtml;
+            if (window.lucide) { lucide.createIcons(); }
+        });
+    }
+
+    function publishLayoutConfigLive() {
+        const btn = document.getElementById('btn-publish-layout');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+        btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Đang áp dụng...';
+        if (window.lucide) { lucide.createIcons(); }
+
+        const form = document.getElementById('homepageLayoutForm');
+        const formData = new FormData(form);
+
+        fetch("{{ route('admin.live-editor.layout.publish') }}", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Accept": "application/json"
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Thành công!';
+                if (window.lucide) { lucide.createIcons(); }
+                setTimeout(() => {
+                    window.location.reload();
+                }, 600);
+            } else {
+                alert("❌ Lỗi: " + data.message);
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.innerHTML = originalHtml;
+                if (window.lucide) { lucide.createIcons(); }
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("❌ Đã xảy ra lỗi khi áp dụng cấu hình.");
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerHTML = originalHtml;
+            if (window.lucide) { lucide.createIcons(); }
+        });
+    }
+
+    // Recalculate order values sequentially (10, 20, 30...) to prevent out-of-bound errors
+    function recalculateOrderValues() {
+        const list = document.getElementById('sortable-sections-list');
+        if (!list) return;
+        const rows = list.querySelectorAll('.layout-section-row');
+        rows.forEach((row, index) => {
+            const orderInput = row.querySelector('.section-order-input');
+            if (orderInput) {
+                orderInput.value = (index + 1) * 10;
+            }
+        });
+    }
+
+    // Move section row up or down and swap
+    function moveSectionRow(btn, direction) {
+        const row = btn.closest('.layout-section-row');
+        if (!row) return;
+
+        if (direction === 'up') {
+            const prev = row.previousElementSibling;
+            if (prev && prev.classList.contains('layout-section-row')) {
+                prev.before(row);
+            }
+        } else if (direction === 'down') {
+            const next = row.nextElementSibling;
+            if (next && next.classList.contains('layout-section-row')) {
+                next.after(row);
+            }
+        }
+        recalculateOrderValues();
+    }
+
+    // Initialize HTML5 Drag & Drop sorting
+    document.addEventListener('DOMContentLoaded', () => {
+        const list = document.getElementById('sortable-sections-list');
+        if (!list) return;
+        
+        let draggingEl = null;
+
+        list.addEventListener('dragstart', (e) => {
+            const row = e.target.closest('.layout-section-row');
+            if (!row) return;
+            draggingEl = row;
+            e.dataTransfer.effectAllowed = 'move';
+            row.style.opacity = '0.5';
+        });
+
+        list.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const row = e.target.closest('.layout-section-row');
+            if (!row || row === draggingEl) return;
+
+            const bounding = row.getBoundingClientRect();
+            const offset = e.clientY - bounding.top - (bounding.height / 2);
+
+            if (offset > 0) {
+                row.after(draggingEl);
+            } else {
+                row.before(draggingEl);
+            }
+        });
+
+        list.addEventListener('dragend', () => {
+            if (draggingEl) {
+                draggingEl.style.opacity = '';
+                draggingEl = null;
+                recalculateOrderValues();
+            }
+        });
+    });
 </script>
 @endsection
