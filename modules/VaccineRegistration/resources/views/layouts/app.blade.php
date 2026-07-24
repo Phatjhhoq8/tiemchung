@@ -30,7 +30,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
     
     <!-- Dark Mode Check -->
     <script>
@@ -48,7 +48,7 @@
                 </a>
                 <span class="divider">|</span>
                 <a href="{{ route('contact') }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                    <i data-lucide="map-pin" style="color: var(--accent-color);"></i> <strong>Chi nhánh 2:</strong> Thới Lai (Hotline: 0932 477 184)
+                    <i data-lucide="map-pin" style="color: var(--secondary-color);"></i> <strong>Chi nhánh 2:</strong> Thới Lai (Hotline: 0932 477 184)
                 </a>
             </div>
             <div class="topbar-social">
@@ -196,40 +196,44 @@
                 HỆ THỐNG CHI NHÁNH TIÊM CHỦNG MEDICARE CẦN THƠ
             </div>
             
-            <div class="footer-branch-grid">
+            <div class="footer-branch-list">
                 <!-- Chi nhánh 1 -->
-                <div class="footer-branch-card">
-                    <span class="footer-branch-badge">Chi nhánh 1 - Cờ Đỏ</span>
-                    <h4>Medicare Cờ Đỏ</h4>
+                <div class="footer-branch-item">
+                    <h4>Medicare Cờ Đỏ (Chi nhánh 1)</h4>
                     <div class="footer-branch-info">
-                        <p><i data-lucide="map-pin" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ</p>
-                        <p><i data-lucide="phone" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Hotline: <strong>0938 60 38 39</strong></p>
-                        <p><i data-lucide="clock" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Thứ 2 – Thứ 7: 7:30 – 17:00</p>
+                        <p><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ</p>
+                        <p>
+                            <i data-lucide="phone" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Hotline: <strong>0938 60 38 39</strong>
+                            <span style="opacity: 0.3; margin: 0 10px;">|</span>
+                            <i data-lucide="clock" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Thứ 2 – Thứ 7: 7:30 – 17:00
+                        </p>
                     </div>
-                    <div class="footer-branch-actions">
-                        <a href="{{ route('contact') }}" class="footer-branch-btn footer-branch-btn-primary">
+                    <div class="footer-branch-item-actions">
+                        <a href="{{ route('contact') }}" class="footer-branch-link-map">
                             <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Xem bản đồ & chỉ đường
                         </a>
-                        <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="footer-branch-btn footer-branch-btn-secondary">
+                        <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="footer-branch-link-book">
                             Đặt lịch tại CN1 →
                         </a>
                     </div>
                 </div>
 
                 <!-- Chi nhánh 2 -->
-                <div class="footer-branch-card">
-                    <span class="footer-branch-badge" style="background-color: rgba(0, 75, 143, 0.3); color: #60a5fa; border-color: rgba(96, 165, 250, 0.4);">Chi nhánh 2 - Thới Lai</span>
-                    <h4>Medicare Thới Lai</h4>
+                <div class="footer-branch-item">
+                    <h4>Medicare Thới Lai (Chi nhánh 2)</h4>
                     <div class="footer-branch-info">
-                        <p><i data-lucide="map-pin" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Trung tâm Y tế Huyện Thới Lai, Thị trấn Thới Lai, Huyện Thới Lai, TP. Cần Thơ</p>
-                        <p><i data-lucide="phone" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Hotline: <strong>0932 477 184</strong></p>
-                        <p><i data-lucide="clock" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Thứ 2 – Thứ 7: 7:30 – 17:00</p>
+                        <p><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Trung tâm Y tế Huyện Thới Lai, Thị trấn Thới Lai, Huyện Thới Lai, TP. Cần Thơ</p>
+                        <p>
+                            <i data-lucide="phone" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Hotline: <strong>0932 477 184</strong>
+                            <span style="opacity: 0.3; margin: 0 10px;">|</span>
+                            <i data-lucide="clock" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Thứ 2 – Thứ 7: 7:30 – 17:00
+                        </p>
                     </div>
-                    <div class="footer-branch-actions">
-                        <a href="{{ route('contact') }}" class="footer-branch-btn footer-branch-btn-primary">
+                    <div class="footer-branch-item-actions">
+                        <a href="{{ route('contact') }}" class="footer-branch-link-map">
                             <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Xem bản đồ & chỉ đường
                         </a>
-                        <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="footer-branch-btn footer-branch-btn-secondary">
+                        <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="footer-branch-link-book">
                             Đặt lịch tại CN2 →
                         </a>
                     </div>

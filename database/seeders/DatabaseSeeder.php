@@ -20,5 +20,6 @@ class DatabaseSeeder extends Seeder
         $this->call(\Modules\VaccineRegistration\Database\Seeders\CenterSeeder::class);
         $this->call(\Modules\VaccineRegistration\Database\Seeders\SettingSeeder::class);
         $this->call(\Modules\VaccineRegistration\Database\Seeders\BannerSeeder::class);
+        $this->call(\Modules\VaccineRegistration\Database\Seeders\ArticleSeeder::class);
     }
 }

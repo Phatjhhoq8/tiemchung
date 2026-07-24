@@ -15,7 +15,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
     
     <style>
         /* CSS nội bộ bổ trợ cho Admin Layout (các class riêng) */
