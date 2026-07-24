@@ -37,7 +37,7 @@
 
     <!-- Article Main Content -->
     <div style="font-size: 16px; line-height: 1.8; color: #334155; margin-bottom: 50px;">
-        {!! nl2br(e($article->content)) !!}
+        {!! $article->content !!}
     </div>
 
     <!-- Call to Action Banner -->
