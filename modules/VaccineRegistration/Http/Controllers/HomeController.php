@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use Modules\VaccineRegistration\Models\Banner;
 use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Models\Article;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminLiveEditorController;
 
 class HomeController extends Controller
 {
@@ -21,16 +22,33 @@ class HomeController extends Controller
         // Lấy danh sách banner đang hoạt động và sắp xếp thứ tự
         $banners = Banner::active()->ordered()->get();
 
-        // Lấy 8 vắc xin lẻ nổi bật để quảng bá (khung 2 hàng 4 cột)
-        $featuredVaccines = Vaccine::single()->take(8)->get();
+        // Lấy danh sách vắc xin lẻ nổi bật (is_featured = true) được cấu hình trong Admin, tự động điền thêm nếu thiếu
+        $featuredVaccines = Vaccine::single()->featured()->orderBy('sort_order', 'asc')->take(8)->get();
+        if ($featuredVaccines->count() < 8) {
+            $excludeIds = $featuredVaccines->pluck('id')->toArray();
+            $extraVaccines = Vaccine::single()->whereNotIn('id', $excludeIds)->orderBy('sort_order', 'asc')->take(8 - $featuredVaccines->count())->get();
+            $featuredVaccines = $featuredVaccines->merge($extraVaccines);
+        }
 
         // Lấy 3 gói vắc xin gia đình phổ biến
         $vaccinePackages = Vaccine::package()->take(3)->get();
 
+        // Lấy 4 vắc xin lẻ nổi bật chiến dịch (để hiển thị lưới 2x2 ở phần qdenga_promo cũ)
+        $campaignVaccines = Vaccine::single()->featured()->orderBy('sort_order', 'asc')->take(4)->get();
+        if ($campaignVaccines->count() < 4) {
+            $excludeIds = $campaignVaccines->pluck('id')->toArray();
+            $extraCampaign = Vaccine::single()->whereNotIn('id', $excludeIds)->orderBy('sort_order', 'asc')->take(4 - $campaignVaccines->count())->get();
+            $campaignVaccines = $campaignVaccines->merge($extraCampaign);
+        }
+
         // Lấy 4 bài viết tin tức / kiến thức y tế mới nhất từ CSDL (1 bài lớn + 3 bài nhỏ)
         $articles = Article::where('is_published', true)->latest()->take(4)->get();
 
-        return view('vaccine::home', compact('banners', 'featuredVaccines', 'vaccinePackages', 'articles'));
+        // Kiểm tra xem có đang ở chế độ xem thử giả lập hay không
+        $isPreviewMode = request()->has('preview') && session('admin_logged_in') === true;
+        $layoutConfig = AdminLiveEditorController::getLayoutConfig($isPreviewMode);
+
+        return view('vaccine::home', compact('banners', 'featuredVaccines', 'campaignVaccines', 'vaccinePackages', 'articles', 'layoutConfig', 'isPreviewMode'));
     }
 
     /**
