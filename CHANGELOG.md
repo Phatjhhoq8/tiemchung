@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v3.5.1] - 2026-07-27
+
+### TOC Card Visual Parity Fix
+
+* **Identical Card Container**: Added `.vaccine-toc-widget` and `.toc-link-item` CSS definitions to [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css), ensuring the Article Detail Table of Contents has the exact same white rounded card background (`#ffffff`), 1px border, shadow, and cream active pill highlight (`#fff9e6`) as the Vaccine Detail page.
+
 ## [v3.5.0] - 2026-07-27
 
 ### Unified Layout (Left-Big Right-Small) & Dynamic Sticky TOC
