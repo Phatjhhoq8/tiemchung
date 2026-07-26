@@ -55,6 +55,11 @@
     }
 }
 
+.article-sidebar {
+    align-self: stretch;
+    box-sizing: border-box;
+}
+
 /* Cột Bên Trái Sticky Container (top: 100px - Đảm bảo không bao giờ bị Header che lấp khi cuộn) */
 .sticky-sidebar-container {
     position: sticky;
