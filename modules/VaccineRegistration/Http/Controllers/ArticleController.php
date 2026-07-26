@@ -24,13 +24,25 @@ class ArticleController extends Controller
         }
 
         if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('title', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('summary', 'like', '%' . $searchTerm . '%');
+            });
         }
 
-        $articles = $query->latest()->paginate(6);
-        $categories = Article::where('is_published', true)->distinct()->pluck('category');
+        $articles = $query->latest()->paginate(12)->withQueryString();
+        
+        // Dynamic category list without '&' character
+        $rawCategories = Article::where('is_published', true)->whereNotNull('category')->distinct()->pluck('category');
+        $categories = $rawCategories->map(function($cat) {
+            return str_replace('&', 'và', $cat);
+        })->unique()->values();
 
-        return view('vaccine::articles.index', compact('articles', 'categories'));
+        // Hot News stream for Hero Section (Top 5 latest articles)
+        $hotNews = Article::where('is_published', true)->latest()->take(5)->get();
+
+        return view('vaccine::articles.index', compact('articles', 'categories', 'hotNews'));
     }
 
     /**

@@ -1,6 +1,14 @@
 # Release Notes
 
-## [v2.9.8] - 2026-07-26
+## [v2.9.9] - 2026-07-26
+
+### Redesigned News Catalog Page, Persistent Báo Mới Hero Banner & Seeded 100 Articles
+
+* **Redesigned News Catalog Page**: Built a 4-tier layout in [index.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/index.blade.php) featuring a persistent Báo Mới Hero banner top section (70% main featured + 3 sub-featured, 30% right column with 5 hot news items aligned with a level bottom border), a smart search box and sub-page navigation tab bar, a 12-article 3-column main grid, and a bottom Medicare advice banner.
+* **Seeded 100 Realistic Medical Articles**: Created and executed [ArticleSeeder.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/database/seeders/ArticleSeeder.php) populating 100 realistic medical articles inspired by VNVC topic structures across 6 primary medical categories (`Bệnh Truyền Nhiễm`, `Khuyến Cáo Y Tế`, `Tin Nóng Y Học`, `Vắc Xin Mới`, `Chăm Sóc Trẻ Em`, `Tiêm Chủng Người Lớn`), generating a dynamic 9-page Laravel pagination (`Showing 1 to 12 of 100 results`).
+* **Strict Ampersand (`&`) Character Restriction**: Replaced all occurrences of `&` across article titles, categories, and navigation tabs with the Vietnamese word "và" per user rules.
+* **100% Design System & Pagination Consistency**: Applied brand color palette (Medicare Red `#c8102e`, Medicare Navy `#004b8f`, Medicare Gold `#eaaa00`) and styled Laravel pagination matching the product catalog page.
+
 
 ### Added Disease Details, Empty Cart Options & Admin Weekly Schedule Planner
 
