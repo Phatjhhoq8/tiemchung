@@ -49,7 +49,9 @@ class AdminRegistrationController extends Controller
             'Chờ thanh toán',
             'Đã thanh toán',
             'Đã tiêm',
-            'Đã hủy'
+            'Đã hủy',
+            'Chờ tư vấn',
+            'Đã tư vấn'
         ];
 
         return view('vaccine::admin.registrations.show', compact('registration', 'statuses'));
@@ -63,7 +65,7 @@ class AdminRegistrationController extends Controller
         $registration = Registration::findOrFail($id);
 
         $validated = $request->validate([
-            'status' => 'required|string|in:Chờ thanh toán,Đã thanh toán,Đã tiêm,Đã hủy',
+            'status' => 'required|string|in:Chờ thanh toán,Đã thanh toán,Đã tiêm,Đã hủy,Chờ tư vấn,Đã tư vấn',
         ], [
             'status.required' => 'Vui lòng chọn trạng thái.',
             'status.in' => 'Trạng thái không hợp lệ.'
@@ -75,6 +77,61 @@ class AdminRegistrationController extends Controller
 
         return redirect()->route('admin.registrations.show', $id)
             ->with('success', 'Cập nhật trạng thái đơn đăng ký thành công.');
+    }
+
+    /**
+     * Quản lý lịch hẹn theo ngày trong tuần.
+     */
+    public function schedule(Request $request)
+    {
+        $weekParam = $request->input('week');
+        
+        try {
+            $startOfWeek = $weekParam 
+                ? \Carbon\Carbon::parse($weekParam)->startOfWeek()
+                : \Carbon\Carbon::now()->startOfWeek();
+        } catch (\Exception $e) {
+            $startOfWeek = \Carbon\Carbon::now()->startOfWeek();
+        }
+
+        $endOfWeek = $startOfWeek->copy()->endOfWeek();
+
+        // Lấy toàn bộ đơn đăng ký trong tuần này
+        $registrations = Registration::with('vaccines')
+            ->whereBetween('injection_date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
+            ->get();
+
+        // Nhóm theo ngày trong tuần
+        $daysOfWeek = [];
+        $currentDay = $startOfWeek->copy();
+        for ($i = 0; $i < 7; $i++) {
+            $dateString = $currentDay->toDateString();
+            $daysOfWeek[$dateString] = [
+                'day_name' => $this->getVietnameseDayName($currentDay),
+                'date' => $currentDay->format('d/m/Y'),
+                'carbon' => $currentDay->copy(),
+                'items' => $registrations->filter(fn($reg) => $reg->injection_date == $dateString)->values()
+            ];
+            $currentDay->addDay();
+        }
+
+        return view('vaccine::admin.schedule', compact('daysOfWeek', 'startOfWeek'));
+    }
+
+    /**
+     * Dịch thứ sang Tiếng Việt.
+     */
+    private function getVietnameseDayName(\Carbon\Carbon $date)
+    {
+        return match ($date->dayOfWeek) {
+            \Carbon\Carbon::MONDAY => 'Thứ Hai',
+            \Carbon\Carbon::TUESDAY => 'Thứ Ba',
+            \Carbon\Carbon::WEDNESDAY => 'Thứ Tư',
+            \Carbon\Carbon::THURSDAY => 'Thứ Năm',
+            \Carbon\Carbon::FRIDAY => 'Thứ Sáu',
+            \Carbon\Carbon::SATURDAY => 'Thứ Bảy',
+            \Carbon\Carbon::SUNDAY => 'Chủ Nhật',
+        };
     }
 
     /**

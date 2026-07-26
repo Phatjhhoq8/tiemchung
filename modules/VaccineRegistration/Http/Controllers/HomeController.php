@@ -56,7 +56,8 @@ class HomeController extends Controller
      */
     public function about()
     {
-        return view('vaccine::about');
+        $settings = \Modules\VaccineRegistration\Models\Setting::all()->pluck('value', 'key')->toArray();
+        return view('vaccine::about', compact('settings'));
     }
 
     /**

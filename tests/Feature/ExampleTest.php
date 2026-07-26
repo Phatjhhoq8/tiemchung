@@ -98,4 +98,67 @@ class ExampleTest extends TestCase
 
         $this->get('/success')->assertOk()->assertSee($registration->registration_code);
     }
+
+    public function test_disease_details_page_renders_successfully(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $disease = 'Cúm';
+        $response = $this->get('/vaccines/disease/' . urlencode($disease));
+        $response->assertOk();
+        $response->assertSee('Vắc xin phòng bệnh Cúm Mùa');
+    }
+
+    public function test_submitting_consultation_form_creates_registration_record(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        
+        $response = $this->post('/vaccines/disease/C%C3%BAm/consult', [
+            'customerName' => 'Bệnh nhân test tư vấn',
+            'customerPhone' => '0987654321',
+            'centerName' => 'Medicare Cờ Đỏ (Trụ sở chính)',
+            'customerNote' => 'Cần tư vấn cúm cho người già'
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'success',
+            'message',
+            'registration_code'
+        ]);
+
+        $this->assertDatabaseHas('registrations', [
+            'patient_name' => 'Bệnh nhân test tư vấn',
+            'patient_phone' => '0987654321',
+            'status' => 'Chờ tư vấn',
+            'total_price' => 0
+        ]);
+    }
+
+    public function test_admin_schedule_page_displays_appointments(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        // Tạo một lịch hẹn tiêm chủng giả lập
+        $registration = Registration::create([
+            'registration_code' => 'MCD-TEST123',
+            'patient_name' => 'Bệnh nhân kiểm thử lịch',
+            'patient_dob' => '1995-05-15',
+            'patient_gender' => 'Nữ',
+            'patient_phone' => '0912345678',
+            'patient_address' => '123 Đường Test, Cần Thơ',
+            'center_name' => 'Medicare Cờ Đỏ (Trụ sở chính)',
+            'injection_date' => now()->startOfWeek()->toDateString(), // Đặt ngày tiêm vào đầu tuần hiện tại
+            'status' => 'Chờ thanh toán',
+            'payment_method' => 'Tại trung tâm',
+            'total_price' => 150000,
+        ]);
+
+        // Truy cập với quyền Admin
+        $response = $this->withSession(['admin_logged_in' => true])
+            ->get('/admin/schedule');
+
+        $response->assertOk();
+        $response->assertSee('Bệnh nhân kiểm thử lịch');
+        $response->assertSee('MCD-TEST123');
+    }
 }

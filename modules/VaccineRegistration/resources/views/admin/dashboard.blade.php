@@ -70,7 +70,7 @@
 
     <div class="stat-card-modern">
         <div style="display: flex; align-items: center; gap: 16px;">
-            <div style="background-color: #e0f2fe; color: #0284c7; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+            <div style="background-color: #fee2e2; color: #dc2626; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="image"></i>
             </div>
             <div>

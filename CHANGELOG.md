@@ -1,5 +1,50 @@
 # Release Notes
 
+## [v2.9.8] - 2026-07-26
+
+### Added Disease Details, Empty Cart Options & Admin Weekly Schedule Planner
+
+* **Admin Sidebar Styling Corrections**: Removed the white brightness/invert filter on the admin sidebar logo to restore the original colored Medicare logo design. Fixed the active styling class logic of the "Chỉnh Sửa Trực Quan (Live)" menu item so its background highlights and red border indicator only render when on the active route, preventing dual active state displays.
+* **Action Confirmation Dialogs**: Implemented security confirmation prompts (`confirm()`) before executing any database write operations across registration and admin modules. Added prompts on client-side registration submission, disease group consultation submit, empty cart modal consult request, and admin status updates.
+* **Brand Color Palette Correction**: Replaced all incorrect teal/cyan accent colors on the vaccine catalog page with the correct Medicare Red (#c8102e) theme color. This covers the sidebar filter checkboxes, active sort-pills ("Được quan tâm", "Giá thấp", "Giá cao"), and the default/hover states of the "+ Chọn vắc xin" buttons to ensure brand identity compliance.
+* **Online/Offline Toggle Switch**: Redesigned consultation type selector inside [disease.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/disease.blade.php) and [app.js](file:///c:/Users/Admin/Desktop/tiemchung/public/js/app.js) to show a modern, custom 2-sided pill switch (Online via phone / Offline at center) with background color active transitions. Offline choice opens the center selection field while Online hides it.
+* **Admin Back Button Enhancements**: Transformed the back link inside [show.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/registrations/show.blade.php) to a prominent, bordered action button. Added active hover states changing background to Medicare Red and text to white, paired with a smooth leftward transition on the arrow icon.
+* **Pagination Styling Fix**: Redesigned Laravel's default Tailwind pagination component within [index.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/index.blade.php) using specialized CSS spacing overrides. Separated pagination button nodes with a 6px gap, applied independent 8px border-radius values, and color-matched the active state background with Medicare Red to eliminate button border overlapping issues.
+* **Collapsible Sidebar Filters**: Applied similar collapsible logic on sidebar filter lists (Age groups, Disease prevention, and Country of origin) to show a maximum of 5 options by default, with a toggle link (Xem thêm / Thu gọn) to expand/collapse the full filter option lists.
+* **Collapsible Disease Categories & SVG Toggle Fix**: Grouped product categories inside [index.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/index.blade.php) to render 2 rows (8 items) by default, showing a modern toggle button (Xem thêm danh mục / Thu gọn). Rewrote JavaScript to replace innerHTML of the button to correctly handle Lucide SVG icon changes upon collapse/expand states (chevron-up for Thu gọn and chevron-down for Xem thêm).
+* **Added Disease Details Page**: Built a detailed group disease view [disease.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/disease.blade.php) containing medical description of common pathogens (HPV, Flu, Chickenpox, Diphtheria-Pertussis-Tetanus, Pneumococcal) and a side-by-side AJAX consultant form that registers consultation tickets (`MCD-CS-...`) inside `registrations` with 0 price and default configurations.
+* **Refactored Category Button Redirects**: Converted category button nodes inside [index.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/index.blade.php) to standard semantic links (`<a>`) routing straight to the disease detail template.
+* **Enhanced Empty Cart Stepper Actions**: Refactored `openSpaRegisterModal` within [app.js](file:///c:/Users/Admin/Desktop/tiemchung/public/js/app.js) to display dual action pathways (Browse Vaccine Packages / Ask for Professional Consultation) when the client attempts to check out an empty cart. Built direct inline consultation rendering on the Modal drawer.
+* **Implemented Admin Weekly Schedule Planner**: Created a weekly planner layout [schedule.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/schedule.blade.php) in Admin dashboard mapping daily appointments (Monday to Sunday) using Carbon helper groups. Added relative navigation links (Previous Week, Current Week, Next Week).
+* **Extended Consultation Status Flags**: Added `Chờ tư vấn` and `Đã tư vấn` state tags inside [AdminRegistrationController.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/Http/Controllers/Admin/AdminRegistrationController.php) validation filters and colored badge containers within admin views.
+
+## [v2.9.7] - 2026-07-26
+
+### Removed Doctor Fallback Data & Dynamic Confirm Prompts
+
+* **Removed Hardcoded Fallback Team Data**: Removed the static array fallback inside [about.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/about.blade.php) and defaulted [SettingSeeder.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/Database/Seeders/SettingSeeder.php) to an empty array (`[]`) to ensure doctor list is 100% dynamic from CSDL.
+* **Added Prompt Confirmations**: Integrated custom `confirm` dialogs in [live_editor.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/live_editor.blade.php) for doctor actions: confirming before adding a new doctor (`addTeamItem`), confirming on change before modifying a field (`confirmUpdateTeamMemberField` using `onchange` event), and confirming before deleting a doctor (`deleteTeamItem` with unlimited minimum threshold).
+
+## [v2.9.6] - 2026-07-26
+
+### Enlarged Delete Buttons, Flexbox Layout Auto-Aligning & Optimized Confirm Flow
+
+* **Enlarged Doctor Delete Button**: Upgraded the doctor delete button inside [live_editor.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/live_editor.blade.php) (width/height: 28px, font-size: 18px, Medicare Red background, white border, soft shadow, hover scale 1.15) making it prominent and easy to click.
+* **Auto-aligning Flexbox Layout**: Refactored `.team-grid` and `.team-card` in [style.css](file:///c:/Users/Admin/Desktop/tiemchung/public/css/style.css#L3567) using Flexbox wrapping (`display: flex; justify-content: center; flex-wrap: wrap;`) to ensure the cards dynamically center and balance themselves perfectly on screen based on the actual doctor count (1, 2, 3, 5, etc.) on all viewports.
+* **Optimized Confirm Flow**: Refactored the interactive customizer JS functions (`addTeamItem`, `deleteTeamItem`, and `saveSettingsSubmit`) so clicking the "+ Add Doctor" button immediately appends an empty input form without interruption, while clicking the delete "x" button prompts a confirmation message, and clicking "Save Settings" triggers a safe final confirm dialog before posting settings modifications.
+* **Cleared Obsolete Caches**: Ran artisan command sets to clear Compiled View, Config, Route, and Application Caches to guarantee the client's browser downloads the clean syntax and updated JS functions immediately.
+
+## [v2.9.5] - 2026-07-26
+
+### Overhauled About Us Page & Dynamic CSDL Integration
+
+* **Implemented Dynamic About Us View**: Overhauled [about.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/about.blade.php) using a modern, professional responsive grid design featuring a Hero Banner, Our Story, Mission & Vision, Core Values (6 columns), and Team Members sections.
+* **Integrated Dynamic CSDL Settings**: Modified [HomeController.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/Http/Controllers/HomeController.php) to pull website settings dynamically and pass them to the about page view.
+* **Added 100% Dynamic & Unlimited Team Administration**: Seeded dynamic JSON-structured doctor profiles (`about_team_members`) via [SettingSeeder.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/Database/Seeders/SettingSeeder.php). Implemented a **Visual Dynamic List Builder** in [live_editor.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/live_editor.blade.php) that enables admin users to visually add, delete, and modify doctor profiles (name, role, avatar, Zalo) dynamically, breaking the limit of 4 members.
+* **Seeded About Page Defaults**: Updated [SettingSeeder.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/Database/Seeders/SettingSeeder.php) with new settings keys, seeding default texts for Hero, Story, Statistics, Mission, Vision, and the team list JSON.
+* **Styled with System CSS Variables**: Structured the about page CSS within `@section('styles')` utilizing existing design system variables (`--primary-color`, `--accent-color`, `--bg-card`, `--text-primary`, `--border-color`) to guarantee seamless integration and automatic light/dark mode support.
+* **Integrated AOS Animations**: Tapped into the project's existing AOS (Animate On Scroll) library by adding `data-aos` markup properties to achieve smooth fade-in scrolling transitions without bloating the CSS footprint.
+
 ## [v2.9.4] - 2026-07-26
 
 ### Complete Admin Interface Redesign & CSS Style Consolidation

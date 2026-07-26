@@ -67,7 +67,7 @@ function toggleCartDrawer() {
 }
 
 async function toggleCart(vaccineId) {
-    const cards = document.querySelectorAll(`.vaccine-card[data-id="${vaccineId}"]`);
+    const cards = document.querySelectorAll(`.vaccine-card[data-id="${vaccineId}"], .catalog-product-card[data-id="${vaccineId}"]`);
     let isSelected = false;
     if (cards.length > 0) {
         isSelected = cards[0].classList.contains('selected');
@@ -93,20 +93,20 @@ async function toggleCart(vaccineId) {
         const data = await response.json();
         
         if (data.success) {
-            // Cập nhật thẻ vắc xin ở tất cả vị trí (Grid trang chủ, Bảng giá, Modal)
+            // Cập nhật thẻ vắc xin ở tất cả vị trí (trang chủ, danh mục sản phẩm, modal)
             cards.forEach(cardEl => {
                 const btn = cardEl.querySelector('.btn-select-vaccine');
                 if (isSelected) {
                     cardEl.classList.remove('selected');
                     if (btn) {
                         btn.classList.remove('btn-selected');
-                        btn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn tiêm</span>`;
+                        btn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn vắc xin</span>`;
                     }
                 } else {
                     cardEl.classList.add('selected');
                     if (btn) {
                         btn.classList.add('btn-selected');
-                        btn.innerHTML = `<i data-lucide="check"></i> <span>Đã chọn</span>`;
+                        btn.innerHTML = `<i data-lucide="x"></i> <span>Hủy chọn</span>`;
                     }
                 }
             });
@@ -117,11 +117,15 @@ async function toggleCart(vaccineId) {
                 if (isSelected) {
                     modalBtn.classList.remove('btn-selected');
                     modalBtn.style.backgroundColor = 'var(--primary-color, #c8102e)';
-                    modalBtn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn tiêm vắc xin này</span>`;
+                    modalBtn.style.borderColor = 'var(--primary-color, #c8102e)';
+                    modalBtn.style.color = '#ffffff';
+                    modalBtn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn vắc xin này</span>`;
                 } else {
                     modalBtn.classList.add('btn-selected');
-                    modalBtn.style.backgroundColor = 'var(--secondary-color, #0284c7)';
-                    modalBtn.innerHTML = `<i data-lucide="check"></i> <span>Đã chọn trong danh sách</span>`;
+                    modalBtn.style.backgroundColor = '#fff1f2';
+                    modalBtn.style.borderColor = '#fecdd3';
+                    modalBtn.style.color = 'var(--primary-color, #c8102e)';
+                    modalBtn.innerHTML = `<i data-lucide="x"></i> <span>Hủy chọn</span>`;
                 }
             }
 
@@ -192,10 +196,10 @@ async function clearCartUI() {
         const data = await response.json();
         if (data.success) {
             updateFloatingCart({}, 0, 0);
-            document.querySelectorAll('.vaccine-card').forEach(card => card.classList.remove('selected'));
+            document.querySelectorAll('.vaccine-card, .catalog-product-card').forEach(card => card.classList.remove('selected'));
             document.querySelectorAll('.btn-select-vaccine').forEach(btn => {
                 btn.classList.remove('btn-selected');
-                btn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn tiêm</span>`;
+                btn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn vắc xin</span>`;
             });
             lucide.createIcons();
             showToast('Đã xóa sạch giỏ hàng.', 'info');
@@ -293,9 +297,9 @@ async function openVaccineDetailModal(vaccineId, event) {
                                 <strong style="font-size: 22px; font-weight: 800; color: var(--primary-color, #c8102e);">${v.formatted_price}</strong>
                             </div>
 
-                            <button id="modalSelectBtn_${v.id}" onclick="toggleCart(${v.id})" class="btn-select-detail ${v.is_in_cart ? 'btn-selected' : ''}" style="padding: 12px 22px; border-radius: 10px; border: none; color: #ffffff; font-weight: 700; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; background-color: ${v.is_in_cart ? 'var(--secondary-color, #0284c7)' : 'var(--primary-color, #c8102e)'};">
-                                <i data-lucide="${v.is_in_cart ? 'check' : 'plus'}" style="width: 18px; height: 18px;"></i>
-                                <span>${v.is_in_cart ? 'Đã chọn trong danh sách' : 'Chọn tiêm vắc xin này'}</span>
+                            <button id="modalSelectBtn_${v.id}" onclick="toggleCart(${v.id})" class="btn-select-detail ${v.is_in_cart ? 'btn-selected' : ''}" style="padding: 12px 22px; border-radius: 10px; border: 1px solid ${v.is_in_cart ? '#fecdd3' : 'var(--primary-color, #c8102e)'}; color: ${v.is_in_cart ? 'var(--primary-color, #c8102e)' : '#ffffff'}; font-weight: 700; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; background-color: ${v.is_in_cart ? '#fff1f2' : 'var(--primary-color, #c8102e)'};">
+                                <i data-lucide="${v.is_in_cart ? 'x' : 'plus'}" style="width: 18px; height: 18px;"></i>
+                                <span>${v.is_in_cart ? 'Hủy chọn' : 'Chọn vắc xin này'}</span>
                             </button>
                         </div>
                     </div>
@@ -348,12 +352,16 @@ async function openSpaRegisterModal(event) {
 
         if (!response.ok) {
             const errData = await response.json();
+            window.lastFetchCenters = errData.centers || []; // lưu trữ tạm thời để vẽ form tư vấn
             body.innerHTML = `
                 <div style="text-align: center; padding: 40px;">
-                    <i data-lucide="alert-circle" style="width: 48px; height: 48px; color: #f59e0b; margin-bottom: 12px;"></i>
-                    <h3 style="font-size: 18px; font-weight: 700; color: #1e293b;">${errData.message || 'Danh sách tiêm chủng trống.'}</h3>
-                    <p style="color: #64748b; margin-bottom: 20px;">Vui lòng chọn ít nhất 1 loại vắc xin từ bảng giá trước khi đăng ký tiêm.</p>
-                    <button onclick="closeSpaRegisterModal()" class="btn-primary" style="background: var(--primary-color); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer;">Chọn vắc xin ngay</button>
+                    <i data-lucide="help-circle" style="width: 56px; height: 56px; color: var(--secondary-color, #eaaa00); margin: 0 auto 16px auto;"></i>
+                    <h3 style="font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 10px;">Bạn chưa chọn vắc xin nào</h3>
+                    <p style="color: #64748b; margin-bottom: 24px; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.5; font-size: 14.5px;">Bạn có muốn tham khảo các gói vắc xin ưu đãi thiết kế sẵn hoặc gửi yêu cầu tư vấn để bác sĩ Medicare liên hệ ngay?</p>
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        <a href="/vaccines?type=package" class="btn-primary" style="background: var(--secondary-color, #eaaa00); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; min-width: 160px;">Chọn gói vắc xin</a>
+                        <button onclick="renderSpaConsultForm()" class="btn-primary" style="background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; min-width: 160px;">Yêu cầu tư vấn</button>
+                    </div>
                 </div>
             `;
             lucide.createIcons();
@@ -497,6 +505,9 @@ function renderSpaRegisterForm(data) {
 
 async function submitSpaRegistrationForm(event) {
     event.preventDefault();
+    if (!confirm('Bạn có thực sự muốn gửi thông tin đăng ký tiêm chủng này không?')) {
+        return;
+    }
     const form = event.target;
     const btn = document.getElementById('spaSubmitBtn');
     const alertBox = document.getElementById('spaFormErrorAlert');
@@ -602,10 +613,15 @@ function renderRegistrationTicketSuccess(data) {
 // AJAX VACCINE SEARCH & FILTER ENGINE (SPA)
 // ==========================================================================
 let filterTimer = null;
-let currentSearch = '';
-let currentAgeGroup = '';
-let currentDisease = '';
-let currentType = 'single';
+const vaccineFilterParams = new URLSearchParams(window.location.search);
+let currentSearch = vaccineFilterParams.get('search') || '';
+let currentAgeGroup = vaccineFilterParams.get('age_group') || '';
+let currentDisease = vaccineFilterParams.get('disease') || '';
+let currentOrigin = vaccineFilterParams.get('origin') || '';
+let currentDoses = vaccineFilterParams.get('doses') || '';
+let currentSort = vaccineFilterParams.get('sort') || 'popular';
+let currentType = vaccineFilterParams.get('type') || '';
+let currentPage = vaccineFilterParams.get('page') || '1';
 
 function debouncedFilterVaccinesSpa() {
     clearTimeout(filterTimer);
@@ -613,6 +629,7 @@ function debouncedFilterVaccinesSpa() {
         const input = document.getElementById('spaSearchInput');
         if (input) {
             currentSearch = input.value;
+            currentPage = '1';
             filterVaccinesSpa();
         }
     }, 300);
@@ -621,25 +638,19 @@ function debouncedFilterVaccinesSpa() {
 function setAgeGroupFilter(age, event) {
     if (event) event.preventDefault();
     currentAgeGroup = age;
+    currentPage = '1';
 
-    document.querySelectorAll('#ageGroupFilterContainer .filter-chip').forEach(chip => {
-        chip.classList.remove('active');
-    });
-    if (event && event.currentTarget) {
-        event.currentTarget.classList.add('active');
-    }
+    setActiveFilterRow('ageGroupFilterSelect', age);
 
     filterVaccinesSpa();
 }
 
 function setDiseaseFilter(disease, event) {
     if (event) event.preventDefault();
-    currentSearch = disease;
-    const searchInput = document.getElementById('spaSearchInput');
-    if (searchInput) searchInput.value = disease;
+    currentDisease = disease;
+    currentPage = '1';
 
-    document.querySelectorAll('#diseaseFilterList a').forEach(a => a.classList.remove('active'));
-    if (event && event.currentTarget) event.currentTarget.classList.add('active');
+    setActiveFilterRow('diseaseFilterSelect', disease);
 
     filterVaccinesSpa();
 }
@@ -647,27 +658,57 @@ function setDiseaseFilter(disease, event) {
 function setVaccineTypeFilter(type, event) {
     if (event) event.preventDefault();
     currentType = type;
+    currentPage = '1';
 
     const btnSingle = document.getElementById('tabBtnSingle');
     const btnPackage = document.getElementById('tabBtnPackage');
     const typeInput = document.getElementById('spaTypeInput');
-    const titleEl = document.getElementById('vaccineSectionTitle');
 
     if (typeInput) typeInput.value = type;
 
     if (btnSingle && btnPackage) {
-        if (type === 'single') {
-            btnSingle.style.color = 'var(--primary-color)';
-            btnSingle.style.borderBottomColor = 'var(--primary-color)';
-            btnPackage.style.color = 'var(--text-muted)';
-            btnPackage.style.borderBottomColor = 'transparent';
-        } else {
-            btnPackage.style.color = 'var(--primary-color)';
-            btnPackage.style.borderBottomColor = 'var(--primary-color)';
-            btnSingle.style.color = 'var(--text-muted)';
-            btnSingle.style.borderBottomColor = 'transparent';
-        }
+        btnSingle.classList.toggle('active', type === 'single');
+        btnPackage.classList.toggle('active', type === 'package');
     }
+
+    const titleEl = document.getElementById('vaccineSectionTitle');
+    if (titleEl) {
+        const countLabel = document.getElementById('vaccineCountLabel');
+        const count = countLabel ? countLabel.textContent : '0';
+        titleEl.innerHTML = `${type === 'package' ? 'Danh sách gói vắc xin' : 'Danh sách vắc xin'} <span id="vaccineCountLabel" class="sr-only">${count}</span>`;
+    }
+
+    filterVaccinesSpa();
+}
+
+function setOriginFilter(origin, event) {
+    if (event) event.preventDefault();
+    currentOrigin = origin;
+    currentPage = '1';
+
+    setActiveFilterRow('originFilterSelect', origin);
+
+    filterVaccinesSpa();
+}
+
+function setDosesFilter(doses, event) {
+    if (event) event.preventDefault();
+    currentDoses = doses;
+    currentPage = '1';
+
+    setActiveFilterRow('dosesFilterSelect', doses);
+
+    filterVaccinesSpa();
+}
+
+function setSortFilter(sort, event) {
+    if (event) event.preventDefault();
+    currentSort = sort || 'popular';
+    currentPage = '1';
+
+    document.querySelectorAll('#sortPillGroup .sort-pill').forEach((button) => {
+        button.classList.toggle('active', button.dataset.sort === currentSort);
+    });
 
     filterVaccinesSpa();
 }
@@ -676,19 +717,35 @@ function resetVaccineFilters(event) {
     if (event) event.preventDefault();
     currentSearch = '';
     currentAgeGroup = '';
-    currentType = 'single';
+    currentDisease = '';
+    currentOrigin = '';
+    currentDoses = '';
+    currentSort = 'popular';
+    currentType = '';
+    currentPage = '1';
 
     const searchInput = document.getElementById('spaSearchInput');
     if (searchInput) searchInput.value = '';
 
+    setActiveFilterRow('ageGroupFilterSelect', '');
+    setActiveFilterRow('diseaseFilterSelect', '');
+    setActiveFilterRow('originFilterSelect', '');
+    setActiveFilterRow('dosesFilterSelect', '');
+
+    document.querySelectorAll('#sortPillGroup .sort-pill').forEach((button) => {
+        button.classList.toggle('active', button.dataset.sort === 'popular');
+    });
+
     const btnClear = document.getElementById('btnClearFilters');
     if (btnClear) btnClear.style.display = 'none';
 
-    setVaccineTypeFilter('single');
+    filterVaccinesSpa();
 }
 
-async function filterVaccinesSpa(event) {
+async function filterVaccinesSpa(event, page = null) {
     if (event) event.preventDefault();
+    if (page) currentPage = page;
+    if (event && event.type === 'submit') currentPage = '1';
 
     const container = document.getElementById('vaccineGridContainer');
     if (!container) return;
@@ -698,12 +755,17 @@ async function filterVaccinesSpa(event) {
 
     const params = new URLSearchParams();
     if (currentSearch) params.append('search', currentSearch);
+    if (currentDisease) params.append('disease', currentDisease);
     if (currentAgeGroup) params.append('age_group', currentAgeGroup);
+    if (currentOrigin) params.append('origin', currentOrigin);
+    if (currentDoses) params.append('doses', currentDoses);
     if (currentType) params.append('type', currentType);
+    if (currentSort && currentSort !== 'popular') params.append('sort', currentSort);
+    if (currentPage && currentPage !== '1') params.append('page', currentPage);
 
     const btnClear = document.getElementById('btnClearFilters');
     if (btnClear) {
-        if (currentSearch || currentAgeGroup || currentType !== 'single') {
+        if (currentSearch || currentDisease || currentAgeGroup || currentOrigin || currentDoses || currentSort !== 'popular' || currentType) {
             btnClear.style.display = 'inline-flex';
         } else {
             btnClear.style.display = 'none';
@@ -714,7 +776,8 @@ async function filterVaccinesSpa(event) {
     container.style.transition = 'opacity 0.2s ease';
 
     try {
-        const url = `/vaccines?${params.toString()}`;
+        const queryString = params.toString();
+        const url = queryString ? `/vaccines?${queryString}` : '/vaccines';
         const response = await fetch(url, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
@@ -738,5 +801,225 @@ async function filterVaccinesSpa(event) {
     } catch (e) {
         console.error(e);
         container.style.opacity = '1';
+    }
+}
+
+document.addEventListener('click', (event) => {
+    const link = event.target.closest('.catalog-pagination a');
+    if (!link) return;
+
+    event.preventDefault();
+    const url = new URL(link.href);
+    filterVaccinesSpa(event, url.searchParams.get('page') || '1');
+});
+
+function setActiveFilterRow(containerId, value) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.querySelectorAll('.lc-check-row').forEach((row) => {
+        row.classList.toggle('active', row.dataset.value === value);
+    });
+}
+
+function toggleCatalogFilterGroup(button) {
+    const group = button.closest('.lc-filter-group');
+    if (!group) return;
+
+    group.classList.toggle('open');
+    const icon = button.querySelector('i');
+    if (icon) icon.setAttribute('data-lucide', group.classList.contains('open') ? 'chevron-up' : 'chevron-down');
+    lucide.createIcons();
+}
+
+function filterOriginOptions(keyword) {
+    const normalizedKeyword = keyword.trim().toLowerCase();
+    document.querySelectorAll('#originFilterSelect .origin-option').forEach((option) => {
+        option.style.display = option.textContent.toLowerCase().includes(normalizedKeyword) ? 'flex' : 'none';
+    });
+}
+
+function filterDiseaseOptions(keyword) {
+    const normalizedKeyword = keyword.trim().toLowerCase();
+    document.querySelectorAll('#diseaseFilterSelect .disease-option').forEach((option) => {
+        option.style.display = option.textContent.toLowerCase().includes(normalizedKeyword) ? 'flex' : 'none';
+    });
+}
+
+// ==========================================================================
+// SPA CONSULTATION FORM
+// ==========================================================================
+function renderSpaConsultForm() {
+    const body = document.getElementById('spaRegisterBody');
+    if (!body) return;
+
+    const centers = window.lastFetchCenters || [];
+    const centerOptions = centers.map(c => `
+        <option value="${c.name}">${c.name} — ${c.address}</option>
+    `).join('') || `
+        <option value="Medicare Chi nhánh 1: Cờ Đỏ">Medicare Chi nhánh 1: Cờ Đỏ — Cờ Đỏ, Cần Thơ</option>
+        <option value="Medicare Chi nhánh 2: Thới Lai">Medicare Chi nhánh 2: Thới Lai — Thới Lai, Cần Thơ</option>
+    `;
+
+    body.innerHTML = `
+        <div style="padding: 24px; max-width: 500px; margin: 0 auto;">
+            <h3 style="font-size: 20px; font-weight: 800; color: var(--text-primary, #1e293b); margin-bottom: 8px; text-align: center;">Yêu cầu tư vấn <span style="color: var(--primary-color, #c8102e);">miễn phí</span></h3>
+            <p style="font-size: 14px; color: var(--text-muted, #64748b); text-align: center; margin-bottom: 24px; line-height:1.5;">Medicare sẽ liên hệ lại ngay để tư vấn phác đồ tiêm chủng vắc xin thích hợp nhất cho bạn.</p>
+            
+            <form id="spaConsultForm" onsubmit="submitSpaConsult(event)">
+                <div class="form-group" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: left;">Hình thức tư vấn <span style="color:#ef4444;">*</span></label>
+                    <div class="consult-type-toggle" style="display: inline-flex; width: 100%; background: #f1f5f9; border-radius: 30px; padding: 4px; border: 1px solid #cbd5e1; margin-top: 6px; box-sizing: border-box;">
+                        <button type="button" id="btnSpaConsultOnline" onclick="setSpaConsultType('online')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: var(--primary-color, #c8102e); color: #ffffff; text-align: center;">
+                            Tư vấn qua điện thoại (Online)
+                        </button>
+                        <button type="button" id="btnSpaConsultOffline" onclick="setSpaConsultType('offline')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: transparent; color: #475569; text-align: center;">
+                            Tư vấn tại trung tâm (Offline)
+                        </button>
+                        <input type="hidden" name="consultType" id="spaConsultTypeValue" value="online">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                    <label for="consultName" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: left;">Họ tên người liên hệ <span style="color:#ef4444;">*</span></label>
+                    <input type="text" id="consultName" name="customerName" placeholder="Nhập họ tên của bạn" required style="width:100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline:none;">
+                    <span class="error-msg" id="err_spa_customerName" style="color: #ef4444; font-size: 12px; display:none; text-align:left;"></span>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                    <label for="consultPhone" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: left;">Số điện thoại liên hệ <span style="color:#ef4444;">*</span></label>
+                    <input type="tel" id="consultPhone" name="customerPhone" placeholder="Ví dụ: 0912345678" required style="width:100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline:none;">
+                    <span class="error-msg" id="err_spa_customerPhone" style="color: #ef4444; font-size: 12px; display:none; text-align:left;"></span>
+                </div>
+                
+                <div class="form-group" id="spaCenterSelectGroup" style="margin-bottom: 16px; display: none; flex-direction: column; gap: 6px;">
+                    <label for="consultCenter" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: left;">Chi nhánh tư vấn gần nhất <span style="color:#ef4444;">*</span></label>
+                    <select id="consultCenter" name="centerName" style="width:100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline:none; background: #fff; height:42px;">
+                        <option value="">-- Chọn trung tâm Medicare --</option>
+                        ${centerOptions}
+                    </select>
+                    <span class="error-msg" id="err_spa_centerName" style="color: #ef4444; font-size: 12px; display:none; text-align:left;"></span>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px;">
+                    <label for="consultNote" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: left;">Ghi chú yêu cầu tư vấn</label>
+                    <textarea id="consultNote" name="customerNote" rows="3" placeholder="Nhập vắc xin bạn muốn tiêm hoặc câu hỏi cần tư vấn..." style="width:100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline:none; font-family:inherit;"></textarea>
+                    <span class="error-msg" id="err_spa_customerNote" style="color: #ef4444; font-size: 12px; display:none; text-align:left;"></span>
+                </div>
+                
+                <div style="display:flex; gap:12px;">
+                    <button type="button" onclick="openSpaRegisterModal(null)" class="btn-secondary" style="flex:1; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; background:#f1f5f9; border:1px solid #cbd5e1; color:#475569;">Quay lại</button>
+                    <button type="submit" class="btn-primary" id="btnSubmitSpaConsult" style="flex:2; background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i data-lucide="send" style="width: 16px; height: 16px;"></i> Gửi yêu cầu
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    lucide.createIcons();
+}
+
+async function submitSpaConsult(event) {
+    if (event) event.preventDefault();
+    if (!confirm('Bạn có thực sự muốn gửi yêu cầu tư vấn tiêm chủng này không?')) {
+        return;
+    }
+
+    const form = document.getElementById('spaConsultForm');
+    const submitBtn = document.getElementById('btnSubmitSpaConsult');
+    const body = document.getElementById('spaRegisterBody');
+
+    // Reset errors
+    document.querySelectorAll('.error-msg').forEach(el => {
+        el.textContent = '';
+        el.style.display = 'none';
+    });
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i data-lucide="loader-2" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i> Đang gửi...';
+    lucide.createIcons();
+
+    const formData = new FormData(form);
+    
+    // Gửi yêu cầu tư vấn với tên bệnh mặc định là "Tư vấn chung"
+    const url = '/vaccines/disease/T%C6%B0%20v%E1%BA%A5n%20chung/consult';
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': getCsrfToken(),
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.status === 422) {
+            // Validation error
+            Object.entries(data.errors).forEach(([field, messages]) => {
+                const errEl = document.getElementById('err_spa_' + field);
+                if (errEl) {
+                    errEl.textContent = messages[0];
+                    errEl.style.display = 'block';
+                }
+            });
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i data-lucide="send" style="width: 16px; height: 16px;"></i> Gửi yêu cầu';
+            lucide.createIcons();
+        } else if (!response.ok) {
+            throw new Error(data.message || 'Lỗi hệ thống');
+        } else {
+            // Success
+            body.innerHTML = `
+                <div style="text-align: center; padding: 40px 24px;">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
+                        <i data-lucide="check-circle-2" style="width: 32px; height: 32px;"></i>
+                    </div>
+                    <h3 style="font-size: 20px; font-weight: 800; color: #065f46; margin-bottom: 10px;">Gửi yêu cầu thành công</h3>
+                    <p style="font-size: 14.5px; color: #1e293b; font-weight: 700; margin-bottom: 8px;">Mã tư vấn: ${data.registration_code}</p>
+                    <p style="color: #4b5563; line-height: 1.6; margin-bottom: 24px; max-width: 360px; margin-left: auto; margin-right: auto;">${data.message}</p>
+                    <button onclick="closeSpaRegisterModal()" class="btn-primary" style="background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 10px 32px; border-radius: 8px; font-weight: 700; cursor: pointer;">Đóng lại</button>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+    } catch (e) {
+        alert('Có lỗi xảy ra: ' + e.message);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="send" style="width: 16px; height: 16px;"></i> Gửi yêu cầu';
+        lucide.createIcons();
+    }
+}
+
+function setSpaConsultType(value) {
+    const input = document.getElementById('spaConsultTypeValue');
+    const btnOnline = document.getElementById('btnSpaConsultOnline');
+    const btnOffline = document.getElementById('btnSpaConsultOffline');
+    const group = document.getElementById('spaCenterSelectGroup');
+    const select = document.getElementById('consultCenter');
+    
+    if (!input || !btnOnline || !btnOffline || !group || !select) return;
+    
+    input.value = value;
+    
+    if (value === 'online') {
+        btnOnline.style.background = 'var(--primary-color, #c8102e)';
+        btnOnline.style.color = '#ffffff';
+        btnOffline.style.background = 'transparent';
+        btnOffline.style.color = '#475569';
+        
+        group.style.display = 'none';
+        select.removeAttribute('required');
+        select.value = '';
+    } else {
+        btnOffline.style.background = 'var(--primary-color, #c8102e)';
+        btnOffline.style.color = '#ffffff';
+        btnOnline.style.background = 'transparent';
+        btnOnline.style.color = '#475569';
+        
+        group.style.display = 'flex';
+        select.setAttribute('required', 'required');
     }
 }

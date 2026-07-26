@@ -38,8 +38,8 @@
                                 <span class="flex items-center gap-1 text-slate-600"><i data-lucide="user-check" class="w-4 h-4 text-[#c8102e]"></i> Đối tượng: Người từ 6 tháng tuổi</span>
                                 <span class="flex items-center gap-1 text-slate-600"><i data-lucide="clock" class="w-4 h-4 text-[#eaaa00]"></i> Lịch tiêm: 1 mũi / năm</span>
                             </div>
-                            <a href="{{ route('vaccine.index', ['search' => 'Cúm']) }}" class="inline-flex items-center gap-1.5 text-[#c8102e] font-bold text-sm hover:underline">
-                                Xem chi tiết & giá <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            <a href="{{ route('vaccine.index', ['disease' => 'Cúm']) }}" class="inline-flex items-center gap-1.5 text-[#c8102e] font-bold text-sm hover:underline">
+                                Xem sản phẩm phù hợp <i data-lucide="arrow-right" class="w-4 h-4"></i>
                             </a>
                         </div>
                     </div>
@@ -71,7 +71,7 @@
                                 <span class="flex items-center gap-1 text-slate-600"><i data-lucide="clock" class="w-4 h-4 text-[#eaaa00]"></i> Lịch tiêm: Theo phác đồ tuổi</span>
                             </div>
                             <a href="{{ route('vaccine.index', ['search' => 'Prevenar']) }}" class="inline-flex items-center gap-1.5 text-[#c8102e] font-bold text-sm hover:underline">
-                                Xem chi tiết & giá <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                Xem sản phẩm phù hợp <i data-lucide="arrow-right" class="w-4 h-4"></i>
                             </a>
                         </div>
                     </div>

@@ -55,7 +55,7 @@
                         </td>
                         <td style="padding: 16px 20px; text-align: right;">
                             <div style="display: inline-flex; gap: 8px;">
-                                <a href="{{ route('admin.articles.edit', $article->id) }}" style="color: #0284c7; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; text-decoration: none; font-weight: 600; font-size: 13px;">Sửa</a>
+                                <a href="{{ route('admin.articles.edit', $article->id) }}" style="color: #dc2626; padding: 6px 12px; border-radius: 6px; border: 1px solid #fecaca; text-decoration: none; font-weight: 600; font-size: 13px;">Sửa</a>
                                 <form action="{{ route('admin.articles.destroy', $article->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài viết này?')">
                                     @csrf
                                     @method('DELETE')

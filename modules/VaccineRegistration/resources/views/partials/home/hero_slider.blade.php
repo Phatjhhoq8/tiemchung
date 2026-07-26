@@ -21,7 +21,7 @@
                         </p>
                         <div class="flex flex-wrap gap-4 pt-1">
                             <a href="{{ route('vaccine.index') }}" class="inline-flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-[#6d0515] font-extrabold py-3 px-6 rounded-xl shadow-lg hover:shadow-yellow-400/30 transition-all duration-200">
-                                Xem bảng giá vắc xin <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                                Xem danh mục sản phẩm <i data-lucide="arrow-right" class="w-5 h-5"></i>
                             </a>
                             <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="inline-flex items-center gap-2 bg-white/10 border border-white/30 text-white hover:bg-white/20 font-bold py-3 px-6 rounded-xl backdrop-blur-sm transition-all duration-200">
                                 <i data-lucide="calendar-check-2" class="w-5 h-5"></i> Đặt lịch tiêm ngay

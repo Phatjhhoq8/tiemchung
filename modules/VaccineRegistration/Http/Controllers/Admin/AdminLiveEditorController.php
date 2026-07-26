@@ -198,6 +198,32 @@ class AdminLiveEditorController extends Controller
 
         foreach ($settingsData as $key => $value) {
             if ($value !== null) {
+                if ($key === 'about_team_members') {
+                    $members = json_decode($value, true);
+                    if (!is_array($members)) {
+                        $members = [];
+                    }
+
+                    $members = collect($members)
+                        ->filter(function ($member) {
+                            return is_array($member)
+                                && trim($member['name'] ?? '') !== ''
+                                && trim($member['role'] ?? '') !== '';
+                        })
+                        ->map(function ($member) {
+                            return [
+                                'name' => trim($member['name'] ?? ''),
+                                'role' => trim($member['role'] ?? ''),
+                                'avatar' => $this->storeTeamAvatar(trim($member['avatar'] ?? '')),
+                                'zalo' => trim($member['zalo'] ?? ''),
+                            ];
+                        })
+                        ->values()
+                        ->all();
+
+                    $value = json_encode($members, JSON_UNESCAPED_UNICODE);
+                }
+
                 Setting::updateOrCreate(
                     ['key' => $key],
                     ['value' => $value]
@@ -209,6 +235,33 @@ class AdminLiveEditorController extends Controller
             'success' => true,
             'message' => 'Lưu cài đặt trực quan thành công!'
         ]);
+    }
+
+    private function storeTeamAvatar(string $avatar): string
+    {
+        if (!str_starts_with($avatar, 'data:image/')) {
+            return $avatar;
+        }
+
+        if (!preg_match('/^data:image\/(jpeg|jpg|png|webp|gif);base64,(.+)$/', $avatar, $matches)) {
+            return '';
+        }
+
+        $extension = $matches[1] === 'jpeg' ? 'jpg' : $matches[1];
+        $imageData = base64_decode($matches[2], true);
+        if ($imageData === false || strlen($imageData) > 4 * 1024 * 1024) {
+            return '';
+        }
+
+        $directory = public_path('images/team');
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $filename = 'team_' . time() . '_' . uniqid() . '.' . $extension;
+        file_put_contents($directory . DIRECTORY_SEPARATOR . $filename, $imageData);
+
+        return '/images/team/' . $filename;
     }
 
     /**

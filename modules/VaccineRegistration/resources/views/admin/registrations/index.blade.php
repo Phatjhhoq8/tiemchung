@@ -24,6 +24,8 @@
                     <option value="Đã thanh toán" {{ request('status') === 'Đã thanh toán' ? 'selected' : '' }}>Đã thanh toán</option>
                     <option value="Đã tiêm" {{ request('status') === 'Đã tiêm' ? 'selected' : '' }}>Đã tiêm</option>
                     <option value="Đã hủy" {{ request('status') === 'Đã hủy' ? 'selected' : '' }}>Đã hủy</option>
+                    <option value="Chờ tư vấn" {{ request('status') === 'Chờ tư vấn' ? 'selected' : '' }}>Chờ tư vấn</option>
+                    <option value="Đã tư vấn" {{ request('status') === 'Đã tư vấn' ? 'selected' : '' }}>Đã tư vấn</option>
                 </select>
             </div>
 
@@ -76,6 +78,8 @@
                                     @if($reg->status === 'Đã thanh toán') badge-modern-success
                                     @elseif($reg->status === 'Đã tiêm') badge-modern-info
                                     @elseif($reg->status === 'Đã hủy') badge-modern-danger
+                                    @elseif($reg->status === 'Đã tư vấn') badge-modern-success
+                                    @elseif($reg->status === 'Chờ tư vấn') badge-modern-warning
                                     @else badge-modern-warning @endif">
                                     {{ $reg->status }}
                                 </span>
