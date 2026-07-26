@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.4] - 2026-07-27
+
+### Article Detail Right Sidebar Optimization
+
+* **Concise Sidebar Layout**: Removed "Bài Viết Cùng Chủ Đề" widget from the Right Sidebar in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php).
+* **Instant Sticky Scroll**: Reduced sidebar height to ~380px so the TOC and Booking CTA widgets stick immediately (`top: 100px`) and scroll smoothly alongside the article text without viewport overflowing.
+
 ## [v3.5.3] - 2026-07-27
 
 ### TOC Container Target Resolution Fix
