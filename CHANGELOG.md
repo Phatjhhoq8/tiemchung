@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.9] - 2026-07-27
+
+### Dedicated Isolated White Card Section Restoration
+
+* **White Card Block Container**: Restored `.suggested-news-section` as a dedicated white card block with `background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);` in [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css).
+* **Clean Isolation**: Placed the white card container below the main 2-column layout in [show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php) and [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php), ensuring all section titles, subtitles, cards, and pagination links are cleanly enclosed inside a dedicated card block with zero unstyled floating text.
+
 ## [v3.5.8] - 2026-07-27
 
 ### Pagination Formula & Sticky Sidebar Layout Structure Fix
