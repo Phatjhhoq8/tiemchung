@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.6] - 2026-07-27
+
+### Clean Main Section H2-Only TOC Query Fix
+
+* **Single-Line H2 Heading Links**: Updated `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to query ONLY main `<h2>` section headings (`.article-main-content .article-body-content h2, .article-main-content section h2`), excluding lengthy `<h3>` subheadings for a clean, single-line 6-item Table of Contents.
+* **Sticky Layout Room**: Added `align-self: stretch` to `.article-sidebar` in [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css) ensuring sticky scroll room across the entire vaccine product detail page.
+
 ## [v3.5.5] - 2026-07-27
 
 ### Exact 100% Parity for TOC & Sticky Sidebar Logic
