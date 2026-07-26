@@ -77,7 +77,7 @@
             <nav class="nav-menu" id="nav-menu">
                 <a href="{{ route('home') }}" class="nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}">Trang Chủ</a>
                 <a href="{{ route('about') }}" class="nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}">Giới Thiệu</a>
-                <a href="{{ route('vaccine.index') }}" class="nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}">Bảng Giá Vắc Xin</a>
+                <a href="{{ route('vaccine.index') }}" class="nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}">Danh Mục Sản Phẩm</a>
                 <a href="{{ route('services') }}" class="nav-link {{ Route::currentRouteName() === 'services' ? 'active' : '' }}">Dịch Vụ</a>
                 <a href="{{ route('news.index') }}" class="nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}">Tin Tức</a>
                 <a href="{{ route('contact') }}" class="nav-link {{ Route::currentRouteName() === 'contact' ? 'active' : '' }}">Liên Hệ</a>
@@ -114,7 +114,7 @@
         <div class="mobile-drawer-links">
             <a href="{{ route('home') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}"><i data-lucide="home" class="w-5 h-5"></i> Trang Chủ</a>
             <a href="{{ route('about') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}"><i data-lucide="info" class="w-5 h-5"></i> Giới Thiệu</a>
-            <a href="{{ route('vaccine.index') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}"><i data-lucide="syringe" class="w-5 h-5"></i> Bảng Giá Vắc Xin</a>
+            <a href="{{ route('vaccine.index') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}"><i data-lucide="syringe" class="w-5 h-5"></i> Danh Mục Sản Phẩm</a>
             <a href="{{ route('services') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'services' ? 'active' : '' }}"><i data-lucide="briefcase-medical" class="w-5 h-5"></i> Dịch Vụ</a>
             <a href="{{ route('news.index') }}" class="mobile-nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}"><i data-lucide="newspaper" class="w-5 h-5"></i> Tin Tức</a>
             <a href="{{ route('contact') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'contact' ? 'active' : '' }}"><i data-lucide="map-pin" class="w-5 h-5"></i> Liên Hệ</a>
@@ -156,10 +156,10 @@
                     </div>
                 @endif
                 @if(session('info'))
-                    <div class="alert alert-info" style="background-color: #eff6ff; border: 1px solid #3b82f6; color: #1e3a8a; padding: 16px; border-radius: 8px; display: flex; align-items: center; gap: 12px; font-weight: 500; position: relative;">
-                        <i data-lucide="info" style="color: #3b82f6; width: 20px; height: 20px; flex-shrink: 0;"></i>
+                    <div class="alert alert-info" style="background-color: #fff1f2; border: 1px solid #f87171; color: #991b1b; padding: 16px; border-radius: 8px; display: flex; align-items: center; gap: 12px; font-weight: 500; position: relative;">
+                        <i data-lucide="info" style="color: #dc2626; width: 20px; height: 20px; flex-shrink: 0;"></i>
                         <span style="flex-grow: 1;">{{ session('info') }}</span>
-                        <button onclick="this.parentElement.remove()" style="background: none; border: none; color: #1e3a8a; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+                        <button onclick="this.parentElement.remove()" style="background: none; border: none; color: #991b1b; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
                     </div>
                 @endif
             </div>
@@ -293,7 +293,7 @@
                                 <rect x="42" y="10" width="14" height="6" fill="#0f172a" />
                                 <rect x="42" y="20" width="8" height="16" fill="#0f172a" />
                                 <rect x="10" y="42" width="18" height="8" fill="#0f172a" />
-                                <rect x="34" y="42" width="16" height="16" fill="#004b8f" />
+                                <rect x="34" y="42" width="16" height="16" fill="#b91c1c" />
                                 <rect x="56" y="42" width="12" height="8" fill="#0f172a" />
                                 <rect x="74" y="42" width="16" height="16" fill="#0f172a" />
                                 <rect x="42" y="64" width="8" height="28" fill="#0f172a" />

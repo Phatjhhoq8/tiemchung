@@ -3,7 +3,7 @@
     <div class="fb-modal-content">
         <div class="fb-modal-header">
             <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="image" style="color: #0284c7;"></i> Tùy Chỉnh Hero Banner
+                <i data-lucide="image" style="color: #dc2626;"></i> Tùy Chỉnh Hero Banner
             </h3>
             <button onclick="closeModal('bannerModal')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
         </div>
@@ -57,9 +57,9 @@
         <form id="vaccineForm" enctype="multipart/form-data">
             @csrf
             <div class="fb-modal-body">
-                <div class="form-group" style="margin-bottom: 16px; background: #e0f2fe; padding: 14px; border-radius: 10px; border: 1px solid #bae6fd;">
-                    <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13.5px; color: #0369a1;">Chọn nhanh vắc xin sẵn có từ CSDL 40 loại:</label>
-                    <select id="vaccine_select_dropdown" onchange="onSelectVaccineFromDb(this)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #0284c7; font-weight: 600;">
+                <div class="form-group" style="margin-bottom: 16px; background: #fff1f2; padding: 14px; border-radius: 10px; border: 1px solid #fecaca;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13.5px; color: #991b1b;">Chọn nhanh vắc xin sẵn có từ CSDL 40 loại:</label>
+                    <select id="vaccine_select_dropdown" onchange="onSelectVaccineFromDb(this)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #dc2626; font-weight: 600;">
                         @foreach($allVaccines as $v)
                             <option value="{{ $v->id }}" data-name="{{ $v->name }}" data-price="{{ $v->price }}" data-saleprice="{{ $v->sale_price }}" data-disease="{{ $v->disease_prevention }}" data-image="{{ $v->image }}" data-featured="{{ $v->is_featured ? 1 : 0 }}">
                                 {{ $v->name }} ({{ number_format($v->price, 0, ',', '.') }} đ) {{ $v->is_featured ? '[Nổi bật]' : '' }}

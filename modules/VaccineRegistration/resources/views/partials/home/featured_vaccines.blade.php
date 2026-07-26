@@ -1,13 +1,13 @@
-<!-- 6. Danh Mục Vắc Xin (CANH GIỮA MAX-W-7XL) -->
+<!-- 6. Danh Mục Sản Phẩm (CANH GIỮA MAX-W-7XL) -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <section class="space-y-8" id="vaccine-catalog" data-aos="fade-up">
         <!-- Centered Header Title in Medicare Red (#c8102e) -->
         <div class="text-center max-w-3xl mx-auto space-y-3">
             <span class="section-badge">
-                Bảng Giá Niêm Yết
+                Danh Mục Sản Phẩm
             </span>
             <h2 class="text-2xl md:text-3xl lg:text-4xl font-black text-[#c8102e] uppercase tracking-tight">
-                Danh Mục Vắc Xin Tại Medicare
+                Danh Mục Sản Phẩm Tại Medicare
             </h2>
             <p class="text-slate-600 text-sm md:text-base">
                 Đầy đủ các loại vắc xin chính hãng nhập khẩu thế hệ mới cho trẻ em và người lớn với phác đồ y khoa chuẩn GSP.
@@ -27,7 +27,7 @@
                 </div>
             @endif
             <a href="{{ route('vaccine.index') }}" class="inline-flex items-center gap-1.5 text-[#c8102e] hover:text-[#a00d24] font-bold text-sm transition-colors ml-auto">
-                Xem tất cả bảng giá vắc xin <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                Xem tất cả danh mục sản phẩm <i data-lucide="chevron-right" class="w-4 h-4"></i>
             </a>
         </div>
 

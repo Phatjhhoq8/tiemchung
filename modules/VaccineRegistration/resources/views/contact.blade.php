@@ -64,25 +64,25 @@
         </div>
 
         <!-- CHI NHÁNH 2: MEDICARE THỚI LAI -->
-        <div style="background: var(--bg-card); border: 2px solid #0284c7; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);">
+        <div style="background: var(--bg-card); border: 2px solid #dc2626; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 16px rgba(220, 38, 38, 0.08);">
             <div style="padding: 32px;">
-                <span style="background-color: #0284c7; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; margin-bottom: 16px;">Chi Nhánh 2</span>
+                <span style="background-color: #dc2626; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; margin-bottom: 16px;">Chi Nhánh 2</span>
                 <h3 style="font-size: 22px; font-weight: 800; color: #1e293b; margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
-                    <i data-lucide="building-2" style="color: #0284c7; width: 26px; height: 26px;"></i>
+                    <i data-lucide="building-2" style="color: #dc2626; width: 26px; height: 26px;"></i>
                     Medicare Thới Lai
                 </h3>
                 
                 <div style="display: flex; flex-direction: column; gap: 16px; font-size: 15px; color: #475569;">
                     <p style="margin: 0; display: flex; align-items: flex-start; gap: 12px; line-height: 1.6;">
-                        <i data-lucide="map-pin" style="color: #0284c7; width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;"></i>
+                        <i data-lucide="map-pin" style="color: #dc2626; width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;"></i>
                         <span><strong>Địa chỉ:</strong> Thị trấn Thới Lai, Huyện Thới Lai, TP. Cần Thơ</span>
                     </p>
                     <p style="margin: 0; display: flex; align-items: flex-start; gap: 12px; line-height: 1.6;">
-                        <i data-lucide="phone-call" style="color: #0284c7; width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;"></i>
-                        <span><strong>Hotline / Zalo:</strong> <a href="tel:0932477184" style="color: #0284c7; font-weight: 800; text-decoration: none; font-size: 16px;">0932 477 184</a></span>
+                        <i data-lucide="phone-call" style="color: #dc2626; width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;"></i>
+                        <span><strong>Hotline / Zalo:</strong> <a href="tel:0932477184" style="color: #dc2626; font-weight: 800; text-decoration: none; font-size: 16px;">0932 477 184</a></span>
                     </p>
                     <p style="margin: 0; display: flex; align-items: flex-start; gap: 12px; line-height: 1.6;">
-                        <i data-lucide="clock" style="color: #0284c7; width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;"></i>
+                        <i data-lucide="clock" style="color: #dc2626; width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;"></i>
                         <span><strong>Giờ làm việc:</strong> 7:00 – 17:00 (Tất cả các ngày trong tuần kể cả Thứ 7, Chủ Nhật & Ngày Lễ)</span>
                     </p>
                 </div>
@@ -101,7 +101,7 @@
             </div>
 
             <div style="padding: 20px; background: var(--bg-main); border-top: 1px solid var(--border-color); display: flex; gap: 12px;">
-                <a href="{{ route('register.show') }}" class="btn-primary" style="flex: 1; text-align: center; justify-content: center; padding: 12px; background-color: #0284c7;">
+                <a href="{{ route('register.show') }}" class="btn-primary" style="flex: 1; text-align: center; justify-content: center; padding: 12px; background-color: #dc2626;">
                     <i data-lucide="calendar"></i> Hẹn tiêm tại Thới Lai
                 </a>
             </div>

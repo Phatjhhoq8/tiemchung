@@ -7,7 +7,7 @@
     <!-- Breadcrumb -->
     <div class="breadcrumb" style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">
         <a href="{{ route('home') }}" style="color: var(--text-muted); text-decoration: none;">Trang chủ</a> / 
-        <a href="{{ route('vaccine.index') }}" style="color: var(--text-muted); text-decoration: none;">Danh mục vắc xin</a> / 
+        <a href="{{ route('vaccine.index') }}" style="color: var(--text-muted); text-decoration: none;">Danh mục sản phẩm</a> / 
         <span style="color: var(--primary-color); font-weight: 500;">{{ $vaccine->name }}</span>
     </div>
 

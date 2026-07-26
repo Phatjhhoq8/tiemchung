@@ -31,6 +31,8 @@ Route::middleware('web')->group(function () {
     
     // Danh mục vắc xin & chi tiết
     Route::get('/vaccines', [VaccineController::class, 'index'])->name('vaccine.index');
+    Route::get('/vaccines/disease/{disease}', [VaccineController::class, 'diseaseDetail'])->name('vaccine.disease');
+    Route::post('/vaccines/disease/{disease}/consult', [VaccineController::class, 'postDiseaseConsult'])->name('vaccine.disease.consult');
     Route::get('/vaccines/{id}', [VaccineController::class, 'show'])->name('vaccine.show');
     
     // Giỏ hàng
@@ -66,6 +68,7 @@ Route::middleware('web')->group(function () {
         Route::resource('vaccines', AdminVaccineController::class)->except(['show']);
 
         // Quản lý Đăng ký tiêm chủng
+        Route::get('/schedule', [AdminRegistrationController::class, 'schedule'])->name('schedule');
         Route::get('/registrations', [AdminRegistrationController::class, 'index'])->name('registrations.index');
         Route::get('/registrations/export/csv', [AdminRegistrationController::class, 'exportCsv'])->name('registrations.export.csv');
         Route::get('/registrations/{id}', [AdminRegistrationController::class, 'show'])->name('registrations.show');

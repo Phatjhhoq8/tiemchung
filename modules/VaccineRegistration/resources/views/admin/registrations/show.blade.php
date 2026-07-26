@@ -4,16 +4,26 @@
 @section('page_title', 'Chi Tiết Đơn Đăng Ký Tiêm Chủng')
 
 @section('admin_content')
+<style>
+    .btn-modern-back:hover {
+        background: var(--primary-color, #c8102e) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(200, 16, 46, 0.15);
+    }
+    .btn-modern-back:hover .back-arrow-icon {
+        transform: translateX(-4px);
+    }
+</style>
 <div style="max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 30px;">
     
     <!-- Header Back Button & Status Form -->
     <div class="card-modern" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-        <a href="{{ route('admin.registrations.index') }}" style="color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-display);">
-            <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Quay lại danh sách
+        <a href="{{ route('admin.registrations.index') }}" class="btn-modern-back" style="color: var(--primary-color, #c8102e); text-decoration: none; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-display); padding: 8px 16px; border: 2px solid var(--primary-color, #c8102e); border-radius: 8px; background: #ffffff; transition: all 0.2s ease;">
+            <i data-lucide="arrow-left" class="back-arrow-icon" style="width: 16px; height: 16px; transition: transform 0.2s ease;"></i> Quay lại danh sách
         </a>
 
         <!-- Form cập nhật trạng thái đơn -->
-        <form action="{{ route('admin.registrations.status', $registration->id) }}" method="POST" style="display: flex; gap: 10px; align-items: center;">
+        <form action="{{ route('admin.registrations.status', $registration->id) }}" method="POST" onsubmit="return confirm('Bạn có thực sự muốn cập nhật trạng thái đơn này không?')" style="display: flex; gap: 10px; align-items: center;">
             @csrf
             @method('PATCH')
             <label for="status" class="form-label-modern" style="font-weight: 600; font-size: 14px; margin-bottom: 0;">Trạng thái đơn:</label>
@@ -103,6 +113,8 @@
                             @if($registration->status === 'Đã thanh toán') badge-modern-success
                             @elseif($registration->status === 'Đã tiêm') badge-modern-info
                             @elseif($registration->status === 'Đã hủy') badge-modern-danger
+                            @elseif($registration->status === 'Đã tư vấn') badge-modern-success
+                            @elseif($registration->status === 'Chờ tư vấn') badge-modern-warning
                             @else badge-modern-warning @endif">
                             {{ $registration->status }}
                         </span>

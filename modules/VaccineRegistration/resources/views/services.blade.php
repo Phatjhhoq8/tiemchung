@@ -26,7 +26,7 @@
                 <h3 style="font-size: 22px; font-weight: 800; color: #1e293b; margin-bottom: 12px;">1. Tiêm Chủng Cho Trẻ Em</h3>
                 <p style="color: #64748b; font-size: 15px; line-height: 1.7; margin-bottom: 20px;">Gói dịch vụ tiêm chủng đầy đủ vắc xin thiết yếu dành cho bé từ sơ sinh đến 6 tuổi: Vắc xin 6in1 (Hexaxim/Infanrix), Tiêu chảy Rota (Rotarix/Rotavin), Phế cầu (Prevenar 13/20), Cúm mùa, Viêm não Nhật Bản...</p>
             </div>
-            <a href="{{ route('vaccine.index', ['age_group' => 'Trẻ']) }}" class="btn-primary" style="text-align: center; justify-content: center;">Xem danh mục vắc xin trẻ em</a>
+            <a href="{{ route('vaccine.index', ['age_group' => 'Trẻ']) }}" class="btn-primary" style="text-align: center; justify-content: center;">Xem danh mục sản phẩm trẻ em</a>
         </div>
 
         <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 36px; display: flex; flex-direction: column; justify-content: space-between;">
@@ -37,7 +37,7 @@
                 <h3 style="font-size: 22px; font-weight: 800; color: #1e293b; margin-bottom: 12px;">2. Tiêm Chủng Cho Người Lớn</h3>
                 <p style="color: #64748b; font-size: 15px; line-height: 1.7; margin-bottom: 20px;">Bảo vệ sức khỏe người trưởng thành và người cao tuổi trước các tác nhân nguy hiểm: Cúm mùa Vaxigrip Tetra, Phế cầu khuẩn 13/20, Zona thần kinh Shingrix, Sốt xuất huyết Qdenga, Viêm gan A-B...</p>
             </div>
-            <a href="{{ route('vaccine.index', ['age_group' => 'người lớn']) }}" class="btn-primary" style="text-align: center; justify-content: center; background-color: var(--accent-color);">Xem danh mục vắc xin người lớn</a>
+            <a href="{{ route('vaccine.index', ['age_group' => 'người lớn']) }}" class="btn-primary" style="text-align: center; justify-content: center; background-color: var(--accent-color);">Xem danh mục sản phẩm người lớn</a>
         </div>
 
         <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 36px; display: flex; flex-direction: column; justify-content: space-between;">

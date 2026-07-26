@@ -17,18 +17,24 @@ use Illuminate\Support\Facades\DB;
 class VaccineController extends Controller
 {
     /**
-     * Hiển thị bảng giá vắc xin (lẻ & gói) với các bộ lọc động.
+     * Hiển thị danh mục sản phẩm tiêm chủng với các bộ lọc động từ CSDL.
      */
     public function index(Request $request)
     {
         $query = Vaccine::query();
+        $type = $request->input('type');
 
-        // Tìm kiếm theo tên hoặc công dụng phòng bệnh
+        // Tìm kiếm theo tên sản phẩm. Lọc theo bệnh dùng tham số disease riêng.
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('disease_prevention', 'like', '%' . $search . '%');
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        if ($request->filled('disease')) {
+            $disease = $request->input('disease');
+            $query->where(function ($q) use ($disease) {
+                $q->where('disease_prevention', 'like', '%' . $disease . '%')
+                    ->orWhere('category', 'like', '%' . $disease . '%');
             });
         }
 
@@ -37,37 +43,77 @@ class VaccineController extends Controller
             $query->where('age_group', 'like', '%' . $request->input('age_group') . '%');
         }
 
-        // Lọc theo loại (single / package)
-        if ($request->filled('type')) {
-            $query->where('type', $request->input('type'));
+        if ($request->filled('origin')) {
+            $query->where('origin', $request->input('origin'));
         }
 
-        $vaccines = $query->get();
+        if ($request->filled('doses')) {
+            $query->where('doses', (int) $request->input('doses'));
+        }
+
+        if (in_array($type, ['single', 'package'], true)) {
+            $query->where('type', $type);
+        }
+
+        $sort = $request->input('sort', 'popular');
+        match ($sort) {
+            'price_asc' => $query->orderBy('price', 'asc'),
+            'price_desc' => $query->orderBy('price', 'desc'),
+            default => $query->orderByDesc('views')->orderBy('sort_order', 'asc'),
+        };
+
+        $vaccines = $query->paginate(12)->withQueryString();
         $cart = session()->get('cart', []);
 
-        // Lấy danh sách các nhóm bệnh phòng ngừa động từ CSDL
-        $diseases = Vaccine::select('disease_prevention')
-            ->distinct()
-            ->get()
-            ->pluck('disease_prevention')
-            ->map(function($item) {
-                // Tách các nhóm bệnh được phân cách bởi dấu phẩy
-                return array_map('trim', explode(',', $item));
-            })
-            ->flatten()
-            ->unique()
-            ->values()
-            ->all();
+        $allVaccines = Vaccine::query()->orderBy('sort_order', 'asc')->get();
+        $diseases = $this->buildDiseaseOptions($allVaccines);
+        $ageGroups = $allVaccines->pluck('age_group')->filter()->unique()->values();
+        $origins = $allVaccines->pluck('origin')->filter()->unique()->sort()->values();
+        $doseOptions = $allVaccines->pluck('doses')->filter()->unique()->sort()->values();
+        $productCategories = $this->buildProductCategories($allVaccines);
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'html' => view('vaccine::partials.grid', compact('vaccines', 'cart'))->render(),
-                'count' => $vaccines->count(),
+                'count' => $vaccines->total(),
             ]);
         }
 
-        return view('vaccine::index', compact('vaccines', 'cart', 'diseases'));
+        return view('vaccine::index', compact('vaccines', 'cart', 'diseases', 'ageGroups', 'origins', 'doseOptions', 'productCategories'));
+    }
+
+    private function buildDiseaseOptions($vaccines)
+    {
+        return $vaccines
+            ->pluck('disease_prevention')
+            ->filter()
+            ->flatMap(function ($item) {
+                return collect(preg_split('/[,;]+/u', $item))
+                    ->map(fn ($disease) => trim($disease))
+                    ->filter();
+            })
+            ->unique()
+            ->sort()
+            ->values();
+    }
+
+    private function buildProductCategories($vaccines)
+    {
+        return $vaccines
+            ->filter(fn ($vaccine) => !empty($vaccine->category) || !empty($vaccine->disease_prevention))
+            ->groupBy(fn ($vaccine) => $vaccine->category ?: $this->buildDiseaseOptions(collect([$vaccine]))->first())
+            ->map(function ($items, $name) {
+                $first = $items->first();
+
+                return [
+                    'name' => $name,
+                    'count' => $items->count(),
+                    'image' => $first?->image,
+                ];
+            })
+            ->sortBy('name')
+            ->values();
     }
 
     /**
@@ -188,9 +234,11 @@ class VaccineController extends Controller
         $cart = session()->get('cart', []);
 
         if (empty($cart) && ($request->ajax() || $request->wantsJson())) {
+            $centers = Center::active()->get();
             return response()->json([
                 'success' => false,
-                'message' => 'Vui lòng chọn ít nhất một loại vắc xin để đăng ký tiêm.'
+                'message' => 'Vui lòng chọn ít nhất một loại vắc xin để đăng ký tiêm.',
+                'centers' => $centers
             ], 400);
         }
 
@@ -336,5 +384,147 @@ class VaccineController extends Controller
         $registration = Registration::with('vaccines')->where('registration_code', $code)->firstOrFail();
 
         return view('vaccine::success', compact('registration'));
+    }
+
+    /**
+     * Hiển thị trang chi tiết nhóm bệnh phòng ngừa và form tư vấn.
+     */
+    public function diseaseDetail(Request $request, $disease)
+    {
+        $diseaseDecoded = urldecode($disease);
+        
+        // Lọc danh sách vắc xin thuộc nhóm bệnh này
+        $vaccines = Vaccine::where('category', 'like', '%' . $diseaseDecoded . '%')
+            ->orWhere('disease_prevention', 'like', '%' . $diseaseDecoded . '%')
+            ->orderBy('sort_order', 'asc')
+            ->get();
+            
+        $cart = session()->get('cart', []);
+        $centers = Center::active()->get();
+
+        // Mảng dữ liệu tĩnh chứa thông tin sơ bộ chuyên môn cho các bệnh phổ biến
+        $diseaseData = [
+            'hpv' => [
+                'title' => 'Vắc xin phòng Ung thư do HPV',
+                'description' => '<h6>Phòng ngừa ung thư do HPV thế nào cho hiệu quả?</h6><p><strong>HPV (Human Papillomavirus)</strong> là nguyên nhân chính gây ung thư cổ tử cung và các bệnh lý nguy hiểm khác như mụn cóc sinh dục, ung thư hậu môn, dương vật, hầu họng… Bệnh thường lây nhiễm rất nhanh qua đường quan hệ tình dục, diễn tiến âm thầm và cực kỳ khó phát hiện sớm.</p><p>💉 <strong>Tiêm vắc xin đúng lịch, đủ liều</strong> là biện pháp phòng ngừa hiệu quả chủ động các bệnh lý liên quan đến HPV, đặc biệt là ung thư cổ tử cung ở nữ giới.</p><p>🛡️ <strong>Gardasil (Mỹ)</strong>: Bảo vệ cơ thể khỏi 4 chủng virus HPV phổ biến (6, 11, 16, 18), khuyến cáo tiêm cho nữ từ 9 đến 26 tuổi.</p><p>🛡️ <strong>Gardasil 9 (Mỹ)</strong>: Bảo vệ cơ thể khỏi 9 chủng virus HPV phổ biến (6, 11, 16, 18, 31, 33, 45, 52, 58), mở rộng chỉ định tiêm phòng cho cả nam và nữ giới từ 9 đến 45 tuổi.</p>'
+            ],
+            'cúm' => [
+                'title' => 'Vắc xin phòng bệnh Cúm Mùa',
+                'description' => '<h6>Tại sao cần chủ động tiêm phòng cúm hàng năm?</h6><p><strong>Cúm mùa</strong> là bệnh nhiễm trùng đường hô hấp cấp tính do các virus cúm (A, B) gây ra. Bệnh lây qua đường hô hấp và rất dễ bùng phát thành dịch. Biến chứng của cúm mùa có thể rất nghiêm trọng như viêm phổi nặng, viêm cơ tim, suy đa phủ tạng, đặc biệt nguy hiểm ở trẻ nhỏ, phụ nữ mang thai, người lớn tuổi và người có bệnh nền (tiểu đường, hen suyễn, tim mạch).</p><p>💉 <strong>Tiêm ngừa vắc xin cúm hàng năm</strong> là biện pháp phòng bệnh hiệu quả nhất, giúp cơ thể chuẩn bị kháng thể chống lại các chủng virus cúm thay đổi liên tục, giảm tới 80% nguy cơ nhập viện và biến chứng nặng.</p>'
+            ],
+            'thủy đậu' => [
+                'title' => 'Vắc xin phòng bệnh Thủy Đậu (Trái Rạ)',
+                'description' => '<h6>Chủ động phòng ngừa biến chứng nguy hiểm của Thủy đậu</h6><p><strong>Bệnh thủy đậu</strong> do virus Varicella-Zoster gây ra. Bệnh lây qua đường hô hấp hoặc tiếp xúc trực tiếp với dịch bóng nước. Mặc dù là bệnh lành tính trong nhiều trường hợp, thủy đậu có thể dẫn đến các biến chứng nặng nề như viêm màng não, viêm phổi, nhiễm trùng huyết và để lại sẹo vĩnh viễn trên cơ thể.</p><p>💉 <strong>Tiêm vắc xin thủy đậu</strong> giúp bảo vệ cơ thể khỏi nguy cơ lây nhiễm lên đến 95%. Khuyến cáo tiêm phòng cho trẻ em từ 9 tháng tuổi trở lên và người trưởng thành chưa có kháng thể.</p>'
+            ],
+            'ho gà' => [
+                'title' => 'Vắc xin phòng Bạch hầu - Ho gà - Uốn ván',
+                'description' => '<h6>Bảo vệ gia đình khỏi Bạch hầu - Ho gà - Uốn ván</h6><p><strong>Bạch hầu, Ho gà và Uốn ván</strong> là những bệnh truyền nhiễm nguy hiểm gây ra bởi vi khuẩn, có tỷ lệ tử vong cao đặc biệt ở trẻ sơ sinh dưới 1 tuổi. Bệnh ho gà có thể gây ra những cơn ho rũ rượi kéo dài dẫn đến ngừng thở; bạch hầu gây giả mạc làm tắc đường thở; uốn ván gây co cứng cơ cực kỳ đau đớn.</p><p>💉 <strong>Tiêm vắc xin kết hợp (như 6 trong 1, 5 trong 1, hoặc vắc xin Adacel/Boostrix)</strong> là giải pháp toàn diện để tạo lá chắn vững chắc bảo vệ trẻ nhỏ và người lớn khỏi 3 căn bệnh nguy hiểm này.</p>'
+            ],
+            'phế cầu' => [
+                'title' => 'Vắc xin phòng các bệnh do Phế Cầu Khuẩn',
+                'description' => '<h6>Phòng ngừa Viêm phổi, Viêm màng não do Phế cầu khuẩn</h6><p><strong>Phế cầu khuẩn (Streptococcus pneumoniae)</strong> là tác nhân hàng đầu gây ra các bệnh lý nghiêm trọng đe dọa tính mạng như viêm phổi, viêm màng não, nhiễm trùng huyết và viêm tai giữa cấp tính, đặc biệt ở trẻ nhỏ dưới 5 tuổi và người già trên 65 tuổi hoặc người suy giảm miễn dịch.</p><p>💉 <strong>Vắc xin phế cầu (như Synflorix hoặc Prevenar 13)</strong> giúp bảo vệ cơ thể chủ động chống lại các chủng phế cầu khuẩn phổ biến, làm giảm gánh nặng bệnh tật và ngăn ngừa các di chứng thần kinh vĩnh viễn.</p>'
+            ]
+        ];
+
+        // So khớp thông minh không phân biệt hoa thường
+        $info = null;
+        $searchKey = mb_strtolower($diseaseDecoded, 'UTF-8');
+        foreach ($diseaseData as $key => $data) {
+            if (mb_strpos($searchKey, $key, 0, 'UTF-8') !== false || mb_strpos($key, $searchKey, 0, 'UTF-8') !== false) {
+                $info = $data;
+                break;
+            }
+        }
+
+        // Fallback mặc định nếu không khớp bệnh phổ biến
+        if (!$info) {
+            $info = [
+                'title' => 'Vắc xin phòng bệnh ' . $diseaseDecoded,
+                'description' => '<h6>Chủ động phòng ngừa bệnh ' . $diseaseDecoded . ' hiệu quả</h6><p>Bệnh <strong>' . $diseaseDecoded . '</strong> là bệnh truyền nhiễm có diễn biến phức tạp và có thể gây ra các biến chứng nguy hiểm đối với sức khỏe. Việc chủ động tiêm ngừa vắc xin là phương pháp phòng bệnh khoa học, an toàn và tiết kiệm nhất cho cả gia đình.</p><p>💉 Hãy liên hệ Medicare để nhận tư vấn chi tiết về phác đồ và lịch tiêm chủng vắc xin phòng bệnh ' . $diseaseDecoded . ' phù hợp nhất với độ tuổi của bạn.</p>'
+            ];
+        }
+
+        return view('vaccine::disease', compact('diseaseDecoded', 'info', 'vaccines', 'cart', 'centers'));
+    }
+
+    /**
+     * Xử lý gửi yêu cầu tư vấn nhóm bệnh.
+     */
+    public function postDiseaseConsult(Request $request, $disease)
+    {
+        $diseaseDecoded = urldecode($disease);
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'consultType' => 'required|string|in:online,offline',
+            'customerName' => 'required|string|max:255',
+            'customerPhone' => 'required|string|regex:/^[0-9]{9,11}$/',
+            'centerName' => 'required_if:consultType,offline|nullable|string|max:255',
+            'customerNote' => 'nullable|string|max:1000',
+        ], [
+            'customerName.required' => 'Vui lòng điền Họ tên người liên hệ.',
+            'customerPhone.required' => 'Vui lòng điền Số điện thoại liên hệ.',
+            'customerPhone.regex' => 'Số điện thoại liên hệ không hợp lệ (9 - 11 chữ số).',
+            'centerName.required_if' => 'Vui lòng chọn trung tâm mong muốn tư vấn.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $validated = $validator->validated();
+        $registrationCode = 'MCD-CS-' . strtoupper(Str::random(6));
+
+        // Lấy danh sách vắc xin của nhóm bệnh này để đính kèm (nếu có)
+        $vaccines = Vaccine::where('category', 'like', '%' . $diseaseDecoded . '%')
+            ->orWhere('disease_prevention', 'like', '%' . $diseaseDecoded . '%')
+            ->get();
+
+        $centerName = $validated['consultType'] === 'online' ? 'Tư vấn Online (Qua điện thoại)' : $validated['centerName'];
+        $patientAddress = 'Hình thức: ' . ($validated['consultType'] === 'online' ? 'Online' : 'Trực tiếp tại trung tâm') . ' - Đăng ký tư vấn: ' . $diseaseDecoded . ($validated['customerNote'] ? (' - Ghi chú: ' . $validated['customerNote']) : '');
+
+        DB::beginTransaction();
+        try {
+            // Tạo bản ghi tư vấn trong registrations
+            $registration = Registration::create([
+                'registration_code' => $registrationCode,
+                'patient_name' => $validated['customerName'],
+                'patient_dob' => '2000-01-01', // giá trị giả lập hợp lệ
+                'patient_gender' => 'Khác',     // giá trị giả lập hợp lệ
+                'patient_phone' => $validated['customerPhone'],
+                'patient_address' => $validated['consultType'] === 'online' ? $patientAddress : 'Đăng ký tư vấn trực tiếp: ' . $diseaseDecoded . ($validated['customerNote'] ? (' - Ghi chú: ' . $validated['customerNote']) : ''),
+                'guardian_name' => null,
+                'guardian_phone' => null,
+                'center_name' => $centerName,
+                'injection_date' => now()->toDateString(), // đặt hôm nay
+                'status' => 'Chờ tư vấn',
+                'payment_method' => 'Tại trung tâm',
+                'total_price' => 0,
+            ]);
+
+            // Đính kèm các vắc xin thuộc nhóm bệnh nếu có
+            if ($vaccines->isNotEmpty()) {
+                foreach ($vaccines as $vac) {
+                    $registration->vaccines()->attach($vac->id, ['price' => $vac->price]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Gửi yêu cầu tư vấn thành công! Nhân viên y tế Medicare sẽ liên hệ hỗ trợ bạn qua SĐT ' . $validated['customerPhone'] . ' trong thời gian sớm nhất.',
+                'registration_code' => $registrationCode
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi lưu yêu cầu tư vấn: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -27,7 +27,7 @@
                     <i data-lucide="badge-percent" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <div class="font-bold text-slate-900 text-sm group-hover:text-[#c8102e] transition-colors">Bảng Giá Vắc Xin</div>
+                    <div class="font-bold text-slate-900 text-sm group-hover:text-[#c8102e] transition-colors">Danh Mục Sản Phẩm</div>
                     <div class="text-xs text-slate-500 font-medium">Giá niêm yết công khai, bình ổn</div>
                 </div>
             </a>

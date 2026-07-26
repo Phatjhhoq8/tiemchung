@@ -33,24 +33,24 @@
             --primary-color: #c8102e;       /* Medicare Red */
             --primary-hover: #a00d24;
             --secondary-color: #eaaa00;     /* Medicare Gold */
-            --accent-color: #004b8f;        /* Medicare Navy */
-            --accent-hover: #00386c;
+            --accent-color: #b91c1c;        /* Medicare Deep Red */
+            --accent-hover: #991b1b;
             
-            --bg-main: #f3f6fc;             /* Light cool-gray canvas */
+            --bg-main: #fff7f7;             /* Warm red-tinted canvas */
             --bg-card: #ffffff;
-            --bg-sidebar: #061325;          /* Deep rich medical navy */
-            --bg-sidebar-active: #132742;
+            --bg-sidebar: #340711;          /* Deep red admin shell */
+            --bg-sidebar-active: #5b1020;
             
             --text-primary: #1e293b;        /* Slate 800 */
             --text-muted: #64748b;          /* Slate 500 */
             --text-light: #94a3b8;          /* Slate 400 */
             
-            --border-color: #e2e8f0;        /* Slate 200 */
-            --border-focus: #cbd5e1;
+            --border-color: #f1d7dc;
+            --border-focus: #f87171;
             
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 10px 30px rgba(6, 19, 37, 0.06);
-            --shadow-lg: 0 20px 50px rgba(6, 19, 37, 0.1);
+            --shadow-sm: 0 2px 8px rgba(127, 29, 29, 0.05);
+            --shadow-md: 0 12px 32px rgba(127, 29, 29, 0.08);
+            --shadow-lg: 0 22px 55px rgba(127, 29, 29, 0.13);
             
             --radius-sm: 8px;
             --radius-md: 12px;
@@ -62,9 +62,16 @@
 
         body {
             font-family: var(--font-body);
-            background-color: var(--bg-main);
+            background:
+                radial-gradient(circle at top left, rgba(200, 16, 46, 0.08), transparent 28rem),
+                linear-gradient(180deg, #fff7f7 0%, #fff 45%, #fff7f7 100%);
             color: var(--text-primary);
             -webkit-font-smoothing: antialiased;
+        }
+
+        ::selection {
+            background: rgba(200, 16, 46, 0.18);
+            color: #7f1d1d;
         }
 
         .admin-wrapper {
@@ -75,7 +82,8 @@
         /* --- Sidebar Style --- */
         .admin-sidebar {
             width: 260px;
-            background-color: var(--bg-sidebar);
+            background:
+                linear-gradient(180deg, #3b0712 0%, #24050b 58%, #160307 100%);
             color: #ffffff;
             display: flex;
             flex-direction: column;
@@ -85,7 +93,7 @@
             top: 0;
             z-index: 100;
             border-right: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.15);
+            box-shadow: 8px 0 34px rgba(127, 29, 29, 0.22);
         }
         .sidebar-brand {
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -102,6 +110,8 @@
             padding: 24px 0;
             flex-grow: 1;
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(254, 202, 202, 0.45) transparent;
         }
         .sidebar-menu li {
             margin: 4px 16px;
@@ -111,7 +121,7 @@
             align-items: center;
             gap: 12px;
             padding: 12px 16px;
-            color: #94a3b8;
+            color: #fecaca;
             text-decoration: none;
             font-family: var(--font-display);
             font-size: 14.5px;
@@ -121,14 +131,15 @@
         }
         .sidebar-menu li a:hover {
             color: #ffffff;
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(255, 255, 255, 0.08);
+            transform: translateX(2px);
         }
         .sidebar-menu li.active a {
             color: #ffffff;
-            background-color: var(--bg-sidebar-active);
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(135deg, rgba(200, 16, 46, 0.95), rgba(153, 27, 27, 0.95));
+            box-shadow: 0 10px 20px rgba(127, 29, 29, 0.24);
             position: relative;
-            font-weight: 600;
+            font-weight: 700;
         }
         .sidebar-menu li.active a::before {
             content: '';
@@ -137,7 +148,7 @@
             top: 15%;
             height: 70%;
             width: 4px;
-            background-color: var(--primary-color);
+            background-color: #ffffff;
             border-radius: 2px;
         }
         .sidebar-menu li a i {
@@ -161,9 +172,9 @@
             justify-content: center;
             gap: 8px;
             padding: 12px;
-            background-color: rgba(200, 16, 46, 0.1);
-            color: #ff6b7d;
-            border: 1px solid rgba(200, 16, 46, 0.2);
+            background-color: rgba(255, 255, 255, 0.08);
+            color: #fecaca;
+            border: 1px solid rgba(254, 202, 202, 0.22);
             border-radius: var(--radius-sm);
             font-family: var(--font-display);
             font-weight: 600;
@@ -187,24 +198,25 @@
             min-width: 0;
         }
         .admin-header {
-            height: 70px;
-            background-color: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-color);
+            height: 74px;
+            background-color: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(254, 202, 202, 0.75);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 40px;
+            padding: 0 36px;
             position: sticky;
             top: 0;
             z-index: 99;
         }
         .admin-title {
             font-family: var(--font-display);
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 21px;
+            font-weight: 800;
             color: var(--text-primary);
+            letter-spacing: -0.02em;
         }
         .admin-user {
             display: flex;
@@ -215,17 +227,20 @@
             font-weight: 600;
             color: var(--text-muted);
             background: #ffffff;
-            padding: 6px 14px;
+            padding: 8px 14px;
             border-radius: 30px;
-            border: 1px solid var(--border-color);
+            border: 1px solid #fecaca;
             box-shadow: var(--shadow-sm);
         }
         .admin-user i {
             color: var(--accent-color);
         }
         .admin-body {
-            padding: 40px;
+            padding: 32px 36px 44px;
             flex-grow: 1;
+            max-width: 1480px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         /* ================= ================= =================
@@ -238,8 +253,8 @@
             border-radius: var(--radius-lg);
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-md);
-            padding: 30px;
-            margin-bottom: 30px;
+            padding: 26px;
+            margin-bottom: 24px;
             transition: box-shadow 0.3s ease, transform 0.3s ease;
         }
         .card-modern:hover {
@@ -250,8 +265,8 @@
         .stat-card-modern {
             background: #ffffff;
             border-radius: var(--radius-lg);
-            padding: 24px;
-            border: 1px solid var(--border-color);
+            padding: 22px;
+            border: 1px solid #fee2e2;
             box-shadow: var(--shadow-sm);
             display: flex;
             align-items: center;
@@ -259,7 +274,7 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .stat-card-modern:hover {
-            transform: translateY(-4px);
+            transform: translateY(-3px);
             box-shadow: var(--shadow-md);
             border-color: var(--border-focus);
         }
@@ -310,10 +325,10 @@
             font-size: 14px;
         }
         .table-modern th {
-            background-color: #f8fafc;
+            background-color: #fff1f2;
             padding: 16px 20px;
             font-weight: 700;
-            color: var(--text-muted);
+            color: #7f1d1d;
             text-transform: uppercase;
             font-size: 12px;
             letter-spacing: 0.5px;
@@ -331,7 +346,7 @@
             border-bottom: none;
         }
         .table-modern tbody tr:hover td {
-            background-color: #f8fafc;
+            background-color: #fff7f7;
         }
 
         /* 4. Form Fields */
@@ -349,7 +364,7 @@
         .form-control-modern {
             width: 100%;
             padding: 12px 16px;
-            border: 1px solid #cbd5e1;
+            border: 1px solid #e5b8c0;
             border-radius: 10px;
             outline: none;
             font-size: 14.5px;
@@ -360,7 +375,23 @@
         }
         .form-control-modern:focus {
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(0, 75, 143, 0.1);
+            box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.12);
+        }
+
+        input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+        select,
+        textarea,
+        .form-control {
+            border-color: #e5b8c0 !important;
+            border-radius: 10px !important;
+        }
+
+        input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+        select:focus,
+        textarea:focus,
+        .form-control:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.12) !important;
         }
 
         /* 5. Buttons System */
@@ -395,8 +426,9 @@
             border: 1px solid #e2e8f0;
         }
         .btn-modern-secondary:hover {
-            background-color: #e2e8f0;
-            color: #1e293b;
+            background-color: #fff1f2;
+            color: #991b1b;
+            border-color: #fecaca;
             transform: translateY(-1px);
         }
         .btn-modern-danger {
@@ -424,15 +456,15 @@
             font-size: 13px;
             border: 1px solid #cbd5e1;
             background-color: #ffffff;
-            color: #475569;
+            color: #7f1d1d;
             cursor: pointer;
             transition: all 0.2s ease;
             text-decoration: none;
         }
         .btn-action-sm:hover {
-            background-color: #f8fafc;
-            color: #0f172a;
-            border-color: #94a3b8;
+            background-color: #fff1f2;
+            color: #991b1b;
+            border-color: #fca5a5;
         }
 
         /* 6. Badge System */
@@ -463,9 +495,23 @@
             border: 1px solid #fecaca;
         }
         .badge-modern-info {
-            background-color: #eff6ff;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
+            background-color: #fff1f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .admin-section-hint {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            color: #7f1d1d;
+            background: #fff1f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            font-size: 13.5px;
+            line-height: 1.5;
         }
 
         /* Alert styling */
@@ -563,7 +609,7 @@
         <!-- Sidebar quản trị -->
         <aside class="admin-sidebar">
             <a href="{{ route('admin.dashboard') }}" class="sidebar-brand" style="display: flex; align-items: center; justify-content: center; padding: 24px 20px;">
-                <img src="{{ asset('images/logo.png') }}" alt="Medicare Logo" style="max-height: 38px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
+                <img src="{{ asset('images/logo.png') }}" alt="Medicare Logo" style="max-height: 38px; width: auto; object-fit: contain;">
             </a>
             
             <ul class="sidebar-menu">
@@ -572,9 +618,9 @@
                         <i data-lucide="layout-dashboard"></i> Dashboard
                     </a>
                 </li>
-                <li class="{{ Route::currentRouteName() === 'admin.live-editor' ? 'active' : '' }}" style="background: rgba(2, 132, 199, 0.15); border-left: 4px solid #0284c7;">
-                    <a href="{{ route('admin.live-editor') }}" style="color: #38bdf8; font-weight: 700;">
-                        <i data-lucide="layout-template" style="color: #38bdf8;"></i> Chỉnh Sửa Trực Quan (Live)
+                <li class="{{ Route::currentRouteName() === 'admin.live-editor' ? 'active' : '' }}" style="{{ Route::currentRouteName() === 'admin.live-editor' ? 'background: rgba(200, 16, 46, 0.18); border-left: 4px solid #dc2626;' : '' }}">
+                    <a href="{{ route('admin.live-editor') }}" style="color: #fecaca; font-weight: 700;">
+                        <i data-lucide="layout-template" style="color: #fecaca;"></i> Chỉnh Sửa Trực Quan (Live)
                     </a>
                 </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.vaccines') ? 'active' : '' }}">
@@ -585,6 +631,11 @@
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.registrations') ? 'active' : '' }}">
                     <a href="{{ route('admin.registrations.index') }}">
                         <i data-lucide="clipboard-list"></i> Đơn Đăng Ký
+                    </a>
+                </li>
+                <li class="{{ Route::currentRouteName() === 'admin.schedule' ? 'active' : '' }}">
+                    <a href="{{ route('admin.schedule') }}">
+                        <i data-lucide="calendar"></i> Lịch Hẹn Tuần
                     </a>
                 </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.centers') ? 'active' : '' }}">

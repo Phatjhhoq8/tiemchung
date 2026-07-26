@@ -48,7 +48,7 @@
                             <!-- Indicators -->
                             <div class="flex flex-wrap gap-x-3 gap-y-1 text-slate-500 text-[11px] font-medium pt-1">
                                 <span class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3 text-[#c8102e]"></i> {{ $vaccine->age_group ?? 'Mọi đối tượng' }}</span>
-                                <span class="flex items-center gap-1"><i data-lucide="globe" class="w-3 h-3 text-[#004b8f]"></i> {{ $vaccine->origin ?? 'Nhập khẩu' }}</span>
+                                <span class="flex items-center gap-1"><i data-lucide="globe" class="w-3 h-3 text-[#b91c1c]"></i> {{ $vaccine->origin ?? 'Nhập khẩu' }}</span>
                             </div>
                         </div>
                         
