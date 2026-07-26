@@ -140,11 +140,10 @@
                 <div class="hot-news-list">
                     @foreach($hotNews->take(5) as $hot)
                         <a href="{{ route('news.show', $hot->slug) }}" class="hot-news-item">
-                            <span class="hot-news-rank">0{{ $loop->iteration }}</span>
                             <div class="hot-news-item-content">
                                 <h3 class="hot-news-title">{{ $hot->title }}</h3>
                                 <div class="hot-news-meta">
-                                    <span><i data-lucide="clock"></i> {{ $hot->created_at ? $hot->created_at->format('d/m/Y') : '26/07/2026' }}</span>
+                                    <span><i data-lucide="calendar"></i> {{ $hot->created_at ? $hot->created_at->format('d/m/Y') : '26/07/2026' }}</span>
                                     <span><i data-lucide="eye"></i> {{ number_format($hot->views) }}</span>
                                 </div>
                             </div>

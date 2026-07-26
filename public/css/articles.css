@@ -1,4 +1,4 @@
-/* Giao diện Danh mục & Chi tiết Tin Tức (Articles Styles) - 100% Shared Search Bar Component */
+/* Giao diện Danh mục & Chi tiết Tin Tức (Articles Styles) - Justify Text Excerpts & Shared Components */
 
 .news-catalog-page {
     max-width: 1200px;
@@ -110,6 +110,7 @@
     line-height: 1.6;
     margin-bottom: 1.8rem;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    text-align: justify; /* Căn đều 2 bên */
 }
 
 /* Centered Search Bar Box Inside Hero - Shared Component from style.css */
@@ -414,6 +415,7 @@
     color: #475569;
     line-height: 1.6;
     margin: 0 0 14px 0;
+    text-align: justify; /* Căn đều 2 bên */
 }
 
 /* Metadata Row Horizontal Line Rules (100% Inline Alignment across all cards) */
@@ -563,15 +565,6 @@
     padding-bottom: 0;
 }
 
-.hot-news-rank {
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--primary-color, #c8102e);
-    min-width: 20px;
-    line-height: 1.2;
-    flex-shrink: 0;
-}
-
 .hot-news-item-content {
     flex: 1;
 }
@@ -678,6 +671,7 @@
     color: #475569;
     line-height: 1.55;
     margin: 0 0 16px 0;
+    text-align: justify; /* Căn đều 2 bên */
 }
 
 /* Modern Pill-Shaped Centered Pagination */
