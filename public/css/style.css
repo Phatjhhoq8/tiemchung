@@ -1492,12 +1492,12 @@ button, select, input {
    ========================================================================== */
 .floating-cart {
     position: fixed;
-    bottom: 2rem;
-    right: 2rem;
+    bottom: 28px;
+    right: 90px;
     z-index: 1000;
     width: 380px;
     background-color: var(--bg-card);
-    border-radius: 0;
+    border-radius: 14px;
     box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
     border: 1px solid #d9e2ee;
     overflow: hidden;
@@ -2722,9 +2722,11 @@ button, select, input {
     }
     
     .floating-cart {
-        width: calc(100vw - 2rem);
+        width: auto;
+        left: 1rem;
         right: 1rem;
-        bottom: 1rem;
+        bottom: 88px;
+        border-radius: 14px;
     }
     
     .ticket-table th {
