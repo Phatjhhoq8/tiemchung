@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.8] - 2026-07-27
+
+### Pagination Formula & Sticky Sidebar Layout Structure Fix
+
+* **Exact Pagination Formula (`1 2 ... (end-1) end`)**: Updated [pagination.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/partials/pagination.blade.php) to strictly output the requested formula (`[<] [1] [2] [...] [16] [17] [>]`).
+* **Layout Containment Fix**: Moved `<section class="suggested-news-section">` and `<section class="catalog-advice-banner">` inside `<main class="article-main-content">` in [show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php). This ensures the right sticky sidebar container stretches smoothly alongside the left main content column, completely eliminating floating sidebar overlap over bottom sections.
+
 ## [v3.5.7] - 2026-07-27
 
 ### Custom Compact Pagination & Section Clearance Fix
