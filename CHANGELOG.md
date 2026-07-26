@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.1.1] - 2026-07-26
+
+### Sticky Sidebar Bottom Margin Overlap Fix
+
+* **Bottom Spacing (`margin-bottom: 54px`)**: Added a 54px bottom margin to `.vaccine-detail-layout` in [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css), ensuring the sticky left sidebar stops cleanly before reaching the related vaccines slider with zero border clipping or overlap.
+* **Overflow Masking**: Added `overflow: hidden` to `.sidebar-cta-widget` to preserve rounded corners and clean box shadows during sticky scrolling.
+
 ## [v3.1.0] - 2026-07-26
 
 ### Dedicated Vaccine Product CSS & Header-Safe Sticky Sidebar
