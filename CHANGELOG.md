@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.3] - 2026-07-27
+
+### TOC Container Target Resolution Fix
+
+* **Header Card Class Rename**: Changed top summary card class in [show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php) to `vaccine-header-card` to eliminate element selection collision with `article-main-content`.
+* **Smart Content Container Resolution**: Refined `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to locate `bodyContent.closest(...)` main content containers, ensuring 100% of headings across all sections are queried and rendered into the TOC widget without false hiding.
+
 ## [v3.5.2] - 2026-07-27
 
 ### Sticky Sidebar Scroll & Complete TOC Scanner Fix
