@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.0.2] - 2026-07-26
+
+### Streamlined 8-Category Prioritized Medical Navigation Bar
+
+* **Prioritized 8 Core Medical Categories**: Streamlined navigation in [ArticleController.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/Http/Controllers/ArticleController.php) by eliminating redundant items and organizing 8 categories in order of medical importance (`Tất cả bài viết`, `Tin Nóng Y Học`, `Khuyến Cáo Y Tế`, `Bệnh Truyền Nhiễm`, `Vắc Xin Mới`, `Chăm Sóc Trẻ Em`, `Tiêm Chủng Người Lớn`, `Tiêm Phòng Mẹ Bầu`).
+* **Balanced Spacing (~28px - 30px)**: Achieved clean spacing between category tabs, eliminating squishing while preserving 100% flush left and right margin alignment.
+
 ## [v3.0.1] - 2026-07-26
 
 ### Standardized Article Detail Page Typography, Bottom-Right Author Credit & Multi-Topic Feed
