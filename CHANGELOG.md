@@ -2,12 +2,15 @@
 
 ## [v2.9.9] - 2026-07-26
 
-### Redesigned News Catalog Page, Persistent Báo Mới Hero Banner & Seeded 100 Articles
+### Redesigned News Catalog Page, Horizontal Cards Feed, Search Auto-Hide Top Alignment & Seeded 100 Articles
 
-* **Redesigned News Catalog Page**: Built a 4-tier layout in [index.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/index.blade.php) featuring a persistent Báo Mới Hero banner top section (70% main featured + 3 sub-featured, 30% right column with 5 hot news items aligned with a level bottom border), a smart search box and sub-page navigation tab bar, a 12-article 3-column main grid, and a bottom Medicare advice banner.
+* **Implemented Horizontal Rectangular Article Feed**: Replaced vertical card grids in [index.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/index.blade.php) and [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css) with a modern Báo Mới style horizontal card layout featuring 320px × 190px thumbnail images on the left and 18px bold headlines, category tags, summary excerpts, and metadata on the right.
+* **Auto-Hiding Hero Banner & Top Alignment**: Configured top Báo Mới Hero banner to render on default view (`/news`) and automatically hide when search (`?search=...`) or category filter (`?category=...`) is active, immediately shifting the search box, nav tabs, and results feed up to the top below breadcrumbs.
+* **Removed Obsolete Reset Filter Button**: Completely removed the "Xóa bộ lọc" button from the search bar form for a clean, modern aesthetic.
+* **Centered Pill-Shaped Pagination**: Redesigned Laravel pagination controls with centered rounded pill-shaped buttons (`border-radius: 20px`) and Medicare Red active page highlights.
 * **Seeded 100 Realistic Medical Articles**: Created and executed [ArticleSeeder.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/database/seeders/ArticleSeeder.php) populating 100 realistic medical articles inspired by VNVC topic structures across 6 primary medical categories (`Bệnh Truyền Nhiễm`, `Khuyến Cáo Y Tế`, `Tin Nóng Y Học`, `Vắc Xin Mới`, `Chăm Sóc Trẻ Em`, `Tiêm Chủng Người Lớn`), generating a dynamic 9-page Laravel pagination (`Showing 1 to 12 of 100 results`).
 * **Strict Ampersand (`&`) Character Restriction**: Replaced all occurrences of `&` across article titles, categories, and navigation tabs with the Vietnamese word "và" per user rules.
-* **100% Design System & Pagination Consistency**: Applied brand color palette (Medicare Red `#c8102e`, Medicare Navy `#004b8f`, Medicare Gold `#eaaa00`) and styled Laravel pagination matching the product catalog page.
+
 
 
 ### Added Disease Details, Empty Cart Options & Admin Weekly Schedule Planner

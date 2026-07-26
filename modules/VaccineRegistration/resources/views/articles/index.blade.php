@@ -15,8 +15,8 @@
         <span>Tin tức và Kiến thức y khoa</span>
     </div>
 
-    <!-- TẦNG 1: BÁO MỚI HERO BANNER SECTION (LUÔN CỐ ĐỊNH Ở ĐẦU TRANG, 70% Left Main Featured, 30% Right Hot News Column) -->
-    @if($hotNews->isNotEmpty())
+    <!-- TẦNG 1: BÁO MỚI HERO BANNER SECTION (CHỈ HIỂN THỊ KHI Ở TRANG 1 VÀ KHÔNG CÓ TÌM KIẾM/BỘ LỌC) -->
+    @if($hotNews->isNotEmpty() && !request('search') && !request('category') && $articles->currentPage() == 1)
         @php
             $featuredMain = $hotNews->first();
             $subFeatured = $hotNews->slice(1, 3);
@@ -81,9 +81,9 @@
         </section>
     @endif
 
-    <!-- TẦNG 2: THANH MENU NAV CHUYÊN MỤC VÀ THANH TÌM KIẾM THÔNG MINH -->
+    <!-- TẦNG 2: THANH TÌM KIẾM THÔNG MINH VÀ MENU NAV CHUYÊN MỤC -->
     <section class="news-nav-bar-container">
-        <!-- Search Row -->
+        <!-- Search Form (Không có nút Xóa bộ lọc cổ lỗ sĩ) -->
         <div class="news-search-row">
             <form action="{{ route('news.index') }}" method="GET" class="news-search-form">
                 <i data-lucide="search" style="width: 18px; height: 18px; color: #94a3b8;"></i>
@@ -92,18 +92,11 @@
                     <span>Tìm kiếm</span>
                 </button>
             </form>
-
-            @if(request('search') || request('category'))
-                <a href="{{ route('news.index') }}" class="news-reset-btn">
-                    <i data-lucide="x" style="width: 14px; height: 14px;"></i>
-                    <span>Xóa bộ lọc</span>
-                </a>
-            @endif
         </div>
 
         <div class="news-nav-divider"></div>
 
-        <!-- Sub-Page Navigation Tabs (No '&' character) -->
+        <!-- Sub-Page Navigation Tabs (Không dùng ký tự '&') -->
         <nav class="news-nav-tabs">
             <a href="{{ route('news.index', array_filter(['search' => request('search')])) }}" class="news-nav-tab {{ !request('category') ? 'active' : '' }}">
                 Tất cả bài viết
@@ -116,35 +109,35 @@
         </nav>
     </section>
 
-    <!-- TẦNG 3: LƯỚI BÀI VIẾT CHÍNH (12 Bài / Trang, 100% Đồng bộ style với thẻ Vắc Xin) -->
+    <!-- TẦNG 3: DANH SÁCH BÀI VIẾT THẺ CHỮ NHẬT NẰM NGANG (HORIZONTAL CARDS CHUẨN BÁO MỚI) -->
     <section>
-        <div class="news-grid-catalog">
+        <div class="news-horizontal-list">
             @forelse($articles as $article)
-                <a href="{{ route('news.show', $article->slug) }}" class="news-card-consistent">
-                    <div class="news-card-media">
+                <a href="{{ route('news.show', $article->slug) }}" class="news-horizontal-card">
+                    <div class="news-horizontal-media">
                         <img src="{{ asset('images/vaccines/' . ($article->image ?: 'vaxigrip.jpg')) }}" alt="{{ $article->title }}" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
                     </div>
-                    <div class="news-card-content">
+                    <div class="news-horizontal-content">
                         <div>
-                            <span class="news-card-cat-label">{{ str_replace('&', 'và', $article->category) }}</span>
-                            <h3 class="news-card-heading">{{ $article->title }}</h3>
-                            <p class="news-card-snippet">{{ Str::limit($article->summary, 100) }}</p>
+                            <span class="news-category-badge">{{ str_replace('&', 'và', $article->category) }}</span>
+                            <h2 class="news-horizontal-heading">{{ $article->title }}</h2>
+                            <p class="news-horizontal-snippet">{{ Str::limit($article->summary, 160) }}</p>
                         </div>
-                        <div class="news-card-bottom-meta">
-                            <span><i data-lucide="calendar" style="width: 13px; height: 13px;"></i> {{ $article->created_at ? $article->created_at->format('d/m/Y') : '26/07/2026' }}</span>
-                            <span><i data-lucide="eye" style="width: 13px; height: 13px;"></i> {{ number_format($article->views) }}</span>
+                        <div class="news-horizontal-bottom-meta">
+                            <span><i data-lucide="calendar" style="width: 13.5px; height: 13.5px;"></i> {{ $article->created_at ? $article->created_at->format('d/m/Y') : '26/07/2026' }}</span>
+                            <span><i data-lucide="eye" style="width: 13.5px; height: 13.5px;"></i> {{ number_format($article->views) }} lượt xem</span>
                         </div>
                     </div>
                 </a>
             @empty
-                <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #94a3b8; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div style="text-align: center; padding: 60px; color: #94a3b8; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0;">
                     <i data-lucide="file-search" style="width: 40px; height: 40px; color: #cbd5e1; margin-bottom: 12px;"></i>
                     <p style="font-size: 15px; margin: 0; font-weight: 500;">Không tìm thấy bài viết phù hợp với từ khóa hoặc chuyên mục hiện tại.</p>
                 </div>
             @endforelse
         </div>
 
-        <!-- Dynamic Pagination (100% Consistent with Catalog Pagination) -->
+        <!-- Dynamic Centered Pill-Shaped Pagination -->
         <div class="catalog-pagination">
             {{ $articles->links() }}
         </div>
