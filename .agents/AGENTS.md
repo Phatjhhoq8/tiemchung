@@ -59,10 +59,6 @@
 - **Sidebar Related Articles**: Display exactly 5 related articles of the same category in the sidebar.
 - **Bottom Multi-Topic Recommendation Feed**: Below the detail article, provide a multi-topic suggested articles feed with pill-shaped pagination links (`$suggestedArticles->links()`).
 
-## 11. Git Workflow Restrictions
-- **No Git Push**: Never execute the `git push` command. The agent is only allowed to stage changes (`git add`) and commit them (`git commit`). Remote pushing must be left to the user.
-
-
 
 
 
