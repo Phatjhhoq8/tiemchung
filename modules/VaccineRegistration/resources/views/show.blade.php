@@ -340,38 +340,29 @@
         });
     }
 
-    // Toggle chọn vắc xin ngay tại trang chi tiết
-    function toggleCartDetail(vaccineId) {
+    // Toggle chọn vắc xin đồng bộ với giỏ hàng toàn cục (app.js)
+    async function toggleCartDetail(vaccineId) {
         const btn = document.querySelector('.btn-select-detail');
-        const isSelected = btn.classList.contains('btn-selected');
-        const url = isSelected ? "{{ route('cart.remove') }}" : "{{ route('cart.add') }}";
+        const isSelected = btn ? btn.classList.contains('btn-selected') : false;
         
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ vaccine_id: vaccineId })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                if (isSelected) {
-                    btn.classList.remove('btn-selected');
-                    btn.style.backgroundColor = 'var(--primary-color, #c8102e)';
-                    btn.innerHTML = '<i data-lucide="plus" style="width: 17px; height: 17px;"></i> <span>Đăng ký tiêm chủng</span>';
-                } else {
-                    btn.classList.add('btn-selected');
-                    btn.style.backgroundColor = 'var(--secondary-color, #eaaa00)';
-                    btn.innerHTML = '<i data-lucide="check" style="width: 17px; height: 17px;"></i> <span>Đã chọn vắc xin</span>';
-                }
-                if (window.lucide) {
-                    lucide.createIcons();
-                }
+        if (typeof toggleCart === 'function') {
+            await toggleCart(vaccineId);
+        }
+        
+        if (btn) {
+            if (isSelected) {
+                btn.classList.remove('btn-selected');
+                btn.style.backgroundColor = 'var(--primary-color, #c8102e)';
+                btn.innerHTML = '<i data-lucide="plus" style="width: 17px; height: 17px;"></i> <span>Đăng ký tiêm chủng</span>';
+            } else {
+                btn.classList.add('btn-selected');
+                btn.style.backgroundColor = 'var(--secondary-color, #eaaa00)';
+                btn.innerHTML = '<i data-lucide="check" style="width: 17px; height: 17px;"></i> <span>Đã chọn vắc xin</span>';
             }
-        })
-        .catch(err => console.error('Cart update error:', err));
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        }
     }
 </script>
 @endsection
