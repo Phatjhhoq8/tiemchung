@@ -89,6 +89,7 @@ class ArticleController extends Controller
             ->where('id', '!=', $article->id)
             ->latest()
             ->paginate(6)
+            ->onEachSide(1)
             ->withQueryString();
 
         return view('vaccine::articles.show', compact('article', 'relatedArticles', 'suggestedArticles'));

@@ -242,7 +242,7 @@
 
     <!-- Related Vaccine Products Slider (Sản phẩm vắc xin liên quan có nút mũi tên điều hướng) -->
     @if(isset($relatedVaccines) && $relatedVaccines->isNotEmpty())
-        <section class="suggested-news-section" data-aos="fade-up" style="margin-top: 40px; margin-bottom: 40px;">
+        <section class="suggested-news-section" data-aos="fade-up" style="margin-top: 60px; margin-bottom: 40px; clear: both; position: relative; z-index: 20;">
             <div class="suggested-news-header" style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
                     <h2>
