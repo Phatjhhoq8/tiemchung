@@ -175,32 +175,34 @@ function toggleCartDrawerPopup(event) {
 
 // Bắt sự kiện click ngoài màn hình để tự động đóng popup giỏ hàng
 document.addEventListener('click', function(e) {
-    const wrapper = document.getElementById('floatingCartWrapper');
+    const pillContainer = document.getElementById('floatingCartPill');
     const popup = document.getElementById('cartDrawerPopup');
-    if (popup && !popup.classList.contains('hidden') && wrapper && !wrapper.contains(e.target)) {
+    if (popup && !popup.classList.contains('hidden') && pillContainer && !pillContainer.contains(e.target)) {
         popup.classList.add('hidden');
     }
 });
 
 function updateFloatingCart(cart, count, totalPrice) {
-    const cartBtn = document.getElementById('floatingCartBtn');
+    const pillContainer = document.getElementById('floatingCartPill');
     const cartCountEl = document.getElementById('cartCount');
+    const cartTotalPriceEl = document.getElementById('cartTotalPrice');
     const drawerTotalPriceEl = document.getElementById('drawerTotalPrice');
     const cartListEl = document.getElementById('cartItemsList');
     const popup = document.getElementById('cartDrawerPopup');
     
-    if (cartBtn) {
+    if (pillContainer) {
         if (count === 0) {
-            cartBtn.classList.add('hidden');
+            pillContainer.classList.add('hidden');
             if (popup) popup.classList.add('hidden');
         } else {
-            cartBtn.classList.remove('hidden');
+            pillContainer.classList.remove('hidden');
         }
     }
     
     if (cartCountEl) cartCountEl.textContent = count;
     
     const formattedPrice = new Intl.NumberFormat('vi-VN').format(totalPrice) + ' đ';
+    if (cartTotalPriceEl) cartTotalPriceEl.textContent = formattedPrice;
     if (drawerTotalPriceEl) drawerTotalPriceEl.textContent = formattedPrice;
     
     if (cartListEl) {

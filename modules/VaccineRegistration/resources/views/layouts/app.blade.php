@@ -310,70 +310,82 @@
 
     </footer>
 
-    <!-- Floating Contact, Cart & Zalo Widget Stack -->
+    <!-- Ultra-Premium Center Floating Cart Pill Bar & Drawer (Shopee / Apple Style) -->
     @php
         $layoutCart = session()->get('cart', []);
         $layoutCartCount = count($layoutCart);
         $layoutTotalPrice = collect($layoutCart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['quantity'] ?? 1));
     @endphp
 
-    <div class="floating-chat-widget">
-        <!-- 1. Nút Giỏ Hàng Tròn (Nằm ở TRÊN CÙNG trong stack nút nổi) -->
-        <div class="floating-cart-wrapper" id="floatingCartWrapper">
-            <!-- Popup Drawer Chi Tiết Giỏ Hàng (Mở lên khi bấm) -->
-            <div class="cart-drawer-popup hidden" id="cartDrawerPopup">
-                <div class="cart-drawer-header">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <i data-lucide="shopping-bag" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
-                        <strong style="font-size: 14.5px; color: #0f172a;">Danh Sách Tiêm Đã Chọn</strong>
-                    </div>
-                    <button type="button" class="cart-drawer-close" onclick="toggleCartDrawerPopup(event)">
-                        <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-                    </button>
+    <div class="floating-cart-pill-container {{ empty($layoutCart) ? 'hidden' : '' }}" id="floatingCartPill">
+        <!-- Popup Drawer Chi Tiết Giỏ Hàng (Bung lên khi bấm) -->
+        <div class="cart-drawer-popup hidden" id="cartDrawerPopup">
+            <div class="cart-drawer-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="shopping-bag" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
+                    <strong style="font-size: 14.5px; color: #0f172a;">Danh Sách Vắc Xin Đã Chọn</strong>
                 </div>
-                <div class="cart-drawer-body" id="cartItemsList">
-                    @if(empty($layoutCart))
-                        <div style="text-align: center; padding: 24px 12px; color: #94a3b8; font-size: 13.5px;">
-                            <i data-lucide="shopping-cart" style="width: 32px; height: 32px; margin-bottom: 8px; opacity: 0.5;"></i>
-                            <p style="margin: 0;">Chưa có vắc xin nào trong danh sách tiêm</p>
-                        </div>
-                    @else
-                        @foreach($layoutCart as $id => $item)
-                            <div class="cart-item-row" data-id="{{ $id }}">
-                                <div class="cart-item-info">
-                                    <strong class="cart-item-name">{{ $item['name'] }}</strong>
-                                    <span class="cart-item-price">{{ number_format($item['price'], 0, ',', '.') }} đ</span>
-                                </div>
-                                <button type="button" onclick="toggleCart({{ $id }})" class="cart-item-remove" title="Xóa vắc xin">
-                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
-                                </button>
-                            </div>
-                        @endforeach
-                    @endif
-                </div>
-                <div class="cart-drawer-footer">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <span style="font-size: 13px; color: #64748b;">Tổng tiền niêm yết:</span>
-                        <strong id="drawerTotalPrice" style="font-size: 17px; color: var(--primary-color, #c8102e); font-weight: 800;">{{ number_format($layoutTotalPrice, 0, ',', '.') }} đ</strong>
-                    </div>
-                    <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-checkout-drawer">
-                        <i data-lucide="calendar-check" style="width: 16px; height: 16px;"></i>
-                        <span>Đăng ký tiêm ngay</span>
-                    </a>
-                </div>
+                <button type="button" class="cart-drawer-close" onclick="toggleCartDrawerPopup(event)">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                </button>
             </div>
-
-            <!-- Nút Giỏ Hàng Tròn (Đồng bộ kích thước 48px với Zalo/Hotline, có huy hiệu số lượng) -->
-            <button type="button" class="floating-btn-expandable floating-cart-trigger {{ empty($layoutCart) ? 'hidden' : '' }}" id="floatingCartBtn" onclick="toggleCartDrawerPopup(event)" style="background: linear-gradient(135deg, #c8102e 0%, #a00d24 100%); box-shadow: 0 8px 24px rgba(200, 16, 46, 0.4);" title="Danh sách vắc xin đã chọn tiêm">
-                <div class="btn-icon" style="position: relative;">
-                    <i data-lucide="shopping-cart" style="width: 20px; height: 20px;"></i>
-                    <span class="cart-badge-count" id="cartCount">{{ $layoutCartCount }}</span>
+            <div class="cart-drawer-body" id="cartItemsList">
+                @if(empty($layoutCart))
+                    <div style="text-align: center; padding: 24px 12px; color: #94a3b8; font-size: 13.5px;">
+                        <i data-lucide="shopping-cart" style="width: 32px; height: 32px; margin-bottom: 8px; opacity: 0.5;"></i>
+                        <p style="margin: 0;">Chưa có vắc xin nào trong danh sách tiêm</p>
+                    </div>
+                @else
+                    @foreach($layoutCart as $id => $item)
+                        <div class="cart-item-row" data-id="{{ $id }}">
+                            <div class="cart-item-info">
+                                <strong class="cart-item-name">{{ $item['name'] }}</strong>
+                                <span class="cart-item-price">{{ number_format($item['price'], 0, ',', '.') }} đ</span>
+                            </div>
+                            <button type="button" onclick="toggleCart({{ $id }})" class="cart-item-remove" title="Xóa vắc xin">
+                                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                            </button>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+            <div class="cart-drawer-footer">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="font-size: 13px; color: #64748b;">Tổng tiền niêm yết:</span>
+                    <strong id="drawerTotalPrice" style="font-size: 17px; color: var(--primary-color, #c8102e); font-weight: 800;">{{ number_format($layoutTotalPrice, 0, ',', '.') }} đ</strong>
                 </div>
-                <span class="btn-text">Danh Sách Tiêm</span>
-            </button>
+                <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-checkout-drawer">
+                    <i data-lucide="calendar-check" style="width: 16px; height: 16px;"></i>
+                    <span>Đăng ký tiêm ngay</span>
+                </a>
+            </div>
         </div>
 
-        <!-- 2. Nút Chat Zalo Bác Sĩ -->
+        <!-- Sleek Horizontal Pill Bar -->
+        <div class="floating-cart-pill-bar">
+            <!-- Left: Cart Icon & Count Badge -->
+            <div class="pill-cart-icon-box" onclick="toggleCartDrawerPopup(event)" title="Xem danh sách vắc xin">
+                <i data-lucide="shopping-cart" style="width: 20px; height: 20px;"></i>
+                <span class="pill-badge-count" id="cartCount">{{ $layoutCartCount }}</span>
+            </div>
+
+            <!-- Middle: Total Price & Text -->
+            <div class="pill-cart-text-box" onclick="toggleCartDrawerPopup(event)" title="Xem danh sách vắc xin">
+                <span class="pill-subtext">Danh sách tiêm chủng</span>
+                <strong id="cartTotalPrice" class="pill-pricetext">{{ number_format($layoutTotalPrice, 0, ',', '.') }} đ</strong>
+            </div>
+
+            <!-- Right: Action Button -->
+            <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="pill-checkout-btn">
+                <span>Đăng ký ngay</span>
+                <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Floating Contact & Zalo Widget Stack (Bên phải) -->
+    <div class="floating-chat-widget">
+        <!-- Nút Chat Zalo Bác Sĩ -->
         <a href="https://zalo.me/0938603839" target="_blank" rel="noopener noreferrer" class="floating-btn-expandable" style="background-color: #0068ff; box-shadow: 0 8px 24px rgba(0, 104, 255, 0.35);" title="Chat Zalo Tư Vấn Vắc Xin Tức Thì">
             <div class="btn-icon">
                 <div style="width: 26px; height: 26px; background: #ffffff; color: #0068ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 11px;">Zalo</div>
@@ -381,7 +393,7 @@
             <span class="btn-text">Chat Zalo Bác Sĩ</span>
         </a>
 
-        <!-- 3. Nút Hotline Tư Vấn 24/7 -->
+        <!-- Nút Hotline Tư Vấn 24/7 -->
         <a href="tel:0938603839" class="floating-btn-expandable" style="background-color: var(--primary-color, #c8102e); box-shadow: 0 8px 24px rgba(200, 16, 46, 0.35);" title="Gọi Hotline 0938 60 38 39">
             <div class="btn-icon">
                 <i data-lucide="phone-call" style="width: 20px; height: 20px;"></i>
