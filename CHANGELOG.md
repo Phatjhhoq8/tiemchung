@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.1.3] - 2026-07-26
+
+### Floating Cart Collision Prevention & Responsive Layout
+
+* **Desktop Position (`right: 90px; bottom: 28px;`)**: Repositioned `.floating-cart` in [style.css](file:///d:/Projects/tiemchung/public/css/style.css) to `right: 90px; bottom: 28px;` with `border-radius: 14px`, sitting directly to the left of the floating contact widget (Zalo / Hotline) with zero overlap.
+* **Mobile Layout (`bottom: 88px;`)**: Configured mobile breakpoint so `.floating-cart` renders as a full-width floating bar elevated above floating action buttons (`bottom: 88px`).
+
 ## [v3.1.2] - 2026-07-26
 
 ### Unified Cart Toggle API & Multi-Location Synchronization
