@@ -4223,54 +4223,29 @@ div.section-badge,
     display: inline-block;
 }
 
-.header-cart-btn {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: #fff9e6;
-    border: 1.5px solid rgba(234, 170, 0, 0.5);
-    color: var(--primary-color, #c8102e);
+.header-cart-btn-pill {
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 0;
+    font-family: inherit;
+    line-height: 1;
 }
 
-.header-cart-btn.hidden {
-    display: none !important;
-}
-
-.header-cart-btn:hover {
-    background: var(--primary-color, #c8102e);
-    color: #ffffff;
-    border-color: var(--primary-color, #c8102e);
-    transform: scale(1.06);
-    box-shadow: 0 4px 14px rgba(200, 16, 46, 0.25);
-}
-
-.header-cart-badge {
-    position: absolute;
-    top: -3px;
-    right: -3px;
+.header-cart-badge-inline {
     background: var(--primary-color, #c8102e);
     color: #ffffff;
     font-size: 11px;
     font-weight: 800;
     min-width: 18px;
     height: 18px;
-    border-radius: 50%;
-    display: flex;
+    border-radius: 9px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0 4px;
-    border: 2px solid #ffffff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    padding: 0 5px;
+    margin-left: 2px;
+    transition: all 0.2s ease;
 }
 
-.header-cart-btn:hover .header-cart-badge {
+.hotline-btn:hover .header-cart-badge-inline {
     background: var(--secondary-color, #eaaa00);
     color: #0f172a;
 }

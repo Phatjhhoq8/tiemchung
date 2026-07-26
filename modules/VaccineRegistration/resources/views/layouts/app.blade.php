@@ -84,21 +84,23 @@
             </nav>
             
             <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
-                <a href="tel:{{ str_replace(' ', '', $hotline) }}" class="hotline-btn hotline-btn-desktop">
+                <!-- 1. Nút Điện Thoại (Chỉ còn icon và số điện thoại, bỏ chữ 'Tư vấn:') -->
+                <a href="tel:{{ str_replace(' ', '', $hotline) }}" class="hotline-btn hotline-btn-desktop" title="Gọi hotline {{ $hotline }}">
                     <i data-lucide="phone-call"></i>
-                    <span>Tư vấn: {{ $hotline }}</span>
+                    <span>{{ $hotline }}</span>
                 </a>
 
-                <!-- Header Cart Icon Button with Dropdown Menu (Luôn hiển thị ở Header) -->
+                <!-- 2. Nút Giỏ Hàng (Thiết kế Pill giống hệt & cùng màu nút Điện Thoại) -->
                 @php
                     $layoutCart = session()->get('cart', []);
                     $layoutCartCount = count($layoutCart);
                     $layoutTotalPrice = collect($layoutCart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['quantity'] ?? 1));
                 @endphp
                 <div class="header-cart-wrapper" id="headerCartWrapper">
-                    <button type="button" class="header-cart-btn" id="headerCartBtn" onclick="toggleHeaderCartDropdown(event)" title="Danh sách vắc xin đã chọn tiêm">
-                        <i data-lucide="shopping-cart" style="width: 20px; height: 20px;"></i>
-                        <span class="header-cart-badge" id="cartCount">{{ $layoutCartCount }}</span>
+                    <button type="button" class="hotline-btn header-cart-btn-pill" id="headerCartBtn" onclick="toggleHeaderCartDropdown(event)" title="Danh sách vắc xin đã chọn tiêm">
+                        <i data-lucide="shopping-cart"></i>
+                        <span>Giỏ hàng</span>
+                        <span class="header-cart-badge-inline" id="cartCount">{{ $layoutCartCount }}</span>
                     </button>
 
                     <!-- Header Cart Dropdown Menu (Hạ xuống khi bấm) -->
@@ -139,15 +141,16 @@
                             </div>
                             <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-checkout-drawer">
                                 <i data-lucide="calendar-check" style="width: 16px; height: 16px;"></i>
-                                <span>Đăng ký tiêm ngay</span>
+                                <span>Đặt lịch ngay</span>
                             </a>
                         </div>
                     </div>
                 </div>
 
+                <!-- 3. Nút Đặt Lịch (Màu đỏ Medicare Red) -->
                 <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-primary-header">
                     <i data-lucide="calendar-plus" style="width: 16px; height: 16px;"></i>
-                    <span>Đăng ký tiêm</span>
+                    <span>Đặt lịch</span>
                 </a>
                 <!-- Mobile Hamburger Button -->
                 <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Menu">
