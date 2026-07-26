@@ -1,5 +1,14 @@
 # Release Notes
 
+## [v3.1.0] - 2026-07-26
+
+### Dedicated Vaccine Product CSS & Header-Safe Sticky Sidebar
+
+* **Dedicated `vaccines.css`**: Created [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css) specifically for vaccine product catalog and detail pages ([show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php)), separating vaccine product styles completely from news/articles.
+* **Header-Safe Sticky Sidebar (`top: 100px`)**: Fixed sticky sidebar container in [show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php) with `top: 100px` so the Table of Contents header is never covered by the site's top fixed navigation bar when scrolling.
+* **Clean HTML/Markdown Parser Support**: Integrated styling rules for headings, paragraphs, lists, and tables inside `.article-body-content`, eliminating artificial callout boxes while preserving 100% justified typography and bottom-right author credit.
+* **Related Vaccines Horizontal Slider**: Added `<` and `>` arrow navigation buttons to scroll through 8 related vaccine products dynamically loaded from the database.
+
 ## [v3.0.2] - 2026-07-26
 
 ### Streamlined 8-Category Prioritized Medical Navigation Bar
