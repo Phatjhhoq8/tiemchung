@@ -60,6 +60,17 @@
         <!-- Right Sidebar Column (30% Width) -->
         <aside class="article-sidebar" data-aos="fade-left">
             <div class="sticky-sidebar-container">
+                <!-- Widget 0: Dynamic TOC (Mục Lục Nội Dung) -->
+                <div class="vaccine-toc-widget" id="autoTocWidget">
+                    <div class="widget-title">
+                        <i data-lucide="list" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
+                        Mục Lục Nội Dung
+                    </div>
+                    <nav style="display: flex; flex-direction: column;" id="autoTocNav">
+                        <!-- Generates dynamic links via JS -->
+                    </nav>
+                </div>
+
                 <!-- Widget 1: 5 Related Articles of the same topic -->
                 <div class="sidebar-widget">
                     <h3 class="widget-title">

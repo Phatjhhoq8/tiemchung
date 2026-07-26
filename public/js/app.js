@@ -1073,3 +1073,80 @@ function setSpaConsultType(value) {
         select.setAttribute('required', 'required');
     }
 }
+
+// Automatic Dynamic Table of Contents (TOC) & Smooth Scroll Highlight Generator
+document.addEventListener('DOMContentLoaded', function() {
+    initDynamicTOC();
+});
+
+function initDynamicTOC() {
+    const bodyContent = document.querySelector('.article-body-content');
+    const autoTocNav = document.getElementById('autoTocNav');
+    const vaccineTocNav = document.getElementById('vaccineTocNav');
+    const targetNav = autoTocNav || vaccineTocNav;
+    const tocWidget = document.getElementById('autoTocWidget');
+
+    if (!bodyContent || !targetNav) return;
+
+    const headings = bodyContent.querySelectorAll('h2, h3');
+    if (headings.length === 0) {
+        if (tocWidget) tocWidget.style.display = 'none';
+        return;
+    }
+
+    targetNav.innerHTML = '';
+    const tocItems = [];
+
+    headings.forEach((heading, index) => {
+        if (!heading.id) {
+            heading.id = 'heading-toc-' + index;
+        }
+        const link = document.createElement('a');
+        link.href = '#' + heading.id;
+        link.className = 'toc-link-item' + (index === 0 ? ' active' : '');
+        link.style.display = 'flex';
+        link.style.alignItems = 'center';
+        link.style.gap = '6px';
+        link.innerHTML = `<i data-lucide="chevron-right" style="width: 14px; height: 14px; flex-shrink: 0;"></i> <span>${heading.textContent.trim()}</span>`;
+        
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetEl = document.getElementById(heading.id);
+            if (targetEl) {
+                const yOffset = -110;
+                const y = targetEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        });
+
+        targetNav.appendChild(link);
+        tocItems.push({ heading, link });
+    });
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+
+    // Scroll active link observer
+    const observerOptions = {
+        root: null,
+        rootMargin: '-100px 0px -65% 0px',
+        threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                tocItems.forEach(item => {
+                    if (item.heading === entry.target) {
+                        item.link.classList.add('active');
+                    } else {
+                        item.link.classList.remove('active');
+                    }
+                });
+            }
+        });
+    }, observerOptions);
+
+    headings.forEach(heading => observer.observe(heading));
+}

@@ -88,50 +88,9 @@
         </div>
     </div>
 
-    <!-- 2-Column Medical Details Layout (Sidebar TOC + Main Detailed Content) -->
+    <!-- 2-Column Medical Details Layout (Left Big Main Content 75% + Right Small Sidebar 25%) -->
     <div class="vaccine-detail-layout" data-aos="fade-up">
-        <!-- Sidebar Column (25% Width): Unified Sticky Container (top: 100px) -->
-        <aside class="article-sidebar" style="flex: 0 0 calc(25% - 16px);">
-            <div class="sticky-sidebar-container">
-                <!-- TOC Widget -->
-                <div class="vaccine-toc-widget">
-                    <div class="widget-title">
-                        <i data-lucide="list" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
-                        Mục Lục Nội Dung
-                    </div>
-                    <nav style="display: flex; flex-direction: column;">
-                        <a href="#sec-thong-tin" class="toc-link-item active">
-                            <i data-lucide="chevron-right"></i> 1. Thông tin vắc xin
-                        </a>
-                        <a href="#sec-doi-tuong" class="toc-link-item">
-                            <i data-lucide="chevron-right"></i> 2. Đối tượng chỉ định
-                        </a>
-                        <a href="#sec-phac-do" class="toc-link-item">
-                            <i data-lucide="chevron-right"></i> 3. Phác đồ & Lịch tiêm
-                        </a>
-                        <a href="#sec-than-trong" class="toc-link-item">
-                            <i data-lucide="chevron-right"></i> 4. Thận trọng & Thai kỳ
-                        </a>
-                        <a href="#sec-phan-ung" class="toc-link-item">
-                            <i data-lucide="chevron-right"></i> 5. Phản ứng sau tiêm
-                        </a>
-                        <a href="#sec-bao-quan" class="toc-link-item">
-                            <i data-lucide="chevron-right"></i> 6. Bảo quản Dây chuyền lạnh
-                        </a>
-                    </nav>
-                </div>
-
-                <!-- Callout CTA Widget -->
-                <div class="sidebar-cta-widget">
-                    <i data-lucide="headset" class="cta-widget-icon"></i>
-                    <h3>Tư Vấn Y Khoa 24/7</h3>
-                    <p>Đội ngũ bác sĩ chuyên khoa Medicare luôn sẵn sàng hỗ trợ tra cứu lịch tiêm và tư vấn phác đồ phù hợp cho gia đình bạn.</p>
-                    <a href="tel:0938603839" class="cta-widget-btn">Hotline: 0938 60 38 39</a>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Main Content Column (75% Width): Clean Natural Dynamic HTML Body (Support Markdown/AI Output) -->
+        <!-- Main Content Column (75% Width - Left Big Column) -->
         <main class="article-main-content" style="flex: 0 0 calc(75% - 16px);">
             <!-- Section 1: Thông tin vắc xin -->
             <section id="sec-thong-tin" style="margin-bottom: 36px;">
@@ -167,7 +126,7 @@
                 </div>
             </section>
 
-            <!-- Section 3: Phác đồ & Lịch tiêm (100% Pure Clean HTML Typography - No Artificial Gray Box) -->
+            <!-- Section 3: Phác đồ & Lịch tiêm -->
             <section id="sec-phac-do" style="margin-bottom: 36px;">
                 <h2 style="font-size: 21px; font-weight: 800; color: #0f172a; margin-top: 0; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-color, #c8102e);">
                     3. Phác đồ & Lịch tiêm chi tiết
@@ -223,7 +182,7 @@
                 </div>
             </section>
 
-            <!-- Section 6: Bảo quản GSP -->
+            <!-- Section 6: Bảo quản vắc xin đạt tiêu chuẩn GSP -->
             <section id="sec-bao-quan" style="margin-bottom: 36px;">
                 <h2 style="font-size: 21px; font-weight: 800; color: #0f172a; margin-top: 0; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-color, #c8102e);">
                     6. Bảo quản tiêu chuẩn Dây chuyền lạnh GSP
@@ -238,6 +197,47 @@
                 <span>Theo Bác sĩ Chuyên khoa Medicare Cờ Đỏ</span>
             </div>
         </main>
+
+        <!-- Right Sidebar Column (25% Width - Right Small Sticky Column) -->
+        <aside class="article-sidebar" style="flex: 0 0 calc(25% - 16px);">
+            <div class="sticky-sidebar-container">
+                <!-- TOC Widget -->
+                <div class="vaccine-toc-widget" id="autoTocWidget">
+                    <div class="widget-title">
+                        <i data-lucide="list" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
+                        Mục Lục Nội Dung
+                    </div>
+                    <nav style="display: flex; flex-direction: column;" id="vaccineTocNav">
+                        <a href="#sec-thong-tin" class="toc-link-item active">
+                            <i data-lucide="chevron-right"></i> 1. Thông tin vắc xin
+                        </a>
+                        <a href="#sec-doi-tuong" class="toc-link-item">
+                            <i data-lucide="chevron-right"></i> 2. Đối tượng chỉ định
+                        </a>
+                        <a href="#sec-phac-do" class="toc-link-item">
+                            <i data-lucide="chevron-right"></i> 3. Phác đồ & Lịch tiêm
+                        </a>
+                        <a href="#sec-than-trong" class="toc-link-item">
+                            <i data-lucide="chevron-right"></i> 4. Thận trọng & Thai kỳ
+                        </a>
+                        <a href="#sec-phan-ung" class="toc-link-item">
+                            <i data-lucide="chevron-right"></i> 5. Phản ứng sau tiêm
+                        </a>
+                        <a href="#sec-bao-quan" class="toc-link-item">
+                            <i data-lucide="chevron-right"></i> 6. Bảo quản Dây chuyền lạnh
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- Callout CTA Widget -->
+                <div class="sidebar-cta-widget">
+                    <i data-lucide="headset" class="cta-widget-icon"></i>
+                    <h3>Tư Vấn Y Khoa 24/7</h3>
+                    <p>Đội ngũ bác sĩ chuyên khoa Medicare luôn sẵn sàng hỗ trợ tra cứu lịch tiêm và tư vấn phác đồ phù hợp cho gia đình bạn.</p>
+                    <a href="tel:0938603839" class="cta-widget-btn">Hotline: 0938 60 38 39</a>
+                </div>
+            </div>
+        </aside>
     </div>
 
     <!-- Related Vaccine Products Slider (Sản phẩm vắc xin liên quan có nút mũi tên điều hướng) -->
