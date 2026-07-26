@@ -1,4 +1,4 @@
-/* Giao diện Danh mục & Chi tiết Tin Tức (Articles Styles) - 100% Matching /about Standard Dimensions */
+/* Giao diện Danh mục & Chi tiết Tin Tức (Articles Styles) - 100% Shared Search Bar Component */
 
 .news-catalog-page {
     max-width: 1200px;
@@ -112,11 +112,11 @@
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 
-/* Centered Search Bar Box Inside Hero */
+/* Centered Search Bar Box Inside Hero - Shared Component from style.css */
 .search-bar-container.catalog-search-box {
     position: relative;
     z-index: 2;
-    max-width: 600px;
+    max-width: 640px;
     margin-top: 10px;
 }
 
@@ -125,13 +125,11 @@
     align-items: center;
     background: #ffffff;
     border-radius: 40px;
-    padding: 5px 6px 5px 20px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    padding: 6px 8px 6px 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
 }
 
 .search-bar-container.catalog-search-box .search-icon {
-    width: 18px;
-    height: 18px;
     color: #94a3b8;
     margin-right: 8px;
     flex-shrink: 0;
