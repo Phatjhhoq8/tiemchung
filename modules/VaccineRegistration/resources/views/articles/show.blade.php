@@ -120,7 +120,7 @@
 
         <!-- Dynamic Centered Pill-Shaped Pagination Links (Max 4 page numbers + ...) -->
         <div class="news-pagination">
-            {{ $suggestedArticles->links('vaccine::partials.pagination') }}
+            {{ $suggestedArticles->links('partials.pagination') }}
         </div>
     </section>
 
