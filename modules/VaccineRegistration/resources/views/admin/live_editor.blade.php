@@ -215,7 +215,7 @@
     <div class="live-edit-frame" onclick="openSettingModal('about_mission', 'Sứ Mệnh Bảo Vệ Sức Khỏe', ['about_mission_title', 'about_mission_desc'])">
         <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 2: Sứ Mệnh Bảo Vệ Sức Khỏe</div>
         <div style="padding: 24px; background: #ffffff; border-radius: 12px;">
-            <h4 style="margin: 0 0 10px 0; color: var(--primary-color); font-size: 18px; font-weight: 700;">🎯 {{ $settings['about_mission_title'] ?? 'Sứ Mệnh Bảo Vệ Sức Khỏe' }}</h4>
+            <h4 style="margin: 0 0 10px 0; color: var(--primary-color); font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px;"><i data-lucide="target" style="width: 20px; height: 20px;"></i> {{ $settings['about_mission_title'] ?? 'Sứ Mệnh Bảo Vệ Sức Khỏe' }}</h4>
             <p style="color: #64748b; font-size: 14.5px; margin: 0; line-height: 1.6;">{{ $settings['about_mission_desc'] ?? 'Mang lại dịch vụ tiêm chủng an toàn tuyệt đối, nhanh chóng và tiếp cận dễ dàng cho mọi gia đình. Giúp cộng đồng chủ động phòng ngừa bệnh truyền nhiễm.' }}</p>
         </div>
     </div>
@@ -224,7 +224,7 @@
     <div class="live-edit-frame" onclick="openSettingModal('about_gsp', 'Kho Lạnh GSP Đạt Chuẩn', ['about_gsp_title', 'about_gsp_desc'])">
         <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 3: Kho Lạnh GSP</div>
         <div style="padding: 24px; background: #ffffff; border-radius: 12px;">
-            <h4 style="margin: 0 0 10px 0; color: #0284c7; font-size: 18px; font-weight: 700;">🛡️ {{ $settings['about_gsp_title'] ?? 'Kho Lạnh GSP Đạt Chuẩn' }}</h4>
+            <h4 style="margin: 0 0 10px 0; color: #0284c7; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px;"><i data-lucide="shield" style="width: 20px; height: 20px;"></i> {{ $settings['about_gsp_title'] ?? 'Kho Lạnh GSP Đạt Chuẩn' }}</h4>
             <p style="color: #64748b; font-size: 14.5px; margin: 0; line-height: 1.6;">{{ $settings['about_gsp_desc'] ?? '100% vắc xin lưu trữ trong kho lạnh dây chuyền lạnh GSP đạt tiêu chuẩn Bộ Y tế, duy trì nhiệt độ chuẩn 2 - 8°C cho chất lượng vắc xin tối đa.' }}</p>
         </div>
     </div>
@@ -369,7 +369,7 @@
     <div style="background: #ffffff; padding: 28px; border-radius: 16px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
         <div style="display: flex; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; margin-bottom: 24px;">
             <div>
-                <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #1e293b;">🧩 Sắp xếp & Cấu hình các phần Trang Chủ</h3>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px;"><i data-lucide="layout-grid" style="width: 20px; height: 20px; color: var(--primary-color);"></i> Sắp xếp & Cấu hình các phần Trang Chủ</h3>
                 <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">Thay đổi thứ tự hiển thị, bật/tắt (ghim), đổi màu nền và khoảng giãn của từng phần trên trang chủ.</p>
             </div>
             <div style="display: flex; gap: 8px; margin-left: auto;">

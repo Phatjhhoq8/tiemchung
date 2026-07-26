@@ -1,5 +1,30 @@
 # Release Notes
 
+## [v2.9.4] - 2026-07-26
+
+### Complete Admin Interface Redesign & CSS Style Consolidation
+
+* **Consolidated Admin UI Styles**: Integrated a unified set of modern UI classes (`.card-modern`, `.stat-card-modern`, `.table-modern`, `.form-control-modern`, `.btn-modern-*`, `.badge-modern`) into the main layout to replace highly redundant inline CSS across all admin templates.
+* **Redesigned Admin Dashboard View**: Completely overhauled [dashboard.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/dashboard.blade.php) using modern glassmorphic widgets, structured quick action layout, and responsive recent registrations table without inline styling.
+* **Overhauled Vaccines Management views**: Redesigned vaccines list [index.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/vaccines/index.blade.php), creation form [create.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/vaccines/create.blade.php), update form [edit.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/vaccines/edit.blade.php), and [_form.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/vaccines/_form.blade.php) using the unified modern forms and tables design.
+* **Redesigned Website Settings View**: Upgraded the settings dashboard [settings/index.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/settings/index.blade.php) using modern layout wrappers and styling classes.
+* **Redesigned Registrations Views**: Refactored registrations list [registrations/index.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/registrations/index.blade.php) and registration details [registrations/show.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/registrations/show.blade.php) to incorporate unified table models, status badges, and action buttons.
+
+## [v2.9.3] - 2026-07-26
+
+### Admin Interface Color Alignment & Emoji Removal
+
+* **Refined Admin Sidebar Colors**: Changed the admin sidebar background from generic dark gray (`#1e2229`) to brand Medicare Navy sẫm (`#0a192f`). Aligned menu hover/active states to a milder navy (`#132742`) with a Medicare Red (`#c8102e`) left border.
+* **Removed Emojis from Admin Dashboard**: Removed emojis (e.g. ⭐, 🖼️) from quick action buttons on the dashboard and replaced them with clean Lucide icons (`star` and `image`).
+* **Cleaned Vaccines Management List**: Replaced the star emoji `⭐` on featured items with a professional gold-tinted badge (`#fef3c7`/`#d97706`). Replaced emojis on the toggle buttons with Lucide `star` and `star-off` icons.
+* **Eliminated Emojis in Forms & Modals**: Removed checkmark, warning, cross, target, shield and puzzle emojis (`✅`, `⚠️`, `❌`, `🎯`, `🛡️`, `🧩`) from the stock status select dropdown, featured checkbox, and live customizer preview headings and dropdown options.
+
+## [v2.9.2] - 2026-07-26
+
+### Installed AI Agent Skills
+
+* **Added frontend-design skill**: Installed the `frontend-design` skill from `https://github.com/anthropics/skills` into the workspace customization directory `.agents/skills/frontend-design`.
+
 ## [v2.9.1] - 2026-07-25
 
 ### Unified Hero Banner Layout, CSS Scroll Snapping & Section Dividers

@@ -3,177 +3,137 @@
 @section('title', 'Admin Dashboard - Medicare Cờ Đỏ')
 @section('page_title', 'Bảng Điều Khiển Quản Trị')
 
-@section('styles')
-<style>
-    .quick-action-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 24px;
-        margin-bottom: 40px;
-    }
-    .quick-action-card {
-        background: #ffffff;
-        padding: 20px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .quick-action-card:hover {
-        box-shadow: 0 6px 12px rgba(0,0,0,0.05);
-    }
-    .quick-action-left {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-    .quick-action-btn {
-        font-weight: 700;
-        font-size: 13px;
-        text-decoration: none;
-        padding: 8px 14px;
-        border-radius: 8px;
-        white-space: nowrap;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.2s ease;
-    }
-    @media (max-width: 576px) {
-        .quick-action-card {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 14px;
-            padding: 16px;
-        }
-        .quick-action-btn {
-            width: 100%;
-            justify-content: center;
-            text-align: center;
-            box-sizing: border-box;
-            padding: 10px;
-        }
-    }
-</style>
-@endsection
-
 @section('admin_content')
 <!-- Thẻ thống kê Widgets -->
-<div class="stats-widgets-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 40px;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 40px;">
     <!-- Widget 1: Tổng đăng ký -->
-    <div class="stat-card" style="background-color: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+    <div class="stat-card-modern">
         <div>
-            <span style="color: #64748b; font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px; text-transform: uppercase;">Tổng Đăng Ký</span>
-            <strong style="font-size: 28px; color: #1e293b; font-family: 'Roboto', sans-serif;">{{ $totalRegistrations }}</strong>
+            <span class="stat-card-title">Tổng Đăng Ký</span>
+            <strong class="stat-card-number">{{ $totalRegistrations }}</strong>
         </div>
-        <div style="background-color: #e2f0fd; color: #0a58ca; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i data-lucide="clipboard-list"></i></div>
+        <div class="stat-card-icon-wrapper" style="background-color: #eff6ff; color: #1d4ed8;">
+            <i data-lucide="clipboard-list"></i>
+        </div>
     </div>
 
     <!-- Widget 2: Doanh thu -->
-    <div class="stat-card" style="background-color: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+    <div class="stat-card-modern">
         <div>
-            <span style="color: #64748b; font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px; text-transform: uppercase;">Doanh Thu (Dự Kiến)</span>
-            <strong style="font-size: 24px; color: #10b981; font-family: 'Roboto', sans-serif;">{{ number_format($totalRevenue, 0, ',', '.') }} đ</strong>
+            <span class="stat-card-title">Doanh Thu (Dự Kiến)</span>
+            <strong class="stat-card-number" style="color: #10b981; font-size: 24px;">{{ number_format($totalRevenue, 0, ',', '.') }} đ</strong>
         </div>
-        <div style="background-color: #ecfdf5; color: #10b981; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i data-lucide="dollar-sign"></i></div>
+        <div class="stat-card-icon-wrapper" style="background-color: #ecfdf5; color: #10b981;">
+            <i data-lucide="dollar-sign"></i>
+        </div>
     </div>
 
     <!-- Widget 3: Chờ thanh toán -->
-    <div class="stat-card" style="background-color: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+    <div class="stat-card-modern">
         <div>
-            <span style="color: #64748b; font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px; text-transform: uppercase;">Chờ Thanh Toán</span>
-            <strong style="font-size: 28px; color: #f59e0b; font-family: 'Roboto', sans-serif;">{{ $pendingCount }}</strong>
+            <span class="stat-card-title">Chờ Thanh Toán</span>
+            <strong class="stat-card-number">{{ $pendingCount }}</strong>
         </div>
-        <div style="background-color: #fffbeb; color: #f59e0b; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i data-lucide="clock"></i></div>
+        <div class="stat-card-icon-wrapper" style="background-color: #fffbeb; color: #d97706;">
+            <i data-lucide="clock"></i>
+        </div>
     </div>
 
-    <!-- Widget 4: Đã thanh toán -->
-    <div class="stat-card" style="background-color: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+    <!-- Widget 4: Đã hoàn tất -->
+    <div class="stat-card-modern">
         <div>
-            <span style="color: #64748b; font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px; text-transform: uppercase;">Đã Hoàn Tất</span>
-            <strong style="font-size: 28px; color: #8b5cf6; font-family: 'Roboto', sans-serif;">{{ $completedCount }}</strong>
+            <span class="stat-card-title">Đã Hoàn Tất</span>
+            <strong class="stat-card-number">{{ $completedCount }}</strong>
         </div>
-        <div style="background-color: #f5f3ff; color: #8b5cf6; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i data-lucide="shield-check"></i></div>
+        <div class="stat-card-icon-wrapper" style="background-color: #f5f3ff; color: #7c3aed;">
+            <i data-lucide="shield-check"></i>
+        </div>
     </div>
 </div>
 
 <!-- Khung phụ thống kê nhanh & Quản trị nhanh -->
-<div class="quick-action-grid">
-    <div class="quick-action-card">
-        <div class="quick-action-left">
-            <div style="background-color: #fff1f2; color: #e11d48; padding: 12px; border-radius: 8px;"><i data-lucide="syringe"></i></div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px;">
+    <div class="stat-card-modern">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="background-color: #fff1f2; color: #e11d48; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="syringe"></i>
+            </div>
             <div>
-                <span style="display:block; color:#64748b; font-size:14px; font-weight: 500;">Danh mục Vắc Xin</span>
-                <strong style="font-size: 20px; color:#1e293b;">{{ $vaccinesCount }} loại</strong>
+                <span style="display: block; color: var(--text-muted); font-size: 14px; font-weight: 500; font-family: var(--font-display);">Danh mục Vắc Xin</span>
+                <strong style="font-size: 20px; color: var(--text-primary); font-family: var(--font-display);">{{ $vaccinesCount }} loại</strong>
             </div>
         </div>
-        <a href="{{ route('admin.vaccines.index', ['featured' => 1]) }}" class="quick-action-btn" style="color: var(--primary-color, #c8102e); background: #fff1f2; border: 1px solid #fecdd3;">⭐ Quản lý Nổi Bật</a>
+        <a href="{{ route('admin.vaccines.index', ['featured' => 1]) }}" class="btn-action-sm">
+            <i data-lucide="star" style="width: 14px; height: 14px;"></i> Nổi Bật
+        </a>
     </div>
 
-    <div class="quick-action-card">
-        <div class="quick-action-left">
-            <div style="background-color: #e0f2fe; color: #0284c7; padding: 12px; border-radius: 8px;"><i data-lucide="image"></i></div>
+    <div class="stat-card-modern">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="background-color: #e0f2fe; color: #0284c7; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="image"></i>
+            </div>
             <div>
-                <span style="display:block; color:#64748b; font-size:14px; font-weight: 500;">Banner Trang Chủ</span>
-                <strong style="font-size: 20px; color:#1e293b;">Slider Hero</strong>
+                <span style="display: block; color: var(--text-muted); font-size: 14px; font-weight: 500; font-family: var(--font-display);">Banner Trang Chủ</span>
+                <strong style="font-size: 20px; color: var(--text-primary); font-family: var(--font-display);">Slider Hero</strong>
             </div>
         </div>
-        <a href="{{ route('admin.banners.index') }}" class="quick-action-btn" style="color: #0284c7; background: #e0f2fe; border: 1px solid #bae6fd;">🖼️ Quản lý Banner</a>
+        <a href="{{ route('admin.banners.index') }}" class="btn-action-sm">
+            <i data-lucide="image" style="width: 14px; height: 14px;"></i> Banner
+        </a>
     </div>
 </div>
 
 <!-- Danh sách đăng ký gần đây -->
-<div class="recent-registrations-card" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; padding: 30px;">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
-        <h2 style="font-family: 'Roboto', sans-serif; font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Đơn Đăng Ký Tiêm Mới Nhất</h2>
-        <a href="{{ route('admin.registrations.index') }}" style="color: var(--primary-color); font-weight: 600; text-decoration: none; font-size: 14px;">Xem tất cả <i data-lucide="chevron-right" style="width:16px; height:16px; display:inline-block; vertical-align:middle;"></i></a>
+<div class="card-modern">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
+        <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">Đơn Đăng Ký Tiêm Mới Nhất</h2>
+        <a href="{{ route('admin.registrations.index') }}" style="color: var(--primary-color); font-weight: 600; text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 4px; font-family: var(--font-display);">
+            Xem tất cả <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+        </a>
     </div>
 
     @if($recentRegistrations->isEmpty())
-        <div style="text-align: center; padding: 40px; color: #64748b;">
-            <i data-lucide="inbox" style="width: 48px; height: 48px; margin-bottom: 12px; color: #94a3b8;"></i>
+        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+            <i data-lucide="inbox" style="width: 48px; height: 48px; margin-bottom: 12px; color: var(--text-light);"></i>
             <p>Chưa có đơn đăng ký tiêm chủng nào được lưu trong hệ thống.</p>
         </div>
     @else
-        <div class="table-responsive" style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 15px;">
+        <div class="table-responsive-modern">
+            <table class="table-modern">
                 <thead>
-                    <tr style="border-bottom: 2px solid #cbd5e1; color: #475569;">
-                        <th style="padding: 12px 16px; font-weight: 600;">Mã đơn</th>
-                        <th style="padding: 12px 16px; font-weight: 600;">Họ tên người tiêm</th>
-                        <th style="padding: 12px 16px; font-weight: 600;">Số điện thoại</th>
-                        <th style="padding: 12px 16px; font-weight: 600;">Địa điểm tiêm</th>
-                        <th style="padding: 12px 16px; font-weight: 600;">Ngày tiêm</th>
-                        <th style="padding: 12px 16px; font-weight: 600;">Tổng tiền</th>
-                        <th style="padding: 12px 16px; font-weight: 600;">Trạng thái</th>
-                        <th style="padding: 12px 16px; font-weight: 600;">Hành động</th>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Họ tên người tiêm</th>
+                        <th>Số điện thoại</th>
+                        <th>Địa điểm tiêm</th>
+                        <th>Ngày tiêm</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($recentRegistrations as $reg)
-                        <tr style="border-bottom: 1px solid #e2e8f0; color: #334155; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
-                            <td style="padding: 14px 16px; font-weight: 700; color: var(--primary-color);">{{ $reg->registration_code }}</td>
-                            <td style="padding: 14px 16px; font-weight: 600;">{{ $reg->patient_name }}</td>
-                            <td style="padding: 14px 16px;">{{ $reg->patient_phone }}</td>
-                            <td style="padding: 14px 16px; font-size: 14px;">{{ $reg->center_name }}</td>
-                            <td style="padding: 14px 16px;">{{ date('d/m/Y', strtotime($reg->injection_date)) }}</td>
-                            <td style="padding: 14px 16px; font-weight: 600;">{{ number_format($reg->total_price, 0, ',', '.') }} đ</td>
-                            <td style="padding: 14px 16px;">
-                                <span class="badge" style="padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; display: inline-block;
-                                    @if($reg->status === 'Đã thanh toán') background-color: #def7ec; color: #03543f;
-                                    @elseif($reg->status === 'Đã tiêm') background-color: #e1effe; color: #1e429f;
-                                    @elseif($reg->status === 'Đã hủy') background-color: #fde8e8; color: #9b1c1c;
-                                    @else background-color: #fef08a; color: #713f12; @endif">
+                        <tr>
+                            <td style="font-weight: 700; color: var(--primary-color);">{{ $reg->registration_code }}</td>
+                            <td style="font-weight: 600;">{{ $reg->patient_name }}</td>
+                            <td>{{ $reg->patient_phone }}</td>
+                            <td>{{ $reg->center_name }}</td>
+                            <td>{{ date('d/m/Y', strtotime($reg->injection_date)) }}</td>
+                            <td style="font-weight: 600;">{{ number_format($reg->total_price, 0, ',', '.') }} đ</td>
+                            <td>
+                                <span class="badge-modern 
+                                    @if($reg->status === 'Đã thanh toán') badge-modern-success
+                                    @elseif($reg->status === 'Đã tiêm') badge-modern-info
+                                    @elseif($reg->status === 'Đã hủy') badge-modern-danger
+                                    @else badge-modern-warning @endif">
                                     {{ $reg->status }}
                                 </span>
                             </td>
-                            <td style="padding: 14px 16px;">
-                                <a href="{{ route('admin.registrations.show', $reg->id) }}" class="btn-primary" style="padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i> Xem chi tiết
+                            <td>
+                                <a href="{{ route('admin.registrations.show', $reg->id) }}" class="btn-action-sm">
+                                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i> Chi tiết
                                 </a>
                             </td>
                         </tr>
