@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.5] - 2026-07-27
+
+### Exact 100% Parity for TOC & Sticky Sidebar Logic
+
+* **Unified HTML & CSS**: Replaced custom layout classes with shared `.vaccine-detail-layout`, `.article-sidebar`, and `.sticky-sidebar-container` markup in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php).
+* **Targeted Heading Query**: Updated `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to query ONLY `.article-body-content h2, h3` and `.article-main-content section h2, h3`, preventing any non-article headings from being included in the Table of Contents.
+
 ## [v3.5.4] - 2026-07-27
 
 ### Article Detail Right Sidebar Optimization
