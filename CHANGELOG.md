@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v3.5.11] - 2026-07-27
+
+### 4-Card Slider Fit & Border Margin Optimization
+
+* **Card Flex Calculation**: Updated `.related-slider-card` flex width to `calc((100% - 48px) / 4)` and reduced gap to `16px` in [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css), ensuring all 4 vaccine cards sit comfortably inside the white card container with zero right-border clipping or overflow.
+
 ## [v3.5.10] - 2026-07-27
 
 ### Complete Visual Parity for White Card Section Container
