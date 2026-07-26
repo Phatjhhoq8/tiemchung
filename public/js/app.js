@@ -1080,15 +1080,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initDynamicTOC() {
-    const bodyContent = document.querySelector('.article-body-content');
-    const autoTocNav = document.getElementById('autoTocNav');
-    const vaccineTocNav = document.getElementById('vaccineTocNav');
-    const targetNav = autoTocNav || vaccineTocNav;
+    const mainContent = document.querySelector('.article-main-content');
+    const targetNav = document.getElementById('autoTocNav') || document.getElementById('vaccineTocNav');
     const tocWidget = document.getElementById('autoTocWidget');
 
-    if (!bodyContent || !targetNav) return;
+    if (!mainContent || !targetNav) return;
 
-    const headings = bodyContent.querySelectorAll('h2, h3');
+    const headings = mainContent.querySelectorAll('h2, h3');
     if (headings.length === 0) {
         if (tocWidget) tocWidget.style.display = 'none';
         return;

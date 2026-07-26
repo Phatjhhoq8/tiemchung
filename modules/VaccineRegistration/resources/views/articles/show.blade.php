@@ -58,7 +58,7 @@
         </article>
 
         <!-- Right Sidebar Column (30% Width) -->
-        <aside class="article-sidebar" data-aos="fade-left">
+        <aside class="article-sidebar">
             <div class="sticky-sidebar-container">
                 <!-- Widget 0: Dynamic TOC (Mục Lục Nội Dung) -->
                 <div class="vaccine-toc-widget" id="autoTocWidget">
