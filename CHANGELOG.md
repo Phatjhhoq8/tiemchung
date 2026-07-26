@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.4.1] - 2026-07-27
+
+### Sticky Sidebar Layout & Scroll Synchronization
+
+* **Header-Safe Sticky Offset (`top: 100px`)**: Added `.sticky-sidebar-container` with `position: sticky; top: 100px;` to [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css) and wrapped sidebar widgets in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php).
+* **Unified Scroll Behavior**: Ensured both Article Detail (`/news/{slug}`) and Vaccine Product Detail (`/vaccines/{id}`) share the exact same 2-column layout ratio, padding, shadow, header clearance, and smooth sticky sidebar scroll without header overlap.
+
 ## [v3.4.0] - 2026-07-27
 
 ### Header Navigation Actions Bar Refinement
