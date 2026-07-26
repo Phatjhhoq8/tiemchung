@@ -370,6 +370,8 @@ async function openSpaRegisterModal(event) {
 
         const data = await response.json();
         if (data.success) {
+            window.lastFetchCenters = data.centers || [];
+            window.lastCartData = data;
             renderSpaRegisterForm(data);
         }
     } catch (e) {
@@ -383,6 +385,16 @@ function closeSpaRegisterModal() {
     if (modal) {
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
+    }
+}
+
+function switchSpaModalTab(tab) {
+    if (tab === 'register') {
+        if (window.lastCartData) {
+            renderSpaRegisterForm(window.lastCartData);
+        }
+    } else {
+        renderSpaConsultForm();
     }
 }
 
@@ -403,7 +415,20 @@ function renderSpaRegisterForm(data) {
 
     const todayStr = new Date().toISOString().split('T')[0];
 
+    const hasCart = data.cart && Object.keys(data.cart).length > 0;
+    const tabHtml = hasCart ? `
+        <div style="display: flex; gap: 20px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px; padding-bottom: 0;">
+            <button type="button" onclick="switchSpaModalTab('register')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: var(--primary-color, #c8102e); border-bottom: 3px solid var(--primary-color, #c8102e); transition: all 0.2s; margin-bottom: -2px; font-family: var(--font-display, inherit);">
+                1. Đăng ký tiêm chủng (vắc xin đã chọn)
+            </button>
+            <button type="button" onclick="switchSpaModalTab('consult')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; margin-bottom: -2px; font-family: var(--font-display, inherit);">
+                2. Gửi yêu cầu tư vấn nhanh
+            </button>
+        </div>
+    ` : '';
+
     body.innerHTML = `
+        ${tabHtml}
         <div style="display: grid; grid-template-columns: 1fr 300px; gap: 28px;">
             <!-- Form Đăng ký -->
             <div>
@@ -861,7 +886,20 @@ function renderSpaConsultForm() {
         <option value="Medicare Chi nhánh 2: Thới Lai">Medicare Chi nhánh 2: Thới Lai — Thới Lai, Cần Thơ</option>
     `;
 
+    const hasCart = window.lastCartData && window.lastCartData.cart && Object.keys(window.lastCartData.cart).length > 0;
+    const tabHtml = hasCart ? `
+        <div style="display: flex; gap: 20px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px; padding-bottom: 0;">
+            <button type="button" onclick="switchSpaModalTab('register')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; margin-bottom: -2px; font-family: var(--font-display, inherit);">
+                1. Đăng ký tiêm chủng (vắc xin đã chọn)
+            </button>
+            <button type="button" onclick="switchSpaModalTab('consult')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: var(--primary-color, #c8102e); border-bottom: 3px solid var(--primary-color, #c8102e); transition: all 0.2s; margin-bottom: -2px; font-family: var(--font-display, inherit);">
+                2. Gửi yêu cầu tư vấn nhanh
+            </button>
+        </div>
+    ` : '';
+
     body.innerHTML = `
+        ${tabHtml}
         <div style="padding: 24px; max-width: 500px; margin: 0 auto;">
             <h3 style="font-size: 20px; font-weight: 800; color: var(--text-primary, #1e293b); margin-bottom: 8px; text-align: center;">Yêu cầu tư vấn <span style="color: var(--primary-color, #c8102e);">miễn phí</span></h3>
             <p style="font-size: 14px; color: var(--text-muted, #64748b); text-align: center; margin-bottom: 24px; line-height:1.5;">Medicare sẽ liên hệ lại ngay để tư vấn phác đồ tiêm chủng vắc xin thích hợp nhất cho bạn.</p>
@@ -908,7 +946,7 @@ function renderSpaConsultForm() {
                 </div>
                 
                 <div style="display:flex; gap:12px;">
-                    <button type="button" onclick="openSpaRegisterModal(null)" class="btn-secondary" style="flex:1; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; background:#f1f5f9; border:1px solid #cbd5e1; color:#475569;">Quay lại</button>
+                    <button type="button" onclick="${hasCart ? "switchSpaModalTab('register')" : "openSpaRegisterModal(null)"}" class="btn-secondary" style="flex:1; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; background:#f1f5f9; border:1px solid #cbd5e1; color:#475569;">Quay lại</button>
                     <button type="submit" class="btn-primary" id="btnSubmitSpaConsult" style="flex:2; background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
                         <i data-lucide="send" style="width: 16px; height: 16px;"></i> Gửi yêu cầu
                     </button>

@@ -335,7 +335,15 @@
     <div id="toast-container" style="position: fixed; top: 24px; right: 24px; z-index: 9999999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
 
     <!-- JS Custom -->
-    <script src="{{ asset('js/app.js') }}"></script>
+    @php
+        $js_ver = '1.0.0';
+        try {
+            if (file_exists(public_path('js/app.js'))) {
+                $js_ver = filemtime(public_path('js/app.js'));
+            }
+        } catch (\Exception $e) {}
+    @endphp
+    <script src="{{ asset('js/app.js') }}?v={{ $js_ver }}"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
         // Khởi tạo các Lucide Icons an toàn

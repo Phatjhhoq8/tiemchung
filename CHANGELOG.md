@@ -1,5 +1,13 @@
 # Release Notes
 
+## [v2.9.9] - 2026-07-26
+
+### Added FTP Deploy Dual-Path Upload & Script Cache Busting
+
+* **Enhanced Multi-Option Workflow**: Updated [app.js](file:///c:/Users/Admin/Desktop/tiemchung/public/js/app.js) to display dual tab selectors (Register selected vaccines / Request quick consultation) at the top of the registration modal even when the cart has items, allowing users to toggle between forms without clearing their cart.
+* **FTP Deploy Dual-Path Upload**: Enhanced [deploy_ftp.php](file:///c:/Users/Admin/Desktop/tiemchung/session_data/deploy_ftp.php) to mirror the behavior of [deploy_ftp.ps1](file:///c:/Users/Admin/Desktop/tiemchung/session_data/deploy_ftp.ps1) for files in the `public/` directory. These assets are now uploaded to both the FTP root (stripping `public/` for web server resolution) and the full `public/` path, ensuring that `/js/app.js` is properly updated on host environments.
+* **Layout Script Cache Busting**: Integrated dynamic `filemtime` cache-busting for [app.js](file:///c:/Users/Admin/Desktop/tiemchung/public/js/app.js) inside [app.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php), prompting client browsers to load the updated Javascript logic instead of outdated local caches.
+
 ## [v2.9.8] - 2026-07-26
 
 ### Added Disease Details, Empty Cart Options & Admin Weekly Schedule Planner
