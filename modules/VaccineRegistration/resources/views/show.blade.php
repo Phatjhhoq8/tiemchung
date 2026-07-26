@@ -78,7 +78,7 @@
                             <i data-lucide="arrow-left" style="width: 15px; height: 15px;"></i>
                             <span>Quay lại danh mục</span>
                         </a>
-                        <button class="btn-select-detail {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" onclick="toggleCartDetail({{ $vaccine->id }})" style="padding: 10px 24px; border-radius: 30px; border: none; color: #ffffff; font-weight: 800; font-size: 14.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; background-color: {{ isset($cart[$vaccine->id]) ? 'var(--secondary-color, #eaaa00)' : 'var(--primary-color, #c8102e)' }};">
+                        <button class="btn-select-detail {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" data-id="{{ $vaccine->id }}" onclick="toggleCart({{ $vaccine->id }})" style="padding: 10px 24px; border-radius: 30px; border: none; color: #ffffff; font-weight: 800; font-size: 14.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; background-color: {{ isset($cart[$vaccine->id]) ? 'var(--secondary-color, #eaaa00)' : 'var(--primary-color, #c8102e)' }};">
                             <i data-lucide="{{ isset($cart[$vaccine->id]) ? 'check' : 'plus' }}" style="width: 17px; height: 17px;"></i>
                             <span>{{ isset($cart[$vaccine->id]) ? 'Đã chọn vắc xin' : 'Đăng ký tiêm chủng' }}</span>
                         </button>
@@ -340,29 +340,5 @@
         });
     }
 
-    // Toggle chọn vắc xin đồng bộ với giỏ hàng toàn cục (app.js)
-    async function toggleCartDetail(vaccineId) {
-        const btn = document.querySelector('.btn-select-detail');
-        const isSelected = btn ? btn.classList.contains('btn-selected') : false;
-        
-        if (typeof toggleCart === 'function') {
-            await toggleCart(vaccineId);
-        }
-        
-        if (btn) {
-            if (isSelected) {
-                btn.classList.remove('btn-selected');
-                btn.style.backgroundColor = 'var(--primary-color, #c8102e)';
-                btn.innerHTML = '<i data-lucide="plus" style="width: 17px; height: 17px;"></i> <span>Đăng ký tiêm chủng</span>';
-            } else {
-                btn.classList.add('btn-selected');
-                btn.style.backgroundColor = 'var(--secondary-color, #eaaa00)';
-                btn.innerHTML = '<i data-lucide="check" style="width: 17px; height: 17px;"></i> <span>Đã chọn vắc xin</span>';
-            }
-            if (window.lucide) {
-                lucide.createIcons();
-            }
-        }
-    }
 </script>
 @endsection

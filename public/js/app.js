@@ -68,9 +68,13 @@ function toggleCartDrawer() {
 
 async function toggleCart(vaccineId) {
     const cards = document.querySelectorAll(`.vaccine-card[data-id="${vaccineId}"], .catalog-product-card[data-id="${vaccineId}"]`);
+    const detailBtns = document.querySelectorAll(`.btn-select-detail[data-id="${vaccineId}"], .btn-select-detail`);
+    
     let isSelected = false;
-    if (cards.length > 0) {
-        isSelected = cards[0].classList.contains('selected');
+    if (cards.length > 0 && cards[0].classList.contains('selected')) {
+        isSelected = true;
+    } else if (detailBtns.length > 0 && detailBtns[0].classList.contains('btn-selected')) {
+        isSelected = true;
     }
     
     const url = isSelected ? '/cart/remove' : '/cart/add';
@@ -93,20 +97,38 @@ async function toggleCart(vaccineId) {
         const data = await response.json();
         
         if (data.success) {
-            // Cập nhật thẻ vắc xin ở tất cả vị trí (trang chủ, danh mục sản phẩm, modal)
+            const inCart = Boolean(data.cart && data.cart[vaccineId]);
+            
+            // Cập nhật thẻ vắc xin ở tất cả vị trí (trang chủ, danh mục sản phẩm, vắc xin liên quan)
             cards.forEach(cardEl => {
                 const btn = cardEl.querySelector('.btn-select-vaccine');
-                if (isSelected) {
-                    cardEl.classList.remove('selected');
-                    if (btn) {
-                        btn.classList.remove('btn-selected');
-                        btn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn vắc xin</span>`;
-                    }
-                } else {
+                if (inCart) {
                     cardEl.classList.add('selected');
                     if (btn) {
                         btn.classList.add('btn-selected');
                         btn.innerHTML = `<i data-lucide="x"></i> <span>Hủy chọn</span>`;
+                    }
+                } else {
+                    cardEl.classList.remove('selected');
+                    if (btn) {
+                        btn.classList.remove('btn-selected');
+                        btn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn tiêm</span>`;
+                    }
+                }
+            });
+            
+            // Cập nhật nút đăng ký trên trang chi tiết sản phẩm
+            detailBtns.forEach(btn => {
+                const btnVacId = btn.getAttribute('data-id');
+                if (!btnVacId || parseInt(btnVacId) === parseInt(vaccineId)) {
+                    if (inCart) {
+                        btn.classList.add('btn-selected');
+                        btn.style.backgroundColor = 'var(--secondary-color, #eaaa00)';
+                        btn.innerHTML = `<i data-lucide="check" style="width: 17px; height: 17px;"></i> <span>Đã chọn vắc xin</span>`;
+                    } else {
+                        btn.classList.remove('btn-selected');
+                        btn.style.backgroundColor = 'var(--primary-color, #c8102e)';
+                        btn.innerHTML = `<i data-lucide="plus" style="width: 17px; height: 17px;"></i> <span>Đăng ký tiêm chủng</span>`;
                     }
                 }
             });
@@ -114,24 +136,26 @@ async function toggleCart(vaccineId) {
             // Cập nhật nút trong Quick View Modal nếu đang mở
             const modalBtn = document.getElementById(`modalSelectBtn_${vaccineId}`);
             if (modalBtn) {
-                if (isSelected) {
-                    modalBtn.classList.remove('btn-selected');
-                    modalBtn.style.backgroundColor = 'var(--primary-color, #c8102e)';
-                    modalBtn.style.borderColor = 'var(--primary-color, #c8102e)';
-                    modalBtn.style.color = '#ffffff';
-                    modalBtn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn vắc xin này</span>`;
-                } else {
+                if (inCart) {
                     modalBtn.classList.add('btn-selected');
                     modalBtn.style.backgroundColor = '#fff1f2';
                     modalBtn.style.borderColor = '#fecdd3';
                     modalBtn.style.color = 'var(--primary-color, #c8102e)';
                     modalBtn.innerHTML = `<i data-lucide="x"></i> <span>Hủy chọn</span>`;
+                } else {
+                    modalBtn.classList.remove('btn-selected');
+                    modalBtn.style.backgroundColor = 'var(--primary-color, #c8102e)';
+                    modalBtn.style.borderColor = 'var(--primary-color, #c8102e)';
+                    modalBtn.style.color = '#ffffff';
+                    modalBtn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn vắc xin này</span>`;
                 }
             }
 
-            lucide.createIcons();
+            if (window.lucide) {
+                lucide.createIcons();
+            }
             updateFloatingCart(data.cart, data.cart_count, data.total_price);
-            showToast(isSelected ? 'Đã xóa vắc xin khỏi danh sách tiêm' : 'Đã thêm vắc xin vào danh sách tiêm!', 'success');
+            showToast(inCart ? 'Đã thêm vắc xin vào danh sách tiêm!' : 'Đã xóa vắc xin khỏi danh sách tiêm', 'success');
         }
     } catch (error) {
         console.error('Lỗi giỏ hàng:', error);
