@@ -1,5 +1,17 @@
 # Release Notes
 
+## [v3.2.1] - 2026-07-26
+
+### Ultra-Premium Bottom-Center Floating Cart Pill Bar (Apple / Shopee Style)
+
+* **Centered Fixed Positioning (`bottom: 24px; left: 50%; transform: translateX(-50%);`)**: Replaced standalone circular button with an ultra-premium horizontal Pill Bar anchored at bottom-center in [layouts/app.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php) and [style.css](file:///d:/Projects/tiemchung/public/css/style.css).
+* **Pill Layout Architecture**:
+  - **Left**: Shopping cart icon in translucent circle + golden counter badge (`cartCount`).
+  - **Middle**: "Danh sách tiêm chủng" header + dynamic total price text (`#cartTotalPrice`).
+  - **Right**: "Đăng ký ngay →" CTA button in Medicare Gold.
+* **Zero Widget Collision**: Placed cart pill bar horizontally centered, completely separating cart interactions from the vertical Zalo and Hotline stack on the right edge.
+* **Centered Modal Popup Drawer**: Clicking cart text/icon opens `#cartDrawerPopup` centered right above the pill bar with full product listing and item removal functionality.
+
 ## [v3.2.0] - 2026-07-26
 
 ### Circular Top Floating Cart Button & Modal Popup Drawer
