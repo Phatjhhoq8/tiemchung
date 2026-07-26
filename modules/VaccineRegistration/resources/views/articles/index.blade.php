@@ -34,7 +34,7 @@
                         <div>
                             <span class="news-category-badge">{{ str_replace('&', 'và', $featuredMain->category) }}</span>
                             <h1 class="hero-main-title">{{ $featuredMain->title }}</h1>
-                            <p class="hero-main-excerpt">{{ Str::limit($featuredMain->summary, 140) }}</p>
+                            <p class="hero-main-excerpt">{{ Str::limit($featuredMain->summary, 220) }}</p>
                         </div>
                         <div class="news-meta-row">
                             <span><i data-lucide="calendar" style="width: 13px; height: 13px;"></i> {{ $featuredMain->created_at ? $featuredMain->created_at->format('d/m/Y') : '26/07/2026' }}</span>
