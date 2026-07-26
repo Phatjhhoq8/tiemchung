@@ -39,13 +39,14 @@
     font-weight: 600;
 }
 
-/* 2-Column Main Layout for Vaccine Detail Page */
+/* 2-Column Main Layout for Vaccine Detail Page (Margin bottom 54px sang trọng) */
 .vaccine-detail-layout {
     display: flex;
     gap: 32px;
     align-items: stretch;
     width: 100%;
     box-sizing: border-box;
+    margin-bottom: 54px;
 }
 
 @media (max-width: 992px) {
@@ -110,7 +111,7 @@
     flex-shrink: 0;
 }
 
-/* Callout Hotline CTA Sidebar Widget */
+/* Callout Hotline CTA Sidebar Widget (Bảo vệ viền bo tròn 100%) */
 .sidebar-cta-widget {
     background: linear-gradient(135deg, rgba(200, 16, 46, 0.95) 0%, rgba(145, 10, 33, 0.92) 100%);
     color: #ffffff;
@@ -118,6 +119,7 @@
     padding: 26px 22px;
     text-align: left;
     box-shadow: 0 10px 24px rgba(200, 16, 46, 0.22);
+    overflow: hidden;
 }
 
 .cta-widget-icon {
