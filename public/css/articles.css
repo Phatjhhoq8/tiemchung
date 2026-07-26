@@ -1,4 +1,4 @@
-/* Giao diện Danh mục & Chi tiết Tin Tức (Articles Styles) - Modern Medicare Red Style với Nền Ảnh Y Tế Phủ Đỏ */
+/* Giao diện Danh mục & Chi tiết Tin Tức (Articles Styles) - 100% Flat Bottom Alignment & Clean Hero */
 
 .news-catalog-page {
     max-width: 1200px;
@@ -9,7 +9,7 @@
     box-sizing: border-box;
 }
 
-/* CATALOG HERO BANNER (Nền Ảnh Y Tế Phủ Đỏ Medicare Red 100% Giống Trang /about) */
+/* CATALOG HERO BANNER (Xóa 100% vệt hình tròn ::after) */
 .catalog-hero {
     position: relative;
     overflow: hidden;
@@ -26,6 +26,17 @@
     align-items: center;
     gap: 2rem;
     box-sizing: border-box;
+}
+
+/* DIỆT SẠCH HOÀN TOÀN VỆT TRÒN NỀN ::after */
+.catalog-hero::after,
+.news-catalog-page .catalog-hero::after {
+    display: none !important;
+    content: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 
 @media (max-width: 992px) {
@@ -306,12 +317,12 @@
     font-weight: 600;
 }
 
-/* TẦNG 1: BÁO MỚI HERO SECTION (TỶ LỆ VÀNG 73% BÊN TRÁI / 27% BÊN PHẢI) */
+/* TẦNG 1: BÁO MỚI HERO SECTION (ÉP PHẲNG ĐÁY 100% - TỶ LỆ 75% BÊN TRÁI / 25% BÊN PHẢI) */
 .news-hero-section {
     display: flex;
     gap: 24px;
     margin-bottom: 36px;
-    align-items: stretch;
+    align-items: stretch; /* ÉP ĐÁY CỘT TRÁI VÀ CỘT PHẢI BẰNG NHAU PHẲNG 100% */
 }
 
 @media (max-width: 992px) {
@@ -320,9 +331,9 @@
     }
 }
 
-/* Left Dominant Story Column (73% Width) */
+/* Left Dominant Story Column (75% Width) */
 .news-hero-left {
-    flex: 0 0 73%;
+    flex: 0 0 75%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -488,14 +499,15 @@
     color: var(--primary-color, #c8102e);
 }
 
-/* Right Compact Hot News Column (27% Width, 300px Max Width) */
+/* Right Compact Hot News Column (25% Width, Max 270px, Height Auto stretched via Flex Align-Items: Stretch for 100% Flat Bottom) */
 .news-hero-right {
-    flex: 0 0 27%;
-    max-width: 300px;
+    flex: 0 0 25%;
+    max-width: 270px;
+    height: auto; /* DÙNG HEIGHT AUTO ĐỂ FLEX ALIGN-ITEMS STRETCH ÉP CỘT PHẢI GIÃN BẰNG ĐÚNG 566PX CỦA CỘT TRÁI */
     background: #ffffff;
     border-radius: var(--radius-md, 12px);
     border: 1px solid #e2e8f0;
-    padding: 18px 20px;
+    padding: 16px 18px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -504,11 +516,11 @@
 }
 
 .hot-news-header {
-    font-size: 15px;
+    font-size: 14.5px;
     font-weight: 800;
     color: var(--accent-color, #004b8f);
-    margin: 0 0 12px 0;
-    padding-bottom: 10px;
+    margin: 0 0 10px 0;
+    padding-bottom: 8px;
     border-bottom: 2px solid var(--accent-color, #004b8f);
     display: flex;
     align-items: center;
@@ -525,11 +537,11 @@
 .hot-news-item {
     text-decoration: none;
     color: inherit;
-    padding-bottom: 8px;
+    padding-bottom: 6px;
     border-bottom: 1px solid #f1f5f9;
     transition: all 0.2s ease;
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: flex-start;
 }
 
@@ -539,10 +551,10 @@
 }
 
 .hot-news-rank {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 800;
     color: var(--primary-color, #c8102e);
-    min-width: 22px;
+    min-width: 20px;
     line-height: 1.2;
     flex-shrink: 0;
 }
@@ -556,19 +568,19 @@
 }
 
 .hot-news-title {
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 700;
     color: #1e293b;
     line-height: 1.35;
-    margin: 0 0 4px 0;
+    margin: 0 0 3px 0;
 }
 
 .hot-news-meta {
-    font-size: 11px;
+    font-size: 10.5px;
     color: #94a3b8;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 /* TẦNG 3: HORIZONTAL RECTANGULAR ARTICLE FEED (CHUẨN BÁO MỚI) */
