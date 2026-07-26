@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.12] - 2026-07-27
+
+### TOC Headings & Pagination View Resolution Fix
+
+* **TOC Headings Restoration**: Updated `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to query both `h2` and `h3` headings inside `.article-body-content` while keeping only `h2` for main vaccine sections. This fully restores the table of contents widget on news articles.
+* **Pagination View Resolution**: Copied the custom compact pagination template to the root view path [pagination.blade.php](file:///d:/Projects/tiemchung/resources/views/partials/pagination.blade.php) and updated the links call in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php) to use `partials.pagination` ensuring it resolves correctly across both namespace paths.
+
 ## [v3.5.11] - 2026-07-27
 
 ### 4-Card Slider Fit & Border Margin Optimization
