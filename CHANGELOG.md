@@ -1,5 +1,14 @@
 # Release Notes
 
+## [v3.2.0] - 2026-07-26
+
+### Circular Top Floating Cart Button & Modal Popup Drawer
+
+* **Top Floating Stack Position**: Converted floating cart into a 48px circular expandable button positioned at the VERY TOP of the floating contact stack in [layouts/app.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php) (Stack order: 1. Cart Icon, 2. Zalo, 3. Hotline).
+* **Golden Counter Badge (`cart-badge-count`)**: Rendered a golden Medicare Gold circular counter badge on the top right of the 48px cart button showing real-time item count (`1`, `2`...).
+* **Smooth Drawer Popup (`#cartDrawerPopup`)**: Clicking the cart button expands a modal drawer popup (width 360px, rounded corners, box-shadow) displaying selected items, unit prices, remove buttons, total amount, and "Đăng ký tiêm ngay" CTA without obscuring page content.
+* **Auto-Close On Outside Click**: Added global event listener to automatically collapse the drawer back to the 48px round button when clicking outside or clicking the close button.
+
 ## [v3.1.3] - 2026-07-26
 
 ### Floating Cart Collision Prevention & Responsive Layout
