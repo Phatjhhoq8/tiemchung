@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.7] - 2026-07-27
+
+### Custom Compact Pagination & Section Clearance Fix
+
+* **Custom Compact Pagination (Max 4 Page Buttons + ...)**: Created custom Blade pagination template [pagination.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/partials/pagination.blade.php) and updated [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php), displaying a maximum of 4 page numbers plus dots (`[<] [1] [2] [3] [4] [...] [>]`) with zero double-border bugs or parentheses artifacts.
+* **Section Separation Clearance**: Added `clear: both; margin-top: 60px; z-index: 20;` clearance in [show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php) ensuring the sticky right sidebar stops cleanly above the "Vắc Xin Liên Quan" slider section without any overlap.
+
 ## [v3.5.6] - 2026-07-27
 
 ### Clean Main Section H2-Only TOC Query Fix
