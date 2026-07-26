@@ -1080,18 +1080,20 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initDynamicTOC() {
-    const bodyContent = document.querySelector('.article-body-content');
-    const mainContainer = bodyContent ? (bodyContent.closest('main') || bodyContent.closest('article') || bodyContent.closest('.vaccine-detail-layout') || bodyContent.closest('.article-detail-layout')) : document.querySelector('main.article-main-content, article.article-main-content');
     const targetNav = document.getElementById('autoTocNav') || document.getElementById('vaccineTocNav');
     const tocWidget = document.getElementById('autoTocWidget');
 
-    if (!mainContainer || !targetNav) return;
+    if (!targetNav) return;
 
-    const headings = mainContainer.querySelectorAll('h2, h3');
-    if (headings.length === 0) {
+    // Query ONLY headings inside the actual article body text or vaccine sections
+    const headings = document.querySelectorAll('.article-main-content .article-body-content h2, .article-main-content .article-body-content h3, .article-main-content section h2, .article-main-content section h3');
+    
+    if (!headings || headings.length === 0) {
         if (tocWidget) tocWidget.style.display = 'none';
         return;
     }
+
+    if (tocWidget) tocWidget.style.display = 'block';
 
     targetNav.innerHTML = '';
     const tocItems = [];
