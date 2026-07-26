@@ -2,9 +2,12 @@
 
 ## [v2.9.9] - 2026-07-26
 
-### Redesigned News Catalog Page, Horizontal Cards Feed, Search Auto-Hide Top Alignment & Seeded 100 Articles
+### Redesigned News Catalog Page, Horizontal Cards Feed, Search Auto-Hide Top Alignment & Medicare Gold Accent Badges
 
-* **Implemented Horizontal Rectangular Article Feed**: Replaced vertical card grids in [index.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/index.blade.php) and [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css) with a modern Báo Mới style horizontal card layout featuring 320px × 190px thumbnail images on the left and 18px bold headlines, category tags, summary excerpts, and metadata on the right.
+* **Fixed Article Pagination Navigation**: Renamed news pagination wrapper class to `news-pagination` in [index.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/index.blade.php) and [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css), decoupling it from the product catalog SPA click handler in `app.js` and enabling 100% smooth page switching navigation.
+* **Medicare Gold Accent Category Badges**: Updated `.news-category-badge` styling to use Medicare Gold (`#fff9e6` background, `#d49800` text, `1px solid rgba(234, 170, 0, 0.4)` border) per visual emphasis guidelines.
+* **Justified 8-Category Nav Bar**: Added `Góc Chuyên Gia` category in [ArticleSeeder.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/database/seeders/ArticleSeeder.php) and updated `.news-nav-tabs` to justify all 8 categories across 100% of the container width evenly.
+* **Implemented Horizontal Rectangular Article Feed**: Replaced vertical card grids with a modern Báo Mới style horizontal card layout featuring 320px × 190px thumbnail images on the left and 18px bold headlines, category tags, summary excerpts, and metadata on the right.
 * **Auto-Hiding Hero Banner & Top Alignment**: Configured top Báo Mới Hero banner to render on default view (`/news`) and automatically hide when search (`?search=...`) or category filter (`?category=...`) is active, immediately shifting the search box, nav tabs, and results feed up to the top below breadcrumbs.
 * **Removed Obsolete Reset Filter Button**: Completely removed the "Xóa bộ lọc" button from the search bar form for a clean, modern aesthetic.
 * **Centered Pill-Shaped Pagination**: Redesigned Laravel pagination controls with centered rounded pill-shaped buttons (`border-radius: 20px`) and Medicare Red active page highlights.

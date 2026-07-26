@@ -23,7 +23,8 @@ class ArticleSeeder extends Seeder
             'Tin Nóng Y Học',
             'Vắc Xin Mới',
             'Chăm Sóc Trẻ Em',
-            'Tiêm Chủng Người Lớn'
+            'Tiêm Chủng Người Lớn',
+            'Góc Chuyên Gia'
         ];
 
         $images = [

@@ -138,7 +138,7 @@
         </div>
 
         <!-- Dynamic Centered Pill-Shaped Pagination -->
-        <div class="catalog-pagination">
+        <div class="news-pagination">
             {{ $articles->links() }}
         </div>
     </section>
