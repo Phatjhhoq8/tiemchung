@@ -204,49 +204,6 @@
     </section>
 </div>
 
-<div class="floating-cart {{ empty($cart) ? 'hidden' : '' }}" id="floatingCart">
-    <div class="cart-toggle-btn" onclick="toggleCartDrawer()">
-        <div class="cart-icon-wrapper">
-            <i data-lucide="shopping-cart"></i>
-            <span class="cart-badge" id="cartCount">{{ count($cart) }}</span>
-        </div>
-        <div class="cart-toggle-text">
-            <span>Danh sách đăng ký</span>
-            <strong id="cartTotalPrice">{{ number_format(collect($cart)->sum('price'), 0, ',', '.') }} đ</strong>
-        </div>
-        <i data-lucide="chevron-up" class="chevron-icon" id="cartChevron"></i>
-    </div>
-
-    <div class="cart-drawer" id="cartDrawer">
-        <div class="drawer-header">
-            <h4>Vắc xin đã chọn</h4>
-            <button class="clear-cart-text-btn" onclick="clearCartUI()">Xóa tất cả</button>
-        </div>
-        <div class="drawer-content" id="cartItemsList">
-            @foreach($cart as $id => $item)
-                <div class="cart-item" data-id="{{ $id }}">
-                    <div class="cart-item-info">
-                        <h5>{{ $item['name'] }}</h5>
-                        <span>{{ number_format($item['price'], 0, ',', '.') }} đ</span>
-                    </div>
-                    <button class="remove-item-btn" onclick="toggleCart({{ $id }})">
-                        <i data-lucide="trash-2"></i>
-                    </button>
-                </div>
-            @endforeach
-        </div>
-        <div class="drawer-footer">
-            <div class="drawer-total">
-                <span>Tổng chi phí dự kiến:</span>
-                <strong id="drawerTotalPrice">{{ number_format(collect($cart)->sum('price'), 0, ',', '.') }} đ</strong>
-            </div>
-            <button onclick="openSpaRegisterModal(event)" class="btn-checkout" style="width: 100%; border: none; cursor: pointer; text-decoration: none;">
-                <span>Đăng ký tiêm chủng</span>
-                <i data-lucide="arrow-right"></i>
-            </button>
-        </div>
-    </div>
-</div>
 @endsection
 
 @section('styles')

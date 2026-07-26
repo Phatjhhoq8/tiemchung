@@ -163,47 +163,75 @@ async function toggleCart(vaccineId) {
     }
 }
 
+function toggleCartDrawerPopup(event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    const popup = document.getElementById('cartDrawerPopup');
+    if (popup) {
+        popup.classList.toggle('hidden');
+    }
+}
+
+// Bắt sự kiện click ngoài màn hình để tự động đóng popup giỏ hàng
+document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('floatingCartWrapper');
+    const popup = document.getElementById('cartDrawerPopup');
+    if (popup && !popup.classList.contains('hidden') && wrapper && !wrapper.contains(e.target)) {
+        popup.classList.add('hidden');
+    }
+});
+
 function updateFloatingCart(cart, count, totalPrice) {
-    const cartEl = document.getElementById('floatingCart');
+    const cartBtn = document.getElementById('floatingCartBtn');
     const cartCountEl = document.getElementById('cartCount');
-    const cartTotalPriceEl = document.getElementById('cartTotalPrice');
     const drawerTotalPriceEl = document.getElementById('drawerTotalPrice');
     const cartListEl = document.getElementById('cartItemsList');
+    const popup = document.getElementById('cartDrawerPopup');
     
-    if (!cartEl) return;
-    
-    if (count === 0) {
-        cartEl.classList.add('hidden');
-        cartEl.classList.remove('expanded');
-        return;
+    if (cartBtn) {
+        if (count === 0) {
+            cartBtn.classList.add('hidden');
+            if (popup) popup.classList.add('hidden');
+        } else {
+            cartBtn.classList.remove('hidden');
+        }
     }
-    
-    cartEl.classList.remove('hidden');
     
     if (cartCountEl) cartCountEl.textContent = count;
     
     const formattedPrice = new Intl.NumberFormat('vi-VN').format(totalPrice) + ' đ';
-    if (cartTotalPriceEl) cartTotalPriceEl.textContent = formattedPrice;
     if (drawerTotalPriceEl) drawerTotalPriceEl.textContent = formattedPrice;
     
     if (cartListEl) {
-        cartListEl.innerHTML = '';
-        Object.entries(cart).forEach(([id, item]) => {
-            const itemPriceFormatted = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
-            const itemHtml = `
-                <div class="cart-item" data-id="${id}">
-                    <div class="cart-item-info">
-                        <h5>${item.name}</h5>
-                        <span>${itemPriceFormatted}</span>
-                    </div>
-                    <button class="remove-item-btn" onclick="toggleCart(${id})">
-                        <i data-lucide="trash-2"></i>
-                    </button>
+        if (!cart || Object.keys(cart).length === 0) {
+            cartListEl.innerHTML = `
+                <div style="text-align: center; padding: 24px 12px; color: #94a3b8; font-size: 13.5px;">
+                    <i data-lucide="shopping-cart" style="width: 32px; height: 32px; margin-bottom: 8px; opacity: 0.5;"></i>
+                    <p style="margin: 0;">Chưa có vắc xin nào trong danh sách tiêm</p>
                 </div>
             `;
-            cartListEl.insertAdjacentHTML('beforeend', itemHtml);
-        });
-        lucide.createIcons();
+        } else {
+            cartListEl.innerHTML = '';
+            Object.entries(cart).forEach(([id, item]) => {
+                const itemPriceFormatted = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
+                const itemHtml = `
+                    <div class="cart-item-row" data-id="${id}">
+                        <div class="cart-item-info">
+                            <strong class="cart-item-name">${item.name}</strong>
+                            <span class="cart-item-price">${itemPriceFormatted}</span>
+                        </div>
+                        <button type="button" onclick="toggleCart(${id})" class="cart-item-remove" title="Xóa vắc xin">
+                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                        </button>
+                    </div>
+                `;
+                cartListEl.insertAdjacentHTML('beforeend', itemHtml);
+            });
+        }
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     }
 }
 
