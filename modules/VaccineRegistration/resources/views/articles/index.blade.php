@@ -8,8 +8,8 @@
 
 @section('content')
 <div class="news-catalog-page">
-    <!-- CATALOG HERO BANNER (Phông nền Đỏ Medicare Red - Đã xóa hoàn toàn hình tròn mờ ::after) -->
-    <section class="catalog-hero">
+    <!-- CATALOG HERO BANNER (Đo theo chuẩn 100% trang /about) -->
+    <section class="catalog-hero" data-aos="fade-up">
         <div class="catalog-hero-content">
             <!-- Dòng 1: Breadcrumb Chuẩn -->
             <div class="catalog-breadcrumb">
@@ -24,7 +24,7 @@
             <!-- Dòng 3: Dòng mô tả -->
             <p>Tra cứu tin tức y học tiêm chủng chính thống, khuyến cáo phòng ngừa bệnh từ đội ngũ bác sĩ chuyên khoa Medicare Cờ Đỏ.</p>
             
-            <!-- Dòng 4: Ô tìm kiếm viên thuốc căn giữa -->
+            <!-- Dòng 4: Ô tìm kiếm viên thuốc dùng chung component -->
             <div class="search-bar-container catalog-search-box">
                 <form action="{{ route('news.index') }}" method="GET" class="search-form">
                     <i data-lucide="search" class="search-icon"></i>
@@ -34,13 +34,10 @@
             </div>
         </div>
 
-        <!-- Cột Phải: Typography Cloud + Hình Mũi Tiêm Chủng & Khiên Y Tế Vector SVG -->
+        <!-- Cột Phải: Typography Cloud + Hình Vector SVG -->
         <div class="news-hero-cloud-visual" aria-label="Đám mây chuyên mục y khoa">
-            <!-- Inline Medical Syringe & Shield SVG Graphic Background -->
             <svg class="news-hero-svg-bg" viewBox="0 0 350 250" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Medical Shield Contour -->
                 <path d="M175 25C220 25 280 40 300 65C300 140 260 210 175 235C90 210 50 140 50 65C70 40 130 25 175 25Z" fill="#ffffff" opacity="0.08" stroke="#ffffff" stroke-width="2" stroke-dasharray="4 4"/>
-                <!-- Syringe Vector Silhouette -->
                 <g stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.6">
                     <line x1="175" y1="50" x2="175" y2="75"/>
                     <rect x="160" y="75" width="30" height="90" rx="4" fill="rgba(255,255,255,0.1)"/>
@@ -48,12 +45,10 @@
                     <line x1="165" y1="165" x2="185" y2="165"/>
                     <line x1="175" y1="165" x2="175" y2="205"/>
                     <polygon points="175,205 171,215 179,215" fill="#ffffff"/>
-                    <!-- Vaccine Drop -->
                     <circle cx="175" cy="40" r="3" fill="var(--secondary-color, #eaaa00)"/>
                 </g>
             </svg>
 
-            <!-- Typography Cloud 8 Chuyên Mục Floating -->
             <div class="news-type-cloud">
                 @php
                     $cloudWeights = [
@@ -71,8 +66,8 @@
         </div>
     </section>
 
-    <!-- SUB-PAGE NAVIGATION NAV BAR (8 Chuyên mục căn đều 100%) -->
-    <section class="news-nav-bar-container">
+    <!-- SUB-PAGE NAVIGATION NAV BAR (AOS animation fade-up) -->
+    <section class="news-nav-bar-container" data-aos="fade-up" data-aos-delay="100">
         <nav class="news-nav-tabs">
             <a href="{{ route('news.index', array_filter(['search' => request('search')])) }}" class="news-nav-tab {{ !request('category') ? 'active' : '' }}">
                 Tất cả bài viết
@@ -85,16 +80,16 @@
         </nav>
     </section>
 
-    <!-- TẦNG 1: BÁO MỚI HERO SECTION (CỘT BÀI CHÍNH 75% / CỘT TIN NÓNG 25%) -->
+    <!-- TẦNG 1: BÁO MỚI HERO SECTION (AOS fade-up) -->
     @if($hotNews->isNotEmpty() && !request('search') && !request('category') && $articles->currentPage() == 1)
         @php
             $featuredMain = $hotNews->first();
             $subFeatured = $hotNews->slice(1, 3);
         @endphp
 
-        <section class="news-hero-section">
+        <section class="news-hero-section" data-aos="fade-up" data-aos-delay="150">
             <!-- Left Dominant Story Column (75% Width) -->
-            <div class="news-hero-left">
+            <div class="news-hero-left" data-aos="fade-right">
                 <!-- Main Hero Banner Card -->
                 <a href="{{ route('news.show', $featuredMain->slug) }}" class="hero-main-card">
                     <div class="hero-main-image">
@@ -136,8 +131,8 @@
                 @endif
             </div>
 
-            <!-- Right Compact Hot News Column (25% Width, Max 270px with Ranking Numbers 01..05) -->
-            <div class="news-hero-right">
+            <!-- Right Compact Hot News Column (25% Width) -->
+            <div class="news-hero-right" data-aos="fade-left">
                 <h2 class="hot-news-header">
                     <i data-lucide="flame" style="width: 16px; height: 16px; color: var(--primary-color, #c8102e);"></i>
                     Tin Nóng và Nổi Bật
@@ -160,14 +155,14 @@
         </section>
     @endif
 
-    <!-- TẦNG 2: DANH SÁCH BÀI VIẾT THẺ CHỮ NHẬT NẰM NGANG (HORIZONTAL CARDS CHUẨN BÁO MỚI) -->
-    <section>
+    <!-- TẦNG 2: DANH SÁCH BÀI VIẾT THẺ CHỮ NHẬT NẰM NGANG (AOS fade-up) -->
+    <section data-aos="fade-up" data-aos-delay="200">
         <div class="news-horizontal-list">
             @forelse($articles as $article)
                 @php
                     $cardImg = $article->image && !str_contains($article->image, 'logo') ? $article->image : 'vaxigrip.jpg';
                 @endphp
-                <a href="{{ route('news.show', $article->slug) }}" class="news-horizontal-card">
+                <a href="{{ route('news.show', $article->slug) }}" class="news-horizontal-card" data-aos="fade-up" data-aos-delay="{{ min($loop->index * 50, 300) }}">
                     <div class="news-horizontal-media">
                         <img src="{{ asset('images/vaccines/' . $cardImg) }}" alt="{{ $article->title }}" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/vaxigrip.jpg') }}';">
                     </div>
@@ -197,8 +192,8 @@
         </div>
     </section>
 
-    <!-- TẦNG 3: BANNER TƯ VẤN MEDICARE CỜ ĐỎ (Đồng bộ 100% với trang sản phẩm) -->
-    <section class="catalog-advice-banner" style="margin-top: 50px;">
+    <!-- TẦNG 3: BANNER TƯ VẤN MEDICARE CỜ ĐỎ (AOS fade-up) -->
+    <section class="catalog-advice-banner" style="margin-top: 50px;" data-aos="fade-up">
         <div>
             <span>Tư vấn y tế và tiêm chủng</span>
             <h2>Bạn cần tư vấn thêm về phác đồ và bài viết?</h2>
