@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.2] - 2026-07-27
+
+### Sticky Sidebar Scroll & Complete TOC Scanner Fix
+
+* **Unblocked Sticky Scrolling**: Removed `data-aos="fade-left"` animation attribute from `<aside class="article-sidebar">` in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php), eliminating CSS `transform: translate3d()` interference so `position: sticky; top: 100px;` works smoothly when scrolling.
+* **Complete TOC Heading Scanner**: Updated `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to query all `h2` and `h3` elements inside `.article-main-content`, ensuring 100% of medical sections and article headings are dynamically listed and highlighted in the Right Sidebar TOC.
+
 ## [v3.5.1] - 2026-07-27
 
 ### TOC Card Visual Parity Fix
