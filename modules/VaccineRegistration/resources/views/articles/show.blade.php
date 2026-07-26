@@ -59,44 +59,46 @@
 
         <!-- Right Sidebar Column (30% Width) -->
         <aside class="article-sidebar" data-aos="fade-left">
-            <!-- Widget 1: 5 Related Articles of the same topic -->
-            <div class="sidebar-widget">
-                <h3 class="widget-title">
-                    <i data-lucide="bookmark" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
-                    Bài Viết Cùng Chủ Đề
-                </h3>
-                <div class="related-articles-list">
-                    @forelse($relatedArticles->take(5) as $rel)
-                        @php
-                            $relImg = $rel->image && !str_contains($rel->image, 'logo') ? $rel->image : 'vaxigrip.jpg';
-                        @endphp
-                        <a href="{{ route('news.show', $rel->slug) }}" class="related-article-card">
-                            <div class="related-article-img">
-                                <img src="{{ asset('images/vaccines/' . $relImg) }}" alt="{{ $rel->title }}" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/vaxigrip.jpg') }}';">
-                            </div>
-                            <div class="related-article-info">
-                                <span class="news-category-badge" style="font-size: 10px; padding: 2px 6px;">{{ str_replace('&', 'và', $rel->category) }}</span>
-                                <h4 class="related-article-title">{{ Str::limit($rel->title, 55) }}</h4>
-                                <div class="news-meta-row" style="font-size: 11.5px !important;">
-                                    <span><i data-lucide="calendar"></i> {{ $rel->created_at ? $rel->created_at->format('d/m/Y') : '26/07/2026' }}</span>
-                                    <span><i data-lucide="eye"></i> {{ number_format($rel->views) }}</span>
+            <div class="sticky-sidebar-container">
+                <!-- Widget 1: 5 Related Articles of the same topic -->
+                <div class="sidebar-widget">
+                    <h3 class="widget-title">
+                        <i data-lucide="bookmark" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
+                        Bài Viết Cùng Chủ Đề
+                    </h3>
+                    <div class="related-articles-list">
+                        @forelse($relatedArticles->take(5) as $rel)
+                            @php
+                                $relImg = $rel->image && !str_contains($rel->image, 'logo') ? $rel->image : 'vaxigrip.jpg';
+                            @endphp
+                            <a href="{{ route('news.show', $rel->slug) }}" class="related-article-card">
+                                <div class="related-article-img">
+                                    <img src="{{ asset('images/vaccines/' . $relImg) }}" alt="{{ $rel->title }}" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/vaxigrip.jpg') }}';">
                                 </div>
-                            </div>
-                        </a>
-                    @empty
-                        <p style="font-size: 13.5px; color: #94a3b8;">Chưa có bài viết liên quan.</p>
-                    @endforelse
+                                <div class="related-article-info">
+                                    <span class="news-category-badge" style="font-size: 10px; padding: 2px 6px;">{{ str_replace('&', 'và', $rel->category) }}</span>
+                                    <h4 class="related-article-title">{{ Str::limit($rel->title, 55) }}</h4>
+                                    <div class="news-meta-row" style="font-size: 11.5px !important;">
+                                        <span><i data-lucide="calendar"></i> {{ $rel->created_at ? $rel->created_at->format('d/m/Y') : '26/07/2026' }}</span>
+                                        <span><i data-lucide="eye"></i> {{ number_format($rel->views) }}</span>
+                                    </div>
+                                </div>
+                            </a>
+                        @empty
+                            <p style="font-size: 13.5px; color: #94a3b8;">Chưa có bài viết liên quan.</p>
+                        @endforelse
+                    </div>
                 </div>
-            </div>
 
-            <!-- Widget 2: Call to Action Booking Card (Justified text) -->
-            <div class="sidebar-cta-widget">
-                <i data-lucide="calendar-check" class="cta-widget-icon"></i>
-                <h3>Đặt Lịch Tiêm Vắc Xin</h3>
-                <p>Đăng ký lịch tiêm vắc xin trực tuyến để được ưu tiên khám sàng lọc miễn phí tại hệ thống Medicare Cờ Đỏ.</p>
-                <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="cta-widget-btn">
-                    Đăng ký tiêm ngay →
-                </a>
+                <!-- Widget 2: Call to Action Booking Card (Justified text) -->
+                <div class="sidebar-cta-widget">
+                    <i data-lucide="calendar-check" class="cta-widget-icon"></i>
+                    <h3>Đặt Lịch Tiêm Vắc Xin</h3>
+                    <p>Đăng ký lịch tiêm vắc xin trực tuyến để được ưu tiên khám sàng lọc miễn phí tại hệ thống Medicare Cờ Đỏ.</p>
+                    <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="cta-widget-btn">
+                        Đăng ký tiêm ngay →
+                    </a>
+                </div>
             </div>
         </aside>
     </div>

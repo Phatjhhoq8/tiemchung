@@ -718,9 +718,19 @@
 .article-detail-layout {
     display: flex;
     gap: 32px;
-    align-items: stretch;
+    align-items: flex-start;
     width: 100%;
+    margin-bottom: 54px;
     box-sizing: border-box;
+}
+
+.sticky-sidebar-container {
+    position: sticky;
+    top: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    z-index: 10;
 }
 
 @media (max-width: 992px) {
