@@ -1,7 +1,7 @@
 <?php
 /**
  * Chức năng: ArticleController xử lý hiển thị trang danh sách tin tức y học và trang chi tiết bài viết cho khách hàng.
- * Lý do tạo: Phục vụ chia trang Tin Tức riêng biệt theo yêu cầu người dùng - Đảm bảo dữ liệu hiển thị duy nhất không trùng lặp 100% trên mọi trang.
+ * Lý do tạo: Phục vụ chia trang Tin Tức riêng biệt theo yêu cầu người dùng - Đảm bảo dữ liệu hiển thị duy nhất không trùng lặp và phục vụ đề xuất bài viết chi tiết.
  */
 
 namespace Modules\VaccineRegistration\Http\Controllers;
@@ -36,7 +36,7 @@ class ArticleController extends Controller
             });
         }
 
-        // Loại trừ 5 bài hotNews ra khỏi danh sách nằm ngang phía dưới trên TẤT CẢ CÁC TRANG để chống trùng lặp 100% và chuẩn hóa offset phân trang
+        // Loại trừ 5 bài hotNews ra khỏi danh sách nằm ngang phía dưới trên TẤT CẢ CÁC TRANG để chống trùng lặp 100%
         if (!$request->filled('category') && !$request->filled('search')) {
             $query->whereNotIn('id', $hotNewsIds);
         }
@@ -55,16 +55,37 @@ class ArticleController extends Controller
     /**
      * Hiển thị chi tiết bài viết tin tức.
      */
-    public function show($slug)
+    public function show(Request $request, $slug)
     {
         $article = Article::where('slug', $slug)->where('is_published', true)->firstOrFail();
         $article->increment('views');
 
+        // 1. 5 Bài viết cùng chuyên mục ở Sidebar
         $relatedArticles = Article::where('is_published', true)
+            ->where('category', $article->category)
             ->where('id', '!=', $article->id)
-            ->take(3)
+            ->latest()
+            ->take(5)
             ->get();
 
-        return view('vaccine::articles.show', compact('article', 'relatedArticles'));
+        // Nếu cùng chuyên mục chưa đủ 5 bài, bù thêm các bài mới khác
+        if ($relatedArticles->count() < 5) {
+            $existingIds = $relatedArticles->pluck('id')->push($article->id)->toArray();
+            $moreArticles = Article::where('is_published', true)
+                ->whereNotIn('id', $existingIds)
+                ->latest()
+                ->take(5 - $relatedArticles->count())
+                ->get();
+            $relatedArticles = $relatedArticles->concat($moreArticles);
+        }
+
+        // 2. Đề xuất bài viết đa chủ đề có phân trang ở cuối bài báo
+        $suggestedArticles = Article::where('is_published', true)
+            ->where('id', '!=', $article->id)
+            ->latest()
+            ->paginate(6)
+            ->withQueryString();
+
+        return view('vaccine::articles.show', compact('article', 'relatedArticles', 'suggestedArticles'));
     }
 }

@@ -28,7 +28,6 @@
                 <div class="article-meta-bar">
                     <span><i data-lucide="calendar"></i> {{ $article->created_at ? $article->created_at->format('d/m/Y') : '26/07/2026' }}</span>
                     <span><i data-lucide="eye"></i> {{ number_format($article->views) }} lượt xem</span>
-                    <span class="article-author-tag"><i data-lucide="shield-check"></i> Đội ngũ Bác sĩ Medicare Cờ Đỏ</span>
                 </div>
             </div>
 
@@ -42,38 +41,32 @@
                 </div>
             @endif
 
-            <!-- Article Summary / Lead Paragraph Box -->
+            <!-- Article Summary / Lead Paragraph (No colored box - Pure typography text-align justify) -->
             @if($article->summary)
-                <div class="article-lead-box">
-                    <p>{{ $article->summary }}</p>
-                </div>
+                <p class="article-lead-text">{{ $article->summary }}</p>
             @endif
 
-            <!-- Rich Text Body Content -->
+            <!-- Rich Text Body Content (Pure text-align justify) -->
             <div class="article-body-content">
                 {!! $article->content !!}
             </div>
 
-            <!-- Medical Disclaimer Box -->
-            <div class="article-disclaimer-box">
-                <i data-lucide="info" class="disclaimer-icon"></i>
-                <div>
-                    <h4>Khuyến Cáo Y Tế Từ Bác Sĩ Medicare Cờ Đỏ:</h4>
-                    <p>Thông tin bài viết mang tính chất tham khảo kiến thức y khoa. Phác đồ tiêm chủng cụ thể cần được chỉ định trực tiếp sau khi bác sĩ khám sàng lọc sức khỏe cho người tiêm.</p>
-                </div>
+            <!-- Author Signature at Bottom Right of Article -->
+            <div class="article-author-signature">
+                <span>Theo Bác sĩ Chuyên khoa Medicare Cờ Đỏ</span>
             </div>
         </article>
 
         <!-- Right Sidebar Column (30% Width) -->
         <aside class="article-sidebar" data-aos="fade-left">
-            <!-- Widget 1: Related Articles -->
+            <!-- Widget 1: 5 Related Articles of the same topic -->
             <div class="sidebar-widget">
                 <h3 class="widget-title">
                     <i data-lucide="bookmark" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
-                    Bài Viết Liên Quan
+                    Bài Viết Cùng Chủ Đề
                 </h3>
                 <div class="related-articles-list">
-                    @forelse($relatedArticles as $rel)
+                    @forelse($relatedArticles->take(5) as $rel)
                         @php
                             $relImg = $rel->image && !str_contains($rel->image, 'logo') ? $rel->image : 'vaxigrip.jpg';
                         @endphp
@@ -96,7 +89,7 @@
                 </div>
             </div>
 
-            <!-- Widget 2: Call to Action Booking Card -->
+            <!-- Widget 2: Call to Action Booking Card (Justified text) -->
             <div class="sidebar-cta-widget">
                 <i data-lucide="calendar-check" class="cta-widget-icon"></i>
                 <h3>Đặt Lịch Tiêm Vắc Xin</h3>
@@ -107,6 +100,46 @@
             </div>
         </aside>
     </div>
+
+    <!-- Multi-Topic Recommended Articles Section Below Article (Phân trang đề xuất đa chủ đề) -->
+    <section class="suggested-news-section" data-aos="fade-up" style="margin-top: 50px;">
+        <div class="suggested-news-header">
+            <h2>
+                <i data-lucide="flame" style="width: 22px; height: 22px; color: var(--primary-color, #c8102e);"></i>
+                Tin Mới và Đề Xuất Đa Chủ Đề
+            </h2>
+            <p>Khám phá thêm các bài viết y khoa hấp dẫn khác từ hệ thống tin tức Medicare Cờ Đỏ.</p>
+        </div>
+
+        <div class="news-horizontal-list">
+            @foreach($suggestedArticles as $sug)
+                @php
+                    $sugImg = $sug->image && !str_contains($sug->image, 'logo') ? $sug->image : 'vaxigrip.jpg';
+                @endphp
+                <a href="{{ route('news.show', $sug->slug) }}" class="news-horizontal-card">
+                    <div class="news-horizontal-media">
+                        <img src="{{ asset('images/vaccines/' . $sugImg) }}" alt="{{ $sug->title }}" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/vaxigrip.jpg') }}';">
+                    </div>
+                    <div class="news-horizontal-content">
+                        <div>
+                            <span class="news-category-badge">{{ str_replace('&', 'và', $sug->category) }}</span>
+                            <h3 class="news-horizontal-heading">{{ $sug->title }}</h3>
+                            <p class="news-horizontal-snippet">{{ Str::limit($sug->summary, 160) }}</p>
+                        </div>
+                        <div class="news-horizontal-bottom-meta">
+                            <span><i data-lucide="calendar"></i> {{ $sug->created_at ? $sug->created_at->format('d/m/Y') : '26/07/2026' }}</span>
+                            <span><i data-lucide="eye"></i> {{ number_format($sug->views) }} lượt xem</span>
+                        </div>
+                    </div>
+                </a>
+            @endforeach
+        </div>
+
+        <!-- Dynamic Centered Pill-Shaped Pagination Links -->
+        <div class="news-pagination">
+            {{ $suggestedArticles->links() }}
+        </div>
+    </section>
 
     <!-- Bottom Advice Banner -->
     <section class="catalog-advice-banner" style="margin-top: 50px;" data-aos="fade-up">
