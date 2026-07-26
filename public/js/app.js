@@ -1080,13 +1080,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initDynamicTOC() {
-    const mainContent = document.querySelector('.article-main-content');
+    const bodyContent = document.querySelector('.article-body-content');
+    const mainContainer = bodyContent ? (bodyContent.closest('main') || bodyContent.closest('article') || bodyContent.closest('.vaccine-detail-layout') || bodyContent.closest('.article-detail-layout')) : document.querySelector('main.article-main-content, article.article-main-content');
     const targetNav = document.getElementById('autoTocNav') || document.getElementById('vaccineTocNav');
     const tocWidget = document.getElementById('autoTocWidget');
 
-    if (!mainContent || !targetNav) return;
+    if (!mainContainer || !targetNav) return;
 
-    const headings = mainContent.querySelectorAll('h2, h3');
+    const headings = mainContainer.querySelectorAll('h2, h3');
     if (headings.length === 0) {
         if (tocWidget) tocWidget.style.display = 'none';
         return;

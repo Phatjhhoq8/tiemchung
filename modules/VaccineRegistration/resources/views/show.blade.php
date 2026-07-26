@@ -18,7 +18,7 @@
     </div>
 
     <!-- Main Detail Header 2-Column Card -->
-    <div class="article-main-content" style="flex: 1 1 100%; margin-bottom: 32px;" data-aos="fade-up">
+    <div class="vaccine-header-card" style="flex: 1 1 100%; margin-bottom: 32px;" data-aos="fade-up">
         <div class="vaccine-detail-grid" style="display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 32px; align-items: start;">
             <!-- Left Media Column -->
             <div class="vaccine-detail-media" style="position: relative; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; height: 360px;">
