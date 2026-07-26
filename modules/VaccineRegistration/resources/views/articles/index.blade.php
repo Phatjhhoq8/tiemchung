@@ -1,6 +1,6 @@
 @extends('vaccine::layouts.app')
 
-@section('title', 'Tin Tức và Kiến Thức Y Khoa - Medicare Cờ Đỏ')
+@section('title', 'Tin Tức - Medicare Cờ Đỏ')
 
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/articles.css') }}">
@@ -15,21 +15,16 @@
             <div class="catalog-breadcrumb">
                 <a href="{{ route('home') }}">Trang chủ</a>
                 <i data-lucide="chevron-right"></i>
-                <span>Tin tức và Kiến thức y khoa</span>
-            </div>
-            
-            <!-- Dòng 2: Tag Eyebrow riêng biệt nằm trên H1 -->
-            <div>
-                <span class="news-hero-eyebrow">Y HỌC VÀ TIÊM CHỦNG CHÍNH THỐNG</span>
+                <span>Tin tức</span>
             </div>
 
-            <!-- Dòng 3: Tiêu đề H1 -->
-            <h1>Tin tức và Kiến thức y khoa</h1>
+            <!-- Dòng 2: Tiêu đề H1 Ngắn Gọn -->
+            <h1>Tin tức</h1>
             
-            <!-- Dòng 4: Dòng mô tả -->
+            <!-- Dòng 3: Dòng mô tả -->
             <p>Tra cứu tin tức y học tiêm chủng chính thống, khuyến cáo phòng ngừa bệnh từ đội ngũ bác sĩ chuyên khoa Medicare Cờ Đỏ.</p>
             
-            <!-- Dòng 5: Ô tìm kiếm viên thuốc căn giữa -->
+            <!-- Dòng 4: Ô tìm kiếm viên thuốc căn giữa -->
             <div class="search-bar-container catalog-search-box">
                 <form action="{{ route('news.index') }}" method="GET" class="search-form">
                     <i data-lucide="search" class="search-icon"></i>
@@ -90,7 +85,7 @@
         </nav>
     </section>
 
-    <!-- TẦNG 1: BÁO MỚI HERO SECTION (CỘT BÀI CHÍNH 73% / CỘT TIN NÓNG 27%) -->
+    <!-- TẦNG 1: BÁO MỚI HERO SECTION (CỘT BÀI CHÍNH 75% / CỘT TIN NÓNG 25%) -->
     @if($hotNews->isNotEmpty() && !request('search') && !request('category') && $articles->currentPage() == 1)
         @php
             $featuredMain = $hotNews->first();
@@ -98,7 +93,7 @@
         @endphp
 
         <section class="news-hero-section">
-            <!-- Left Dominant Story Column (73% Width) -->
+            <!-- Left Dominant Story Column (75% Width) -->
             <div class="news-hero-left">
                 <!-- Main Hero Banner Card -->
                 <a href="{{ route('news.show', $featuredMain->slug) }}" class="hero-main-card">
@@ -115,8 +110,8 @@
                             <p class="hero-main-excerpt">{{ Str::limit($featuredMain->summary, 220) }}</p>
                         </div>
                         <div class="news-meta-row">
-                            <span><i data-lucide="calendar" style="width: 13px; height: 13px;"></i> {{ $featuredMain->created_at ? $featuredMain->created_at->format('d/m/Y') : '26/07/2026' }}</span>
-                            <span><i data-lucide="eye" style="width: 13px; height: 13px;"></i> {{ number_format($featuredMain->views) }} lượt xem</span>
+                            <span><i data-lucide="calendar"></i> {{ $featuredMain->created_at ? $featuredMain->created_at->format('d/m/Y') : '26/07/2026' }}</span>
+                            <span><i data-lucide="eye"></i> {{ number_format($featuredMain->views) }} lượt xem</span>
                             <span style="margin-left: auto; color: var(--primary-color, #c8102e); font-weight: 700;">Đọc tiếp →</span>
                         </div>
                     </div>
@@ -141,7 +136,7 @@
                 @endif
             </div>
 
-            <!-- Right Compact Hot News Column (27% Width, 300px Max Width with Ranking Numbers 01..05) -->
+            <!-- Right Compact Hot News Column (25% Width, Max 270px with Ranking Numbers 01..05) -->
             <div class="news-hero-right">
                 <h2 class="hot-news-header">
                     <i data-lucide="flame" style="width: 16px; height: 16px; color: var(--primary-color, #c8102e);"></i>
@@ -154,8 +149,8 @@
                             <div class="hot-news-item-content">
                                 <h3 class="hot-news-title">{{ $hot->title }}</h3>
                                 <div class="hot-news-meta">
-                                    <span><i data-lucide="clock" style="width: 11px; height: 11px;"></i> {{ $hot->created_at ? $hot->created_at->format('d/m/Y') : '26/07/2026' }}</span>
-                                    <span><i data-lucide="eye" style="width: 11px; height: 11px;"></i> {{ number_format($hot->views) }}</span>
+                                    <span><i data-lucide="clock"></i> {{ $hot->created_at ? $hot->created_at->format('d/m/Y') : '26/07/2026' }}</span>
+                                    <span><i data-lucide="eye"></i> {{ number_format($hot->views) }}</span>
                                 </div>
                             </div>
                         </a>
@@ -183,8 +178,8 @@
                             <p class="news-horizontal-snippet">{{ Str::limit($article->summary, 160) }}</p>
                         </div>
                         <div class="news-horizontal-bottom-meta">
-                            <span><i data-lucide="calendar" style="width: 13.5px; height: 13.5px;"></i> {{ $article->created_at ? $article->created_at->format('d/m/Y') : '26/07/2026' }}</span>
-                            <span><i data-lucide="eye" style="width: 13.5px; height: 13.5px;"></i> {{ number_format($article->views) }} lượt xem</span>
+                            <span><i data-lucide="calendar"></i> {{ $article->created_at ? $article->created_at->format('d/m/Y') : '26/07/2026' }}</span>
+                            <span><i data-lucide="eye"></i> {{ number_format($article->views) }} lượt xem</span>
                         </div>
                     </div>
                 </a>
