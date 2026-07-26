@@ -1,5 +1,13 @@
 # Release Notes
 
+## [v3.4.0] - 2026-07-27
+
+### Header Navigation Actions Bar Refinement
+
+* **Simplified Hotline Button**: Removed "Tư vấn:" prefix from `.hotline-btn` in [layouts/app.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php), displaying phone icon and phone number (`0938 60 38 39`).
+* **Identical Cart Pill Button (`.header-cart-btn-pill`)**: Redesigned the header cart button using the exact same `.hotline-btn` pill style, background, border, and typography as the phone button, with text "Giỏ hàng" and inline count badge (`.header-cart-badge-inline`).
+* **Renamed CTA Button**: Renamed primary red header button from "Đăng ký tiêm" to "Đặt lịch".
+
 ## [v3.3.1] - 2026-07-27
 
 ### Persistent Header Cart Placement Fix
