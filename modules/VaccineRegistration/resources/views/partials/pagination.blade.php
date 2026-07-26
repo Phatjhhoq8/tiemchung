@@ -1,4 +1,9 @@
 @if ($paginator->hasPages())
+    @php
+        $currentPage = $paginator->currentPage();
+        $lastPage = $paginator->lastPage();
+    @endphp
+
     <div class="news-pagination-custom">
         {{-- Previous Page Link --}}
         @if ($paginator->onFirstPage())
@@ -11,29 +16,53 @@
             </a>
         @endif
 
-        {{-- Page Numbers (Maximum 4 page numbers + ...) --}}
-        @php
-            $currentPage = $paginator->currentPage();
-            $lastPage = $paginator->lastPage();
-            $maxPagesToShow = 4;
-            
-            $start = max(1, min($currentPage - 1, $lastPage - $maxPagesToShow + 1));
-            $end = min($lastPage, $start + $maxPagesToShow - 1);
-            if ($end - $start + 1 < $maxPagesToShow) {
-                $start = max(1, $end - $maxPagesToShow + 1);
-            }
-        @endphp
-
-        @for ($page = $start; $page <= $end; $page++)
-            @if ($page == $currentPage)
-                <span class="pagination-btn active">{{ $page }}</span>
-            @else
-                <a href="{{ $paginator->url($page) }}" class="pagination-btn">{{ $page }}</a>
+        {{-- Always show Page 1 and Page 2 --}}
+        @if ($currentPage == 1)
+            <span class="pagination-btn active">1</span>
+            @if ($lastPage >= 2)
+                <a href="{{ $paginator->url(2) }}" class="pagination-btn">2</a>
             @endif
-        @endfor
+        @elseif ($currentPage == 2)
+            <a href="{{ $paginator->url(1) }}" class="pagination-btn">1</a>
+            <span class="pagination-btn active">2</span>
+        @else
+            <a href="{{ $paginator->url(1) }}" class="pagination-btn">1</a>
+            @if ($lastPage >= 2)
+                <a href="{{ $paginator->url(2) }}" class="pagination-btn">2</a>
+            @endif
+        @endif
 
-        @if ($end < $lastPage)
-            <span class="pagination-dots">...</span>
+        {{-- Dots / Middle active page --}}
+        @if ($currentPage > 2 && $currentPage < $lastPage - 1)
+            @if ($currentPage > 3)
+                <span class="pagination-dots">...</span>
+            @endif
+            <span class="pagination-btn active">{{ $currentPage }}</span>
+            @if ($currentPage < $lastPage - 2)
+                <span class="pagination-dots">...</span>
+            @endif
+        @else
+            @if ($lastPage > 4)
+                <span class="pagination-dots">...</span>
+            @endif
+        @endif
+
+        {{-- Always show Penultimate Page (End-1) and Last Page (End) --}}
+        @if ($lastPage >= 3)
+            @php $penultimate = $lastPage - 1; @endphp
+            @if ($penultimate > 2)
+                @if ($currentPage == $penultimate)
+                    <span class="pagination-btn active">{{ $penultimate }}</span>
+                @else
+                    <a href="{{ $paginator->url($penultimate) }}" class="pagination-btn">{{ $penultimate }}</a>
+                @endif
+            @endif
+
+            @if ($currentPage == $lastPage)
+                <span class="pagination-btn active">{{ $lastPage }}</span>
+            @else
+                <a href="{{ $paginator->url($lastPage) }}" class="pagination-btn">{{ $lastPage }}</a>
+            @endif
         @endif
 
         {{-- Next Page Link --}}

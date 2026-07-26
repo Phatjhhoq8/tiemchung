@@ -192,10 +192,90 @@
                 </div>
             </section>
 
-            <!-- Author Signature at Bottom Right -->
-            <div class="article-author-signature">
-                <span>Theo Bác sĩ Chuyên khoa Medicare Cờ Đỏ</span>
-            </div>
+            <!-- Related Vaccine Products Slider (Sản phẩm vắc xin liên quan có nút mũi tên điều hướng) -->
+            @if(isset($relatedVaccines) && $relatedVaccines->isNotEmpty())
+                <section class="suggested-news-section" data-aos="fade-up" style="margin-top: 50px; margin-bottom: 30px;">
+                    <div class="suggested-news-header" style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h2>
+                                <i data-lucide="package" style="width: 22px; height: 22px; color: var(--primary-color, #c8102e);"></i>
+                                Vắc Xin Liên Quan Cùng Phòng Ngừa Nhóm Bệnh
+                            </h2>
+                            <p style="text-align: justify; margin-top: 4px;">Tham khảo các sản phẩm vắc xin tương tự đang có sẵn tại hệ thống Medicare Cờ Đỏ.</p>
+                        </div>
+
+                        <!-- Slider Navigation Arrow Buttons (< and >) -->
+                        <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+                            <button type="button" class="slider-nav-btn" onclick="scrollRelatedSlider(-1)" title="Xem trước">
+                                <i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i>
+                            </button>
+                            <button type="button" class="slider-nav-btn" onclick="scrollRelatedSlider(1)" title="Xem tiếp">
+                                <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Horizontal Smooth Scroll Container -->
+                    <div class="related-slider-container" id="relatedVaccineSlider">
+                        @foreach($relatedVaccines as $relVac)
+                            @php
+                                $relPrice = $relVac->hasSalePrice() ? $relVac->sale_price : $relVac->price;
+                            @endphp
+                            <div class="related-slider-card">
+                                <article class="catalog-product-card {{ isset($cart[$relVac->id]) ? 'selected' : '' }}" data-id="{{ $relVac->id }}" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+                                    <a href="{{ route('vaccine.show', $relVac->id) }}" class="catalog-product-media" style="display: block; text-decoration: none;">
+                                        <span class="origin-badge"><i data-lucide="map-pin"></i>{{ $relVac->origin ?: 'Chính hãng' }}</span>
+                                        <img src="{{ asset('images/vaccines/' . ($relVac->image ?: 'hexaxim.jpg')) }}" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/hexaxim.jpg') }}';" alt="{{ $relVac->name }}" loading="lazy">
+                                    </a>
+
+                                    <div class="catalog-product-body">
+                                        <a href="{{ route('vaccine.show', $relVac->id) }}" class="catalog-product-title" style="display: block; text-decoration: none; text-align: justify;">
+                                            {{ $relVac->name }}
+                                        </a>
+                                        <button type="button" onclick="setDiseaseFilter(@js($relVac->disease_prevention), event)" class="catalog-product-disease" style="text-align: justify;">
+                                            {{ $relVac->disease_prevention }}
+                                        </button>
+                                        <div class="catalog-product-meta">
+                                            <span><i data-lucide="syringe"></i>{{ $relVac->doses ?: 1 }} liều</span>
+                                            @if($relVac->manufacturer)
+                                                <span><i data-lucide="factory"></i>{{ $relVac->manufacturer }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="catalog-product-footer" style="display: flex; flex-direction: column; gap: 10px; align-items: stretch; width: 100%;">
+                                        <div class="catalog-price-block" style="display: flex; align-items: baseline; gap: 4px;">
+                                            <strong style="font-size: 18px; color: var(--primary-color, #c8102e); font-weight: 800;">{{ number_format($relPrice, 0, ',', '.') }}đ</strong>
+                                            <span style="font-size: 12px; color: #64748b;">/ liều</span>
+                                        </div>
+                                        <div class="catalog-action-group" style="display: flex; gap: 8px; align-items: center; width: 100%;">
+                                            <a href="{{ route('vaccine.show', $relVac->id) }}" class="btn-detail-link" style="flex: 1; text-align: center; padding: 7px 10px; border-radius: 20px; border: 1px solid var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); font-size: 12.5px; font-weight: 700; text-decoration: none; transition: all 0.2s ease; white-space: nowrap;">
+                                                Xem chi tiết
+                                            </a>
+                                            <button class="btn-select-vaccine {{ isset($cart[$relVac->id]) ? 'btn-selected' : '' }}" onclick="toggleCart({{ $relVac->id }})" style="flex: 1; text-align: center; padding: 7px 10px; justify-content: center; display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; white-space: nowrap;">
+                                                <i data-lucide="{{ isset($cart[$relVac->id]) ? 'x' : 'plus' }}"></i>
+                                                <span>{{ isset($cart[$relVac->id]) ? 'Hủy chọn' : 'Chọn tiêm' }}</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
+            <!-- Bottom Advice Banner -->
+            <section class="catalog-advice-banner" style="margin-top: 40px;" data-aos="fade-up">
+                <div>
+                    <span>Tư vấn tiêm chủng trực tiếp</span>
+                    <h2>Bạn cần tư vấn thêm về phác đồ vắc xin {{ $vaccine->name }}?</h2>
+                    <p style="text-align: justify;">Liên hệ ngay đội ngũ bác sĩ chuyên khoa Medicare Cờ Đỏ để được hỗ trợ khám sàng lọc và đặt lịch hẹn ưu tiên.</p>
+                </div>
+                <a href="tel:0938603839" class="catalog-advice-btn">
+                    Gọi Hotline 0938 60 38 39 <i data-lucide="phone-call"></i>
+                </a>
+            </section>
         </main>
 
         <!-- Right Sidebar Column (25% Width - Right Small Sticky Column) -->
@@ -239,91 +319,6 @@
             </div>
         </aside>
     </div>
-
-    <!-- Related Vaccine Products Slider (Sản phẩm vắc xin liên quan có nút mũi tên điều hướng) -->
-    @if(isset($relatedVaccines) && $relatedVaccines->isNotEmpty())
-        <section class="suggested-news-section" data-aos="fade-up" style="margin-top: 60px; margin-bottom: 40px; clear: both; position: relative; z-index: 20;">
-            <div class="suggested-news-header" style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <h2>
-                        <i data-lucide="package" style="width: 22px; height: 22px; color: var(--primary-color, #c8102e);"></i>
-                        Vắc Xin Liên Quan Cùng Phòng Ngừa Nhóm Bệnh
-                    </h2>
-                    <p style="text-align: justify; margin-top: 4px;">Tham khảo các sản phẩm vắc xin tương tự đang có sẵn tại hệ thống Medicare Cờ Đỏ.</p>
-                </div>
-
-                <!-- Slider Navigation Arrow Buttons (< and >) -->
-                <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
-                    <button type="button" class="slider-nav-btn" onclick="scrollRelatedSlider(-1)" title="Xem trước">
-                        <i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i>
-                    </button>
-                    <button type="button" class="slider-nav-btn" onclick="scrollRelatedSlider(1)" title="Xem tiếp">
-                        <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Horizontal Smooth Scroll Container -->
-            <div class="related-slider-container" id="relatedVaccineSlider">
-                @foreach($relatedVaccines as $relVac)
-                    @php
-                        $relPrice = $relVac->hasSalePrice() ? $relVac->sale_price : $relVac->price;
-                    @endphp
-                    <div class="related-slider-card">
-                        <article class="catalog-product-card {{ isset($cart[$relVac->id]) ? 'selected' : '' }}" data-id="{{ $relVac->id }}" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
-                            <a href="{{ route('vaccine.show', $relVac->id) }}" class="catalog-product-media" style="display: block; text-decoration: none;">
-                                <span class="origin-badge"><i data-lucide="map-pin"></i>{{ $relVac->origin ?: 'Chính hãng' }}</span>
-                                <img src="{{ asset('images/vaccines/' . ($relVac->image ?: 'hexaxim.jpg')) }}" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/hexaxim.jpg') }}';" alt="{{ $relVac->name }}" loading="lazy">
-                            </a>
-
-                            <div class="catalog-product-body">
-                                <a href="{{ route('vaccine.show', $relVac->id) }}" class="catalog-product-title" style="display: block; text-decoration: none; text-align: justify;">
-                                    {{ $relVac->name }}
-                                </a>
-                                <button type="button" onclick="setDiseaseFilter(@js($relVac->disease_prevention), event)" class="catalog-product-disease" style="text-align: justify;">
-                                    {{ $relVac->disease_prevention }}
-                                </button>
-                                <div class="catalog-product-meta">
-                                    <span><i data-lucide="syringe"></i>{{ $relVac->doses ?: 1 }} liều</span>
-                                    @if($relVac->manufacturer)
-                                        <span><i data-lucide="factory"></i>{{ $relVac->manufacturer }}</span>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <div class="catalog-product-footer" style="display: flex; flex-direction: column; gap: 10px; align-items: stretch; width: 100%;">
-                                <div class="catalog-price-block" style="display: flex; align-items: baseline; gap: 4px;">
-                                    <strong style="font-size: 18px; color: var(--primary-color, #c8102e); font-weight: 800;">{{ number_format($relPrice, 0, ',', '.') }}đ</strong>
-                                    <span style="font-size: 12px; color: #64748b;">/ liều</span>
-                                </div>
-                                <div class="catalog-action-group" style="display: flex; gap: 8px; align-items: center; width: 100%;">
-                                    <a href="{{ route('vaccine.show', $relVac->id) }}" class="btn-detail-link" style="flex: 1; text-align: center; padding: 7px 10px; border-radius: 20px; border: 1px solid var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); font-size: 12.5px; font-weight: 700; text-decoration: none; transition: all 0.2s ease; white-space: nowrap;">
-                                        Xem chi tiết
-                                    </a>
-                                    <button class="btn-select-vaccine {{ isset($cart[$relVac->id]) ? 'btn-selected' : '' }}" onclick="toggleCart({{ $relVac->id }})" style="flex: 1; text-align: center; padding: 7px 10px; justify-content: center; display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; white-space: nowrap;">
-                                        <i data-lucide="{{ isset($cart[$relVac->id]) ? 'x' : 'plus' }}"></i>
-                                        <span>{{ isset($cart[$relVac->id]) ? 'Hủy chọn' : 'Chọn tiêm' }}</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-                    </div>
-                @endforeach
-            </div>
-        </section>
-    @endif
-
-    <!-- Bottom Advice Banner -->
-    <section class="catalog-advice-banner" style="margin-top: 40px;" data-aos="fade-up">
-        <div>
-            <span>Tư vấn tiêm chủng trực tiếp</span>
-            <h2>Bạn cần tư vấn thêm về phác đồ vắc xin {{ $vaccine->name }}?</h2>
-            <p style="text-align: justify;">Liên hệ ngay đội ngũ bác sĩ chuyên khoa Medicare Cờ Đỏ để được hỗ trợ khám sàng lọc và đặt lịch hẹn ưu tiên.</p>
-        </div>
-        <a href="tel:0938603839" class="catalog-advice-btn">
-            Gọi Hotline 0938 60 38 39 <i data-lucide="phone-call"></i>
-        </a>
-    </section>
 </div>
 @endsection
 
