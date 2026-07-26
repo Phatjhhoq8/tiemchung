@@ -1,280 +1,326 @@
-/* Giao diện Chi tiết Vắc-xin (Vaccine Detail Styles) */
+/* Giao diện Sản Phẩm Vắc Xin & Chi Tiết Tiêm Chủng (Vaccine Detail & Catalog Styles) */
 
-.vaccine-detail-container {
-    max-width: 1000px;
-    margin: 40px auto;
+.vaccine-detail-page {
+    max-width: 1200px;
+    margin: 40px auto 60px;
     padding: 0 20px;
-}
-
-.vaccine-detail-container .breadcrumb {
-    margin-bottom: 24px;
-    color: var(--text-muted);
-    font-size: 14px;
-}
-
-.vaccine-detail-container .breadcrumb a {
-    color: var(--text-muted);
-    text-decoration: none;
-}
-
-.vaccine-detail-container .detail-card {
-    background-color: #ffffff;
-    border-radius: var(--radius-sm);
-    display: flex;
-    overflow: hidden;
-    border: 1px solid #e2e8f0;
-    flex-wrap: wrap;
-}
-
-.vaccine-detail-container .detail-image {
-    flex: 1 1 350px;
-    background: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-    min-height: 350px;
-    border-right: 1px solid #e2e8f0;
-}
-
-.vaccine-detail-container .detail-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.vaccine-detail-container .badge-type {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    padding: 6px 14px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    z-index: 10;
-}
-
-.vaccine-detail-container .badge-type.package {
-    background-color: var(--primary-color);
-    color: #ffffff;
-    border: 1px solid var(--primary-color);
-}
-
-.vaccine-detail-container .badge-type.single {
-    background-color: #ffffff;
-    color: var(--primary-color);
-    border: 1px solid var(--primary-color);
-}
-
-.vaccine-detail-container .detail-info {
-    flex: 1 1 450px;
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background-color: #ffffff;
-}
-
-.vaccine-detail-container .specs-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 30px;
-    border-top: 1px solid #e2e8f0;
-    padding-top: 20px;
-}
-
-.vaccine-detail-container .spec-item {
-    margin-top: 10px;
-}
-
-.vaccine-detail-container .spec-item:first-child,
-.vaccine-detail-container .spec-item:nth-child(2) {
-    margin-top: 0;
-}
-
-.vaccine-detail-container .spec-label {
-    display: block;
-    font-size: 12px;
-    color: #64748b;
-    text-transform: uppercase;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-}
-
-.vaccine-detail-container .spec-value {
+    font-family: 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
     color: #0f172a;
-    font-size: 15px;
+    box-sizing: border-box;
+}
+
+/* Breadcrumb Navigation */
+.vaccine-detail-page .news-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    color: #64748b;
+    margin-bottom: 24px;
+}
+
+.vaccine-detail-page .news-breadcrumb a {
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.vaccine-detail-page .news-breadcrumb a:hover {
+    color: var(--primary-color, #c8102e);
+}
+
+.vaccine-detail-page .news-breadcrumb i {
+    width: 14px;
+    height: 14px;
+}
+
+.vaccine-detail-page .news-breadcrumb span {
+    color: var(--primary-color, #c8102e);
     font-weight: 600;
 }
 
-.vaccine-detail-container .buy-section {
-    border-top: 1px solid #e2e8f0;
-    padding-top: 24px;
+/* 2-Column Main Layout for Vaccine Detail Page */
+.vaccine-detail-layout {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.vaccine-detail-container .price-info-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.vaccine-detail-container .price-label {
-    display: block;
-    font-size: 14px;
-    color: #64748b;
-    margin-bottom: 2px;
-}
-
-.vaccine-detail-container .price-value {
-    font-size: 26px;
-    color: var(--primary-color);
-    font-weight: 700;
-}
-
-/* Premium Light Red GSP Cold Chain Certificate Card */
-.vaccine-detail-container .gsp-cold-chain-box {
-    margin-top: 6px;
-    background-color: #fff5f5;
-    border: 1px solid rgba(200, 16, 46, 0.08);
-    border-radius: 4px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    gap: 32px;
+    align-items: stretch;
     width: 100%;
     box-sizing: border-box;
 }
 
-.vaccine-detail-container .gsp-cold-chain-box i {
-    width: 16px;
-    height: 16px;
-    color: var(--primary-color);
+@media (max-width: 992px) {
+    .vaccine-detail-layout {
+        flex-direction: column;
+    }
+}
+
+/* Cột Bên Trái Sticky Container (top: 100px - Đảm bảo không bao giờ bị Header che lấp khi cuộn) */
+.sticky-sidebar-container {
+    position: sticky;
+    top: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    z-index: 10;
+}
+
+.vaccine-toc-widget {
+    background: #ffffff;
+    border-radius: var(--radius-md, 14px);
+    border: 1px solid #e2e8f0;
+    padding: 20px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+}
+
+.vaccine-toc-widget .widget-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 16px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary-color, #c8102e);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toc-link-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #334155;
+    text-decoration: none;
+    padding: 8px 10px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    margin-bottom: 4px;
+}
+
+.toc-link-item:hover, .toc-link-item.active {
+    background-color: #fff9e6;
+    color: var(--primary-color, #c8102e);
+    font-weight: 700;
+}
+
+.toc-link-item i {
+    width: 14px;
+    height: 14px;
     flex-shrink: 0;
 }
 
-.vaccine-detail-container .gsp-cold-chain-box span {
-    font-size: 13px;
-    color: #475569;
-    font-weight: 500;
-}
-
-.vaccine-detail-container .actions-wrapper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-top: 12px;
-}
-
-.vaccine-detail-container .btn-back {
-    text-decoration: none;
-    padding: 12px 20px;
-    border-radius: var(--radius-sm);
-    border: 1px solid #e2e8f0;
-    color: #475569;
-    font-weight: 600;
-    font-size: 14.5px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: #ffffff;
-    transition: all 0.2s ease;
-}
-
-.vaccine-detail-container .btn-back:hover {
-    background-color: #f8fafc;
-    border-color: #cbd5e1;
-}
-
-.vaccine-detail-container .btn-select-detail {
-    padding: 12px 24px;
-    border-radius: var(--radius-sm);
-    font-weight: 600;
-    font-size: 14.5px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-    border: 1px solid var(--primary-color);
-    background-color: var(--primary-color);
+/* Callout Hotline CTA Sidebar Widget */
+.sidebar-cta-widget {
+    background: linear-gradient(135deg, rgba(200, 16, 46, 0.95) 0%, rgba(145, 10, 33, 0.92) 100%);
     color: #ffffff;
+    border-radius: var(--radius-md, 16px);
+    padding: 26px 22px;
+    text-align: left;
+    box-shadow: 0 10px 24px rgba(200, 16, 46, 0.22);
 }
 
-.vaccine-detail-container .btn-select-detail:hover {
-    background-color: var(--primary-color-hover, #a00d24);
-    border-color: var(--primary-color-hover, #a00d24);
+.cta-widget-icon {
+    width: 36px;
+    height: 36px;
+    color: var(--secondary-color, #eaaa00);
+    margin-bottom: 12px;
 }
 
-.vaccine-detail-container .btn-select-detail.btn-selected {
-    background-color: #ffffff;
-    color: var(--primary-color);
+.sidebar-cta-widget h3 {
+    font-size: 17px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 8px 0;
+    text-align: left;
 }
 
-.vaccine-detail-container .btn-select-detail.btn-selected:hover {
-    background-color: #fff5f5;
+.sidebar-cta-widget p {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.92);
+    line-height: 1.55;
+    margin: 0 0 18px 0;
+    text-align: justify;
 }
 
-/* Vaccine Medical Tabs UI (Pure PHP Query Operated) */
-.vaccine-detail-container .medical-tabs-nav {
-    display: flex;
-    border-bottom: 1px solid #e2e8f0;
-    gap: 8px;
-    margin-top: 40px;
-    margin-bottom: 20px;
-}
-
-.vaccine-detail-container .tab-nav-btn {
-    padding: 12px 20px;
-    font-size: 14.5px;
-    font-weight: 600;
-    color: #64748b;
+.cta-widget-btn {
+    display: inline-block;
+    background: #ffffff;
+    color: var(--primary-color, #c8102e);
+    font-size: 13.5px;
+    font-weight: 800;
+    padding: 10px 22px;
+    border-radius: 30px;
     text-decoration: none;
-    border-bottom: 2px solid transparent;
     transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.vaccine-detail-container .tab-nav-btn:hover {
-    color: var(--primary-color);
+.cta-widget-btn:hover {
+    background: var(--secondary-color, #eaaa00);
+    color: #0f172a;
+    transform: translateY(-2px);
 }
 
-.vaccine-detail-container .tab-nav-btn.active {
-    color: var(--primary-color);
-    border-bottom-color: var(--primary-color);
-}
-
-.vaccine-detail-container .tab-panel-content {
-    background-color: #ffffff;
+/* Main Content Body for Product Detail */
+.vaccine-detail-page .article-main-content {
+    background: #ffffff;
+    border-radius: var(--radius-lg, 20px);
     border: 1px solid #e2e8f0;
-    border-radius: var(--radius-sm);
-    padding: 30px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    padding: 36px 40px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
 }
 
-.vaccine-detail-container .tab-panel-title {
+@media (max-width: 768px) {
+    .vaccine-detail-page .article-main-content {
+        padding: 24px 20px;
+    }
+}
+
+/* HTML / Markdown Parser Styling Rules for Article/Product Body Content */
+.article-body-content {
     font-size: 16px;
+    line-height: 1.85;
+    color: #334155;
+    margin-bottom: 30px;
+    text-align: justify;
+}
+
+.article-body-content h2,
+.article-body-content h3,
+.article-body-content h4 {
+    color: #0f172a;
+    font-weight: 800;
+    margin: 32px 0 14px 0;
+    line-height: 1.35;
+    text-align: justify;
+}
+
+.article-body-content h2 { font-size: 22px; border-bottom: 2px solid var(--primary-color, #c8102e); padding-bottom: 8px; }
+.article-body-content h3 { font-size: 18.5px; }
+.article-body-content h4 { font-size: 16.5px; color: var(--primary-color, #c8102e); }
+
+.article-body-content p {
+    margin-bottom: 20px;
+    text-align: justify;
+}
+
+.article-body-content ul,
+.article-body-content ol {
+    margin-bottom: 20px;
+    padding-left: 22px;
+}
+
+.article-body-content li {
+    margin-bottom: 8px;
+    line-height: 1.8;
+    text-align: justify;
+}
+
+.article-body-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin: 20px 0;
+}
+
+.article-body-content blockquote {
+    border-left: 3px solid var(--primary-color, #c8102e);
+    padding-left: 18px;
+    margin: 24px 0;
+    color: #475569;
+    font-style: italic;
+    background: transparent;
+}
+
+.article-body-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    box-sizing: border-box;
+}
+
+.article-body-content th {
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-weight: 700;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    text-align: justify;
+    font-size: 14.5px;
+}
+
+.article-body-content td {
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    text-align: justify;
+    font-size: 14.5px;
+    color: #334155;
+    line-height: 1.65;
+}
+
+/* Author Signature at Bottom Right */
+.article-author-signature {
+    text-align: right;
+    font-size: 15px;
     font-weight: 700;
     color: #0f172a;
-    margin: 0 0 16px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'Roboto', sans-serif;
+    margin-top: 36px;
+    padding-top: 20px;
+    border-top: 1px dashed #cbd5e1;
 }
 
-.vaccine-detail-container .tab-panel-body {
-    font-size: 14.5px;
-    color: #475569;
-    line-height: 1.8;
-    margin: 0;
+/* Slider Styles for Related Vaccines */
+.related-slider-container {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    padding-bottom: 8px;
+}
+
+.related-slider-container::-webkit-scrollbar {
+    display: none;
+}
+
+.related-slider-card {
+    flex: 0 0 calc(25% - 15px);
+    min-width: 260px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 992px) {
+    .related-slider-card {
+        flex: 0 0 calc(50% - 10px);
+    }
+}
+
+@media (max-width: 640px) {
+    .related-slider-card {
+        flex: 0 0 85%;
+    }
+}
+
+.slider-nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.slider-nav-btn:hover {
+    background-color: var(--primary-color, #c8102e);
+    color: #ffffff;
+    border-color: var(--primary-color, #c8102e);
+    transform: scale(1.05);
 }

@@ -266,7 +266,7 @@
     font-weight: 600;
 }
 
-/* TẦNG 1: BÁO MỚI HERO SECTION (ÉP PHẲNG ĐÁY 100% - TỶ LỆ 75% BÊN TRÁI / 25% BÊN PHẢI) */
+/* TẦNG 1: BÁO MỚI HERO SECTION (ÉP PHẲNG ĐÁY 100% - T TỶ LỆ 75% BÊN TRÁI / 25% BÊN PHẢI) */
 .news-hero-section {
     display: flex;
     gap: 24px;
@@ -713,12 +713,12 @@
 }
 
 /* ==========================================================================
-   TRANG 3: CHI TIẾT BÀI VIẾT TIN TỨC (ARTICLE DETAIL PAGE STYLES)
+   TRANG 3: CHI TIẾT BÀI VIẾT TIN TỨC & VẮC XIN (ARTICLE/PRODUCT DETAIL PAGE STYLES)
    ========================================================================== */
 .article-detail-layout {
     display: flex;
     gap: 32px;
-    align-items: flex-start;
+    align-items: stretch;
     width: 100%;
     box-sizing: border-box;
 }
@@ -789,6 +789,7 @@
     text-align: justify;
 }
 
+/* Dynamic HTML & Markdown Parser Styling Rules for Article/Product Body Content */
 .article-body-content {
     font-size: 16px;
     line-height: 1.85;
@@ -798,19 +799,33 @@
 }
 
 .article-body-content h2,
-.article-body-content h3 {
+.article-body-content h3,
+.article-body-content h4 {
     color: #0f172a;
     font-weight: 800;
-    margin: 32px 0 16px 0;
+    margin: 32px 0 14px 0;
     line-height: 1.35;
     text-align: justify;
 }
 
-.article-body-content h2 { font-size: 22px; }
-.article-body-content h3 { font-size: 19px; }
+.article-body-content h2 { font-size: 22px; border-bottom: 2px solid var(--primary-color, #c8102e); padding-bottom: 8px; }
+.article-body-content h3 { font-size: 18.5px; }
+.article-body-content h4 { font-size: 16.5px; color: var(--primary-color, #c8102e); }
 
 .article-body-content p {
     margin-bottom: 20px;
+    text-align: justify;
+}
+
+.article-body-content ul,
+.article-body-content ol {
+    margin-bottom: 20px;
+    padding-left: 22px;
+}
+
+.article-body-content li {
+    margin-bottom: 8px;
+    line-height: 1.8;
     text-align: justify;
 }
 
@@ -819,6 +834,41 @@
     height: auto;
     border-radius: 12px;
     margin: 20px 0;
+}
+
+.article-body-content blockquote {
+    border-left: 3px solid var(--primary-color, #c8102e);
+    padding-left: 18px;
+    margin: 24px 0;
+    color: #475569;
+    font-style: italic;
+    background: transparent;
+}
+
+.article-body-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    box-sizing: border-box;
+}
+
+.article-body-content th {
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-weight: 700;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    text-align: justify;
+    font-size: 14.5px;
+}
+
+.article-body-content td {
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    text-align: justify;
+    font-size: 14.5px;
+    color: #334155;
+    line-height: 1.65;
 }
 
 /* Author Signature at Bottom Right of Article Content */
