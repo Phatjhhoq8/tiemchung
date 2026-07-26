@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.0] - 2026-07-27
+
+### Unified Layout (Left-Big Right-Small) & Dynamic Sticky TOC
+
+* **Unified Column Orientation**: Swapped columns in [show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php) to place Main Detailed Content on the **Left (75% Big column)** and Sidebar on the **Right (25% Small column)**, matching [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php).
+* **Automated Dynamic TOC & Scroll Observer**: Created `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to scan `<h2>` and `<h3>` tags in article/vaccine body text, generate dynamic Table of Contents in the Right Sticky Sidebar (`top: 100px;`), and automatically highlight active headings on scroll.
+
 ## [v3.4.1] - 2026-07-27
 
 ### Sticky Sidebar Layout & Scroll Synchronization
