@@ -2,111 +2,184 @@
 
 @section('title', $vaccine->name . ' - Chi Tiết Vắc Xin')
 
+@section('styles')
+    <link rel="stylesheet" href="{{ asset('css/vaccines.css') }}">
+@endsection
+
 @section('content')
-<div class="vaccine-detail-container" style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+@php
+    $activeTab = request('tab', 'phac-do');
+@endphp
+
+<div class="vaccine-detail-container">
     <!-- Breadcrumb -->
-    <div class="breadcrumb" style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">
-        <a href="{{ route('home') }}" style="color: var(--text-muted); text-decoration: none;">Trang chủ</a> / 
-        <a href="{{ route('vaccine.index') }}" style="color: var(--text-muted); text-decoration: none;">Danh mục vắc xin</a> / 
+    <div class="breadcrumb">
+        <a href="{{ route('home') }}">Trang chủ</a> / 
+        <a href="{{ route('vaccine.index') }}">Danh mục vắc xin</a> / 
         <span style="color: var(--primary-color); font-weight: 500;">{{ $vaccine->name }}</span>
     </div>
 
     <!-- Main Detail Card -->
-    <div class="detail-card" style="background-color: var(--bg-card); border-radius: var(--radius-md); box-shadow: var(--shadow-md); display: flex; overflow: hidden; border: 1px solid var(--border-color); flex-wrap: wrap;">
+    <div class="detail-card">
         <!-- Left Image Section -->
-        <div class="detail-image" style="flex: 1 1 350px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; min-height: 350px;">
-            <img src="{{ asset('images/vaccines/' . ($vaccine->image ?: 'default_vaccine.jpg')) }}" alt="{{ $vaccine->name }}" style="width: 100%; height: 100%; object-fit: cover;">
-            <div class="badge-type" style="position: absolute; top: 20px; left: 20px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; background-color: {{ $vaccine->type === 'package' ? 'var(--secondary-color)' : 'var(--primary-color)' }}; color: #ffffff; z-index: 10;">
+        <div class="detail-image">
+            <img src="{{ asset('images/vaccines/' . ($vaccine->image ?: 'default_vaccine.jpg')) }}" alt="{{ $vaccine->name }}">
+            <div class="badge-type {{ $vaccine->type === 'package' ? 'package' : 'single' }}">
                 {{ $vaccine->type === 'package' ? 'Gói vắc xin' : 'Vắc xin lẻ' }}
             </div>
         </div>
 
         <!-- Right Info Section -->
-        <div class="detail-info" style="flex: 1 1 450px; padding: 40px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="detail-info">
             <div>
-                <h1 style="font-family: 'Roboto', sans-serif; font-size: 32px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">{{ $vaccine->name }}</h1>
-                <p style="color: var(--text-muted); font-size: 15px; margin-bottom: 24px;">{{ $vaccine->description }}</p>
+                <h1 style="font-family: 'Roboto', sans-serif; font-size: 28px; font-weight: 700; color: #0f172a; margin-bottom: 12px; margin-top: 0;">{{ $vaccine->name }}</h1>
+                <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 24px; margin-top: 0;">{{ $vaccine->description }}</p>
 
                 <!-- Basic Specs Table -->
-                <div class="specs-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                    <div>
-                        <span style="display: block; font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Phòng bệnh</span>
-                        <strong style="color: var(--text-primary); font-size: 15px;">{{ $vaccine->disease_prevention }}</strong>
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <span class="spec-label">Phòng bệnh</span>
+                        <strong class="spec-value">{{ $vaccine->disease_prevention }}</strong>
                     </div>
-                    <div>
-                        <span style="display: block; font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Nguồn gốc</span>
-                        <strong style="color: var(--text-primary); font-size: 15px;">{{ $vaccine->origin }}</strong>
+                    <div class="spec-item">
+                        <span class="spec-label">Nguồn gốc</span>
+                        <strong class="spec-value">{{ $vaccine->origin }}</strong>
                     </div>
-                    <div style="margin-top: 10px;">
-                        <span style="display: block; font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Độ tuổi chỉ định</span>
-                        <strong style="color: var(--text-primary); font-size: 15px;">{{ $vaccine->age_group }}</strong>
+                    <div class="spec-item">
+                        <span class="spec-label">Độ tuổi chỉ định</span>
+                        <strong class="spec-value">{{ $vaccine->age_group }}</strong>
                     </div>
-                    <div style="margin-top: 10px;">
-                        <span style="display: block; font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Phác đồ</span>
-                        <strong style="color: var(--text-primary); font-size: 15px;">{{ $vaccine->doses }} mũi tiêm</strong>
+                    <div class="spec-item">
+                        <span class="spec-label">Phác đồ</span>
+                        <strong class="spec-value">{{ $vaccine->doses }} mũi tiêm</strong>
                     </div>
                 </div>
             </div>
 
             <!-- Price and Buy Action -->
-            <div class="buy-section" style="border-top: 1px solid var(--border-color); padding-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
-                <div>
-                    <span style="display: block; font-size: 14px; color: var(--text-muted);">Giá tiêm trọn gói:</span>
-                    <strong style="font-size: 28px; color: var(--primary-color); font-weight: 800;">{{ number_format($vaccine->price, 0, ',', '.') }} đ</strong>
+            <div class="buy-section">
+                <div class="price-info-wrapper">
+                    <span class="price-label">Giá tiêm trọn gói:</span>
+                    <strong class="price-value">{{ number_format($vaccine->price, 0, ',', '.') }} đ / mũi</strong>
+                    
+                    <!-- GSP Cold Chain Storage Commitment Badge -->
+                    <div class="gsp-cold-chain-box">
+                        <i data-lucide="shield-check"></i>
+                        <span>Đạt tiêu chuẩn bảo quản Dây chuyền lạnh GSP 2 - 8 độ C</span>
+                    </div>
                 </div>
                 
-                <div style="display: flex; gap: 12px;">
-                    <a href="{{ route('vaccine.index') }}" class="btn-secondary" style="text-decoration: none; padding: 14px 24px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); color: var(--text-primary); font-weight: 600; display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card); transition: all 0.2s ease;">
-                        <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
-                        <span>Quay lại</span>
-                    </a>
-                    <button class="btn-select-detail {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" onclick="toggleCartDetail({{ $vaccine->id }})" style="padding: 14px 28px; border-radius: var(--radius-sm); border: none; color: #ffffff; font-weight: 700; font-size: 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; background-color: {{ isset($cart[$vaccine->id]) ? 'var(--secondary-color)' : 'var(--primary-color)' }};">
-                        <i data-lucide="{{ isset($cart[$vaccine->id]) ? 'check' : 'plus' }}" style="width: 20px; height: 20px;"></i>
-                        <span>{{ isset($cart[$vaccine->id]) ? 'Đã chọn' : 'Đăng ký tiêm' }}</span>
-                    </button>
-                </div>
+                @if(!isset($cart[$vaccine->id]))
+                    <form action="{{ route('cart.add') }}" method="POST" style="margin: 0; width: 100%;">
+                        @csrf
+                        <input type="hidden" name="vaccine_id" value="{{ $vaccine->id }}">
+                        
+                        <!-- Dose / Quantity Selector Bar -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 4px; background-color: #f8fafc;">
+                            <label for="quantity" style="font-size: 13.5px; color: #475569; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                                <i data-lucide="layers" style="width: 16px; height: 16px; color: var(--primary-color);"></i>
+                                Chọn số mũi đăng ký:
+                            </label>
+                            <select name="quantity" id="quantity" style="padding: 6px 12px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 14px; color: #0f172a; font-weight: 700; outline: none; cursor: pointer; background: #ffffff;">
+                                @for($i = 1; $i <= max(3, $vaccine->doses); $i++)
+                                    <option value="{{ $i }}">
+                                        {{ $i }} mũi {{ $i == $vaccine->doses ? '(Trọn phác đồ)' : '' }}
+                                    </option>
+                                @endfor
+                            </select>
+                        </div>
+                        
+                        <div class="actions-wrapper">
+                            <a href="{{ route('vaccine.index') }}" class="btn-back">
+                                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+                                <span>Quay lại</span>
+                            </a>
+                            <button type="submit" class="btn-select-detail">
+                                <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+                                <span>Đăng ký tiêm</span>
+                            </button>
+                        </div>
+                    </form>
+                @else
+                    <div style="width: 100%;">
+                        <!-- Current Selected Dose Status Bar -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding: 10px 14px; border: 1px solid rgba(200,16,46,0.12); border-radius: 4px; background-color: #fff5f5;">
+                            <span style="font-size: 13.5px; color: #475569; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                                <i data-lucide="check-circle-2" style="width: 16px; height: 16px; color: var(--primary-color);"></i>
+                                Đã chọn trong danh sách:
+                            </span>
+                            <strong style="font-size: 14.5px; color: var(--primary-color); font-weight: 700;">
+                                {{ $cart[$vaccine->id]['quantity'] ?? 1 }} mũi {{ ($cart[$vaccine->id]['quantity'] ?? 1) == $vaccine->doses ? '(Trọn phác đồ)' : '' }}
+                            </strong>
+                        </div>
+                        
+                        <div class="actions-wrapper">
+                            <a href="{{ route('vaccine.index') }}" class="btn-back">
+                                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+                                <span>Quay lại</span>
+                            </a>
+                            <form action="{{ route('cart.remove') }}" method="POST" style="margin: 0;">
+                                @csrf
+                                <input type="hidden" name="vaccine_id" value="{{ $vaccine->id }}">
+                                <button type="submit" class="btn-select-detail btn-selected">
+                                    <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+                                    <span>Đã chọn</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
-</div>
-@endsection
 
-@section('scripts')
-<script>
-    // Hàm toggle giỏ hàng ngay tại trang chi tiết
-    function toggleCartDetail(vaccineId) {
-        const btn = document.querySelector('.btn-select-detail');
-        const isSelected = btn.classList.contains('btn-selected');
-        const url = isSelected ? "{{ route('cart.remove') }}" : "{{ route('cart.add') }}";
-        
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ vaccine_id: vaccineId })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                if (isSelected) {
-                    btn.classList.remove('btn-selected');
-                    btn.style.backgroundColor = 'var(--primary-color)';
-                    btn.innerHTML = '<i data-lucide="plus"></i> <span>Đăng ký tiêm</span>';
-                } else {
-                    btn.classList.add('btn-selected');
-                    btn.style.backgroundColor = 'var(--secondary-color)';
-                    btn.innerHTML = '<i data-lucide="check"></i> <span>Đã chọn</span>';
-                }
-                lucide.createIcons();
-                
-                // Reload lại để đồng bộ giỏ hàng nổi nếu có
-                if (window.opener || window.location) {
-                    // Do page reload or let user redirect
-                }
-            }
-        });
-    }
-</script>
+    <!-- Vaccine Medical Tabs UI (Pure PHP Query Operated) -->
+    <div class="medical-tabs-nav">
+        <a href="{{ route('vaccine.show', ['id' => $vaccine->id, 'tab' => 'phac-do']) }}" class="tab-nav-btn {{ $activeTab === 'phac-do' ? 'active' : '' }}">
+            <i data-lucide="clipboard-list" style="width: 16px; height: 16px;"></i>
+            <span>Chỉ định & Phác đồ</span>
+        </a>
+        <a href="{{ route('vaccine.show', ['id' => $vaccine->id, 'tab' => 'luu-y']) }}" class="tab-nav-btn {{ $activeTab === 'luu-y' ? 'active' : '' }}">
+            <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
+            <span>Chống chỉ định & Lưu ý</span>
+        </a>
+        <a href="{{ route('vaccine.show', ['id' => $vaccine->id, 'tab' => 'theo-doi']) }}" class="tab-nav-btn {{ $activeTab === 'theo-doi' ? 'active' : '' }}">
+            <i data-lucide="activity" style="width: 16px; height: 16px;"></i>
+            <span>Phản ứng sau tiêm & Theo dõi</span>
+        </a>
+    </div>
+
+    <!-- Tab Panels Content -->
+    @if($activeTab === 'phac-do')
+        <div class="tab-panel-content">
+            <h3 class="tab-panel-title">
+                <i data-lucide="clipboard-list" style="width: 18px; height: 18px; color: var(--primary-color);"></i>
+                Chỉ định & Phác đồ tiêm chủng
+            </h3>
+            <p class="tab-panel-body">
+                Vắc-xin được chỉ định phòng ngừa các bệnh truyền nhiễm nguy hiểm theo đúng khuyến cáo của Bộ Y tế. Độ tuổi chỉ định phù hợp từ <strong>{{ $vaccine->age_group }}</strong>. Phác đồ tiêm chủng đầy đủ gồm <strong>{{ $vaccine->doses }} mũi tiêm</strong> để đạt hiệu quả bảo vệ tối ưu. Khách hàng sẽ được bác sĩ khám sàng lọc miễn phí trước khi tiêm.
+            </p>
+        </div>
+    @elseif($activeTab === 'luu-y')
+        <div class="tab-panel-content">
+            <h3 class="tab-panel-title">
+                <i data-lucide="alert-circle" style="width: 18px; height: 18px; color: var(--primary-color);"></i>
+                Chống chỉ định & Lưu ý y khoa
+            </h3>
+            <p class="tab-panel-body">
+                Không tiêm vắc-xin cho người có tiền sử dị ứng nghiêm trọng với bất kỳ thành phần nào của thuốc. Hoãn tiêm đối với trường hợp đang sốt cao hoặc nhiễm trùng cấp tính. Vui lòng thông báo đầy đủ tình trạng sức khỏe hiện tại và lịch sử tiêm chủng của bạn cho bác sĩ trong quá trình khám sàng lọc.
+            </p>
+        </div>
+    @elseif($activeTab === 'theo-doi')
+        <div class="tab-panel-content">
+            <h3 class="tab-panel-title">
+                <i data-lucide="activity" style="width: 18px; height: 18px; color: var(--primary-color);"></i>
+                Phản ứng sau tiêm & Hướng dẫn theo dõi
+            </h3>
+            <p class="tab-panel-body">
+                Các phản ứng thông thường sau tiêm có thể xảy ra bao gồm: sưng đỏ, đau nhẹ tại vị trí tiêm, sốt nhẹ hoặc mệt mỏi. Đây là những phản ứng sinh lý tự nhiên của cơ thể và thường tự biến mất sau 1-2 ngày. Người tiêm chủng cần được theo dõi tại trung tâm ít nhất 30 phút sau tiêm và tiếp tục tự theo dõi tại nhà trong vòng 24 - 48 giờ tiếp theo.
+            </p>
+        </div>
+    @endif
+</div>
 @endsection

@@ -116,6 +116,11 @@ class VaccineController extends Controller
     public function addToCart(Request $request)
     {
         $vaccineId = $request->input('vaccine_id');
+        $quantity = (int) $request->input('quantity', 1);
+        if ($quantity < 1) {
+            $quantity = 1;
+        }
+
         $vaccine = Vaccine::find($vaccineId);
 
         if (!$vaccine) {
@@ -124,25 +129,33 @@ class VaccineController extends Controller
 
         $cart = session()->get('cart', []);
 
-        if (!isset($cart[$vaccineId])) {
-            $cart[$vaccineId] = [
-                'name' => $vaccine->name,
-                'price' => $vaccine->price,
-                'type' => $vaccine->type,
-                'doses' => $vaccine->doses,
-                'disease_prevention' => $vaccine->disease_prevention,
-                'origin' => $vaccine->origin,
-                'image' => $vaccine->image,
-            ];
-            session()->put('cart', $cart);
+        $cart[$vaccineId] = [
+            'name' => $vaccine->name,
+            'price' => $vaccine->price,
+            'quantity' => $quantity,
+            'total_price' => $vaccine->price * $quantity,
+            'type' => $vaccine->type,
+            'doses' => $vaccine->doses,
+            'disease_prevention' => $vaccine->disease_prevention,
+            'origin' => $vaccine->origin,
+            'image' => $vaccine->image,
+        ];
+        session()->put('cart', $cart);
+
+        $totalCartPrice = collect($cart)->sum(function ($item) {
+            return ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+        });
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'cart' => $cart,
+                'cart_count' => count($cart),
+                'total_price' => $totalCartPrice
+            ]);
         }
 
-        return response()->json([
-            'success' => true,
-            'cart' => $cart,
-            'cart_count' => count($cart),
-            'total_price' => collect($cart)->sum('price')
-        ]);
+        return redirect()->back()->with('success', 'Đã cập nhật danh sách đăng ký tiêm chủng.');
     }
 
     /**
@@ -158,12 +171,20 @@ class VaccineController extends Controller
             session()->put('cart', $cart);
         }
 
-        return response()->json([
-            'success' => true,
-            'cart' => $cart,
-            'cart_count' => count($cart),
-            'total_price' => collect($cart)->sum('price')
-        ]);
+        $totalCartPrice = collect($cart)->sum(function ($item) {
+            return ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+        });
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'cart' => $cart,
+                'cart_count' => count($cart),
+                'total_price' => $totalCartPrice
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Đã xóa vắc xin khỏi danh sách đăng ký.');
     }
 
     /**
@@ -198,7 +219,9 @@ class VaccineController extends Controller
             return redirect()->route('vaccine.index')->with('warning', 'Vui lòng chọn ít nhất một loại vắc xin để đăng ký.');
         }
 
-        $totalPrice = collect($cart)->sum('price');
+        $totalPrice = collect($cart)->sum(function ($item) {
+            return ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+        });
         $centers = Center::active()->get();
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -265,7 +288,9 @@ class VaccineController extends Controller
         }
 
         $validated = $validator->validated();
-        $totalPrice = collect($cart)->sum('price');
+        $totalPrice = collect($cart)->sum(function ($item) {
+            return ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+        });
         $registrationCode = 'MCD-' . strtoupper(Str::random(8));
 
         DB::beginTransaction();
@@ -289,7 +314,8 @@ class VaccineController extends Controller
 
             // 2. Liên kết các vắc xin trong giỏ vào bảng pivot
             foreach ($cart as $id => $item) {
-                $registration->vaccines()->attach($id, ['price' => $item['price']]);
+                $itemPrice = ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+                $registration->vaccines()->attach($id, ['price' => $itemPrice]);
             }
 
             DB::commit();

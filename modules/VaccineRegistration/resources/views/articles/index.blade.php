@@ -2,59 +2,104 @@
 
 @section('title', 'Tin Tức & Kiến Thức Y Khoa - Medicare Cờ Đỏ')
 
+@section('styles')
+    <link rel="stylesheet" href="{{ asset('css/articles.css') }}">
+@endsection
+
 @section('content')
-<div style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
+<div class="news-container">
     <!-- Breadcrumb -->
-    <div style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">
-        <a href="{{ route('home') }}" style="color: var(--text-muted); text-decoration: none;">Trang chủ</a> / 
+    <div style="margin-bottom: 24px; color: #64748b; font-size: 14px;">
+        <a href="{{ route('home') }}" style="color: #64748b; text-decoration: none;">Trang chủ</a> / 
         <span style="color: var(--primary-color); font-weight: 600;">Tin tức & Kiến thức y khoa</span>
     </div>
 
-    <div class="section-title-wrapper" style="text-align: center; margin-bottom: 40px;">
-        <span class="section-badge">Góc Y Khoa</span>
-        <h2>Kiến Thức Tiêm Chủng & Khuyến Cáo Y Tế</h2>
-        <p>Thông tin y khoa chính thống giúp quý khách chủ động chăm sóc và bảo vệ sức khỏe cho cả gia đình.</p>
+    <!-- Header Section -->
+    <div class="news-header">
+        <h1 class="news-header-title">
+            <i data-lucide="newspaper" style="width: 28px; height: 28px; color: var(--primary-color);"></i>
+            Tin Tức & Kiến Thức Y Khoa
+        </h1>
+        <p class="news-header-subtitle">Thông tin tiêm chủng chính thống, khuyến cáo phòng bệnh được tham vấn bởi đội ngũ bác sĩ chuyên khoa Medicare Cờ Đỏ.</p>
     </div>
 
-    <!-- Thanh Lọc Chuyên Mục -->
-    <div style="display: flex; gap: 12px; margin-bottom: 36px; flex-wrap: wrap; justify-content: center;">
-        <a href="{{ route('news.index') }}" style="padding: 8px 18px; border-radius: 20px; text-decoration: none; font-size: 14px; font-weight: 700; background-color: {{ !request('category') ? 'var(--primary-color)' : 'var(--bg-card)' }}; color: {{ !request('category') ? '#ffffff' : 'var(--text-primary)' }}; border: 1px solid var(--border-color);">Tất cả bài viết</a>
+    <!-- Category Pill Filters (Pure PHP Links) -->
+    <div class="news-categories-nav">
+        <a href="{{ route('news.index') }}" class="category-pill {{ !request('category') ? 'active' : '' }}">
+            Tất cả bài viết
+        </a>
         @foreach($categories as $cat)
-            <a href="{{ route('news.index', ['category' => $cat]) }}" style="padding: 8px 18px; border-radius: 20px; text-decoration: none; font-size: 14px; font-weight: 700; background-color: {{ request('category') === $cat ? 'var(--primary-color)' : 'var(--bg-card)' }}; color: {{ request('category') === $cat ? '#ffffff' : 'var(--text-primary)' }}; border: 1px solid var(--border-color);">{{ $cat }}</a>
+            <a href="{{ route('news.index', ['category' => $cat]) }}" class="category-pill {{ request('category') === $cat ? 'active' : '' }}">
+                {{ $cat }}
+            </a>
         @endforeach
     </div>
 
-    <!-- Danh sách Bài Viết Grid -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px;">
-        @forelse($articles as $article)
-            <article style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;">
-                <div style="height: 200px; overflow: hidden;">
-                    <a href="{{ route('news.show', $article->slug) }}">
-                        <img src="{{ asset('images/vaccines/' . ($article->image ?: 'vaxigrip.jpg')) }}" alt="{{ $article->title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
-                    </a>
+    <!-- Medical Notice Box -->
+    <div class="medical-notice-box">
+        <i data-lucide="info"></i>
+        <p>
+            <strong>Thông báo từ Hội đồng Y khoa Medicare:</strong> Kiến thức y học và khuyến cáo tiêm chủng tại đây được biên soạn dựa trên Hướng dẫn chính thức của Bộ Y tế Việt Nam và Tổ chức Y tế Thế giới (WHO). Mọi thắc mắc cụ thể về thể trạng cá nhân xin vui lòng liên hệ hotline <strong>0938 60 38 39</strong> để được bác sĩ tư vấn trực tiếp.
+        </p>
+    </div>
+
+    <!-- Featured Article (Displayed on page 1 when no category filter or search) -->
+    @if($articles->count() > 0 && !request('category') && !request('search') && $articles->currentPage() == 1)
+        @php
+            $featured = $articles->first();
+        @endphp
+        <a href="{{ route('news.show', $featured->slug) }}" class="featured-article-card">
+            <div class="featured-image-box">
+                <img src="{{ asset('images/vaccines/' . ($featured->image ?: 'vaxigrip.jpg')) }}" alt="{{ $featured->title }}" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
+            </div>
+            <div class="featured-content-box">
+                <div>
+                    <span class="featured-badge">{{ $featured->category }}</span>
+                    <h2 class="featured-title">{{ $featured->title }}</h2>
+                    <p class="featured-summary">{{ Str::limit($featured->summary, 180) }}</p>
                 </div>
-                <div style="padding: 28px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="featured-meta">
+                    <span><i data-lucide="calendar" style="width: 14px; height: 14px;"></i> {{ $featured->created_at ? $featured->created_at->format('d/m/Y') : '26/07/2026' }}</span>
+                    <span><i data-lucide="eye" style="width: 14px; height: 14px;"></i> {{ number_format($featured->views) }} lượt xem</span>
+                    <span style="margin-left: auto; color: var(--primary-color); font-weight: 700;">Xem chi tiết →</span>
+                </div>
+            </div>
+        </a>
+    @endif
+
+    <!-- 3-Column News Grid -->
+    <div class="news-grid">
+        @php
+            // Skip first article if featured banner is displayed above
+            $displayArticles = ($articles->count() > 0 && !request('category') && !request('search') && $articles->currentPage() == 1) ? $articles->slice(1) : $articles;
+        @endphp
+
+        @forelse($displayArticles as $article)
+            <a href="{{ route('news.show', $article->slug) }}" class="news-card">
+                <div class="news-card-image">
+                    <img src="{{ asset('images/vaccines/' . ($article->image ?: 'vaxigrip.jpg')) }}" alt="{{ $article->title }}" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
+                </div>
+                <div class="news-card-body">
                     <div>
-                        <span style="font-size: 12px; color: var(--primary-color); font-weight: 700; text-transform: uppercase; background: rgba(200,16,46,0.08); padding: 4px 12px; border-radius: 4px;">{{ $article->category }}</span>
-                        <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 14px 0 10px 0; line-height: 1.4;">
-                            <a href="{{ route('news.show', $article->slug) }}" style="text-decoration: none; color: inherit;">{{ $article->title }}</a>
-                        </h3>
-                        <p style="color: #64748b; font-size: 14.5px; line-height: 1.6; margin-bottom: 0;">{{ $article->summary }}</p>
+                        <span class="news-card-category">{{ $article->category }}</span>
+                        <h3 class="news-card-title">{{ $article->title }}</h3>
+                        <p class="news-card-excerpt">{{ Str::limit($article->summary, 100) }}</p>
                     </div>
-                    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 13px; color: #94a3b8; display: flex; align-items: center; gap: 6px;"><i data-lucide="calendar" style="width: 14px; height: 14px;"></i> {{ $article->created_at ? $article->created_at->format('d/m/Y') : '21/07/2026' }}</span>
-                        <a href="{{ route('news.show', $article->slug) }}" style="color: var(--primary-color); font-weight: 700; font-size: 14px; text-decoration: none;">Đọc bài viết →</a>
+                    <div class="news-card-footer">
+                        <span><i data-lucide="calendar" style="width: 14px; height: 14px;"></i> {{ $article->created_at ? $article->created_at->format('d/m/Y') : '26/07/2026' }}</span>
+                        <span><i data-lucide="eye" style="width: 14px; height: 14px;"></i> {{ number_format($article->views) }}</span>
                     </div>
                 </div>
-            </article>
+            </a>
         @empty
-            <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #94a3b8;">
-                <p style="font-size: 16px;">Chưa tìm thấy bài viết phù hợp.</p>
+            <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #94a3b8; background: #ffffff; border-radius: 4px; border: 1px solid #e2e8f0;">
+                <p style="font-size: 16px; margin: 0;">Chưa tìm thấy bài viết phù hợp trong chuyên mục này.</p>
             </div>
         @endforelse
     </div>
 
-    <div style="margin-top: 40px; display: flex; justify-content: center;">
+    <!-- Pagination Wrapper -->
+    <div class="news-pagination-wrapper">
         {{ $articles->links() }}
     </div>
 </div>

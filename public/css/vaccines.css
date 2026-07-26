@@ -1,0 +1,280 @@
+/* Giao diện Chi tiết Vắc-xin (Vaccine Detail Styles) */
+
+.vaccine-detail-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.vaccine-detail-container .breadcrumb {
+    margin-bottom: 24px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.vaccine-detail-container .breadcrumb a {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+.vaccine-detail-container .detail-card {
+    background-color: #ffffff;
+    border-radius: var(--radius-sm);
+    display: flex;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+}
+
+.vaccine-detail-container .detail-image {
+    flex: 1 1 350px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    min-height: 350px;
+    border-right: 1px solid #e2e8f0;
+}
+
+.vaccine-detail-container .detail-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vaccine-detail-container .badge-type {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    z-index: 10;
+}
+
+.vaccine-detail-container .badge-type.package {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border: 1px solid var(--primary-color);
+}
+
+.vaccine-detail-container .badge-type.single {
+    background-color: #ffffff;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.vaccine-detail-container .detail-info {
+    flex: 1 1 450px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #ffffff;
+}
+
+.vaccine-detail-container .specs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 30px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 20px;
+}
+
+.vaccine-detail-container .spec-item {
+    margin-top: 10px;
+}
+
+.vaccine-detail-container .spec-item:first-child,
+.vaccine-detail-container .spec-item:nth-child(2) {
+    margin-top: 0;
+}
+
+.vaccine-detail-container .spec-label {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.vaccine-detail-container .spec-value {
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.vaccine-detail-container .buy-section {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.vaccine-detail-container .price-info-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.vaccine-detail-container .price-label {
+    display: block;
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+
+.vaccine-detail-container .price-value {
+    font-size: 26px;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+/* Premium Light Red GSP Cold Chain Certificate Card */
+.vaccine-detail-container .gsp-cold-chain-box {
+    margin-top: 6px;
+    background-color: #fff5f5;
+    border: 1px solid rgba(200, 16, 46, 0.08);
+    border-radius: 4px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.vaccine-detail-container .gsp-cold-chain-box i {
+    width: 16px;
+    height: 16px;
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.vaccine-detail-container .gsp-cold-chain-box span {
+    font-size: 13px;
+    color: #475569;
+    font-weight: 500;
+}
+
+.vaccine-detail-container .actions-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 12px;
+}
+
+.vaccine-detail-container .btn-back {
+    text-decoration: none;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-weight: 600;
+    font-size: 14.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.vaccine-detail-container .btn-back:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.vaccine-detail-container .btn-select-detail {
+    padding: 12px 24px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 14.5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid var(--primary-color);
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.vaccine-detail-container .btn-select-detail:hover {
+    background-color: var(--primary-color-hover, #a00d24);
+    border-color: var(--primary-color-hover, #a00d24);
+}
+
+.vaccine-detail-container .btn-select-detail.btn-selected {
+    background-color: #ffffff;
+    color: var(--primary-color);
+}
+
+.vaccine-detail-container .btn-select-detail.btn-selected:hover {
+    background-color: #fff5f5;
+}
+
+/* Vaccine Medical Tabs UI (Pure PHP Query Operated) */
+.vaccine-detail-container .medical-tabs-nav {
+    display: flex;
+    border-bottom: 1px solid #e2e8f0;
+    gap: 8px;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+.vaccine-detail-container .tab-nav-btn {
+    padding: 12px 20px;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #64748b;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.vaccine-detail-container .tab-nav-btn:hover {
+    color: var(--primary-color);
+}
+
+.vaccine-detail-container .tab-nav-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.vaccine-detail-container .tab-panel-content {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-sm);
+    padding: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.vaccine-detail-container .tab-panel-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.vaccine-detail-container .tab-panel-body {
+    font-size: 14.5px;
+    color: #475569;
+    line-height: 1.8;
+    margin: 0;
+}

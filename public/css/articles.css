@@ -1,0 +1,319 @@
+/* Giao diện Danh mục & Chi tiết Tin Tức (Articles Styles) */
+
+.news-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* Header Section */
+.news-header {
+    margin-bottom: 32px;
+    text-align: left;
+}
+
+.news-header-title {
+    font-family: 'Roboto', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.news-header-subtitle {
+    font-size: 15px;
+    color: #64748b;
+    margin: 0;
+}
+
+/* Category Pill Filters (Pure PHP Links) */
+.news-categories-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.category-pill {
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #475569;
+    background-color: #f1f5f9;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.category-pill:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+.category-pill.active {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(200, 16, 46, 0.15);
+}
+
+/* Featured Article Card (Layout Top) */
+.featured-article-card {
+    background-color: #ffffff;
+    border-radius: var(--radius-sm);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    display: flex;
+    margin-bottom: 40px;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.featured-article-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.featured-image-box {
+    flex: 1 1 50%;
+    min-height: 320px;
+    max-height: 380px;
+    overflow: hidden;
+    position: relative;
+    background-color: #f8fafc;
+}
+
+.featured-image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.featured-article-card:hover .featured-image-box img {
+    transform: scale(1.03);
+}
+
+.featured-content-box {
+    flex: 1 1 50%;
+    padding: 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.featured-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    background-color: #fff5f5;
+    color: var(--primary-color);
+    border: 1px solid rgba(200, 16, 46, 0.15);
+    margin-bottom: 12px;
+    max-width: fit-content;
+}
+
+.featured-title {
+    font-family: 'Roboto', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.35;
+    margin: 0 0 12px 0;
+    transition: color 0.2s ease;
+}
+
+.featured-article-card:hover .featured-title {
+    color: var(--primary-color);
+}
+
+.featured-summary {
+    font-size: 14.5px;
+    color: #475569;
+    line-height: 1.65;
+    margin: 0 0 20px 0;
+}
+
+.featured-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    color: #94a3b8;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 16px;
+}
+
+.featured-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 3-Column News Grid */
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    margin-bottom: 40px;
+}
+
+@media (max-width: 992px) {
+    .news-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .featured-article-card {
+        flex-direction: column;
+    }
+    .featured-image-box {
+        min-height: 240px;
+    }
+}
+
+@media (max-width: 640px) {
+    .news-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.news-card {
+    background-color: #ffffff;
+    border-radius: var(--radius-sm);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.news-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+}
+
+.news-card-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+    background-color: #f8fafc;
+}
+
+.news-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.news-card:hover .news-card-image img {
+    transform: scale(1.04);
+}
+
+.news-card-body {
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    justify-content: space-between;
+}
+
+.news-card-category {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--primary-color);
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.news-card-title {
+    font-family: 'Roboto', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.4;
+    margin: 0 0 10px 0;
+    transition: color 0.2s ease;
+}
+
+.news-card:hover .news-card-title {
+    color: var(--primary-color);
+}
+
+.news-card-excerpt {
+    font-size: 13.5px;
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0 0 16px 0;
+}
+
+.news-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: #94a3b8;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 12px;
+    margin-top: auto;
+}
+
+.news-card-footer span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Medical Notice Banner */
+.medical-notice-box {
+    background-color: #fffdf5;
+    border: 1px solid #fef08a;
+    border-radius: var(--radius-sm);
+    padding: 20px 24px;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.medical-notice-box i {
+    color: var(--secondary-color, #eaaa00);
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.medical-notice-box p {
+    margin: 0;
+    font-size: 14px;
+    color: #713f12;
+    line-height: 1.6;
+}
+
+/* Pagination Container */
+.news-pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
