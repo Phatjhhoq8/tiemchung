@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v3.5.10] - 2026-07-27
+
+### Complete Visual Parity for White Card Section Container
+
+* **Vaccine Detail Page White Card Container**: Added `.suggested-news-section` and `.suggested-news-header` rules to [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css), ensuring the Vaccine Detail Page features the exact same white card container (`background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; padding: 32px; box-shadow...`) and red underline header (`border-bottom: 2px solid #c8102e;`) as shown in Image 57.
+
 ## [v3.5.9] - 2026-07-27
 
 ### Dedicated Isolated White Card Section Restoration
