@@ -278,6 +278,26 @@
     border-top: 1px dashed #cbd5e1;
 }
 
+/* Isolated White Card Section 100% Width */
+.suggested-news-section {
+    background: #ffffff;
+    border-radius: var(--radius-lg, 20px);
+    border: 1px solid #e2e8f0;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    margin-top: 50px;
+    margin-bottom: 40px;
+    width: 100%;
+    box-sizing: border-box;
+    clear: both;
+}
+
+.suggested-news-header {
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--primary-color, #c8102e);
+}
+
 /* Slider Styles for Related Vaccines */
 .related-slider-container {
     display: flex;
