@@ -1,5 +1,13 @@
 # Release Notes
 
+## [v3.1.2] - 2026-07-26
+
+### Unified Cart Toggle API & Multi-Location Synchronization
+
+* **Single API Function (`toggleCart`)**: Standardized all product selection buttons (catalog grid cards, detail page primary button, and related product cards) to call the global `toggleCart(vaccineId)` function in [app.js](file:///d:/Projects/tiemchung/public/js/app.js).
+* **Reliable Server-State Inspection**: Refactored `toggleCart` to determine item selection state dynamically from the returned `data.cart[vaccineId]` payload.
+* **Synchronized UI Updates**: Clicking any select button automatically updates all matching cards, detail buttons, quick-view modals, floating cart drawer, and toast alerts (`"Đã thêm vắc xin..."` vs `"Đã xóa vắc xin..."`) across the entire SPA.
+
 ## [v3.1.1] - 2026-07-26
 
 ### Sticky Sidebar Bottom Margin Overlap Fix
