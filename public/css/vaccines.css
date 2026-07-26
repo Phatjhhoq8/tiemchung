@@ -283,7 +283,7 @@
     background: #ffffff;
     border-radius: var(--radius-lg, 20px);
     border: 1px solid #e2e8f0;
-    padding: 32px;
+    padding: 28px 24px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     margin-top: 50px;
     margin-bottom: 40px;
@@ -301,11 +301,13 @@
 /* Slider Styles for Related Vaccines */
 .related-slider-container {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     overflow-x: auto;
     scroll-behavior: smooth;
     scrollbar-width: none;
-    padding-bottom: 8px;
+    padding: 4px 4px 12px 4px;
+    margin: -4px -4px 0 -4px;
+    box-sizing: border-box;
 }
 
 .related-slider-container::-webkit-scrollbar {
@@ -313,8 +315,8 @@
 }
 
 .related-slider-card {
-    flex: 0 0 calc(25% - 15px);
-    min-width: 260px;
+    flex: 0 0 calc((100% - 48px) / 4);
+    min-width: 240px;
     box-sizing: border-box;
 }
 
