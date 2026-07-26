@@ -1,4 +1,4 @@
-/* Giao diện Danh mục & Chi tiết Tin Tức (Articles Styles) - Justify Text Excerpts & Shared Components */
+/* Giao diện Danh mục & Chi tiết Tin Tức (Articles Styles) - Justify Text Excerpts & Headings */
 
 .news-catalog-page {
     max-width: 1200px;
@@ -110,7 +110,7 @@
     line-height: 1.6;
     margin-bottom: 1.8rem;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-    text-align: justify; /* Căn đều 2 bên */
+    text-align: justify;
 }
 
 /* Centered Search Bar Box Inside Hero - Shared Component from style.css */
@@ -404,6 +404,7 @@
     line-height: 1.3;
     margin: 0 0 10px 0;
     transition: color 0.2s ease;
+    text-align: justify; /* Căn đều 2 bên */
 }
 
 .hero-main-card:hover .hero-main-title {
@@ -415,7 +416,7 @@
     color: #475569;
     line-height: 1.6;
     margin: 0 0 14px 0;
-    text-align: justify; /* Căn đều 2 bên */
+    text-align: justify;
 }
 
 /* Metadata Row Horizontal Line Rules (100% Inline Alignment across all cards) */
@@ -509,6 +510,7 @@
     color: #0f172a;
     line-height: 1.35;
     margin: 0;
+    text-align: justify; /* Căn đều 2 bên */
 }
 
 .hero-sub-card:hover .hero-sub-title {
@@ -579,6 +581,7 @@
     color: #1e293b;
     line-height: 1.35;
     margin: 0 0 3px 0;
+    text-align: justify; /* Căn đều 2 bên */
 }
 
 /* TẦNG 3: HORIZONTAL RECTANGULAR ARTICLE FEED (100% Flush Width Alignment) */
@@ -660,6 +663,7 @@
     line-height: 1.4;
     margin: 4px 0 8px 0;
     transition: color 0.2s ease;
+    text-align: justify; /* Căn đều 2 bên */
 }
 
 .news-horizontal-card:hover .news-horizontal-heading {
@@ -671,7 +675,7 @@
     color: #475569;
     line-height: 1.55;
     margin: 0 0 16px 0;
-    text-align: justify; /* Căn đều 2 bên */
+    text-align: justify;
 }
 
 /* Modern Pill-Shaped Centered Pagination */
