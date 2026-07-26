@@ -12,7 +12,7 @@
         </a>
     </div>
 
-    <form action="{{ route('admin.vaccines.store') }}" method="POST">
+    <form action="{{ route('admin.vaccines.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         
         @include('vaccine::admin.vaccines._form')

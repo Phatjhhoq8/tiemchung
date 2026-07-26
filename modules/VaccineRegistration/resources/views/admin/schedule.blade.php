@@ -71,7 +71,7 @@
                                                 @elseif($item->status === 'Đã hủy') badge-modern-danger
                                                 @elseif($item->status === 'Đã tư vấn') badge-modern-success
                                                 @elseif($item->status === 'Chờ tư vấn') badge-modern-warning
-                                                @else badge-modern-warning @endif" style="font-size: 11px; padding: 2px 8px;">
+                                                @else badge-modern-warning @endif" style="font-size: 12px; padding: 4px 8px; border-radius: 4px;">
                                                 {{ $item->status }}
                                             </span>
                                         </div>

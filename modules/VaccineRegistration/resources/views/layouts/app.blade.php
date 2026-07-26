@@ -322,90 +322,41 @@
                     </div>
                     <div class="footer-company-details">
                         <h3>CÔNG TY CỔ PHẦN VẮC XIN MEDICARE</h3>
-    <!-- Footer -->
-    <footer class="app-footer">
-        <div class="footer-container">
-            <div class="footer-grid">
-                <!-- Cột 1: Thông tin thương hiệu Medicare -->
-                <div class="footer-col brand-col">
-                    <div class="footer-logo">
-                        <img src="{{ asset('images/logo.png') }}" alt="{{ $site_name }}" style="max-height: 54px; width: auto; object-fit: contain;">
-                    </div>
-                    <p class="footer-desc">
-                        Hệ thống Trung tâm Tiêm chủng Vắc xin uy tín, chất lượng hàng đầu. Cam kết vắc xin 100% chính hãng nhập khẩu, bảo quản tiêu chuẩn Dây chuyền lạnh GSP nghiêm ngặt.
-                    </p>
-                    <div class="footer-socials">
-                        <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook"><i data-lucide="facebook"></i></a>
-                        <a href="https://zalo.me" target="_blank" rel="noopener" aria-label="Zalo"><span style="font-weight: 900; font-size: 11px;">Zalo</span></a>
-                        <a href="https://youtube.com" target="_blank" rel="noopener" aria-label="Youtube"><i data-lucide="youtube"></i></a>
+                        <p>Giấy chứng nhận ĐKKD số 0107631488 do Sở Kế hoạch và Đầu tư TP. Cần Thơ cấp ngày 11/11/2016</p>
+                        <p><strong>Chi Nhánh 1:</strong> Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ</p>
+                        <p><strong>Chi Nhánh 2:</strong> Trung tâm Y tế Huyện Thới Lai, Thị trấn Thới Lai, Huyện Thới Lai, TP. Cần Thơ</p>
+                        <p><strong>Email:</strong> {{ $email }} | <strong>Số điện thoại:</strong> {{ $hotline }} - {{ $hotline_2 }}</p>
+                        <p>Chịu trách nhiệm nội dung: Ban Giám Đốc HỆ THỐNG TIÊM CHỦNG MEDICARE</p>
+                        <p style="margin-top: 10px; opacity: 0.75; font-size: 0.8rem;">Bản quyền ©2026 thuộc về CÔNG TY CỔ PHẦN VẮC XIN MEDICARE</p>
                     </div>
                 </div>
 
-                <!-- Cột 2: Danh mục liên kết nhanh -->
-                <div class="footer-col links-col">
-                    <h4 class="footer-title">Liên Kết Nhanh</h4>
-                    <ul class="footer-links">
-                        <li><a href="{{ route('home') }}"><i data-lucide="chevron-right"></i> Trang Chủ</a></li>
-                        <li><a href="{{ route('about') }}"><i data-lucide="chevron-right"></i> Giới Thiệu Medicare</a></li>
-                        <li><a href="{{ route('vaccine.index') }}"><i data-lucide="chevron-right"></i> Danh Mục Vắc Xin</a></li>
-                        <li><a href="{{ route('services') }}"><i data-lucide="chevron-right"></i> Gói Vắc Xin Trọn Gói</a></li>
-                        <li><a href="{{ route('news.index') }}"><i data-lucide="chevron-right"></i> Tin Tức Y Học</a></li>
-                        <li><a href="{{ route('contact') }}"><i data-lucide="chevron-right"></i> Liên Hệ & Đặt Lịch</a></li>
-                    </ul>
-                </div>
-
-                <!-- Cột 3: Hệ thống chi nhánh & Hotline -->
-                <div class="footer-col contact-col">
-                    <h4 class="footer-title">Thông Tin Liên Hệ</h4>
-                    <ul class="footer-contact-list">
-                        <li>
-                            <i data-lucide="map-pin" class="contact-icon"></i>
-                            <div>
-                                <strong>Chi nhánh 1 (Cờ Đỏ):</strong><br>
-                                Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ.
-                            </div>
-                        </li>
-                        <li>
-                            <i data-lucide="map-pin" class="contact-icon"></i>
-                            <div>
-                                <strong>Chi nhánh 2 (Thới Lai):</strong><br>
-                                Phong Hòa, Thị trấn Thới Lai, Huyện Thới Lai, TP. Cần Thơ (Cạnh BVĐK Thới Lai).
-                            </div>
-                        </li>
-                        <li>
-                            <i data-lucide="phone-call" class="contact-icon"></i>
-                            <div>
-                                <strong>Tổng đài tư vấn 24/7:</strong><br>
-                                <a href="tel:0938603839" style="color: var(--primary-color, #c8102e); font-weight: 800;">0938 60 38 39</a> - <a href="tel:0932477184" style="color: var(--primary-color, #c8102e); font-weight: 800;">0932 477 184</a>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Cột 4: Đặt lịch tiêm & Mã QR tra cứu -->
-                <div class="footer-col qr-col">
-                    <h4 class="footer-title">Đăng Ký Tiêm Chủng</h4>
+                <div class="footer-right-col" style="display: flex; justify-content: flex-end;">
                     <div class="footer-qr-card">
-                        <div class="qr-code-box" style="display: flex; justify-content: center; padding: 8px; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0;">
-                            <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect width="100" height="100" fill="white" />
+                        <div class="footer-qr-title">SỬ DỤNG SỔ TIÊM CHỦNG ĐIỆN TỬ</div>
+                        <div class="footer-qr-img-wrapper">
+                            <!-- Clean SVG QR Code Representation -->
+                            <svg viewBox="0 0 100 100" width="140" height="140" fill="#0f172a" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="100" height="100" fill="#ffffff" />
                                 <rect x="8" y="8" width="28" height="28" fill="#0f172a" />
-                                <rect x="12" y="12" width="20" height="20" fill="white" />
+                                <rect x="12" y="12" width="20" height="20" fill="#ffffff" />
                                 <rect x="16" y="16" width="12" height="12" fill="#c8102e" />
+                                
                                 <rect x="64" y="8" width="28" height="28" fill="#0f172a" />
-                                <rect x="68" y="12" width="20" height="20" fill="white" />
+                                <rect x="68" y="12" width="20" height="20" fill="#ffffff" />
                                 <rect x="72" y="16" width="12" height="12" fill="#c8102e" />
+                                
                                 <rect x="8" y="64" width="28" height="28" fill="#0f172a" />
-                                <rect x="12" y="68" width="20" height="20" fill="white" />
+                                <rect x="12" y="68" width="20" height="20" fill="#ffffff" />
                                 <rect x="16" y="72" width="12" height="12" fill="#c8102e" />
-                                <rect x="42" y="8" width="8" height="8" fill="#0f172a" />
-                                <rect x="50" y="16" width="8" height="8" fill="#c8102e" />
-                                <rect x="42" y="24" width="8" height="8" fill="#0f172a" />
-                                <rect x="8" y="42" width="8" height="8" fill="#0f172a" />
-                                <rect x="24" y="42" width="8" height="8" fill="#c8102e" />
-                                <rect x="42" y="42" width="16" height="16" fill="#0f172a" />
-                                <rect x="64" y="42" width="8" height="8" fill="#c8102e" />
-                                <rect x="78" y="42" width="14" height="8" fill="#0f172a" />
+                                
+                                <rect x="42" y="10" width="14" height="6" fill="#0f172a" />
+                                <rect x="42" y="20" width="8" height="16" fill="#0f172a" />
+                                <rect x="10" y="42" width="18" height="8" fill="#0f172a" />
+                                <rect x="34" y="42" width="16" height="16" fill="#004b8f" />
+                                <rect x="56" y="42" width="12" height="8" fill="#0f172a" />
+                                <rect x="74" y="42" width="16" height="16" fill="#0f172a" />
+                                <rect x="42" y="64" width="8" height="28" fill="#0f172a" />
                                 <rect x="56" y="64" width="16" height="8" fill="#0f172a" />
                                 <rect x="78" y="64" width="14" height="14" fill="#c8102e" />
                                 <rect x="56" y="78" width="16" height="14" fill="#0f172a" />
@@ -416,6 +367,7 @@
                 </div>
             </div>
         </div>
+
     </footer>
 
     <!-- Floating Contact & Zalo Widget Stack (Bên phải) -->

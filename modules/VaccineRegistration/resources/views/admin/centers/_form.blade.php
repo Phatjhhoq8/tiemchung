@@ -21,18 +21,21 @@
         <input type="text" name="address" id="address" value="{{ old('address', $center->address) }}" placeholder="Số nhà, tên đường, khu vực..." required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
     </div>
 
-    <!-- Số điện thoại -->
-    <div class="form-group">
-        <label for="phone" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Số điện thoại chi nhánh (tùy chọn)</label>
-        <input type="text" name="phone" id="phone" value="{{ old('phone', $center->phone) }}" placeholder="Ví dụ: 0938603839" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
-    </div>
+    {{-- Grid 2 cột cho các thông tin ngắn, tự động xếp dọc trên mobile --}}
+    <div class="form-grid-2">
+        <!-- Số điện thoại -->
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="phone" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Số điện thoại chi nhánh (tùy chọn)</label>
+            <input type="text" name="phone" id="phone" value="{{ old('phone', $center->phone) }}" placeholder="Ví dụ: 0938603839" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
+        </div>
 
-    <!-- Trạng thái hoạt động -->
-    <div class="form-group">
-        <label for="is_active" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Trạng thái hoạt động *</label>
-        <select name="is_active" id="is_active" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; background: #ffffff;">
-            <option value="1" {{ old('is_active', $center->is_active) == 1 ? 'selected' : '' }}>Hoạt động bình thường</option>
-            <option value="0" {{ old('is_active', $center->is_active) == 0 ? 'selected' : '' }}>Tạm dừng phục vụ</option>
-        </select>
+        <!-- Trạng thái hoạt động -->
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="is_active" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Trạng thái hoạt động *</label>
+            <select name="is_active" id="is_active" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; background: #ffffff;">
+                <option value="1" {{ old('is_active', $center->is_active) == 1 ? 'selected' : '' }}>Hoạt động bình thường</option>
+                <option value="0" {{ old('is_active', $center->is_active) == 0 ? 'selected' : '' }}>Tạm dừng phục vụ</option>
+            </select>
+        </div>
     </div>
 </div>

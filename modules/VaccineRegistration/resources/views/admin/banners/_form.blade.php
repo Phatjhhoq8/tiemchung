@@ -8,7 +8,7 @@
     </div>
 @endif
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 30px;">
+<div class="form-grid-2" style="margin-bottom: 30px;">
     <!-- Tiêu đề -->
     <div class="form-group" style="grid-column: span 2;">
         <label for="title" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Tiêu đề banner <span style="color: #ef4444;">*</span></label>
@@ -21,10 +21,27 @@
         <input type="text" name="subtitle" id="subtitle" value="{{ old('subtitle', $banner->subtitle) }}" placeholder="VD: Ưu đãi 7% khi mua gói vắc xin" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
     </div>
 
-    <!-- URL hình ảnh -->
+    <!-- Tải lên hình ảnh Banner -->
     <div class="form-group" style="grid-column: span 2;">
-        <label for="image_url" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">URL hình ảnh <span style="color: #ef4444;">*</span></label>
-        <input type="text" name="image_url" id="image_url" value="{{ old('image_url', $banner->image_url) }}" required placeholder="VD: /images/banners/banner1.jpg hoặc https://..." style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Hình ảnh Banner *</label>
+        <input type="file" name="image_file" id="image_file" accept="image/*" style="display: none;">
+        <input type="hidden" name="image_url" id="image_url" value="{{ old('image_url', $banner->image_url) }}">
+        
+        <div id="image_dropzone" class="image-upload-zone" style="padding: 20px;">
+            <div id="dropzone_prompt" style="{{ $banner->image_url ? 'display: none;' : '' }}">
+                <i data-lucide="upload-cloud" style="width: 36px; height: 36px; color: var(--text-light); margin-bottom: 6px; display: inline-block;"></i>
+                <p style="font-weight: 600; color: var(--text-muted); margin: 0 0 4px 0; font-size: 14px;">Kéo thả hình ảnh banner vào đây hoặc click để tải lên</p>
+                <span style="font-size: 11px; color: var(--text-light);">Hỗ trợ: JPG, PNG, GIF, WEBP (Tối đa 2MB)</span>
+            </div>
+            <div id="image_preview_container" class="image-upload-preview-container" style="{{ $banner->image_url ? 'display: block;' : '' }}">
+                <div class="image-upload-preview-wrapper">
+                    <img id="image_preview" class="image-upload-preview" src="{{ $banner->image_url ? asset($banner->image_url) : '' }}" alt="Preview" style="max-height: 120px;">
+                    <button type="button" id="btn_remove_image" class="image-upload-remove-btn" title="Xóa hình ảnh">
+                        <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- URL liên kết -->
@@ -47,3 +64,95 @@
         </label>
     </div>
 </div>
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropzone = document.getElementById('image_dropzone');
+        const fileInput = document.getElementById('image_file');
+        const hiddenInput = document.getElementById('image_url');
+        const promptBlock = document.getElementById('dropzone_prompt');
+        const previewContainer = document.getElementById('image_preview_container');
+        const previewImg = document.getElementById('image_preview');
+        const removeBtn = document.getElementById('btn_remove_image');
+
+        if (!dropzone) return;
+
+        // Click to choose file
+        dropzone.addEventListener('click', function(e) {
+            if (e.target.closest('#btn_remove_image')) return;
+            fileInput.click();
+        });
+
+        // File input change
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+
+        // Drag & Drop events
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, highlight, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.style.borderColor = 'var(--accent-color)';
+            dropzone.style.backgroundColor = '#f1f5f9';
+        }
+
+        function unhighlight(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.style.borderColor = 'var(--border-color)';
+            dropzone.style.backgroundColor = '#f8fafc';
+        }
+
+        dropzone.addEventListener('drop', function(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+            fileInput.files = files; // Update file input files
+        });
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+            if (!file.type.startsWith('image/')) {
+                alert('Vui lòng chỉ tải lên file hình ảnh.');
+                return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Dung lượng hình ảnh không được vượt quá 2MB.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = function() {
+                previewImg.src = reader.result;
+                promptBlock.style.display = 'none';
+                previewContainer.style.display = 'block';
+                hiddenInput.value = ''; // Reset hidden value because a new file is uploaded
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+        }
+
+        // Remove image action
+        removeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.value = '';
+            hiddenInput.value = '';
+            previewImg.src = '';
+            previewContainer.style.display = 'none';
+            promptBlock.style.display = 'block';
+        });
+    });
+</script>
+@endsection

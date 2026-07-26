@@ -12,7 +12,7 @@
         </a>
     </div>
 
-    <form action="{{ route('admin.vaccines.update', $vaccine->id) }}" method="POST">
+    <form action="{{ route('admin.vaccines.update', $vaccine->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         
