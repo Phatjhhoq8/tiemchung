@@ -138,15 +138,15 @@ class ArticleSeeder extends Seeder
             $content = "
                 <p>Tiêm chủng là biện pháp phòng bệnh chủ động, an toàn và hiệu quả nhất được Tổ chức Y tế Thế giới (WHO) và Bộ Y tế Việt Nam khuyến cáo cho mọi lứa tuổi.</p>
                 
-                <h3>1. Tại sao việc tiêm phòng lại quan trọng?</h3>
+                <h2>1. Tại sao việc tiêm phòng lại quan trọng?</h2>
                 <p>Khi vắc xin đưa vào cơ thể, hệ miễn dịch sẽ được kích hoạt sản sinh ra kháng thể đặc hiệu. Nhờ đó, nếu gặp phải vi khuẩn hoặc vi-rút gây bệnh trong tương lai, cơ thể sẽ có sẵn lá chắn bảo vệ mạnh mẽ, giảm thiểu tối đa nguy cơ biến chứng nặng hoặc tử vong.</p>
                 
                 <p>Chủ động tiêm chủng không chỉ bảo vệ bản thân mà còn tạo nên miễn dịch cộng đồng vững chắc, bảo vệ cho trẻ nhỏ và người cao tuổi xung quanh chúng ta.</p>
 
-                <h3>2. Hướng dẫn chăm sóc và theo dõi sức khỏe</h3>
+                <h2>2. Hướng dẫn chăm sóc và theo dõi sức khỏe</h2>
                 <p>Sau khi tiêm chủng, người tiêm cần ở lại trung tâm theo dõi ít nhất 30 phút để kiểm tra tình trạng sức khỏe ban đầu. Khi về nhà, tiếp tục tự theo dõi trong vòng 24 - 48 giờ tiếp theo. Nếu xuất hiện các triệu chứng như sốt cao kéo dài, co giật hoặc khó thở, cần đến ngay cơ sở y tế gần nhất.</p>
 
-                <h3>3. Đăng ký tư vấn và tiêm chủng tại Medicare Cờ Đỏ</h3>
+                <h2>3. Đăng ký tư vấn và tiêm chủng tại Medicare Cờ Đỏ</h2>
                 <p>Hệ thống Trung tâm Tiêm chủng Medicare cam kết cung cấp vắc xin chính hãng 100%, bảo quản nghiêm ngặt theo tiêu chuẩn Dây chuyền lạnh GSP (2-8 độ C), quy trình khám sàng lọc miễn phí cùng đội ngũ điều dưỡng giàu kinh nghiệm, nhẹ nhàng.</p>
             ";
 

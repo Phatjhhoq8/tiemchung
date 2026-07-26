@@ -1085,8 +1085,8 @@ function initDynamicTOC() {
 
     if (!targetNav) return;
 
-    // Query h2 and h3 headings inside the article body content, and only h2 headings for main vaccine sections
-    const headings = document.querySelectorAll('.article-main-content .article-body-content h2, .article-main-content .article-body-content h3, .article-main-content section h2');
+    // Query ONLY main h2 section headings inside the actual article body text or vaccine sections
+    const headings = document.querySelectorAll('.article-main-content .article-body-content h2, .article-main-content section h2');
     
     if (!headings || headings.length === 0) {
         if (tocWidget) tocWidget.style.display = 'none';

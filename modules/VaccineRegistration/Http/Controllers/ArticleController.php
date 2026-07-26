@@ -63,6 +63,13 @@ class ArticleController extends Controller
     public function show(Request $request, $slug)
     {
         $article = Article::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        
+        // Tự động chuẩn hóa nội dung bài viết từ h3 lên h2 trong database
+        if (str_contains($article->content, '<h3>')) {
+            $article->content = str_replace(['<h3>', '</h3>'], ['<h2>', '</h2>'], $article->content);
+            $article->save();
+        }
+
         $article->increment('views');
 
         // 1. 5 Bài viết cùng chuyên mục ở Sidebar
