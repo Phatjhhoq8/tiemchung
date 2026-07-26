@@ -7,9 +7,10 @@
     <!-- Hero Banner -->
     <div class="about-hero" data-aos="fade-up">
         <!-- Breadcrumb inside Hero -->
-        <div style="margin-bottom: 1rem; color: rgba(255, 255, 255, 0.88); font-size: 0.92rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
-            <a href="{{ route('home') }}" style="color: rgba(255, 255, 255, 0.88); text-decoration: none;">Trang chủ</a> / 
-            <span style="color: #ffffff; font-weight: 700;">Giới thiệu</span>
+        <div class="catalog-breadcrumb" style="margin-bottom: 1.2rem; justify-content: center;">
+            <a href="{{ route('home') }}">Trang chủ</a>
+            <i data-lucide="chevron-right"></i>
+            <span>Giới thiệu</span>
         </div>
         <div style="margin-top: 4px;">
             <span class="about-hero-tag">Về Chúng Tôi</span>
