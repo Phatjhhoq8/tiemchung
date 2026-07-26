@@ -190,11 +190,9 @@ function updateFloatingCart(cart, count, totalPrice) {
     const dropdown = document.getElementById('headerCartDropdown');
     
     if (cartBtn) {
-        if (count === 0) {
-            cartBtn.classList.add('hidden');
-            if (dropdown) dropdown.classList.add('hidden');
-        } else {
-            cartBtn.classList.remove('hidden');
+        cartBtn.classList.remove('hidden');
+        if (count === 0 && dropdown) {
+            dropdown.classList.add('hidden');
         }
     }
     

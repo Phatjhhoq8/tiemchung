@@ -88,6 +88,63 @@
                     <i data-lucide="phone-call"></i>
                     <span>Tư vấn: {{ $hotline }}</span>
                 </a>
+
+                <!-- Header Cart Icon Button with Dropdown Menu (Luôn hiển thị ở Header) -->
+                @php
+                    $layoutCart = session()->get('cart', []);
+                    $layoutCartCount = count($layoutCart);
+                    $layoutTotalPrice = collect($layoutCart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['quantity'] ?? 1));
+                @endphp
+                <div class="header-cart-wrapper" id="headerCartWrapper">
+                    <button type="button" class="header-cart-btn" id="headerCartBtn" onclick="toggleHeaderCartDropdown(event)" title="Danh sách vắc xin đã chọn tiêm">
+                        <i data-lucide="shopping-cart" style="width: 20px; height: 20px;"></i>
+                        <span class="header-cart-badge" id="cartCount">{{ $layoutCartCount }}</span>
+                    </button>
+
+                    <!-- Header Cart Dropdown Menu (Hạ xuống khi bấm) -->
+                    <div class="header-cart-dropdown hidden" id="headerCartDropdown">
+                        <div class="cart-drawer-header">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="shopping-bag" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
+                                <strong style="font-size: 14.5px; color: #0f172a;">Danh Sách Vắc Xin Đã Chọn</strong>
+                            </div>
+                            <button type="button" class="cart-drawer-close" onclick="toggleHeaderCartDropdown(event)">
+                                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                            </button>
+                        </div>
+                        <div class="cart-drawer-body" id="cartItemsList">
+                            @if(empty($layoutCart))
+                                <div style="text-align: center; padding: 24px 12px; color: #94a3b8; font-size: 13.5px;">
+                                    <i data-lucide="shopping-cart" style="width: 32px; height: 32px; margin-bottom: 8px; opacity: 0.5;"></i>
+                                    <p style="margin: 0;">Chưa có vắc xin nào trong danh sách tiêm</p>
+                                </div>
+                            @else
+                                @foreach($layoutCart as $id => $item)
+                                    <div class="cart-item-row" data-id="{{ $id }}">
+                                        <div class="cart-item-info">
+                                            <strong class="cart-item-name">{{ $item['name'] }}</strong>
+                                            <span class="cart-item-price">{{ number_format($item['price'], 0, ',', '.') }} đ</span>
+                                        </div>
+                                        <button type="button" onclick="toggleCart({{ $id }})" class="cart-item-remove" title="Xóa vắc xin">
+                                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                        </button>
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
+                        <div class="cart-drawer-footer">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <span style="font-size: 13px; color: #64748b;">Tổng tiền niêm yết:</span>
+                                <strong id="drawerTotalPrice" style="font-size: 17px; color: var(--primary-color, #c8102e); font-weight: 800;">{{ number_format($layoutTotalPrice, 0, ',', '.') }} đ</strong>
+                            </div>
+                            <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-checkout-drawer">
+                                <i data-lucide="calendar-check" style="width: 16px; height: 16px;"></i>
+                                <span>Đăng ký tiêm ngay</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-primary-header">
                     <i data-lucide="calendar-plus" style="width: 16px; height: 16px;"></i>
                     <span>Đăng ký tiêm</span>
