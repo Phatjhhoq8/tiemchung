@@ -151,7 +151,7 @@
                         <th style="width: 120px;">Giá bán lẻ</th>
                         <th style="width: 120px;">Giá ưu đãi</th>
                         <th style="width: 110px; text-align: center;">Tình trạng</th>
-                        <th style="width: 200px; text-align: center;">Hành động</th>
+                        <th style="width: 280px; text-align: center;">Hành động</th>
                     </tr>
                 </thead>
                 <tbody>

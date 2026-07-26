@@ -3,9 +3,20 @@
 @section('title', 'Admin Dashboard - Medicare Cờ Đỏ')
 @section('page_title', 'Bảng Điều Khiển Quản Trị')
 
+@section('styles')
+<style>
+    @media (max-width: 639px) {
+        .dashboard-grid {
+            gap: 12px !important;
+            margin-bottom: 24px !important;
+        }
+    }
+</style>
+@endsection
+
 @section('admin_content')
 <!-- Thẻ thống kê Widgets -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 40px;">
+<div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 40px;">
     <!-- Widget 1: Tổng đăng ký -->
     <div class="stat-card-modern">
         <div>
@@ -52,7 +63,7 @@
 </div>
 
 <!-- Khung phụ thống kê nhanh & Quản trị nhanh -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px;">
+<div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px;">
     <div class="stat-card-modern">
         <div style="display: flex; align-items: center; gap: 16px;">
             <div style="background-color: #fff1f2; color: #e11d48; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">

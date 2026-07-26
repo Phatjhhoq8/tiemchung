@@ -84,13 +84,73 @@
             </nav>
             
             <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
-                <a href="tel:{{ str_replace(' ', '', $hotline) }}" class="hotline-btn hotline-btn-desktop">
+                <!-- 1. Nút Điện Thoại (Chỉ còn icon và số điện thoại, bỏ chữ 'Tư vấn:') -->
+                <a href="tel:{{ str_replace(' ', '', $hotline) }}" class="hotline-btn hotline-btn-desktop" title="Gọi hotline {{ $hotline }}">
                     <i data-lucide="phone-call"></i>
-                    <span>Tư vấn: {{ $hotline }}</span>
+                    <span>{{ $hotline }}</span>
                 </a>
+
+                <!-- 2. Nút Giỏ Hàng (Thiết kế Pill giống hệt & cùng màu nút Điện Thoại) -->
+                @php
+                    $layoutCart = session()->get('cart', []);
+                    $layoutCartCount = count($layoutCart);
+                    $layoutTotalPrice = collect($layoutCart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['quantity'] ?? 1));
+                @endphp
+                <div class="header-cart-wrapper" id="headerCartWrapper">
+                    <button type="button" class="hotline-btn header-cart-btn-pill" id="headerCartBtn" onclick="toggleHeaderCartDropdown(event)" title="Danh sách vắc xin đã chọn tiêm">
+                        <i data-lucide="shopping-cart"></i>
+                        <span>Giỏ hàng</span>
+                        <span class="header-cart-badge-inline" id="cartCount">{{ $layoutCartCount }}</span>
+                    </button>
+
+                    <!-- Header Cart Dropdown Menu (Hạ xuống khi bấm) -->
+                    <div class="header-cart-dropdown hidden" id="headerCartDropdown">
+                        <div class="cart-drawer-header">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="shopping-bag" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
+                                <strong style="font-size: 14.5px; color: #0f172a;">Danh Sách Vắc Xin Đã Chọn</strong>
+                            </div>
+                            <button type="button" class="cart-drawer-close" onclick="toggleHeaderCartDropdown(event)">
+                                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                            </button>
+                        </div>
+                        <div class="cart-drawer-body" id="cartItemsList">
+                            @if(empty($layoutCart))
+                                <div style="text-align: center; padding: 24px 12px; color: #94a3b8; font-size: 13.5px;">
+                                    <i data-lucide="shopping-cart" style="width: 32px; height: 32px; margin-bottom: 8px; opacity: 0.5;"></i>
+                                    <p style="margin: 0;">Chưa có vắc xin nào trong danh sách tiêm</p>
+                                </div>
+                            @else
+                                @foreach($layoutCart as $id => $item)
+                                    <div class="cart-item-row" data-id="{{ $id }}">
+                                        <div class="cart-item-info">
+                                            <strong class="cart-item-name">{{ $item['name'] }}</strong>
+                                            <span class="cart-item-price">{{ number_format($item['price'], 0, ',', '.') }} đ</span>
+                                        </div>
+                                        <button type="button" onclick="toggleCart({{ $id }})" class="cart-item-remove" title="Xóa vắc xin">
+                                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                        </button>
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
+                        <div class="cart-drawer-footer">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <span style="font-size: 13px; color: #64748b;">Tổng tiền niêm yết:</span>
+                                <strong id="drawerTotalPrice" style="font-size: 17px; color: var(--primary-color, #c8102e); font-weight: 800;">{{ number_format($layoutTotalPrice, 0, ',', '.') }} đ</strong>
+                            </div>
+                            <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-checkout-drawer">
+                                <i data-lucide="calendar-check" style="width: 16px; height: 16px;"></i>
+                                <span>Đặt lịch ngay</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Nút Đặt Lịch (Màu đỏ Medicare Red) -->
                 <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-primary-header">
                     <i data-lucide="calendar-plus" style="width: 16px; height: 16px;"></i>
-                    <span>Đăng ký tiêm</span>
+                    <span>Đặt lịch</span>
                 </a>
                 <!-- Mobile Hamburger Button -->
                 <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Menu">
@@ -293,7 +353,7 @@
                                 <rect x="42" y="10" width="14" height="6" fill="#0f172a" />
                                 <rect x="42" y="20" width="8" height="16" fill="#0f172a" />
                                 <rect x="10" y="42" width="18" height="8" fill="#0f172a" />
-                                <rect x="34" y="42" width="16" height="16" fill="#b91c1c" />
+                                <rect x="34" y="42" width="16" height="16" fill="#004b8f" />
                                 <rect x="56" y="42" width="12" height="8" fill="#0f172a" />
                                 <rect x="74" y="42" width="16" height="16" fill="#0f172a" />
                                 <rect x="42" y="64" width="8" height="28" fill="#0f172a" />
@@ -310,9 +370,9 @@
 
     </footer>
 
-    <!-- Floating Contact & Zalo Widget (Bong bóng Chat tư vấn góc dưới bên phải) -->
+    <!-- Floating Contact & Zalo Widget Stack (Bên phải) -->
     <div class="floating-chat-widget">
-        <!-- Nút Chat Zalo Bác Sĩ -->
+        <!-- 1. Nút Chat Zalo Bác Sĩ -->
         <a href="https://zalo.me/0938603839" target="_blank" rel="noopener noreferrer" class="floating-btn-expandable" style="background-color: #0068ff; box-shadow: 0 8px 24px rgba(0, 104, 255, 0.35);" title="Chat Zalo Tư Vấn Vắc Xin Tức Thì">
             <div class="btn-icon">
                 <div style="width: 26px; height: 26px; background: #ffffff; color: #0068ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 11px;">Zalo</div>
@@ -320,7 +380,7 @@
             <span class="btn-text">Chat Zalo Bác Sĩ</span>
         </a>
 
-        <!-- Nút Hotline Tư Vấn 24/7 -->
+        <!-- 2. Nút Hotline Tư Vấn 24/7 -->
         <a href="tel:0938603839" class="floating-btn-expandable" style="background-color: var(--primary-color, #c8102e); box-shadow: 0 8px 24px rgba(200, 16, 46, 0.35);" title="Gọi Hotline 0938 60 38 39">
             <div class="btn-icon">
                 <i data-lucide="phone-call" style="width: 20px; height: 20px;"></i>

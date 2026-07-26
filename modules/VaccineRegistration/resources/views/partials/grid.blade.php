@@ -16,16 +16,16 @@
                 $displayPrice = $hasSalePrice ? $vaccine->sale_price : $vaccine->price;
             @endphp
             <article class="catalog-product-card {{ isset($cart[$vaccine->id]) ? 'selected' : '' }}" data-id="{{ $vaccine->id }}">
-                <button type="button" class="catalog-product-media" onclick="openVaccineDetailModal({{ $vaccine->id }})">
+                <a href="{{ route('vaccine.show', $vaccine->id) }}" class="catalog-product-media" style="display: block; text-decoration: none;">
                     <span class="origin-badge"><i data-lucide="map-pin"></i>{{ $vaccine->origin ?: 'Đang cập nhật' }}</span>
                     <img src="{{ asset('images/vaccines/' . ($vaccine->image ?: 'hexaxim.jpg')) }}" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/hexaxim.jpg') }}';" alt="{{ $vaccine->name }}" loading="lazy">
-                </button>
+                </a>
 
                 <div class="catalog-product-body">
-                    <button type="button" onclick="openVaccineDetailModal({{ $vaccine->id }})" class="catalog-product-title">
+                    <a href="{{ route('vaccine.show', $vaccine->id) }}" class="catalog-product-title" style="display: block; text-decoration: none; text-align: justify;">
                         {{ $vaccine->name }}
-                    </button>
-                    <button type="button" onclick="setDiseaseFilter(@js($vaccine->disease_prevention), event)" class="catalog-product-disease">
+                    </a>
+                    <button type="button" onclick="setDiseaseFilter(@js($vaccine->disease_prevention), event)" class="catalog-product-disease" style="text-align: justify;">
                         {{ $vaccine->disease_prevention }}
                     </button>
                     <div class="catalog-product-meta">
@@ -36,18 +36,23 @@
                     </div>
                 </div>
 
-                <div class="catalog-product-footer">
-                    <div class="catalog-price-block">
-                        <strong>{{ number_format($displayPrice, 0, ',', '.') }}đ</strong>
-                        <span>/ liều</span>
+                <div class="catalog-product-footer" style="display: flex; flex-direction: column; gap: 12px; align-items: stretch; width: 100%;">
+                    <div class="catalog-price-block" style="display: flex; align-items: baseline; gap: 4px;">
+                        <strong style="font-size: 19px; color: var(--primary-color, #c8102e); font-weight: 800;">{{ number_format($displayPrice, 0, ',', '.') }}đ</strong>
+                        <span style="font-size: 12px; color: #64748b;">/ liều</span>
                         @if($hasSalePrice)
-                            <del>{{ number_format($vaccine->price, 0, ',', '.') }}đ</del>
+                            <del style="font-size: 12px; color: #94a3b8; margin-left: 6px;">{{ number_format($vaccine->price, 0, ',', '.') }}đ</del>
                         @endif
                     </div>
-                    <button class="btn-select-vaccine {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" onclick="toggleCart({{ $vaccine->id }})">
-                        <i data-lucide="{{ isset($cart[$vaccine->id]) ? 'x' : 'plus' }}"></i>
-                        <span>{{ isset($cart[$vaccine->id]) ? 'Hủy chọn' : 'Chọn vắc xin' }}</span>
-                    </button>
+                    <div class="catalog-action-group" style="display: flex; gap: 8px; align-items: center; width: 100%;">
+                        <a href="{{ route('vaccine.show', $vaccine->id) }}" class="btn-detail-link" style="flex: 1; text-align: center; padding: 8px 10px; border-radius: 20px; border: 1px solid var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); font-size: 12.5px; font-weight: 700; text-decoration: none; transition: all 0.2s ease; white-space: nowrap;">
+                            Xem chi tiết
+                        </a>
+                        <button class="btn-select-vaccine {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" onclick="toggleCart({{ $vaccine->id }})" style="flex: 1; text-align: center; padding: 8px 10px; justify-content: center; display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; white-space: nowrap;">
+                            <i data-lucide="{{ isset($cart[$vaccine->id]) ? 'x' : 'plus' }}"></i>
+                            <span>{{ isset($cart[$vaccine->id]) ? 'Hủy chọn' : 'Chọn tiêm' }}</span>
+                        </button>
+                    </div>
                 </div>
             </article>
         @endforeach

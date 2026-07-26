@@ -52,6 +52,14 @@
 - **Strict Permission for Emojis & Icons**: Never add, modify, or inject icons (e.g., Lucide, FontAwesome) or emojis (e.g., 🏠, 🧩, 🏢, ⚙️) into any user interface components (including admin tab bars, buttons, sidebars) unless explicitly requested and approved by the USER. 
 - **No Icon-Emoji Mixing**: Do not mix emojis and custom icons together in tabs or text labels. Keep the design clean, professional, and consistent with the brand theme.
 
+## 10. Article Detail Page & Typography Rules
+- **Strict Justified Typography (`text-align: justify`)**: Always set `text-align: justify;` for all text blocks, headlines, summary excerpts, lead paragraphs, and sidebar widget text. NEVER use `text-align: center;` for text content blocks.
+- **No Fancy/Colored Callout Boxes in Articles**: Do not wrap article body content or summaries in artificial fancy colored background boxes or thick border containers. Keep the article typography clean, natural, and standard for easy non-developer admin WYSIWYG editing.
+- **Author Credit Position**: Place author signature ("Theo Bác sĩ Chuyên khoa Medicare Cờ Đỏ") exclusively at the **BOTTOM RIGHT** of the article content (`text-align: right; font-weight: 700; color: #0f172a;`).
+- **Sidebar Related Articles**: Display exactly 5 related articles of the same category in the sidebar.
+- **Bottom Multi-Topic Recommendation Feed**: Below the detail article, provide a multi-topic suggested articles feed with pill-shaped pagination links (`$suggestedArticles->links()`).
+
+
 
 
 

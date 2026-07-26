@@ -91,6 +91,14 @@ class AdminVaccineController extends Controller
     {
         $validated = $this->validateVaccine($request);
 
+        // Xử lý tải lên hình ảnh từ file
+        if ($request->hasFile('image_file')) {
+            $file = $request->file('image_file');
+            $filename = 'vaccine_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/vaccines'), $filename);
+            $validated['image'] = $filename;
+        }
+
         // Gán ảnh mặc định nếu không điền
         if (empty($validated['image'])) {
             $validated['image'] = $validated['type'] === 'package' ? 'default_package.jpg' : 'default_vaccine.jpg';
@@ -128,6 +136,21 @@ class AdminVaccineController extends Controller
         $vaccine = Vaccine::findOrFail($id);
 
         $validated = $this->validateVaccine($request);
+
+        // Xử lý tải lên hình ảnh từ file
+        if ($request->hasFile('image_file')) {
+            // Xóa ảnh cũ nếu không phải ảnh mặc định
+            if ($vaccine->image && !in_array($vaccine->image, ['default_package.jpg', 'default_vaccine.jpg'])) {
+                $oldPath = public_path('images/vaccines/' . $vaccine->image);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+            $file = $request->file('image_file');
+            $filename = 'vaccine_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/vaccines'), $filename);
+            $validated['image'] = $filename;
+        }
 
         if (empty($validated['image'])) {
             $validated['image'] = $vaccine->image ?: ($validated['type'] === 'package' ? 'default_package.jpg' : 'default_vaccine.jpg');
@@ -188,6 +211,7 @@ class AdminVaccineController extends Controller
             'dosage' => 'nullable|string|max:100',
             'description' => 'nullable|string',
             'image' => 'nullable|string|max:255',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'is_featured' => 'nullable',
             'sort_order' => 'nullable|integer|min:0',
         ], [

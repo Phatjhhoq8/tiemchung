@@ -81,6 +81,7 @@ Route::middleware('web')->group(function () {
         Route::resource('banners', AdminBannerController::class)->except(['show']);
 
         // Quản lý Bài viết / Tin tức y tế (Mục 10)
+        Route::post('/articles/upload-image', [AdminArticleController::class, 'uploadEditorImage'])->name('articles.upload-image');
         Route::resource('articles', AdminArticleController::class)->except(['show']);
 
         // Trình Chỉnh Sửa Trực Quan Xem Trước (Visual Live Page Customizer)

@@ -1,14 +1,253 @@
 # Release Notes
 
+## [v3.5.15] - 2026-07-27
+
+### Customer Layout Footer Restoration
+
+* **Customer Footer Restoration**: Restored the main customer page layout footer in [app.blade.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/layouts/app.blade.php) to the standard VNVC Mẫu Hình 2 style, correcting structural HTML syntax errors and layout issues introduced by unapproved modifications.
+
+## [v3.5.14] - 2026-07-27
+
+### Admin Dashboard Brand Color Palette Alignment
+
+* **Admin Color Variables**: Updated `--accent-color` and `--accent-hover` to Medicare Navy (`#004b8f` and `#00386c`) instead of the unapproved deep red. Cleaned up border variables to Slate 200 (`#e2e8f0`) and set focus outline to Medicare Navy to remove unapproved pink/red borders.
+* **Badge System Standardization**: Fixed status badges in the Admin layout. Corrected `.badge-modern-info` (e.g. for "Đã tiêm" status) to use the Medicare Navy theme instead of pink/red. Standardized success, warning, and danger badges to utilize clean, brand-approved color tones.
+* **Flat Badge Design Upgrade**: Redesigned all admin badges to a modern Flat style without borders, featuring pastel background fills, uppercase-to-normal casing, semi-bold text, and a 6px border-radius. Enforced `white-space: nowrap` and increased padding to keep status descriptions strictly on a single line for optimal readability across tables (e.g., Vaccine Catalog and Appointment lists). Increased font size from `12.5px` to `13px` (`12px` in schedule cards) to enhance readability.
+* **Action Buttons Text Wrap Fix**: Applied `white-space: nowrap` to small action buttons (`.btn-action-sm`) in tables and increased the Action column width from 200px to 280px in the Vaccine Catalog list view to ensure action buttons (such as "Bỏ Nổi Bật") sit on a single line without wrapping.
+* **Admin Layout Full-Width Fix**: Changed `.admin-body` maximum width constraint (`max-width`) from `1480px` to `100%` to allow the layout to scale fully across wide screens (e.g. Full HD and higher), eliminating the empty space on the right of the screen.
+* **Articles Index Layout Standardization**: Upgraded the News & Articles index page layout by removing the custom `max-width: 1200px` and custom table styles. Converted the layout to utilize `.card-modern`, `.table-responsive-modern`, and `.table-modern` styling classes, enabling full-width scaling and visual parity with other administrative views. Removed article slug URL paths display under article titles, standardized the delete action buttons to use `.btn-action-danger` class, and enlarged article thumbnail images from `60x40px` to `90x60px` with custom shadows and border stylings. Integrated TinyMCE 6 AJAX inline image upload API endpoints (`/admin/articles/upload-image`) to allow authors to drag-and-drop or insert multiple files from their local storage directly inside the editor layout, reflowing seamlessly alongside multiple paragraphs.
+* **Website Settings Layout Redesign**: Upgraded the settings index view by removing the layout restriction (`max-width: 700px`), making it scale to full-width. Re-organized input fields into a balanced 2-column grid layout for standard fields (Site name, Email, Hotline, Alternate hotline) while maintaining full-width block formats for long text inputs (Address and Footer copyright text).
+* **Responsive Fluid Typography Implementation**: Converted fixed `px` font sizes across all key admin dashboard elements (tables, labels, buttons, badges, titles, sidebars) to relative `rem` units, and declared a responsive fluid font-size equation (`clamp(14px, 0.15vw + 12.5px, 16.5px)`) on the `:root` selector. This allows the layout to dynamically and smoothly scale typographic hierarchy based on the active viewport/screen width.
+* **Comprehensive Mobile Responsive Optimization**: Implemented a global `.form-grid-2` CSS class to replace legacy static inline grid definitions across all administrator forms (Vaccine Catalog, Banners, Website settings, and Branch catalogs), automatically reflowing multi-column inputs to a stacked single-column design on mobile screens (<768px). Optimized layout paddings (narrowing main canvas padding to `16px 12px` and card padding to `16px` on mobile), downscaled table column padding (`10px 12px`), corrected detail view split structures down to `minmax(280px, 1fr)` to prevent overflow, and compacted Dashboard card widget gaps to ensure zero-overflow presentation across all common smartphone screen widths (320px to 430px).
+* **Table Horizontal Scroll and Action Button Standardization**: Fixed text wrapping issues in layout tables (such as Center and Banner lists) on mobile screens by enforcing a `min-width: 850px` constraint on the `.table-modern` class, prompting standard horizontal scrolling in the responsive wrapper. Overhauled [centers/index.blade.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/centers/index.blade.php) and [banners/index.blade.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/banners/index.blade.php) to use `.card-modern`, `.table-responsive-modern`, and `.table-modern` styling classes. Integrated red-accented `.btn-action-sm.btn-action-danger` classes in CSS variables to format destructive action buttons.
+
+## [v3.5.13] - 2026-07-27
+
+### Dynamic Database Heading Self-Healing Update
+
+* **Dynamic In-Place Database Update**: Added dynamic self-healing code inside the show method of [ArticleController.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/Http/Controllers/ArticleController.php) to automatically replace `<h3>` with `<h2>` in the database dynamically and permanently when a news article page reloads.
+* **Standard heading seed format**: Updated [ArticleSeeder.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/Database/Seeders/ArticleSeeder.php) to seed standard `<h2>` tags for main sections instead of `<h3>`.
+
+## [v3.5.12] - 2026-07-27
+
+### TOC Headings & Pagination View Resolution Fix
+
+* **TOC Headings Restoration**: Updated `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to query both `h2` and `h3` headings inside `.article-body-content` while keeping only `h2` for main vaccine sections. This fully restores the table of contents widget on news articles.
+* **Pagination View Resolution**: Copied the custom compact pagination template to the root view path [pagination.blade.php](file:///d:/Projects/tiemchung/resources/views/partials/pagination.blade.php) and updated the links call in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php) to use `partials.pagination` ensuring it resolves correctly across both namespace paths.
+
+## [v3.5.11] - 2026-07-27
+
+### 4-Card Slider Fit & Border Margin Optimization
+
+* **Card Flex Calculation**: Updated `.related-slider-card` flex width to `calc((100% - 48px) / 4)` and reduced gap to `16px` in [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css), ensuring all 4 vaccine cards sit comfortably inside the white card container with zero right-border clipping or overflow.
+
+## [v3.5.10] - 2026-07-27
+
+### Complete Visual Parity for White Card Section Container
+
+* **Vaccine Detail Page White Card Container**: Added `.suggested-news-section` and `.suggested-news-header` rules to [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css), ensuring the Vaccine Detail Page features the exact same white card container (`background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; padding: 32px; box-shadow...`) and red underline header (`border-bottom: 2px solid #c8102e;`) as shown in Image 57.
+
+## [v3.5.9] - 2026-07-27
+
+### Dedicated Isolated White Card Section Restoration
+
+* **White Card Block Container**: Restored `.suggested-news-section` as a dedicated white card block with `background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);` in [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css).
+* **Clean Isolation**: Placed the white card container below the main 2-column layout in [show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php) and [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php), ensuring all section titles, subtitles, cards, and pagination links are cleanly enclosed inside a dedicated card block with zero unstyled floating text.
+
+## [v3.5.8] - 2026-07-27
+
+### Pagination Formula & Sticky Sidebar Layout Structure Fix
+
+* **Exact Pagination Formula (`1 2 ... (end-1) end`)**: Updated [pagination.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/partials/pagination.blade.php) to strictly output the requested formula (`[<] [1] [2] [...] [16] [17] [>]`).
+* **Layout Containment Fix**: Moved `<section class="suggested-news-section">` and `<section class="catalog-advice-banner">` inside `<main class="article-main-content">` in [show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php). This ensures the right sticky sidebar container stretches smoothly alongside the left main content column, completely eliminating floating sidebar overlap over bottom sections.
+
+## [v3.5.7] - 2026-07-27
+
+### Custom Compact Pagination & Section Clearance Fix
+
+* **Custom Compact Pagination (Max 4 Page Buttons + ...)**: Created custom Blade pagination template [pagination.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/partials/pagination.blade.php) and updated [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php), displaying a maximum of 4 page numbers plus dots (`[<] [1] [2] [3] [4] [...] [>]`) with zero double-border bugs or parentheses artifacts.
+* **Section Separation Clearance**: Added `clear: both; margin-top: 60px; z-index: 20;` clearance in [show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php) ensuring the sticky right sidebar stops cleanly above the "Vắc Xin Liên Quan" slider section without any overlap.
+
+## [v3.5.6] - 2026-07-27
+
+### Clean Main Section H2-Only TOC Query Fix
+
+* **Single-Line H2 Heading Links**: Updated `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to query ONLY main `<h2>` section headings (`.article-main-content .article-body-content h2, .article-main-content section h2`), excluding lengthy `<h3>` subheadings for a clean, single-line 6-item Table of Contents.
+* **Sticky Layout Room**: Added `align-self: stretch` to `.article-sidebar` in [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css) ensuring sticky scroll room across the entire vaccine product detail page.
+
+## [v3.5.5] - 2026-07-27
+
+### Exact 100% Parity for TOC & Sticky Sidebar Logic
+
+* **Unified HTML & CSS**: Replaced custom layout classes with shared `.vaccine-detail-layout`, `.article-sidebar`, and `.sticky-sidebar-container` markup in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php).
+* **Targeted Heading Query**: Updated `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to query ONLY `.article-body-content h2, h3` and `.article-main-content section h2, h3`, preventing any non-article headings from being included in the Table of Contents.
+
+## [v3.5.4] - 2026-07-27
+
+### Article Detail Right Sidebar Optimization
+
+* **Concise Sidebar Layout**: Removed "Bài Viết Cùng Chủ Đề" widget from the Right Sidebar in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php).
+* **Instant Sticky Scroll**: Reduced sidebar height to ~380px so the TOC and Booking CTA widgets stick immediately (`top: 100px`) and scroll smoothly alongside the article text without viewport overflowing.
+
+## [v3.5.3] - 2026-07-27
+
+### TOC Container Target Resolution Fix
+
+* **Header Card Class Rename**: Changed top summary card class in [show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php) to `vaccine-header-card` to eliminate element selection collision with `article-main-content`.
+* **Smart Content Container Resolution**: Refined `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to locate `bodyContent.closest(...)` main content containers, ensuring 100% of headings across all sections are queried and rendered into the TOC widget without false hiding.
+
+## [v3.5.2] - 2026-07-27
+
+### Sticky Sidebar Scroll & Complete TOC Scanner Fix
+
+* **Unblocked Sticky Scrolling**: Removed `data-aos="fade-left"` animation attribute from `<aside class="article-sidebar">` in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php), eliminating CSS `transform: translate3d()` interference so `position: sticky; top: 100px;` works smoothly when scrolling.
+* **Complete TOC Heading Scanner**: Updated `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to query all `h2` and `h3` elements inside `.article-main-content`, ensuring 100% of medical sections and article headings are dynamically listed and highlighted in the Right Sidebar TOC.
+
+## [v3.5.1] - 2026-07-27
+
+### TOC Card Visual Parity Fix
+
+* **Identical Card Container**: Added `.vaccine-toc-widget` and `.toc-link-item` CSS definitions to [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css), ensuring the Article Detail Table of Contents has the exact same white rounded card background (`#ffffff`), 1px border, shadow, and cream active pill highlight (`#fff9e6`) as the Vaccine Detail page.
+
+## [v3.5.0] - 2026-07-27
+
+### Unified Layout (Left-Big Right-Small) & Dynamic Sticky TOC
+
+* **Unified Column Orientation**: Swapped columns in [show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php) to place Main Detailed Content on the **Left (75% Big column)** and Sidebar on the **Right (25% Small column)**, matching [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php).
+* **Automated Dynamic TOC & Scroll Observer**: Created `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to scan `<h2>` and `<h3>` tags in article/vaccine body text, generate dynamic Table of Contents in the Right Sticky Sidebar (`top: 100px;`), and automatically highlight active headings on scroll.
+
+## [v3.4.1] - 2026-07-27
+
+### Sticky Sidebar Layout & Scroll Synchronization
+
+* **Header-Safe Sticky Offset (`top: 100px`)**: Added `.sticky-sidebar-container` with `position: sticky; top: 100px;` to [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css) and wrapped sidebar widgets in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php).
+* **Unified Scroll Behavior**: Ensured both Article Detail (`/news/{slug}`) and Vaccine Product Detail (`/vaccines/{id}`) share the exact same 2-column layout ratio, padding, shadow, header clearance, and smooth sticky sidebar scroll without header overlap.
+
+## [v3.4.0] - 2026-07-27
+
+### Header Navigation Actions Bar Refinement
+
+* **Simplified Hotline Button**: Removed "Tư vấn:" prefix from `.hotline-btn` in [layouts/app.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php), displaying phone icon and phone number (`0938 60 38 39`).
+* **Identical Cart Pill Button (`.header-cart-btn-pill`)**: Redesigned the header cart button using the exact same `.hotline-btn` pill style, background, border, and typography as the phone button, with text "Giỏ hàng" and inline count badge (`.header-cart-badge-inline`).
+* **Renamed CTA Button**: Renamed primary red header button from "Đăng ký tiêm" to "Đặt lịch".
+
+## [v3.3.1] - 2026-07-27
+
+### Persistent Header Cart Placement Fix
+
+* **Header Position Insertion**: Fixed markup alignment in [layouts/app.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php) by inserting `.header-cart-wrapper` directly into `.header-actions` right between the Hotline button and the "Đăng ký tiêm" CTA.
+* **Persistent Visibility**: Configured `.header-cart-btn` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to remain persistently visible on the top header navigation bar at all times (displaying live item count badge `0`, `1`, `2`...).
+
+## [v3.3.0] - 2026-07-27
+
+### Top Header Navigation Bar Cart Integration
+
+* **Header Cart Icon Button (`.header-cart-btn`)**: Integrated the shopping cart button directly into the Top Header Navigation Bar in [layouts/app.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php) right next to the "Đăng ký tiêm" primary button. Styled in [style.css](file:///d:/Projects/tiemchung/public/css/style.css) with a 42px soft cream circle, gold border, red cart icon, and red badge counter (`#cartCount`).
+* **Header Cart Dropdown Menu (`#headerCartDropdown`)**: Hovering or clicking the header cart button displays a sleek modal dropdown (width 360px) below the top header listing selected items, unit prices, remove buttons, total price, and "Đăng ký tiêm ngay" CTA.
+* **100% Clean Bottom Screen**: Removed all bottom floating cart bars, keeping the bottom right corner clean with only Zalo & Hotline contact buttons.
+
+## [v3.2.1] - 2026-07-26
+
+### Ultra-Premium Bottom-Center Floating Cart Pill Bar (Apple / Shopee Style)
+
+* **Centered Fixed Positioning (`bottom: 24px; left: 50%; transform: translateX(-50%);`)**: Replaced standalone circular button with an ultra-premium horizontal Pill Bar anchored at bottom-center in [layouts/app.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php) and [style.css](file:///d:/Projects/tiemchung/public/css/style.css).
+* **Pill Layout Architecture**:
+  - **Left**: Shopping cart icon in translucent circle + golden counter badge (`cartCount`).
+  - **Middle**: "Danh sách tiêm chủng" header + dynamic total price text (`#cartTotalPrice`).
+  - **Right**: "Đăng ký ngay →" CTA button in Medicare Gold.
+* **Zero Widget Collision**: Placed cart pill bar horizontally centered, completely separating cart interactions from the vertical Zalo and Hotline stack on the right edge.
+* **Centered Modal Popup Drawer**: Clicking cart text/icon opens `#cartDrawerPopup` centered right above the pill bar with full product listing and item removal functionality.
+
+## [v3.2.0] - 2026-07-26
+
+### Circular Top Floating Cart Button & Modal Popup Drawer
+
+* **Top Floating Stack Position**: Converted floating cart into a 48px circular expandable button positioned at the VERY TOP of the floating contact stack in [layouts/app.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php) (Stack order: 1. Cart Icon, 2. Zalo, 3. Hotline).
+* **Golden Counter Badge (`cart-badge-count`)**: Rendered a golden Medicare Gold circular counter badge on the top right of the 48px cart button showing real-time item count (`1`, `2`...).
+* **Smooth Drawer Popup (`#cartDrawerPopup`)**: Clicking the cart button expands a modal drawer popup (width 360px, rounded corners, box-shadow) displaying selected items, unit prices, remove buttons, total amount, and "Đăng ký tiêm ngay" CTA without obscuring page content.
+* **Auto-Close On Outside Click**: Added global event listener to automatically collapse the drawer back to the 48px round button when clicking outside or clicking the close button.
+
+## [v3.1.3] - 2026-07-26
+
+### Floating Cart Collision Prevention & Responsive Layout
+
+* **Desktop Position (`right: 90px; bottom: 28px;`)**: Repositioned `.floating-cart` in [style.css](file:///d:/Projects/tiemchung/public/css/style.css) to `right: 90px; bottom: 28px;` with `border-radius: 14px`, sitting directly to the left of the floating contact widget (Zalo / Hotline) with zero overlap.
+* **Mobile Layout (`bottom: 88px;`)**: Configured mobile breakpoint so `.floating-cart` renders as a full-width floating bar elevated above floating action buttons (`bottom: 88px`).
+
+## [v3.1.2] - 2026-07-26
+
+### Unified Cart Toggle API & Multi-Location Synchronization
+
+* **Single API Function (`toggleCart`)**: Standardized all product selection buttons (catalog grid cards, detail page primary button, and related product cards) to call the global `toggleCart(vaccineId)` function in [app.js](file:///d:/Projects/tiemchung/public/js/app.js).
+* **Reliable Server-State Inspection**: Refactored `toggleCart` to determine item selection state dynamically from the returned `data.cart[vaccineId]` payload.
+* **Synchronized UI Updates**: Clicking any select button automatically updates all matching cards, detail buttons, quick-view modals, floating cart drawer, and toast alerts (`"Đã thêm vắc xin..."` vs `"Đã xóa vắc xin..."`) across the entire SPA.
+
+## [v3.1.1] - 2026-07-26
+
+### Sticky Sidebar Bottom Margin Overlap Fix
+
+* **Bottom Spacing (`margin-bottom: 54px`)**: Added a 54px bottom margin to `.vaccine-detail-layout` in [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css), ensuring the sticky left sidebar stops cleanly before reaching the related vaccines slider with zero border clipping or overlap.
+* **Overflow Masking**: Added `overflow: hidden` to `.sidebar-cta-widget` to preserve rounded corners and clean box shadows during sticky scrolling.
+
+## [v3.1.0] - 2026-07-26
+
+### Dedicated Vaccine Product CSS & Header-Safe Sticky Sidebar
+
+* **Dedicated `vaccines.css`**: Created [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css) specifically for vaccine product catalog and detail pages ([show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php)), separating vaccine product styles completely from news/articles.
+* **Header-Safe Sticky Sidebar (`top: 100px`)**: Fixed sticky sidebar container in [show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/show.blade.php) with `top: 100px` so the Table of Contents header is never covered by the site's top fixed navigation bar when scrolling.
+* **Clean HTML/Markdown Parser Support**: Integrated styling rules for headings, paragraphs, lists, and tables inside `.article-body-content`, eliminating artificial callout boxes while preserving 100% justified typography and bottom-right author credit.
+* **Related Vaccines Horizontal Slider**: Added `<` and `>` arrow navigation buttons to scroll through 8 related vaccine products dynamically loaded from the database.
+
+## [v3.0.2] - 2026-07-26
+
+### Streamlined 8-Category Prioritized Medical Navigation Bar
+
+* **Prioritized 8 Core Medical Categories**: Streamlined navigation in [ArticleController.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/Http/Controllers/ArticleController.php) by eliminating redundant items and organizing 8 categories in order of medical importance (`Tất cả bài viết`, `Tin Nóng Y Học`, `Khuyến Cáo Y Tế`, `Bệnh Truyền Nhiễm`, `Vắc Xin Mới`, `Chăm Sóc Trẻ Em`, `Tiêm Chủng Người Lớn`, `Tiêm Phòng Mẹ Bầu`).
+* **Balanced Spacing (~28px - 30px)**: Achieved clean spacing between category tabs, eliminating squishing while preserving 100% flush left and right margin alignment.
+
+## [v3.0.1] - 2026-07-26
+
+### Standardized Article Detail Page Typography, Bottom-Right Author Credit & Multi-Topic Feed
+
+* **Pure Article Typography (No Colored Callout Boxes)**: Removed artificial colored background callout boxes (`.article-lead-box`) to provide a clean, natural reading flow that is 100% compatible with non-developer WYSIWYG editor input.
+* **Bottom-Right Author Credit**: Moved author signature ("Theo Bác sĩ Chuyên khoa Medicare Cờ Đỏ") to the **BOTTOM RIGHT** at the end of the article content (`text-align: right; font-weight: 700; color: #0f172a;`).
+* **5 Related Articles in Sidebar**: Updated sidebar widget in [ArticleController.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/Http/Controllers/ArticleController.php) to query and render exactly 5 articles of the same topic category (`take(5)`).
+* **Multi-Topic Suggested Articles Feed & Pagination**: Added a multi-topic recommended articles section ("Tin Mới và Đề Xuất Đa Chủ Đề") below the article with centered pill-shaped pagination links (`$suggestedArticles->links()`), allowing readers to navigate through more news directly from the detail page.
+* **Strict Justified Typography (`text-align: justify`)**: Enforced `text-align: justify;` across all body paragraphs, headlines, summaries, and sidebar CTA widgets, eliminating `text-align: center`.
+* **Updated System Rules ([AGENTS.md](file:///d:/Projects/tiemchung/.agents/AGENTS.md))**: Recorded mandatory Section 10 rules for justified text, bottom-right author placement, and multi-topic suggested article feeds for permanent project-wide compliance.
+
+## [v3.0.0] - 2026-07-26
+
+### Completed Commercial Production Article Detail Page & Layout Perfecting
+
+* **Commercial Production Article Detail Page 3 (`articles/show.blade.php`)**: Built a complete 2-column layout (70% main content / 30% sidebar) featuring standardized breadcrumbs (`Trang chủ › Tin tức › [Title]`), Medicare Gold category badges, justified typography, rich body styling, doctor advisory warning box, related articles list, and hotline CTA booking widget.
+* **100% Zero Article Duplication**: Enforced `whereNotIn('id', $hotNewsIds)` filter in [ArticleController.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/Http/Controllers/ArticleController.php) across all pages, ensuring every article card displayed on the page is 100% unique.
+* **100% Flush Vertical Edge Alignment**: Measured and aligned `.catalog-hero`, `.news-nav-bar-container`, `.news-hero-section`, and `.news-horizontal-card` flush to exact bounding rect coordinates (`380px` left, `1540px` right).
+* **100% Identical Shared Search Bar Component**: Unified `.search-bar-container.catalog-search-box` across `/vaccines` and `/news` pages with identical 50px pill radius, 6px padding, and red Medicare CTA button.
+* **Justified Typography Alignment**: Applied `text-align: justify` across all article headlines (`.hero-main-title`, `.hero-sub-title`, `.hot-news-title`, `.news-horizontal-heading`) and summary excerpts (`.hero-main-excerpt`, `.news-horizontal-snippet`, `.catalog-hero p`).
+* **Synchronized Metadata Icons & Removed Ranking Numbers**: Standardized all date metadata icons to calendar (📅 `calendar`) across all cards and removed ranking numbers (`01`, `02`, etc.) from the Hot News section.
+* **Pure HTML5 + AOS Animation Architecture**: Adopted lightweight pure HTML5 + CSS + AOS animation attributes (`data-aos="fade-up"`), matching the clean architecture of the About page (`/about`).
+
 ## [v2.9.9] - 2026-07-26
 
-### Added FTP Deploy Dual-Path Upload & Script Cache Busting
+### Redesigned News Catalog Page, Typography Cloud Syringe Hero & Balanced Báo Mới Layout
 
-* **Enhanced Multi-Option Workflow**: Updated [app.js](file:///c:/Users/Admin/Desktop/tiemchung/public/js/app.js) to display dual tab selectors (Register selected vaccines / Request quick consultation) at the top of the registration modal even when the cart has items, allowing users to toggle between forms without clearing their cart.
-* **FTP Deploy Dual-Path Upload**: Enhanced [deploy_ftp.php](file:///c:/Users/Admin/Desktop/tiemchung/session_data/deploy_ftp.php) to mirror the behavior of [deploy_ftp.ps1](file:///c:/Users/Admin/Desktop/tiemchung/session_data/deploy_ftp.ps1) for files in the `public/` directory. These assets are now uploaded to both the FTP root (stripping `public/` for web server resolution) and the full `public/` path, ensuring that `/js/app.js` is properly updated on host environments.
-* **Layout Script Cache Busting**: Integrated dynamic `filemtime` cache-busting for [app.js](file:///c:/Users/Admin/Desktop/tiemchung/public/js/app.js) inside [app.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php), prompting client browsers to load the updated Javascript logic instead of outdated local caches.
+* **Removed Obsolete Background Circle Overlay**: Completely removed `.catalog-hero::after` pseudo-element background circle overlay, establishing a distinct visual identity for the news section.
+* **Separated Breadcrumb & Eyebrow Badge**: Fixed breadcrumb inline layout in [index.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/index.blade.php), placing `Y HỌC VÀ TIÊM CHỦNG CHÍNH THỐNG` on a standalone line above H1 and keeping breadcrumb navigation clean.
+* **Centered Search Bar & Typography Syringe Visual**: Integrated a centered search input inside the hero banner alongside a Typography Cloud of 8 categories overlaying an inline Medical Syringe & Shield SVG graphic.
+* **Fixed Featured Image Crops & Fallbacks**: Configured 16:9 ratio with `object-fit: cover` and `object-position: center` across all article cards, replacing cropped logo placeholders with sharp medical images (`vaxigrip.jpg`, `hexaxim.jpg`).
+* **Optimized Golden 73%/27% Hero Grid**: Balanced dominant left featured story (73% width) with a compact right hot news stream column (27% width, 300px max) featuring ranking numbers (`01`, `02`, `03`, `04`, `05`).
+* **Fixed Article Pagination Navigation**: Renamed news pagination wrapper class to `news-pagination` in [index.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/index.blade.php) and [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css), decoupling it from the product catalog SPA click handler in `app.js` and enabling 100% smooth page switching navigation.
+* **Medicare Gold Accent Category Badges**: Updated `.news-category-badge` styling to use Medicare Gold (`#fff9e6` background, `#d49800` text, `1px solid rgba(234, 170, 0, 0.4)` border) per visual emphasis guidelines.
+* **Justified 8-Category Nav Bar**: Added `Góc Chuyên Gia` category in [ArticleSeeder.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/database/seeders/ArticleSeeder.php) and updated `.news-nav-tabs` to justify all 8 categories across 100% of the container width evenly.
+* **Implemented Horizontal Rectangular Article Feed**: Replaced vertical card grids with a modern Báo Mới style horizontal card layout featuring 320px × 190px thumbnail images on the left and 18px bold headlines, category tags, summary excerpts, and metadata on the right.
+* **Auto-Hiding Hero Banner & Top Alignment**: Configured top Báo Mới Hero banner to render on default view (`/news`) and automatically hide when search (`?search=...`) or category filter (`?category=...`) is active, immediately shifting the search box, nav tabs, and results feed up to the top below breadcrumbs.
+* **Removed Obsolete Reset Filter Button**: Completely removed the "Xóa bộ lọc" button from the search bar form for a clean, modern aesthetic.
+* **Centered Pill-Shaped Pagination**: Redesigned Laravel pagination controls with centered rounded pill-shaped buttons (`border-radius: 20px`) and Medicare Red active page highlights.
+* **Seeded 100 Realistic Medical Articles**: Created and executed [ArticleSeeder.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/database/seeders/ArticleSeeder.php) populating 100 realistic medical articles inspired by VNVC topic structures across 6 primary medical categories (`Bệnh Truyền Nhiễm`, `Khuyến Cáo Y Tế`, `Tin Nóng Y Học`, `Vắc Xin Mới`, `Chăm Sóc Trẻ Em`, `Tiêm Chủng Người Lớn`), generating a dynamic 9-page Laravel pagination (`Showing 1 to 12 of 100 results`).
+* **Strict Ampersand (`&`) Character Restriction**: Replaced all occurrences of `&` across article titles, categories, and navigation tabs with the Vietnamese word "và" per user rules.
 
-## [v2.9.8] - 2026-07-26
+
 
 ### Added Disease Details, Empty Cart Options & Admin Weekly Schedule Planner
 

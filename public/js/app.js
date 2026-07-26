@@ -68,9 +68,13 @@ function toggleCartDrawer() {
 
 async function toggleCart(vaccineId) {
     const cards = document.querySelectorAll(`.vaccine-card[data-id="${vaccineId}"], .catalog-product-card[data-id="${vaccineId}"]`);
+    const detailBtns = document.querySelectorAll(`.btn-select-detail[data-id="${vaccineId}"], .btn-select-detail`);
+    
     let isSelected = false;
-    if (cards.length > 0) {
-        isSelected = cards[0].classList.contains('selected');
+    if (cards.length > 0 && cards[0].classList.contains('selected')) {
+        isSelected = true;
+    } else if (detailBtns.length > 0 && detailBtns[0].classList.contains('btn-selected')) {
+        isSelected = true;
     }
     
     const url = isSelected ? '/cart/remove' : '/cart/add';
@@ -93,20 +97,38 @@ async function toggleCart(vaccineId) {
         const data = await response.json();
         
         if (data.success) {
-            // Cập nhật thẻ vắc xin ở tất cả vị trí (trang chủ, danh mục sản phẩm, modal)
+            const inCart = Boolean(data.cart && data.cart[vaccineId]);
+            
+            // Cập nhật thẻ vắc xin ở tất cả vị trí (trang chủ, danh mục sản phẩm, vắc xin liên quan)
             cards.forEach(cardEl => {
                 const btn = cardEl.querySelector('.btn-select-vaccine');
-                if (isSelected) {
-                    cardEl.classList.remove('selected');
-                    if (btn) {
-                        btn.classList.remove('btn-selected');
-                        btn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn vắc xin</span>`;
-                    }
-                } else {
+                if (inCart) {
                     cardEl.classList.add('selected');
                     if (btn) {
                         btn.classList.add('btn-selected');
                         btn.innerHTML = `<i data-lucide="x"></i> <span>Hủy chọn</span>`;
+                    }
+                } else {
+                    cardEl.classList.remove('selected');
+                    if (btn) {
+                        btn.classList.remove('btn-selected');
+                        btn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn tiêm</span>`;
+                    }
+                }
+            });
+            
+            // Cập nhật nút đăng ký trên trang chi tiết sản phẩm
+            detailBtns.forEach(btn => {
+                const btnVacId = btn.getAttribute('data-id');
+                if (!btnVacId || parseInt(btnVacId) === parseInt(vaccineId)) {
+                    if (inCart) {
+                        btn.classList.add('btn-selected');
+                        btn.style.backgroundColor = 'var(--secondary-color, #eaaa00)';
+                        btn.innerHTML = `<i data-lucide="check" style="width: 17px; height: 17px;"></i> <span>Đã chọn vắc xin</span>`;
+                    } else {
+                        btn.classList.remove('btn-selected');
+                        btn.style.backgroundColor = 'var(--primary-color, #c8102e)';
+                        btn.innerHTML = `<i data-lucide="plus" style="width: 17px; height: 17px;"></i> <span>Đăng ký tiêm chủng</span>`;
                     }
                 }
             });
@@ -114,24 +136,26 @@ async function toggleCart(vaccineId) {
             // Cập nhật nút trong Quick View Modal nếu đang mở
             const modalBtn = document.getElementById(`modalSelectBtn_${vaccineId}`);
             if (modalBtn) {
-                if (isSelected) {
-                    modalBtn.classList.remove('btn-selected');
-                    modalBtn.style.backgroundColor = 'var(--primary-color, #c8102e)';
-                    modalBtn.style.borderColor = 'var(--primary-color, #c8102e)';
-                    modalBtn.style.color = '#ffffff';
-                    modalBtn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn vắc xin này</span>`;
-                } else {
+                if (inCart) {
                     modalBtn.classList.add('btn-selected');
                     modalBtn.style.backgroundColor = '#fff1f2';
                     modalBtn.style.borderColor = '#fecdd3';
                     modalBtn.style.color = 'var(--primary-color, #c8102e)';
                     modalBtn.innerHTML = `<i data-lucide="x"></i> <span>Hủy chọn</span>`;
+                } else {
+                    modalBtn.classList.remove('btn-selected');
+                    modalBtn.style.backgroundColor = 'var(--primary-color, #c8102e)';
+                    modalBtn.style.borderColor = 'var(--primary-color, #c8102e)';
+                    modalBtn.style.color = '#ffffff';
+                    modalBtn.innerHTML = `<i data-lucide="plus"></i> <span>Chọn vắc xin này</span>`;
                 }
             }
 
-            lucide.createIcons();
+            if (window.lucide) {
+                lucide.createIcons();
+            }
             updateFloatingCart(data.cart, data.cart_count, data.total_price);
-            showToast(isSelected ? 'Đã xóa vắc xin khỏi danh sách tiêm' : 'Đã thêm vắc xin vào danh sách tiêm!', 'success');
+            showToast(inCart ? 'Đã thêm vắc xin vào danh sách tiêm!' : 'Đã xóa vắc xin khỏi danh sách tiêm', 'success');
         }
     } catch (error) {
         console.error('Lỗi giỏ hàng:', error);
@@ -139,47 +163,73 @@ async function toggleCart(vaccineId) {
     }
 }
 
+function toggleHeaderCartDropdown(event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    const dropdown = document.getElementById('headerCartDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('hidden');
+    }
+}
+
+// Bắt sự kiện click ngoài màn hình để tự động đóng dropdown giỏ hàng trên Header
+document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('headerCartWrapper');
+    const dropdown = document.getElementById('headerCartDropdown');
+    if (dropdown && !dropdown.classList.contains('hidden') && wrapper && !wrapper.contains(e.target)) {
+        dropdown.classList.add('hidden');
+    }
+});
+
 function updateFloatingCart(cart, count, totalPrice) {
-    const cartEl = document.getElementById('floatingCart');
+    const cartBtn = document.getElementById('headerCartBtn');
     const cartCountEl = document.getElementById('cartCount');
-    const cartTotalPriceEl = document.getElementById('cartTotalPrice');
     const drawerTotalPriceEl = document.getElementById('drawerTotalPrice');
     const cartListEl = document.getElementById('cartItemsList');
+    const dropdown = document.getElementById('headerCartDropdown');
     
-    if (!cartEl) return;
-    
-    if (count === 0) {
-        cartEl.classList.add('hidden');
-        cartEl.classList.remove('expanded');
-        return;
+    if (cartBtn) {
+        cartBtn.classList.remove('hidden');
+        if (count === 0 && dropdown) {
+            dropdown.classList.add('hidden');
+        }
     }
-    
-    cartEl.classList.remove('hidden');
     
     if (cartCountEl) cartCountEl.textContent = count;
     
     const formattedPrice = new Intl.NumberFormat('vi-VN').format(totalPrice) + ' đ';
-    if (cartTotalPriceEl) cartTotalPriceEl.textContent = formattedPrice;
     if (drawerTotalPriceEl) drawerTotalPriceEl.textContent = formattedPrice;
     
     if (cartListEl) {
-        cartListEl.innerHTML = '';
-        Object.entries(cart).forEach(([id, item]) => {
-            const itemPriceFormatted = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
-            const itemHtml = `
-                <div class="cart-item" data-id="${id}">
-                    <div class="cart-item-info">
-                        <h5>${item.name}</h5>
-                        <span>${itemPriceFormatted}</span>
-                    </div>
-                    <button class="remove-item-btn" onclick="toggleCart(${id})">
-                        <i data-lucide="trash-2"></i>
-                    </button>
+        if (!cart || Object.keys(cart).length === 0) {
+            cartListEl.innerHTML = `
+                <div style="text-align: center; padding: 24px 12px; color: #94a3b8; font-size: 13.5px;">
+                    <i data-lucide="shopping-cart" style="width: 32px; height: 32px; margin-bottom: 8px; opacity: 0.5;"></i>
+                    <p style="margin: 0;">Chưa có vắc xin nào trong danh sách tiêm</p>
                 </div>
             `;
-            cartListEl.insertAdjacentHTML('beforeend', itemHtml);
-        });
-        lucide.createIcons();
+        } else {
+            cartListEl.innerHTML = '';
+            Object.entries(cart).forEach(([id, item]) => {
+                const itemPriceFormatted = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
+                const itemHtml = `
+                    <div class="cart-item-row" data-id="${id}">
+                        <div class="cart-item-info">
+                            <strong class="cart-item-name">${item.name}</strong>
+                            <span class="cart-item-price">${itemPriceFormatted}</span>
+                        </div>
+                        <button type="button" onclick="toggleCart(${id})" class="cart-item-remove" title="Xóa vắc xin">
+                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                        </button>
+                    </div>
+                `;
+                cartListEl.insertAdjacentHTML('beforeend', itemHtml);
+            });
+        }
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     }
 }
 
@@ -1060,4 +1110,82 @@ function setSpaConsultType(value) {
         group.style.display = 'flex';
         select.setAttribute('required', 'required');
     }
+}
+
+// Automatic Dynamic Table of Contents (TOC) & Smooth Scroll Highlight Generator
+document.addEventListener('DOMContentLoaded', function() {
+    initDynamicTOC();
+});
+
+function initDynamicTOC() {
+    const targetNav = document.getElementById('autoTocNav') || document.getElementById('vaccineTocNav');
+    const tocWidget = document.getElementById('autoTocWidget');
+
+    if (!targetNav) return;
+
+    // Query ONLY main h2 section headings inside the actual article body text or vaccine sections
+    const headings = document.querySelectorAll('.article-main-content .article-body-content h2, .article-main-content section h2');
+    
+    if (!headings || headings.length === 0) {
+        if (tocWidget) tocWidget.style.display = 'none';
+        return;
+    }
+
+    if (tocWidget) tocWidget.style.display = 'block';
+
+    targetNav.innerHTML = '';
+    const tocItems = [];
+
+    headings.forEach((heading, index) => {
+        if (!heading.id) {
+            heading.id = 'heading-toc-' + index;
+        }
+        const link = document.createElement('a');
+        link.href = '#' + heading.id;
+        link.className = 'toc-link-item' + (index === 0 ? ' active' : '');
+        link.style.display = 'flex';
+        link.style.alignItems = 'center';
+        link.style.gap = '6px';
+        link.innerHTML = `<i data-lucide="chevron-right" style="width: 14px; height: 14px; flex-shrink: 0;"></i> <span>${heading.textContent.trim()}</span>`;
+        
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetEl = document.getElementById(heading.id);
+            if (targetEl) {
+                const yOffset = -110;
+                const y = targetEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        });
+
+        targetNav.appendChild(link);
+        tocItems.push({ heading, link });
+    });
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+
+    // Scroll active link observer
+    const observerOptions = {
+        root: null,
+        rootMargin: '-100px 0px -65% 0px',
+        threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                tocItems.forEach(item => {
+                    if (item.heading === entry.target) {
+                        item.link.classList.add('active');
+                    } else {
+                        item.link.classList.remove('active');
+                    }
+                });
+            }
+        });
+    }, observerOptions);
+
+    headings.forEach(heading => observer.observe(heading));
 }

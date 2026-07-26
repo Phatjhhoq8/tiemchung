@@ -4,15 +4,17 @@
 
 @section('content')
 <div class="about-wrapper" style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
-    <!-- Breadcrumb -->
-    <div style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;" data-aos="fade-down">
-        <a href="{{ route('home') }}" style="color: var(--text-muted); text-decoration: none;">Trang chủ</a> / 
-        <span style="color: var(--primary-color); font-weight: 600;">Giới thiệu phòng khám</span>
-    </div>
-
     <!-- Hero Banner -->
     <div class="about-hero" data-aos="fade-up">
-        <span class="about-hero-tag">Về Chúng Tôi</span>
+        <!-- Breadcrumb inside Hero -->
+        <div class="catalog-breadcrumb" style="margin-bottom: 1.2rem; justify-content: center;">
+            <a href="{{ route('home') }}">Trang chủ</a>
+            <i data-lucide="chevron-right"></i>
+            <span>Giới thiệu</span>
+        </div>
+        <div style="margin-top: 4px;">
+            <span class="about-hero-tag">Về Chúng Tôi</span>
+        </div>
         <h1 class="about-hero-title">{{ $settings['about_hero_title'] ?? 'Giới Thiệu Hệ Thống Tiêm Chủng Medicare' }}</h1>
         <p class="about-hero-desc">{{ $settings['about_hero_desc'] ?? 'Đơn vị y tế uy tín hàng đầu chuyên cung cấp giải pháp phòng bệnh toàn diện bằng vắc xin chất lượng cao cho trẻ em và người lớn.' }}</p>
         <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="about-hero-btn">

@@ -1,7 +1,7 @@
 <?php
 /**
  * Chức năng: VaccineController xử lý danh mục vắc xin, giỏ hàng và quy trình đăng ký tiêm chủng của khách hàng.
- * Lý do chỉnh sửa: Thay thế hoàn toàn dữ liệu tĩnh bằng dữ liệu động từ CSDL (danh sách trung tâm, nhóm bệnh), bổ sung trang chi tiết và hỗ trợ dọn giỏ hàng.
+ * Lý do chỉnh sửa: Khôi phục đầy đủ các hàm xử lý giỏ hàng (addToCart, removeFromCart, clearCart) và quy trình đăng ký tiêm.
  */
 
 namespace Modules\VaccineRegistration\Http\Controllers;
@@ -59,40 +59,87 @@ class VaccineController extends Controller
         match ($sort) {
             'price_asc' => $query->orderBy('price', 'asc'),
             'price_desc' => $query->orderBy('price', 'desc'),
-            default => $query->orderByDesc('views')->orderBy('sort_order', 'asc'),
+            'name_asc' => $query->orderBy('name', 'asc'),
+            default => $query->orderBy('views', 'desc')->orderBy('id', 'asc'),
         };
 
         $vaccines = $query->paginate(12)->withQueryString();
         $cart = session()->get('cart', []);
 
-        $allVaccines = Vaccine::query()->orderBy('sort_order', 'asc')->get();
-        $diseases = $this->buildDiseaseOptions($allVaccines);
-        $ageGroups = $allVaccines->pluck('age_group')->filter()->unique()->values();
-        $origins = $allVaccines->pluck('origin')->filter()->unique()->sort()->values();
-        $doseOptions = $allVaccines->pluck('doses')->filter()->unique()->sort()->values();
+        $allVaccines = Vaccine::all();
+        $diseaseOptions = $this->buildDiseaseOptions($allVaccines);
+        $diseases = $diseaseOptions;
+        
+        $ageGroupOptions = $this->buildAgeGroupOptions($allVaccines);
+        $ageGroups = $ageGroupOptions;
+
+        $originOptions = $this->buildOriginOptions($allVaccines);
+        $origins = $originOptions;
+
+        $doseOptions = [1, 2, 3, 4];
+        $doses = $doseOptions;
+
         $productCategories = $this->buildProductCategories($allVaccines);
 
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'html' => view('vaccine::partials.grid', compact('vaccines', 'cart'))->render(),
-                'count' => $vaccines->total(),
-            ]);
-        }
-
-        return view('vaccine::index', compact('vaccines', 'cart', 'diseases', 'ageGroups', 'origins', 'doseOptions', 'productCategories'));
+        return view('vaccine::index', compact(
+            'vaccines',
+            'cart',
+            'diseaseOptions',
+            'diseases',
+            'ageGroupOptions',
+            'ageGroups',
+            'originOptions',
+            'origins',
+            'doseOptions',
+            'doses',
+            'productCategories'
+        ));
     }
 
     private function buildDiseaseOptions($vaccines)
     {
         return $vaccines
-            ->pluck('disease_prevention')
-            ->filter()
-            ->flatMap(function ($item) {
-                return collect(preg_split('/[,;]+/u', $item))
-                    ->map(fn ($disease) => trim($disease))
-                    ->filter();
+            ->flatMap(function ($vaccine) {
+                $items = [];
+                if (!empty($vaccine->category)) {
+                    $items[] = trim($vaccine->category);
+                }
+
+                if (!empty($vaccine->disease_prevention)) {
+                    $parts = preg_split('/[,;\-\/]+/', $vaccine->disease_prevention);
+                    foreach ($parts as $part) {
+                        $cleaned = trim($part);
+                        if (!empty($cleaned)) {
+                            $items[] = $cleaned;
+                        }
+                    }
+                }
+
+                return $items;
             })
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+    }
+
+    private function buildAgeGroupOptions($vaccines)
+    {
+        return $vaccines
+            ->pluck('age_group')
+            ->filter()
+            ->map(fn ($item) => trim($item))
+            ->unique()
+            ->sort()
+            ->values();
+    }
+
+    private function buildOriginOptions($vaccines)
+    {
+        return $vaccines
+            ->pluck('origin')
+            ->filter()
+            ->map(fn ($item) => trim($item))
             ->unique()
             ->sort()
             ->values();
@@ -117,7 +164,7 @@ class VaccineController extends Controller
     }
 
     /**
-     * Hiển thị trang chi tiết một loại vắc xin (hoặc trả về JSON cho Quick View Modal).
+     * Hiển thị trang chi tiết một loại vắc xin.
      */
     public function show(Request $request, $id)
     {
@@ -153,7 +200,22 @@ class VaccineController extends Controller
             ]);
         }
 
-        return view('vaccine::show', compact('vaccine', 'cart'));
+        // Lấy 8 vắc xin liên quan cùng phòng bệnh hoặc cùng xuất xứ
+        $relatedVaccines = Vaccine::where('id', '!=', $vaccine->id)
+            ->where(function ($q) use ($vaccine) {
+                $q->where('disease_prevention', 'like', '%' . $vaccine->disease_prevention . '%')
+                  ->orWhere('origin', $vaccine->origin);
+            })
+            ->take(8)
+            ->get();
+
+        if ($relatedVaccines->count() < 8) {
+            $existingIds = $relatedVaccines->pluck('id')->push($vaccine->id)->toArray();
+            $extraVaccines = Vaccine::whereNotIn('id', $existingIds)->take(8 - $relatedVaccines->count())->get();
+            $relatedVaccines = $relatedVaccines->concat($extraVaccines);
+        }
+
+        return view('vaccine::show', compact('vaccine', 'cart', 'relatedVaccines'));
     }
 
     /**
@@ -162,33 +224,44 @@ class VaccineController extends Controller
     public function addToCart(Request $request)
     {
         $vaccineId = $request->input('vaccine_id');
-        $vaccine = Vaccine::find($vaccineId);
+        $quantity = (int) $request->input('quantity', 1);
 
-        if (!$vaccine) {
-            return response()->json(['error' => 'Vắc xin không tồn tại.'], 404);
-        }
-
+        $vaccine = Vaccine::findOrFail($vaccineId);
         $cart = session()->get('cart', []);
 
-        if (!isset($cart[$vaccineId])) {
+        $priceToUse = $vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price;
+
+        if (isset($cart[$vaccineId])) {
+            $cart[$vaccineId]['quantity'] += $quantity;
+        } else {
             $cart[$vaccineId] = [
                 'name' => $vaccine->name,
-                'price' => $vaccine->price,
+                'price' => $priceToUse,
+                'image' => $vaccine->image ?: 'hexaxim.jpg',
+                'quantity' => $quantity,
                 'type' => $vaccine->type,
-                'doses' => $vaccine->doses,
                 'disease_prevention' => $vaccine->disease_prevention,
-                'origin' => $vaccine->origin,
-                'image' => $vaccine->image,
             ];
-            session()->put('cart', $cart);
         }
 
-        return response()->json([
-            'success' => true,
-            'cart' => $cart,
-            'cart_count' => count($cart),
-            'total_price' => collect($cart)->sum('price')
-        ]);
+        session()->put('cart', $cart);
+
+        $totalPrice = collect($cart)->sum(function ($item) {
+            return ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+        });
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã thêm vắc xin vào danh sách tiêm.',
+                'cart' => $cart,
+                'cart_count' => count($cart),
+                'total_price' => $totalPrice,
+                'formatted_total_price' => number_format($totalPrice, 0, ',', '.') . ' đ',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Đã thêm vắc xin vào danh sách đăng ký.');
     }
 
     /**
@@ -204,26 +277,43 @@ class VaccineController extends Controller
             session()->put('cart', $cart);
         }
 
-        return response()->json([
-            'success' => true,
-            'cart' => $cart,
-            'cart_count' => count($cart),
-            'total_price' => collect($cart)->sum('price')
-        ]);
+        $totalPrice = collect($cart)->sum(function ($item) {
+            return ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+        });
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xóa vắc xin khỏi danh sách tiêm.',
+                'cart' => $cart,
+                'cart_count' => count($cart),
+                'total_price' => $totalPrice,
+                'formatted_total_price' => number_format($totalPrice, 0, ',', '.') . ' đ',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Đã xóa vắc xin khỏi danh sách đăng ký.');
     }
 
     /**
      * Xóa sạch giỏ hàng.
      */
-    public function clearCart()
+    public function clearCart(Request $request)
     {
         session()->forget('cart');
 
-        return response()->json([
-            'success' => true,
-            'cart_count' => 0,
-            'total_price' => 0
-        ]);
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xóa sạch danh sách tiêm.',
+                'cart' => [],
+                'cart_count' => 0,
+                'total_price' => 0,
+                'formatted_total_price' => '0 đ',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Đã xóa sạch giỏ hàng.');
     }
 
     /**
@@ -246,7 +336,9 @@ class VaccineController extends Controller
             return redirect()->route('vaccine.index')->with('warning', 'Vui lòng chọn ít nhất một loại vắc xin để đăng ký.');
         }
 
-        $totalPrice = collect($cart)->sum('price');
+        $totalPrice = collect($cart)->sum(function ($item) {
+            return ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+        });
         $centers = Center::active()->get();
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -287,19 +379,19 @@ class VaccineController extends Controller
             'guardian_phone' => 'nullable|string|regex:/^[0-9]{9,11}$/',
             'center_name' => 'required|string',
             'injection_date' => 'required|date|after_or_equal:today',
-            'payment_method' => 'required|string|in:QR,Thẻ,Tại trung tâm',
+            'payment_method' => 'required|string|in:Tại trung tâm, Chuyển khoản, Thẻ ATM / QR Code',
         ], [
-            'patient_name.required' => 'Họ tên người tiêm không được để trống.',
-            'patient_dob.required' => 'Ngày sinh không được để trống.',
-            'patient_dob.before' => 'Ngày sinh phải ở trong quá khứ.',
-            'patient_gender.required' => 'Vui lòng chọn giới tính.',
-            'patient_phone.required' => 'Số điện thoại không được để trống.',
+            'patient_name.required' => 'Vui lòng điền Họ tên người tiêm.',
+            'patient_dob.required' => 'Vui lòng điền Ngày sinh.',
+            'patient_dob.before' => 'Ngày sinh phải trước ngày hôm nay.',
+            'patient_gender.required' => 'Vui lòng chọn Giới tính.',
+            'patient_phone.required' => 'Vui lòng điền Số điện thoại liên hệ.',
             'patient_phone.regex' => 'Số điện thoại không hợp lệ (9 - 11 chữ số).',
-            'patient_address.required' => 'Vui lòng điền địa chỉ liên hệ.',
-            'center_name.required' => 'Vui lòng chọn trung tâm tiêm chủng.',
-            'injection_date.required' => 'Vui lòng chọn ngày mong muốn tiêm.',
-            'injection_date.after_or_equal' => 'Ngày tiêm chủng phải từ ngày hôm nay trở đi.',
-            'payment_method.required' => 'Vui lòng chọn phương thức thanh toán.'
+            'patient_address.required' => 'Vui lòng điền Địa chỉ thường trú.',
+            'center_name.required' => 'Vui lòng chọn Trung tâm tiêm chủng.',
+            'injection_date.required' => 'Vui lòng chọn Ngày tiêm dự kiến.',
+            'injection_date.after_or_equal' => 'Ngày tiêm dự kiến không được ở quá khứ.',
+            'payment_method.required' => 'Vui lòng chọn Phương thức thanh toán.',
         ]);
 
         if ($validator->fails()) {
@@ -309,11 +401,14 @@ class VaccineController extends Controller
                     'errors' => $validator->errors()
                 ], 422);
             }
-            return back()->withErrors($validator)->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
         $validated = $validator->validated();
-        $totalPrice = collect($cart)->sum('price');
+
+        $totalPrice = collect($cart)->sum(function ($item) {
+            return ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+        });
         $registrationCode = 'MCD-' . strtoupper(Str::random(8));
 
         DB::beginTransaction();
@@ -335,43 +430,45 @@ class VaccineController extends Controller
                 'total_price' => $totalPrice,
             ]);
 
-            // 2. Liên kết các vắc xin trong giỏ vào bảng pivot
-            foreach ($cart as $id => $item) {
-                $registration->vaccines()->attach($id, ['price' => $item['price']]);
+            // 2. Đính kèm các vắc xin trong giỏ hàng
+            foreach ($cart as $vId => $item) {
+                $registration->vaccines()->attach($vId, [
+                    'price' => $item['price'] ?? 0,
+                    'quantity' => $item['quantity'] ?? 1,
+                ]);
             }
 
             DB::commit();
 
-            // Xóa giỏ hàng
+            // Xóa sạch giỏ hàng session sau khi tạo đăng ký thành công
             session()->forget('cart');
+            session()->put('success_code', $registrationCode);
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
+                    'message' => 'Đăng ký tiêm chủng thành công!',
                     'registration_code' => $registrationCode,
-                    'patient_name' => $validated['patient_name'],
-                    'patient_phone' => $validated['patient_phone'],
-                    'center_name' => $validated['center_name'],
-                    'injection_date' => date('d/m/Y', strtotime($validated['injection_date'])),
-                    'total_price_formatted' => number_format($totalPrice, 0, ',', '.') . ' đ',
-                    'payment_method' => $validated['payment_method'],
-                    'status' => $registration->status,
+                    'redirect' => route('register.success')
                 ]);
             }
 
-            return redirect()->route('register.success')->with('success_code', $registrationCode);
+            return redirect()->route('register.success');
 
         } catch (\Exception $e) {
             DB::rollBack();
             if ($request->ajax() || $request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => 'Có lỗi xảy ra trong quá trình đăng ký: ' . $e->getMessage()], 500);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Có lỗi xảy ra khi lưu đăng ký: ' . $e->getMessage()
+                ], 500);
             }
-            return back()->withInput()->with('error', 'Có lỗi xảy ra trong quá trình đăng ký: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi lưu đăng ký. Vui lòng thử lại.');
         }
     }
 
     /**
-     * Hiển thị trang đăng ký thành công.
+     * Hiển thị trang kết quả đăng ký tiêm thành công.
      */
     public function showSuccess()
     {
@@ -398,7 +495,7 @@ class VaccineController extends Controller
             ->orWhere('disease_prevention', 'like', '%' . $diseaseDecoded . '%')
             ->orderBy('sort_order', 'asc')
             ->get();
-            
+              
         $cart = session()->get('cart', []);
         $centers = Center::active()->get();
 
@@ -410,10 +507,10 @@ class VaccineController extends Controller
             ],
             'cúm' => [
                 'title' => 'Vắc xin phòng bệnh Cúm Mùa',
-                'description' => '<h6>Tại sao cần chủ động tiêm phòng cúm hàng năm?</h6><p><strong>Cúm mùa</strong> là bệnh nhiễm trùng đường hô hấp cấp tính do các virus cúm (A, B) gây ra. Bệnh lây qua đường hô hấp và rất dễ bùng phát thành dịch. Biến chứng của cúm mùa có thể rất nghiêm trọng như viêm phổi nặng, viêm cơ tim, suy đa phủ tạng, đặc biệt nguy hiểm ở trẻ nhỏ, phụ nữ mang thai, người lớn tuổi và người có bệnh nền (tiểu đường, hen suyễn, tim mạch).</p><p>💉 <strong>Tiêm ngừa vắc xin cúm hàng năm</strong> là biện pháp phòng bệnh hiệu quả nhất, giúp cơ thể chuẩn bị kháng thể chống lại các chủng virus cúm thay đổi liên tục, giảm tới 80% nguy cơ nhập viện và biến chứng nặng.</p>'
+                'description' => '<h6>Bảo vệ lá phổi khỏe mạnh trước đại dịch Cúm Mùa</h6><p><strong>Cúm mùa</strong> là bệnh nhiễm trùng đường hô hấp cấp tính do virus cúm (Influenza) gây ra. Bệnh lây lan rất nhanh qua giọt bắn và có thể dẫn đến các biến chứng nguy hiểm như viêm phổi nặng, suy hô hấp, viêm cơ tim, thậm chí tử vong ở người cao tuổi và trẻ nhỏ.</p><p>💉 <strong>Tiêm vắc xin cúm hằng năm</strong> giúp giảm đến 90% nguy cơ mắc bệnh và 80% nguy cơ tử vong do các biến chứng nguy hiểm của cúm.</p>'
             ],
             'thủy đậu' => [
-                'title' => 'Vắc xin phòng bệnh Thủy Đậu (Trái Rạ)',
+                'title' => 'Vắc xin phòng bệnh Thủy Đậu',
                 'description' => '<h6>Chủ động phòng ngừa biến chứng nguy hiểm của Thủy đậu</h6><p><strong>Bệnh thủy đậu</strong> do virus Varicella-Zoster gây ra. Bệnh lây qua đường hô hấp hoặc tiếp xúc trực tiếp với dịch bóng nước. Mặc dù là bệnh lành tính trong nhiều trường hợp, thủy đậu có thể dẫn đến các biến chứng nặng nề như viêm màng não, viêm phổi, nhiễm trùng huyết và để lại sẹo vĩnh viễn trên cơ thể.</p><p>💉 <strong>Tiêm vắc xin thủy đậu</strong> giúp bảo vệ cơ thể khỏi nguy cơ lây nhiễm lên đến 95%. Khuyến cáo tiêm phòng cho trẻ em từ 9 tháng tuổi trở lên và người trưởng thành chưa có kháng thể.</p>'
             ],
             'ho gà' => [
@@ -491,14 +588,14 @@ class VaccineController extends Controller
             $registration = Registration::create([
                 'registration_code' => $registrationCode,
                 'patient_name' => $validated['customerName'],
-                'patient_dob' => '2000-01-01', // giá trị giả lập hợp lệ
-                'patient_gender' => 'Khác',     // giá trị giả lập hợp lệ
+                'patient_dob' => '2000-01-01',
+                'patient_gender' => 'Khác',
                 'patient_phone' => $validated['customerPhone'],
                 'patient_address' => $validated['consultType'] === 'online' ? $patientAddress : 'Đăng ký tư vấn trực tiếp: ' . $diseaseDecoded . ($validated['customerNote'] ? (' - Ghi chú: ' . $validated['customerNote']) : ''),
                 'guardian_name' => null,
                 'guardian_phone' => null,
                 'center_name' => $centerName,
-                'injection_date' => now()->toDateString(), // đặt hôm nay
+                'injection_date' => now()->toDateString(),
                 'status' => 'Chờ tư vấn',
                 'payment_method' => 'Tại trung tâm',
                 'total_price' => 0,

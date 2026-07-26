@@ -1,10 +1,10 @@
 @extends('vaccine::layouts.admin')
 
 @section('title', 'Cấu hình Website - Medicare Cờ Đỏ')
-@section('page_title', 'Cấu Hình Hệ Thống Website')
+@section('page_title', 'Cấu Hinh Hệ Thống Website')
 
 @section('admin_content')
-<div class="card-modern" style="max-width: 700px; margin: 0 auto;">
+<div class="card-modern">
     <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; display: flex; align-items: center; gap: 8px;">
         <i data-lucide="settings" style="color: var(--primary-color);"></i> Thay đổi thông tin hiển thị
     </h2>
@@ -22,11 +22,18 @@
     <form action="{{ route('admin.settings.update') }}" method="POST">
         @csrf
         
-        <div style="display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 30px;">
+        {{-- Grid 2 cột cho các thông tin ngắn --}}
+        <div class="form-grid-2" style="margin-bottom: 24px;">
             <!-- Tên Website -->
             <div class="form-group-modern">
                 <label for="site_name" class="form-label-modern">Tên thương hiệu hệ thống *</label>
                 <input type="text" name="site_name" id="site_name" value="{{ old('site_name', $settings['site_name']) }}" required class="form-control-modern">
+            </div>
+
+            <!-- Email CSKH -->
+            <div class="form-group-modern">
+                <label for="email" class="form-label-modern">Email hỗ trợ khách hàng *</label>
+                <input type="email" name="email" id="email" value="{{ old('email', $settings['email']) }}" required class="form-control-modern">
             </div>
 
             <!-- Hotline chính -->
@@ -40,13 +47,10 @@
                 <label for="hotline_2" class="form-label-modern">Hotline liên hệ phụ (tùy chọn)</label>
                 <input type="text" name="hotline_2" id="hotline_2" value="{{ old('hotline_2', $settings['hotline_2']) }}" class="form-control-modern">
             </div>
+        </div>
 
-            <!-- Email CSKH -->
-            <div class="form-group-modern">
-                <label for="email" class="form-label-modern">Email hỗ trợ khách hàng *</label>
-                <input type="email" name="email" id="email" value="{{ old('email', $settings['email']) }}" required class="form-control-modern">
-            </div>
-
+        {{-- Cột dọc cho các thông tin dài (100% width) --}}
+        <div style="display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 30px;">
             <!-- Địa chỉ trụ sở chính -->
             <div class="form-group-modern">
                 <label for="address" class="form-label-modern">Địa chỉ trụ sở chính *</label>

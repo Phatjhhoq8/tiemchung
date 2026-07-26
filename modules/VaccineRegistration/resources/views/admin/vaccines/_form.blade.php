@@ -14,7 +14,7 @@
         <i data-lucide="info" style="width: 18px; height: 18px; color: var(--accent-color);"></i>
         Thông tin cơ bản
     </h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div class="form-grid-2">
         <!-- Tên Vắc xin -->
         <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0;">
             <label for="name" class="form-label-modern">Tên vắc xin / Gói vắc xin <span style="color: #ef4444;">*</span></label>
@@ -57,7 +57,7 @@
         <i data-lucide="dollar-sign" style="width: 18px; height: 18px; color: var(--accent-color);"></i>
         Giá cả & Phác đồ
     </h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div class="form-grid-2">
         <!-- Giá tiêm -->
         <div class="form-group-modern" style="margin-bottom: 0;">
             <label for="price" class="form-label-modern">Giá bán lẻ / liều (VND) <span style="color: #ef4444;">*</span></label>
@@ -97,7 +97,7 @@
         <i data-lucide="globe" style="width: 18px; height: 18px; color: var(--accent-color);"></i>
         Nguồn gốc & Quy cách
     </h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div class="form-grid-2">
         <!-- Hãng sản xuất -->
         <div class="form-group-modern" style="margin-bottom: 0;">
             <label for="manufacturer" class="form-label-modern">Hãng sản xuất</label>
@@ -124,15 +124,32 @@
         <i data-lucide="image" style="width: 18px; height: 18px; color: var(--accent-color);"></i>
         Hình ảnh & Hiển thị
     </h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-        <!-- Đường dẫn hình ảnh -->
-        <div class="form-group-modern" style="margin-bottom: 0;">
-            <label for="image" class="form-label-modern">Tên file ảnh vắc xin</label>
-            <input type="text" name="image" id="image" value="{{ old('image', $vaccine->image) }}" placeholder="VD: qdenga.jpg (trống = ảnh mặc định)" class="form-control-modern">
+    <div class="form-grid-2">
+        <!-- Tải lên hình ảnh -->
+        <div class="form-group-modern" style="margin-bottom: 0; grid-column: span 2;">
+            <label class="form-label-modern">Hình ảnh vắc xin / Gói vắc xin</label>
+            <input type="file" name="image_file" id="image_file" accept="image/*" style="display: none;">
+            <input type="hidden" name="image" id="image_hidden" value="{{ old('image', $vaccine->image) }}">
+            
+            <div id="image_dropzone" class="image-upload-zone">
+                <div id="dropzone_prompt" style="{{ $vaccine->image ? 'display: none;' : '' }}">
+                    <i data-lucide="upload-cloud" style="width: 40px; height: 40px; color: var(--text-light); margin-bottom: 8px; display: inline-block;"></i>
+                    <p style="font-weight: 600; color: var(--text-muted); margin: 0 0 4px 0;">Kéo thả hình ảnh vào đây hoặc click để tải lên</p>
+                    <span style="font-size: 12px; color: var(--text-light);">Hỗ trợ: JPG, PNG, GIF, WEBP (Tối đa 2MB)</span>
+                </div>
+                <div id="image_preview_container" class="image-upload-preview-container" style="{{ $vaccine->image ? 'display: block;' : '' }}">
+                    <div class="image-upload-preview-wrapper">
+                        <img id="image_preview" class="image-upload-preview" src="{{ $vaccine->image ? asset('images/vaccines/' . $vaccine->image) : '' }}" alt="Preview">
+                        <button type="button" id="btn_remove_image" class="image-upload-remove-btn" title="Xóa hình ảnh">
+                            <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Thứ tự hiển thị -->
-        <div class="form-group-modern" style="margin-bottom: 0;">
+        <div class="form-group-modern" style="margin-bottom: 0; grid-column: span 2;">
             <label for="sort_order" class="form-label-modern">
                 Thứ tự hiển thị
                 <span style="font-size: 12px; color: var(--text-light); font-weight: 400; margin-left: 4px;">— Số nhỏ hơn hiển thị trước</span>
@@ -161,3 +178,95 @@
         <textarea name="description" id="description" rows="5" placeholder="Nhập công dụng chi tiết, hướng dẫn, lưu ý phác đồ tiêm chủng..." class="form-control-modern" style="font-family: inherit; resize: vertical;">{{ old('description', $vaccine->description) }}</textarea>
     </div>
 </div>
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropzone = document.getElementById('image_dropzone');
+        const fileInput = document.getElementById('image_file');
+        const hiddenInput = document.getElementById('image_hidden');
+        const promptBlock = document.getElementById('dropzone_prompt');
+        const previewContainer = document.getElementById('image_preview_container');
+        const previewImg = document.getElementById('image_preview');
+        const removeBtn = document.getElementById('btn_remove_image');
+
+        if (!dropzone) return;
+
+        // Click to choose file
+        dropzone.addEventListener('click', function(e) {
+            if (e.target.closest('#btn_remove_image')) return;
+            fileInput.click();
+        });
+
+        // File input change
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+
+        // Drag & Drop events
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, highlight, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.style.borderColor = 'var(--accent-color)';
+            dropzone.style.backgroundColor = '#f1f5f9';
+        }
+
+        function unhighlight(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.style.borderColor = 'var(--border-color)';
+            dropzone.style.backgroundColor = '#f8fafc';
+        }
+
+        dropzone.addEventListener('drop', function(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+            fileInput.files = files; // Update file input files
+        });
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+            if (!file.type.startsWith('image/')) {
+                alert('Vui lòng chỉ tải lên file hình ảnh.');
+                return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Dung lượng hình ảnh không được vượt quá 2MB.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = function() {
+                previewImg.src = reader.result;
+                promptBlock.style.display = 'none';
+                previewContainer.style.display = 'block';
+                hiddenInput.value = ''; // Reset hidden value because a new file is uploaded
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+        }
+
+        // Remove image action
+        removeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.value = '';
+            hiddenInput.value = '';
+            previewImg.src = '';
+            previewContainer.style.display = 'none';
+            promptBlock.style.display = 'block';
+        });
+    });
+</script>
+@endsection

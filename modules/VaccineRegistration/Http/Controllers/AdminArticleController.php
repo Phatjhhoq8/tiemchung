@@ -32,9 +32,18 @@ class AdminArticleController extends Controller
             'content' => 'nullable|string',
             'category' => 'required|string',
             'image' => 'nullable|string',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'is_published' => 'boolean',
             'is_featured' => 'boolean',
         ]);
+
+        // Xử lý tải lên hình ảnh từ file
+        if ($request->hasFile('image_file')) {
+            $file = $request->file('image_file');
+            $filename = 'article_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/vaccines'), $filename);
+            $validated['image'] = $filename;
+        }
 
         $validated['slug'] = Str::slug($validated['title']);
         $validated['is_published'] = $request->has('is_published');
@@ -61,7 +70,23 @@ class AdminArticleController extends Controller
             'content' => 'nullable|string',
             'category' => 'required|string',
             'image' => 'nullable|string',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
         ]);
+
+        // Xử lý tải lên hình ảnh từ file
+        if ($request->hasFile('image_file')) {
+            // Xóa ảnh cũ nếu có
+            if ($article->image && !in_array($article->image, ['default_package.jpg', 'default_vaccine.jpg'])) {
+                $oldPath = public_path('images/vaccines/' . $article->image);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+            $file = $request->file('image_file');
+            $filename = 'article_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/vaccines'), $filename);
+            $validated['image'] = $filename;
+        }
 
         $validated['slug'] = Str::slug($validated['title']);
         $validated['is_published'] = $request->has('is_published');
@@ -78,5 +103,29 @@ class AdminArticleController extends Controller
         $article->delete();
 
         return redirect()->route('admin.articles.index')->with('success', 'Xóa bài viết thành công!');
+    }
+
+    /**
+     * API tải lên hình ảnh cho trình soạn thảo TinyMCE.
+     */
+    public function uploadEditorImage(Request $request)
+    {
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            
+            // Validate sơ bộ định dạng ảnh
+            if (!in_array(strtolower($file->getClientOriginalExtension()), ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'])) {
+                return response()->json(['error' => 'File không đúng định dạng ảnh.'], 400);
+            }
+            
+            $filename = 'editor_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/vaccines'), $filename);
+            
+            $location = asset('images/vaccines/' . $filename);
+            
+            return response()->json(['location' => $location]);
+        }
+        
+        return response()->json(['error' => 'Không tìm thấy file tải lên.'], 400);
     }
 }

@@ -38,14 +38,26 @@ class AdminBannerController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:500',
-            'image_url' => 'required|string|max:500',
+            'image_url' => 'nullable|string|max:500',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'link_url' => 'nullable|string|max:500',
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'nullable',
         ], [
             'title.required' => 'Tiêu đề banner không được để trống.',
-            'image_url.required' => 'URL hình ảnh không được để trống.',
         ]);
+
+        // Xử lý tải lên hình ảnh từ file
+        if ($request->hasFile('image_file')) {
+            $file = $request->file('image_file');
+            $filename = 'banner_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/banners'), $filename);
+            $validated['image_url'] = '/images/banners/' . $filename;
+        }
+
+        if (empty($validated['image_url'])) {
+            return redirect()->back()->withInput()->withErrors(['image_file' => 'Vui lòng chọn hình ảnh banner tải lên.']);
+        }
 
         $validated['is_active'] = $request->has('is_active');
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
@@ -74,14 +86,34 @@ class AdminBannerController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:500',
-            'image_url' => 'required|string|max:500',
+            'image_url' => 'nullable|string|max:500',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'link_url' => 'nullable|string|max:500',
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'nullable',
         ], [
             'title.required' => 'Tiêu đề banner không được để trống.',
-            'image_url.required' => 'URL hình ảnh không được để trống.',
         ]);
+
+        // Xử lý tải lên hình ảnh từ file
+        if ($request->hasFile('image_file')) {
+            // Xóa ảnh cũ nếu có
+            if ($banner->image_url) {
+                $oldFilename = basename($banner->image_url);
+                $oldPath = public_path('images/banners/' . $oldFilename);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+            $file = $request->file('image_file');
+            $filename = 'banner_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/banners'), $filename);
+            $validated['image_url'] = '/images/banners/' . $filename;
+        }
+
+        if (empty($validated['image_url'])) {
+            $validated['image_url'] = $banner->image_url;
+        }
 
         $validated['is_active'] = $request->has('is_active');
 
