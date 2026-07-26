@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.3.1] - 2026-07-27
+
+### Persistent Header Cart Placement Fix
+
+* **Header Position Insertion**: Fixed markup alignment in [layouts/app.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php) by inserting `.header-cart-wrapper` directly into `.header-actions` right between the Hotline button and the "Đăng ký tiêm" CTA.
+* **Persistent Visibility**: Configured `.header-cart-btn` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to remain persistently visible on the top header navigation bar at all times (displaying live item count badge `0`, `1`, `2`...).
+
 ## [v3.3.0] - 2026-07-27
 
 ### Top Header Navigation Bar Cart Integration
