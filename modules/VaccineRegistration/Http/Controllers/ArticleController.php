@@ -1,7 +1,7 @@
 <?php
 /**
  * Chức năng: ArticleController xử lý hiển thị trang danh sách tin tức y học và trang chi tiết bài viết cho khách hàng.
- * Lý do tạo: Phục vụ chia trang Tin Tức riêng biệt theo yêu cầu người dùng - Đảm bảo dữ liệu hiển thị duy nhất không trùng lặp và phục vụ đề xuất bài viết chi tiết.
+ * Lý do tạo: Phục vụ chia trang Tin Tức riêng biệt theo yêu cầu người dùng - Chuẩn hóa 8 chuyên mục ưu tiên theo thứ tự y khoa quan trọng.
  */
 
 namespace Modules\VaccineRegistration\Http\Controllers;
@@ -43,11 +43,16 @@ class ArticleController extends Controller
 
         $articles = $query->latest()->paginate(10)->withQueryString();
         
-        // Dynamic category list without '&' character
-        $rawCategories = Article::where('is_published', true)->whereNotNull('category')->distinct()->pluck('category');
-        $categories = $rawCategories->map(function($cat) {
-            return str_replace('&', 'và', $cat);
-        })->unique()->values();
+        // 8 Chuyên mục được sắp xếp chuẩn hóa theo thứ tự ưu tiên y khoa quan trọng nhất
+        $categories = collect([
+            'Tin Nóng Y Học',
+            'Khuyến Cáo Y Tế',
+            'Bệnh Truyền Nhiễm',
+            'Vắc Xin Mới',
+            'Chăm Sóc Trẻ Em',
+            'Tiêm Chủng Người Lớn',
+            'Tiêm Phòng Mẹ Bầu',
+        ]);
 
         return view('vaccine::articles.index', compact('articles', 'categories', 'hotNews'));
     }
