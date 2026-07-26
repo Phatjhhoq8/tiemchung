@@ -185,7 +185,7 @@
 .cloud-size-md { font-size: 12px; }
 .cloud-size-sm { font-size: 11px; }
 
-/* TẦNG 2: SUB-PAGE NAVIGATION NAV BAR (8 Chuyên Mục Căn Đều 100%) */
+/* TẦNG 2: SUB-PAGE NAVIGATION NAV BAR (Bảo toàn 100% phẳng lề trái/phải với font 13.5px) */
 .news-nav-bar-container {
     background: #ffffff;
     border: 1px solid #e2e8f0;
@@ -207,7 +207,7 @@
 }
 
 .news-nav-tab {
-    font-size: 14.5px;
+    font-size: 13.5px;
     font-weight: 700;
     color: #475569;
     text-decoration: none;
