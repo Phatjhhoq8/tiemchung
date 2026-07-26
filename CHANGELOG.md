@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.13] - 2026-07-27
+
+### Dynamic Database Heading Self-Healing Update
+
+* **Dynamic In-Place Database Update**: Added dynamic self-healing code inside the show method of [ArticleController.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/Http/Controllers/ArticleController.php) to automatically replace `<h3>` with `<h2>` in the database dynamically and permanently when a news article page reloads.
+* **Standard heading seed format**: Updated [ArticleSeeder.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/Database/Seeders/ArticleSeeder.php) to seed standard `<h2>` tags for main sections instead of `<h3>`.
+
 ## [v3.5.12] - 2026-07-27
 
 ### TOC Headings & Pagination View Resolution Fix
