@@ -43,7 +43,7 @@ class ArticleController extends Controller
 
         $articles = $query->latest()->paginate(10)->withQueryString();
         
-        // 8 Chuyên mục được sắp xếp chuẩn hóa theo thứ tự ưu tiên y khoa quan trọng nhất
+        // 7 Chuyên mục được sắp xếp chuẩn hóa theo thứ tự ưu tiên y khoa quan trọng nhất
         $categories = collect([
             'Tin Nóng Y Học',
             'Khuyến Cáo Y Tế',
@@ -52,7 +52,6 @@ class ArticleController extends Controller
             'Chăm Sóc Trẻ Em',
             'Tiêm Chủng Người Lớn',
             'Tiêm Phòng Mẹ Bầu',
-            'Góc Chuyên Gia',
         ]);
 
         return view('vaccine::articles.index', compact('articles', 'categories', 'hotNews'));

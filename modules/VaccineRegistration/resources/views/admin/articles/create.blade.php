@@ -148,7 +148,6 @@
                         <option value="Chăm Sóc Trẻ Em">Chăm Sóc Trẻ Em</option>
                         <option value="Tiêm Chủng Người Lớn">Tiêm Chủng Người Lớn</option>
                         <option value="Tiêm Phòng Mẹ Bầu">Tiêm Phòng Mẹ Bầu</option>
-                        <option value="Góc Chuyên Gia">Góc Chuyên Gia</option>
                     </select>
                 </div>
                 

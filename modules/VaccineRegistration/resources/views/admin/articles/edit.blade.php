@@ -150,8 +150,7 @@
                                 'Vắc Xin Mới',
                                 'Chăm Sóc Trẻ Em',
                                 'Tiêm Chủng Người Lớn',
-                                'Tiêm Phòng Mẹ Bầu',
-                                'Góc Chuyên Gia'
+                                'Tiêm Phòng Mẹ Bầu'
                             ];
                         @endphp
                         @foreach($cats as $c)
