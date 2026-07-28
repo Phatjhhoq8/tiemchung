@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.16] - 2026-07-28
+
+### Fixed Admin Sidebar Duplicate Border Styling & About Page Hero Style Alignment
+
+* **Cleaned Active Menu Style**: Removed the redundant inline background and duplicate red left-border style on the "Chỉnh Sửa Trực Quan (Live)" sidebar item in [admin.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/layouts/admin.blade.php) when the route is active, ensuring it matches the uniform active styling of other sidebar items and avoids displaying a dual left border.
+* **About Page Intro Banner Realignment**: Redesigned the introduction hero banner on the About page [about.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/about.blade.php) using the `.catalog-hero` layout class from `articles.css` to match the split-grid visual style, red gradient theme tone, and left-aligned breadcrumb presentation of the News section. Added a custom inline SVG medical shield and heart visual to the right-side container.
+
 ## [v3.5.15] - 2026-07-27
 
 ### Customer Layout Footer Restoration
@@ -227,6 +234,7 @@
 * **Justified Typography Alignment**: Applied `text-align: justify` across all article headlines (`.hero-main-title`, `.hero-sub-title`, `.hot-news-title`, `.news-horizontal-heading`) and summary excerpts (`.hero-main-excerpt`, `.news-horizontal-snippet`, `.catalog-hero p`).
 * **Synchronized Metadata Icons & Removed Ranking Numbers**: Standardized all date metadata icons to calendar (📅 `calendar`) across all cards and removed ranking numbers (`01`, `02`, etc.) from the Hot News section.
 * **Pure HTML5 + AOS Animation Architecture**: Adopted lightweight pure HTML5 + CSS + AOS animation attributes (`data-aos="fade-up"`), matching the clean architecture of the About page (`/about`).
+
 
 ## [v2.9.9] - 2026-07-26
 

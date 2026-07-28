@@ -2,26 +2,60 @@
 
 @section('title', 'Giới Thiệu Hệ Thống Tiêm Chủng Medicare')
 
+@section('styles')
+    <link rel="stylesheet" href="{{ asset('css/articles.css') }}">
+@endsection
+
 @section('content')
 <div class="about-wrapper" style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
     <!-- Hero Banner -->
-    <div class="about-hero" data-aos="fade-up">
-        <!-- Breadcrumb inside Hero -->
-        <div class="catalog-breadcrumb" style="margin-bottom: 1.2rem; justify-content: center;">
-            <a href="{{ route('home') }}">Trang chủ</a>
-            <i data-lucide="chevron-right"></i>
-            <span>Giới thiệu</span>
+    <section class="catalog-hero" data-aos="fade-up" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%), url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1600&q=80') no-repeat center center / cover; margin-bottom: 4rem;">
+        <div class="catalog-hero-content" style="text-align: left;">
+            <!-- Breadcrumb inside Hero -->
+            <div class="catalog-breadcrumb" style="margin-bottom: 1.2rem; justify-content: flex-start;">
+                <a href="{{ route('home') }}">Trang chủ</a>
+                <i data-lucide="chevron-right"></i>
+                <span>Giới thiệu</span>
+            </div>
+            <h1 class="about-hero-title" style="color: #fff; font-size: clamp(2rem, 3vw, 2.7rem); font-weight: 800; line-height: 1.25; margin-bottom: 1rem;">{{ $settings['about_hero_title'] ?? 'Giới Thiệu Hệ Thống Tiêm Chủng Medicare' }}</h1>
+            <p class="about-hero-desc" style="color: rgba(255, 255, 255, 0.94); font-size: 1.05rem; line-height: 1.6; max-width: 680px; margin: 0 0 2rem 0; text-align: justify;">{{ $settings['about_hero_desc'] ?? 'Đơn vị y tế uy tín hàng đầu chuyên cung cấp giải pháp phòng bệnh toàn diện bằng vắc xin chất lượng cao cho trẻ em và người lớn.' }}</p>
+            <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="about-hero-btn" style="margin-bottom: 0;">
+                <i data-lucide="calendar-check" style="width: 18px; height: 18px;"></i>
+                <span>Đăng ký tiêm ngay</span>
+            </a>
         </div>
-        <div style="margin-top: 4px;">
-            <span class="about-hero-tag">Về Chúng Tôi</span>
+
+        <!-- Cột Phải: Visual Minh họa Y tế (phong cách tin tức) -->
+        <div class="catalog-hero-visual" aria-hidden="true" style="display: flex; align-items: center; justify-content: center; height: 100%;">
+            <svg viewBox="0 0 300 220" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25" />
+                        <stop offset="100%" stop-color="#ffffff" stop-opacity="0.05" />
+                    </linearGradient>
+                </defs>
+                <circle cx="150" cy="110" r="85" fill="#ffffff" opacity="0.08" stroke="#ffffff" stroke-width="1.5" stroke-dasharray="4 4"/>
+                <g transform="translate(110, 60)">
+                    <!-- Modern Glassmorphic Shield -->
+                    <path d="M 40,5 L 75,15 L 75,45 C 75,65 60,82 40,88 C 20,82 5,65 5,45 L 5,15 Z" fill="url(#shieldGrad)" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <!-- Bold Red Cross -->
+                    <path d="M 40,25 L 40,55 M 25,40 L 55,40" stroke="#ffffff" stroke-width="6.5" stroke-linecap="round" />
+                    <path d="M 40,25 L 40,55 M 25,40 L 55,40" stroke="var(--primary-color)" stroke-width="3" stroke-linecap="round" />
+                </g>
+                <g transform="translate(180, 130)">
+                    <circle cx="20" cy="20" r="22" fill="#ffffff" opacity="0.15" />
+                    <circle cx="20" cy="20" r="18" fill="var(--secondary-color)" />
+                    <!-- Heart Icon inside Circle -->
+                    <path d="M 20,13 C 18,10 13,10 11,13 C 9,16 13,22 20,27 C 27,22 31,16 29,13 C 27,10 22,10 20,13 Z" fill="#ffffff" />
+                </g>
+                <g transform="translate(60, 40)">
+                    <circle cx="15" cy="15" r="15" fill="#ffffff" opacity="0.2" />
+                    <circle cx="15" cy="15" r="12" fill="#ffffff" />
+                    <path d="M 11,15 L 14,18 L 20,12" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                </g>
+            </svg>
         </div>
-        <h1 class="about-hero-title">{{ $settings['about_hero_title'] ?? 'Giới Thiệu Hệ Thống Tiêm Chủng Medicare' }}</h1>
-        <p class="about-hero-desc">{{ $settings['about_hero_desc'] ?? 'Đơn vị y tế uy tín hàng đầu chuyên cung cấp giải pháp phòng bệnh toàn diện bằng vắc xin chất lượng cao cho trẻ em và người lớn.' }}</p>
-        <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="about-hero-btn">
-            <i data-lucide="calendar-check" style="width: 18px; height: 18px;"></i>
-            <span>Đăng ký tiêm ngay</span>
-        </a>
-    </div>
+    </section>
 
     <!-- Our Story Section -->
     <section class="about-section">
