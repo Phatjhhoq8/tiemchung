@@ -212,13 +212,14 @@
 <script>
     const cartData = {!! json_encode($cart) !!};
     const todayStr = "{{ date('Y-m-d') }}";
+    const baseAssetUrl = "{{ asset('images/vaccines') }}";
     let patientCount = 0;
 
     function generateVaccineChecklistHtml(index) {
         let html = '';
         Object.entries(cartData).forEach(([vId, item]) => {
             const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
-            const imageUrl = `/images/vaccines/${item.image || 'hexaxim.jpg'}`;
+            const imageUrl = `${baseAssetUrl}/${item.image || 'hexaxim.jpg'}`;
             const desc = item.disease_prevention || 'Phòng ngừa các bệnh truyền nhiễm nguy hiểm';
             html += `
                 <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; transition: border-color 0.2s; margin-bottom: 8px; width: 100%;">

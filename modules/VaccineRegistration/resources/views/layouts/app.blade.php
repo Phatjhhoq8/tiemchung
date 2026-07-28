@@ -15,6 +15,13 @@
     <meta name="description" content="@yield('meta_description', 'Medicare - Hệ thống tiêm chủng vắc xin an toàn, chất lượng hàng đầu tại Cần Thơ cho trẻ em và người lớn.')">
     <title>@yield('title', 'Hệ Thống Tiêm Chủng Medicare')</title>
     
+    <script>
+        window.Laravel = {
+            baseUrl: "{{ url('/') }}",
+            csrfToken: "{{ csrf_token() }}"
+        };
+    </script>
+    
     <!-- Google Fonts (Roboto + Inter for headings) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -11,6 +11,12 @@ const getCsrfToken = () => {
     return meta ? meta.getAttribute('content') : '';
 };
 
+const getAbsoluteUrl = (path) => {
+    const base = (window.Laravel && window.Laravel.baseUrl) ? window.Laravel.baseUrl : '';
+    const slash = (base && !path.startsWith('/')) ? '/' : '';
+    return base + slash + path;
+};
+
 // ==========================================================================
 // TOAST NOTIFICATIONS SYSTEM
 // ==========================================================================
@@ -79,7 +85,7 @@ async function toggleCart(vaccineId, forceRemove = false) {
         isSelected = true;
     }
     
-    const url = isSelected ? '/cart/remove' : '/cart/add';
+    const url = getAbsoluteUrl(isSelected ? '/cart/remove' : '/cart/add');
     
     try {
         const response = await fetch(url, {
@@ -167,7 +173,7 @@ async function toggleCart(vaccineId, forceRemove = false) {
 
 async function selectVaccineAndBook(vaccineId) {
     try {
-        const response = await fetch('/cart/add', {
+        const response = await fetch(getAbsoluteUrl('/cart/add'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -187,14 +193,14 @@ async function selectVaccineAndBook(vaccineId) {
                     openSpaRegisterModal(null);
                 }, 300);
             } else {
-                window.location.href = `/register?add_vaccine_id=${vaccineId}`;
+                window.location.href = getAbsoluteUrl(`/register?add_vaccine_id=${vaccineId}`);
             }
         } else {
-            window.location.href = `/register?add_vaccine_id=${vaccineId}`;
+            window.location.href = getAbsoluteUrl(`/register?add_vaccine_id=${vaccineId}`);
         }
     } catch (error) {
         console.error('Lỗi đăng ký nhanh:', error);
-        window.location.href = `/register?add_vaccine_id=${vaccineId}`;
+        window.location.href = getAbsoluteUrl(`/register?add_vaccine_id=${vaccineId}`);
     }
 }
 
@@ -273,7 +279,7 @@ function updateFloatingCart(cart, count, totalPrice) {
 
 async function clearCartUI() {
     try {
-        const response = await fetch('/cart/clear', {
+        const response = await fetch(getAbsoluteUrl('/cart/clear'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -319,7 +325,7 @@ async function openVaccineDetailModal(vaccineId, event) {
     lucide.createIcons();
 
     try {
-        const response = await fetch(`/vaccines/${vaccineId}`, {
+        const response = await fetch(getAbsoluteUrl(`/vaccines/${vaccineId}`), {
             headers: {
                 'X-CSRF-TOKEN': getCsrfToken(),
                 'Accept': 'application/json'
@@ -431,7 +437,7 @@ async function openSpaRegisterModal(event) {
     lucide.createIcons();
 
     try {
-        const response = await fetch('/register', {
+        const response = await fetch(getAbsoluteUrl('/register'), {
             headers: {
                 'X-CSRF-TOKEN': getCsrfToken(),
                 'Accept': 'application/json'
@@ -499,7 +505,7 @@ function addSpaPatientField() {
     let checklistHtml = '';
     Object.entries(globalSpaCartData).forEach(([vId, item]) => {
         const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
-        const imageUrl = `/images/vaccines/${item.image || 'hexaxim.jpg'}`;
+        const imageUrl = getAbsoluteUrl(`/images/vaccines/${item.image || 'hexaxim.jpg'}`);
         const desc = item.disease_prevention || 'Phòng ngừa các bệnh truyền nhiễm nguy hiểm';
         checklistHtml += `
             <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; transition: border-color 0.2s; margin-bottom: 6px; width: 100%;">
