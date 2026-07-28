@@ -482,7 +482,7 @@
     flex-direction: column;
     gap: 0;
     flex: 1;
-    margin-top: 6px;
+    margin-top: 8px;
 }
 
 .hot-news-item {
@@ -493,9 +493,9 @@
     display: flex;
     gap: 8px;
     align-items: flex-start;
-    height: 72px;
+    height: 68px;
     overflow: hidden;
-    padding: 10px 0;
+    padding: 8px 0;
     box-sizing: border-box;
     flex-shrink: 0;
 }
@@ -513,8 +513,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
+    gap: 4px;
 }
 
 .hot-news-item:hover .hot-news-title {
@@ -526,14 +525,13 @@
     font-weight: 700;
     color: #1e293b;
     line-height: 1.4;
-    margin: 0 0 4px 0;
+    margin: 0;
     text-align: left;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    flex-shrink: 0;
 }
 
 /* TẦNG 3: HORIZONTAL RECTANGULAR ARTICLE FEED (Isolated White Card Section) */
