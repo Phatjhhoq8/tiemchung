@@ -71,6 +71,35 @@
                     </nav>
                 </div>
 
+                <!-- Widget 1: Related Articles (Bài viết cùng chuyên mục) -->
+                @if(isset($relatedArticles) && $relatedArticles->isNotEmpty())
+                    <div class="sidebar-widget" style="margin: 20px 0;">
+                        <div class="widget-title">
+                            <i data-lucide="newspaper" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
+                            Bài Viết Liên Quan
+                        </div>
+                        <div class="related-articles-list">
+                            @foreach($relatedArticles as $rel)
+                                @php
+                                    $relImg = $rel->image && !str_contains($rel->image, 'logo') ? $rel->image : 'vaxigrip.jpg';
+                                @endphp
+                                <a href="{{ route('news.show', $rel->slug) }}" class="related-article-card">
+                                    <div class="related-article-img">
+                                        <img src="{{ asset('images/vaccines/' . $relImg) }}" alt="{{ $rel->title }}" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/vaxigrip.jpg') }}';">
+                                    </div>
+                                    <div class="related-article-info">
+                                        <h4 class="related-article-title">{{ Str::limit($rel->title, 55) }}</h4>
+                                        <div style="font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 4px;">
+                                            <i data-lucide="calendar" style="width: 10px; height: 10px;"></i>
+                                            {{ $rel->created_at ? $rel->created_at->format('d/m/Y') : '26/07/2026' }}
+                                        </div>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Widget 2: Call to Action Booking Card (Justified text) -->
                 <div class="sidebar-cta-widget">
                     <i data-lucide="calendar-check" class="cta-widget-icon"></i>
@@ -137,3 +166,4 @@
     </section>
 </div>
 @endsection
+

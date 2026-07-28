@@ -1,5 +1,21 @@
 # Release Notes
 
+## [v3.5.17] - 2026-07-28
+
+### Admin Article Editor Block Deletion and Hover UX Fix
+
+* **Fix Block Controls Positioning and Hover Issues**: Repositioned the `.cell-controls` container slightly outside the notebook cell boundaries (`top: -14px` instead of `top: 8px`) and raised its `z-index` to `99`. This prevents the block control buttons from being obscured or click-intercepted by the TinyMCE rich text editor and its toolbars, while avoiding layout overlaps.
+* **Implement Active Cell State Tracking**: Added Javascript click listeners to the cells and a `focus` event listener to the TinyMCE initialization script to track the active cell via the `.active-cell` CSS class. This ensures the block controls stay permanently visible while a cell is being focused or edited, ensuring a smooth, bug-free block deletion and management UX.
+
+## [v3.5.16] - 2026-07-28
+
+### Admin Article Creation Bug Fix & Category Synchronization
+
+* **Admin Article Form Submitting Bug Fix**: Fixed an issue in [create.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/admin/articles/create.blade.php) and [edit.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/admin/articles/edit.blade.php) where `document.querySelector('form')` selected the admin layout's logout form (`#logoutForm`) instead of the article form, preventing rich-text editor content from syncing into the hidden `<textarea name="content">` input upon submission. Assigned explicit IDs (`#articleCreateForm` and `#articleEditForm`) and updated the JS selector to fix content persistence.
+* **Admin Article Edit/Create UI Refactoring**: Removed the complex block builder and replaced it with a single, full-featured TinyMCE editor. Restructured the layout into a professional 2-column format (70% main content, 30% metadata sidebar), created a dedicated thumbnail upload drag-and-drop preview block, and styled the excerpt/summary field explicitly for index card display.
+* **Category Standardization Across Admin and Client**: Standardized the 8 medical article categories (`Tin Nóng Y Học`, `Khuyến Cáo Y Tế`, `Bệnh Truyền Nhiễm`, `Vắc Xin Mới`, `Chăm Sóc Trẻ Em`, `Tiêm Chủng Người Lớn`, `Tiêm Phòng Mẹ Bầu`, `Góc Chuyên Gia`) across [create.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/admin/articles/create.blade.php), [edit.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/admin/articles/edit.blade.php), and [ArticleController.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/Http/Controllers/ArticleController.php) to ensure newly created or edited articles properly map to client-side tabs.
+* **Client Article Detail Sidebar & Dynamic TOC Enhancement**: Added the missing Sidebar Related Articles widget (`$relatedArticles`) and dynamic Table of Contents (TOC) JavaScript generation from `<h2>` elements in [show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php).
+
 ## [v3.5.15] - 2026-07-27
 
 ### Customer Layout Footer Restoration
