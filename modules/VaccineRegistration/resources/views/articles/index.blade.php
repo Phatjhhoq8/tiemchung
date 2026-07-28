@@ -145,6 +145,9 @@
                         <a href="{{ route('news.show', $hot->slug) }}" class="hot-news-item">
                             <div class="hot-news-item-content">
                                 <h3 class="hot-news-title">{{ $hot->title }}</h3>
+                                @if($hot->summary)
+                                    <p class="hot-news-excerpt">{{ Str::limit($hot->summary, 70) }}</p>
+                                @endif
                                 <div class="hot-news-meta">
                                     <span><i data-lucide="calendar"></i> {{ $hot->created_at ? $hot->created_at->format('d/m/Y') : '26/07/2026' }}</span>
                                     <span><i data-lucide="eye"></i> {{ number_format($hot->views) }}</span>
