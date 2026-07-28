@@ -2665,7 +2665,7 @@ button, select, input {
 
     .catalog-hero {
         padding: 1.5rem;
-        border-radius: 20px;
+        border-radius: 0;
         min-height: auto;
     }
 
