@@ -7,9 +7,9 @@
 @endsection
 
 @section('content')
-<div class="about-wrapper" style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
-    <!-- Hero Banner -->
-    <section class="catalog-hero" data-aos="fade-up" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%), url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1600&q=80') no-repeat center center / cover; margin-bottom: 4rem;">
+<!-- Hero Banner -->
+<section class="catalog-hero" data-aos="fade-up" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%), url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1600&q=80') no-repeat center center / cover; margin-top: -2rem;">
+    <div class="catalog-hero-container">
         <div class="catalog-hero-content" style="text-align: left;">
             <!-- Breadcrumb inside Hero -->
             <div class="catalog-breadcrumb" style="margin-bottom: 1.2rem; justify-content: flex-start;">
@@ -55,7 +55,10 @@
                 </g>
             </svg>
         </div>
-    </section>
+    </div>
+</section>
+
+<div class="about-wrapper" style="max-width: 1200px; margin: 0 auto 40px; padding: 0 20px;">
 
     <!-- Our Story Section -->
     <section class="about-section">

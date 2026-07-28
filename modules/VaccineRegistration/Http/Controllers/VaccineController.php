@@ -81,6 +81,14 @@ class VaccineController extends Controller
 
         $productCategories = $this->buildProductCategories($allVaccines);
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'html' => view('vaccine::partials.grid', compact('vaccines', 'cart'))->render(),
+                'count' => $vaccines->total(),
+            ]);
+        }
+
         return view('vaccine::index', compact(
             'vaccines',
             'cart',
@@ -232,13 +240,13 @@ class VaccineController extends Controller
         $priceToUse = $vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price;
 
         if (isset($cart[$vaccineId])) {
-            $cart[$vaccineId]['quantity'] += $quantity;
+            $cart[$vaccineId]['quantity'] = 1;
         } else {
             $cart[$vaccineId] = [
                 'name' => $vaccine->name,
                 'price' => $priceToUse,
                 'image' => $vaccine->image ?: 'hexaxim.jpg',
-                'quantity' => $quantity,
+                'quantity' => 1,
                 'type' => $vaccine->type,
                 'disease_prevention' => $vaccine->disease_prevention,
             ];
@@ -323,6 +331,23 @@ class VaccineController extends Controller
     {
         $cart = session()->get('cart', []);
 
+        if ($request->has('add_vaccine_id')) {
+            $vaccineId = $request->input('add_vaccine_id');
+            $vaccine = Vaccine::find($vaccineId);
+            if ($vaccine) {
+                $priceToUse = $vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price;
+                $cart[$vaccine->id] = [
+                    'name' => $vaccine->name,
+                    'price' => $priceToUse,
+                    'quantity' => 1,
+                    'image' => $vaccine->image ?: 'hexaxim.jpg',
+                    'type' => $vaccine->type,
+                    'disease_prevention' => $vaccine->disease_prevention,
+                ];
+                session()->put('cart', $cart);
+            }
+        }
+
         if (empty($cart) && ($request->ajax() || $request->wantsJson())) {
             $centers = Center::active()->get();
             return response()->json([
@@ -370,28 +395,34 @@ class VaccineController extends Controller
 
         // Validate dữ liệu
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'patient_name' => 'required|string|max:255',
-            'patient_dob' => 'required|date|before:today',
-            'patient_gender' => 'required|string|in:Nam,Nữ,Khác',
-            'patient_phone' => 'required|string|regex:/^[0-9]{9,11}$/',
-            'patient_address' => 'required|string|max:500',
+            'patients' => 'required|array|min:1',
+            'patients.*.name' => 'required|string|max:255',
+            'patients.*.dob' => 'required|date|before:today',
+            'patients.*.gender' => 'required|string|in:Nam,Nữ,Khác',
+            'patients.*.phone' => 'required|string|regex:/^[0-9]{9,11}$/',
+            'patients.*.address' => 'required|string|max:500',
+            'patients.*.vaccine_ids' => 'required|array|min:1',
+            'patients.*.vaccine_ids.*' => 'exists:vaccines,id',
             'guardian_name' => 'nullable|string|max:255',
             'guardian_phone' => 'nullable|string|regex:/^[0-9]{9,11}$/',
             'center_name' => 'required|string',
             'injection_date' => 'required|date|after_or_equal:today',
-            'payment_method' => 'required|string|in:Tại trung tâm, Chuyển khoản, Thẻ ATM / QR Code',
+            'payment_method' => 'required|string|in:Tại trung tâm,QR,Thẻ,Chuyển khoản,Thẻ ATM / QR Code',
         ], [
-            'patient_name.required' => 'Vui lòng điền Họ tên người tiêm.',
-            'patient_dob.required' => 'Vui lòng điền Ngày sinh.',
-            'patient_dob.before' => 'Ngày sinh phải trước ngày hôm nay.',
-            'patient_gender.required' => 'Vui lòng chọn Giới tính.',
-            'patient_phone.required' => 'Vui lòng điền Số điện thoại liên hệ.',
-            'patient_phone.regex' => 'Số điện thoại không hợp lệ (9 - 11 chữ số).',
-            'patient_address.required' => 'Vui lòng điền Địa chỉ thường trú.',
-            'center_name.required' => 'Vui lòng chọn Trung tâm tiêm chủng.',
-            'injection_date.required' => 'Vui lòng chọn Ngày tiêm dự kiến.',
+            'patients.required' => 'Vui lòng cung cấp thông tin người đăng ký tiêm.',
+            'patients.array' => 'Dữ liệu người đăng ký tiêm không hợp lệ.',
+            'patients.*.name.required' => 'Họ tên người tiêm không được để trống.',
+            'patients.*.dob.required' => 'Ngày sinh người tiêm không được để trống.',
+            'patients.*.dob.before' => 'Ngày sinh người tiêm phải trước ngày hôm nay.',
+            'patients.*.gender.required' => 'Vui lòng chọn giới tính người tiêm.',
+            'patients.*.phone.required' => 'Số điện thoại liên hệ không được để trống.',
+            'patients.*.phone.regex' => 'Số điện thoại không hợp lệ (9 - 11 chữ số).',
+            'patients.*.address.required' => 'Địa chỉ người tiêm không được để trống.',
+            'patients.*.vaccine_ids.required' => 'Vui lòng chọn ít nhất một loại vắc xin cho mỗi người.',
+            'center_name.required' => 'Vui lòng chọn trung tâm tiêm chủng.',
+            'injection_date.required' => 'Vui lòng chọn ngày tiêm dự kiến.',
             'injection_date.after_or_equal' => 'Ngày tiêm dự kiến không được ở quá khứ.',
-            'payment_method.required' => 'Vui lòng chọn Phương thức thanh toán.',
+            'payment_method.required' => 'Vui lòng chọn phương thức thanh toán.',
         ]);
 
         if ($validator->fails()) {
@@ -405,50 +436,63 @@ class VaccineController extends Controller
         }
 
         $validated = $validator->validated();
-
-        $totalPrice = collect($cart)->sum(function ($item) {
-            return ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
-        });
-        $registrationCode = 'MCD-' . strtoupper(Str::random(8));
+        $patientsData = $validated['patients'];
+        $successCodes = [];
 
         DB::beginTransaction();
         try {
-            // 1. Tạo bản ghi đăng ký
-            $registration = Registration::create([
-                'registration_code' => $registrationCode,
-                'patient_name' => $validated['patient_name'],
-                'patient_dob' => $validated['patient_dob'],
-                'patient_gender' => $validated['patient_gender'],
-                'patient_phone' => $validated['patient_phone'],
-                'patient_address' => $validated['patient_address'],
-                'guardian_name' => $validated['guardian_name'] ?? null,
-                'guardian_phone' => $validated['guardian_phone'] ?? null,
-                'center_name' => $validated['center_name'],
-                'injection_date' => $validated['injection_date'],
-                'status' => $validated['payment_method'] === 'Tại trung tâm' ? 'Chờ thanh toán' : 'Đã thanh toán',
-                'payment_method' => $validated['payment_method'],
-                'total_price' => $totalPrice,
-            ]);
+            foreach ($patientsData as $index => $patient) {
+                // Generate unique registration code
+                $registrationCode = 'MCD-' . strtoupper(\Illuminate\Support\Str::random(8)) . '-' . ($index + 1);
 
-            // 2. Đính kèm các vắc xin trong giỏ hàng
-            foreach ($cart as $vId => $item) {
-                $registration->vaccines()->attach($vId, [
-                    'price' => $item['price'] ?? 0,
-                    'quantity' => $item['quantity'] ?? 1,
+                // Load vaccine models to calculate the subtotal price for this patient
+                $vaccines = Vaccine::whereIn('id', $patient['vaccine_ids'])->get();
+                $subtotalPrice = $vaccines->sum(function ($v) {
+                    return $v->hasSalePrice() ? $v->sale_price : $v->price;
+                });
+
+                // Create patient registration
+                $registration = Registration::create([
+                    'registration_code' => $registrationCode,
+                    'patient_name' => $patient['name'],
+                    'patient_dob' => $patient['dob'],
+                    'patient_gender' => $patient['gender'],
+                    'patient_phone' => $patient['phone'],
+                    'patient_address' => $patient['address'],
+                    'guardian_name' => $validated['guardian_name'] ?? null,
+                    'guardian_phone' => $validated['guardian_phone'] ?? null,
+                    'center_name' => $validated['center_name'],
+                    'injection_date' => $validated['injection_date'],
+                    'status' => $validated['payment_method'] === 'Tại trung tâm' ? 'Chờ thanh toán' : 'Đã thanh toán',
+                    'payment_method' => $validated['payment_method'],
+                    'total_price' => $subtotalPrice,
                 ]);
+
+                // Attach vaccines
+                foreach ($vaccines as $v) {
+                    $registration->vaccines()->attach($v->id, [
+                        'price' => $v->hasSalePrice() ? $v->sale_price : $v->price,
+                        'quantity' => 1,
+                    ]);
+                }
+
+                $successCodes[] = $registrationCode;
             }
 
             DB::commit();
 
-            // Xóa sạch giỏ hàng session sau khi tạo đăng ký thành công
+            // Clear session cart
             session()->forget('cart');
-            session()->put('success_code', $registrationCode);
+            session()->put('success_codes', $successCodes);
+            if (!empty($successCodes)) {
+                session()->put('success_code', $successCodes[0]);
+            }
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Đăng ký tiêm chủng thành công!',
-                    'registration_code' => $registrationCode,
+                    'registration_codes' => $successCodes,
                     'redirect' => route('register.success')
                 ]);
             }
@@ -457,13 +501,14 @@ class VaccineController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Multi-patient registration error: ' . $e->getMessage());
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Có lỗi xảy ra khi lưu đăng ký: ' . $e->getMessage()
                 ], 500);
             }
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi lưu đăng ký. Vui lòng thử lại.');
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi lưu đăng ký. Vui lòng thử lại.')->withInput();
         }
     }
 
@@ -472,15 +517,21 @@ class VaccineController extends Controller
      */
     public function showSuccess()
     {
-        $code = session('success_code');
+        $codes = session('success_codes');
+        $singleCode = session('success_code');
 
-        if (!$code) {
+        if (!$codes && $singleCode) {
+            $codes = [$singleCode];
+        }
+
+        if (empty($codes)) {
             return redirect()->route('vaccine.index');
         }
 
-        $registration = Registration::with('vaccines')->where('registration_code', $code)->firstOrFail();
+        $registrations = Registration::with('vaccines')->whereIn('registration_code', $codes)->get();
+        $grandTotal = $registrations->sum('total_price');
 
-        return view('vaccine::success', compact('registration'));
+        return view('vaccine::success', compact('registrations', 'grandTotal'));
     }
 
     /**

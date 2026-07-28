@@ -7,9 +7,9 @@
 @endsection
 
 @section('content')
-<div class="news-catalog-page">
-    <!-- CATALOG HERO BANNER (Đo theo chuẩn 100% trang /about) -->
-    <section class="catalog-hero" data-aos="fade-up">
+<!-- CATALOG HERO BANNER (Tràn viền) -->
+<section class="catalog-hero" data-aos="fade-up" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%), url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1920&q=80') no-repeat center center / cover; margin-top: -2rem;">
+    <div class="catalog-hero-container">
         <div class="catalog-hero-content">
             <!-- Dòng 1: Breadcrumb Chuẩn -->
             <div class="catalog-breadcrumb">
@@ -64,7 +64,10 @@
                 @endforeach
             </div>
         </div>
-    </section>
+    </div>
+</section>
+
+<div class="news-catalog-page" style="margin-top: 0;">
 
     <!-- SUB-PAGE NAVIGATION NAV BAR (AOS animation fade-up) -->
     <section class="news-nav-bar-container" data-aos="fade-up" data-aos-delay="100">
