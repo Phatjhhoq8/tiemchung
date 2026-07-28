@@ -48,60 +48,37 @@
 
                 <!-- STEP 1: Thông tin người tiêm -->
                 <div class="form-step-content active" id="stepContent1">
-                    <h2>Thông tin cá nhân người tiêm</h2>
-                    <p class="step-desc">Nhập chính xác họ tên và ngày sinh của người tiêm chủng vắc xin.</p>
+                    <h2>Thông tin người tiêm & Chọn vắc xin</h2>
+                    <p class="step-desc">Medicare hỗ trợ đăng ký tiêm chủng cho nhiều người thân trong gia đình cùng lúc.</p>
 
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="patient_name">Họ tên người tiêm <span class="required">*</span></label>
-                            <input type="text" name="patient_name" id="patient_name" value="{{ old('patient_name') }}" placeholder="Ví dụ: Nguyễn Văn A" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="patient_dob">Ngày sinh người tiêm <span class="required">*</span></label>
-                            <input type="date" name="patient_dob" id="patient_dob" value="{{ old('patient_dob') }}" max="{{ date('Y-m-d') }}" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="patient_gender">Giới tính <span class="required">*</span></label>
-                            <select name="patient_gender" id="patient_gender" required>
-                                <option value="">-- Chọn giới tính --</option>
-                                <option value="Nam" {{ old('patient_gender') === 'Nam' ? 'selected' : '' }}>Nam</option>
-                                <option value="Nữ" {{ old('patient_gender') === 'Nữ' ? 'selected' : '' }}>Nữ</option>
-                                <option value="Khác" {{ old('patient_gender') === 'Khác' ? 'selected' : '' }}>Khác</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="patient_phone">Số điện thoại liên hệ <span class="required">*</span></label>
-                            <input type="text" name="patient_phone" id="patient_phone" value="{{ old('patient_phone') }}" placeholder="Ví dụ: 0938603839" required>
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label for="patient_address">Địa chỉ thường trú <span class="required">*</span></label>
-                            <input type="text" name="patient_address" id="patient_address" value="{{ old('patient_address') }}" placeholder="Số nhà, đường, phường/xã, quận/huyện..." required>
-                        </div>
+                    <!-- Patients Container -->
+                    <div id="patientsContainer">
+                        <!-- Patient blocks will be inserted here dynamically -->
                     </div>
+
+                    <button type="button" class="btn-secondary" onclick="addPatientField()" style="margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 8px; font-weight: 700; background: #f8fafc; border: 1px dashed #cbd5e1; cursor: pointer; color: #475569; transition: all 0.2s;">
+                        <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i> Thêm người tiêm khác
+                    </button>
 
                     <!-- Người giám hộ (nếu người tiêm < 15 tuổi) -->
                     <div id="guardianSection" style="display: none; margin-top: 24px; padding-top: 24px; border-top: 1px dashed var(--border-color);">
                         <h3 style="margin-bottom: 12px; font-size: 16px; color: var(--primary-color);">Thông tin người giám hộ</h3>
-                        <p class="step-desc">Người tiêm dưới 15 tuổi cần khai báo thông tin cha/mẹ hoặc người giám hộ hợp pháp.</p>
+                        <p class="step-desc">Hệ thống phát hiện có người tiêm dưới 15 tuổi, vui lòng khai báo thông tin cha/mẹ hoặc người giám hộ hợp pháp.</p>
                         
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="guardian_name">Họ tên người giám hộ</label>
+                                <label for="guardian_name">Họ tên người giám hộ <span class="required">*</span></label>
                                 <input type="text" name="guardian_name" id="guardian_name" value="{{ old('guardian_name') }}" placeholder="Ví dụ: Nguyễn Văn B">
                             </div>
 
                             <div class="form-group">
-                                <label for="guardian_phone">Số điện thoại người giám hộ</label>
+                                <label for="guardian_phone">Số điện thoại người giám hộ <span class="required">*</span></label>
                                 <input type="text" name="guardian_phone" id="guardian_phone" value="{{ old('guardian_phone') }}" placeholder="Ví dụ: 0932477184">
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-actions">
+                    <div class="form-actions" style="margin-top: 24px;">
                         <div></div>
                         <button type="button" class="btn-primary" onclick="nextStep(1)">
                             <span>Tiếp tục</span> <i data-lucide="arrow-right"></i>
@@ -192,7 +169,7 @@
                         <button type="button" class="btn-secondary" onclick="prevStep(3)">
                             <i data-lucide="arrow-left"></i> <span>Quay lại</span>
                         </button>
-                        <button type="submit" class="btn-submit-registration">
+                        <button type="submit" class="btn-submit-registration" style="background: var(--primary-color, #c8102e);">
                             <i data-lucide="shield-check"></i> <span>Hoàn tất Đăng ký</span>
                         </button>
                     </div>
@@ -208,7 +185,7 @@
                     <div class="summary-item">
                         <div class="item-name">
                             <strong>{{ $item['name'] }}</strong>
-                            <span>{{ $item['origin'] }}</span>
+                            <span>{{ $item['disease_prevention'] ?? 'Vắc xin phòng bệnh' }}</span>
                         </div>
                         <span class="item-price">{{ number_format($item['price'], 0, ',', '.') }} đ</span>
                     </div>
@@ -233,29 +210,159 @@
 
 @section('scripts')
 <script>
-    // Logic tự động hiển thị giám hộ nếu người tiêm dưới 15 tuổi
-    document.getElementById('patient_dob').addEventListener('change', function(e) {
-        const dob = new Date(e.target.value);
-        const today = new Date();
-        let age = today.getFullYear() - dob.getFullYear();
-        const m = today.getMonth() - dob.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-            age--;
-        }
+    const cartData = {!! json_encode($cart) !!};
+    const todayStr = "{{ date('Y-m-d') }}";
+    const baseAssetUrl = "{{ asset('images/vaccines') }}";
+    let patientCount = 0;
+
+    function generateVaccineChecklistHtml(index) {
+        let html = '';
+        Object.entries(cartData).forEach(([vId, item]) => {
+            const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
+            const imageUrl = `${baseAssetUrl}/${item.image || 'hexaxim.jpg'}`;
+            const desc = item.disease_prevention || 'Phòng ngừa các bệnh truyền nhiễm nguy hiểm';
+            html += `
+                <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; transition: border-color 0.2s; margin-bottom: 8px; width: 100%;">
+                    <input type="checkbox" name="patients[${index}][vaccine_ids][]" value="${vId}" data-price="${item.price}" checked class="patient-vaccine-checkbox" onchange="recalculateRegisterPrices()" style="margin-top: 4px; width: 16px; height: 16px;">
+                    <img src="${imageUrl}" alt="${item.name}" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover; border: 1px solid #f1f5f9; flex-shrink: 0;">
+                    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+                        <span style="font-size: 13.5px; font-weight: 700; color: #1e293b;">${item.name}</span>
+                        <span style="font-size: 11.5px; color: #64748b; line-height: 1.4;"><strong>Phòng bệnh:</strong> ${desc}</span>
+                        <span style="font-size: 13px; font-weight: 800; color: var(--primary-color, #c8102e); margin-top: 2px;">${formattedPrice}</span>
+                    </div>
+                </label>
+            `;
+        });
+        return html;
+    }
+
+    function addPatientField() {
+        const container = document.getElementById('patientsContainer');
+        if (!container) return;
+
+        const index = patientCount;
+        const blockHtml = `
+            <div class="patient-form-block" id="patientBlock_${index}" style="padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px; background: #ffffff; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
+                    <h3 style="font-size: 15px; font-weight: 800; color: var(--accent-color, #004b8f); margin: 0; font-family: var(--font-display, inherit);">Người tiêm #${index + 1}</h3>
+                    ${index > 0 ? `
+                        <button type="button" class="btn-remove-patient" onclick="removePatientField(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Xóa người này
+                        </button>
+                    ` : ''}
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Họ tên người tiêm <span class="required">*</span></label>
+                        <input type="text" name="patients[${index}][name]" placeholder="Ví dụ: Nguyễn Văn A" required style="padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; width: 100%;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Ngày sinh người tiêm <span class="required">*</span></label>
+                        <input type="date" name="patients[${index}][dob]" required max="${todayStr}" onchange="checkPatientAge()" class="patient-dob-input" style="padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; width: 100%;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Giới tính <span class="required">*</span></label>
+                        <select name="patients[${index}][gender]" required style="padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; width: 100%;">
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Số điện thoại liên hệ <span class="required">*</span></label>
+                        <input type="text" name="patients[${index}][phone]" placeholder="Ví dụ: 0938603839" required style="padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; width: 100%;">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Địa chỉ thường trú <span class="required">*</span></label>
+                        <input type="text" name="patients[${index}][address]" placeholder="Số nhà, đường, phường/xã, quận/huyện..." required style="padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; width: 100%;">
+                    </div>
+                </div>
+
+                <div style="margin-top: 16px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <h4 style="font-size: 13.5px; font-weight: 700; color: #334155; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="syringe" style="width: 15px; height: 15px; color: var(--primary-color, #c8102e);"></i>
+                        Chọn vắc xin cho người này:
+                    </h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        ${generateVaccineChecklistHtml(index)}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', blockHtml);
+        patientCount++;
         
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+
+        recalculateRegisterPrices();
+    }
+
+    function removePatientField(index) {
+        const block = document.getElementById(`patientBlock_${index}`);
+        if (block) {
+            block.remove();
+            recalculateRegisterPrices();
+            checkPatientAge();
+        }
+    }
+
+    function checkPatientAge() {
+        let hasMinor = false;
+        document.querySelectorAll('.patient-dob-input').forEach(input => {
+            if (input.value) {
+                const dob = new Date(input.value);
+                const today = new Date();
+                let age = today.getFullYear() - dob.getFullYear();
+                const m = today.getMonth() - dob.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                    age--;
+                }
+                if (age < 15) {
+                    hasMinor = true;
+                }
+            }
+        });
+
         const guardianSec = document.getElementById('guardianSection');
         const gName = document.getElementById('guardian_name');
         const gPhone = document.getElementById('guardian_phone');
         
-        if (age < 15) {
-            guardianSec.style.display = 'block';
-            gName.setAttribute('required', 'required');
-            gPhone.setAttribute('required', 'required');
-        } else {
-            guardianSec.style.display = 'none';
-            gName.removeAttribute('required');
-            gPhone.removeAttribute('required');
+        if (guardianSec && gName && gPhone) {
+            if (hasMinor) {
+                guardianSec.style.display = 'block';
+                gName.setAttribute('required', 'required');
+                gPhone.setAttribute('required', 'required');
+            } else {
+                guardianSec.style.display = 'none';
+                gName.removeAttribute('required');
+                gPhone.removeAttribute('required');
+            }
         }
+    }
+
+    function recalculateRegisterPrices() {
+        let total = 0;
+        document.querySelectorAll('.patient-vaccine-checkbox:checked').forEach(cb => {
+            total += parseFloat(cb.getAttribute('data-price') || 0);
+        });
+
+        const grandTotalEl = document.querySelector('.summary-total strong');
+        if (grandTotalEl) {
+            grandTotalEl.textContent = new Intl.NumberFormat('vi-VN').format(total) + ' đ';
+        }
+    }
+
+    // Initialize with first patient
+    document.addEventListener('DOMContentLoaded', () => {
+        addPatientField();
     });
 
     // Chuyển đổi mô tả phương thức thanh toán
@@ -324,6 +431,25 @@
                 isValid = false;
             }
         });
+
+        if (isValid && step === 1) {
+            // Check that each patient block has at least one vaccine selected
+            const patientBlocks = document.querySelectorAll('.patient-form-block');
+            if (patientBlocks.length === 0) {
+                alert('Vui lòng thêm ít nhất một người tiêm.');
+                isValid = false;
+            }
+            
+            for (let i = 0; i < patientBlocks.length; i++) {
+                const block = patientBlocks[i];
+                const checked = block.querySelectorAll('.patient-vaccine-checkbox:checked');
+                if (checked.length === 0) {
+                    alert(`Vui lòng chọn ít nhất một loại vắc xin cho Người tiêm #${i + 1}.`);
+                    isValid = false;
+                    break;
+                }
+            }
+        }
 
         return isValid;
     }

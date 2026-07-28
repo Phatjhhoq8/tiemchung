@@ -3,18 +3,51 @@
 @section('title', 'Danh Sách Chi Nhánh & Thông Tin Liên Hệ - Medicare')
 
 @section('content')
-<div style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
-    <!-- Breadcrumb -->
-    <div style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">
-        <a href="{{ route('home') }}" style="color: var(--text-muted); text-decoration: none;">Trang chủ</a> / 
-        <span style="color: var(--primary-color); font-weight: 600;">Thông tin liên hệ & Chi nhánh</span>
+<!-- CATALOG HERO BANNER (Tràn viền) -->
+<section class="catalog-hero" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%), url('https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1600&q=80') no-repeat center center / cover; margin-top: -2rem;">
+    <div class="catalog-hero-container">
+        <div class="catalog-hero-content">
+            <!-- Breadcrumb -->
+            <div class="catalog-breadcrumb">
+                <a href="{{ route('home') }}">Trang chủ</a>
+                <i data-lucide="chevron-right"></i>
+                <span>Liên hệ</span>
+            </div>
+            <h1>Thông tin liên hệ & Chi nhánh</h1>
+            <p>Hệ thống Medicare tự hào phục vụ quý khách tại các trung tâm tiêm chủng hiện đại, an toàn và dịch vụ chăm sóc tận tâm.</p>
+        </div>
+        <div class="catalog-hero-visual" aria-hidden="true">
+            <svg viewBox="0 0 300 220" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="contactGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25" />
+                        <stop offset="100%" stop-color="#ffffff" stop-opacity="0.05" />
+                    </linearGradient>
+                </defs>
+                <circle cx="150" cy="110" r="85" fill="#ffffff" opacity="0.08" stroke="#ffffff" stroke-width="1.5" stroke-dasharray="4 4"/>
+                <!-- Map card -->
+                <g transform="translate(90, 50)">
+                    <rect x="10" y="10" width="100" height="90" rx="16" fill="url(#contactGrad)" stroke="#ffffff" stroke-width="2.5" />
+                    <!-- Map path representation -->
+                    <path d="M 20,40 Q 50,60 80,30 T 100,80" stroke="#ffffff" stroke-width="1.5" stroke-dasharray="2 4" fill="none" opacity="0.4" />
+                    <!-- Location pin -->
+                    <g transform="translate(50, 25)">
+                        <path d="M 12,2 C 6.5,2 2,6.5 2,12 C 2,18.5 12,28 12,28 C 12,28 22,18.5 22,12 C 22,6.5 17.5,2 12,2 Z" fill="var(--primary-color)" stroke="#ffffff" stroke-width="2" />
+                        <circle cx="12" cy="11" r="4" fill="#ffffff" />
+                    </g>
+                </g>
+                <g transform="translate(180, 110)">
+                    <circle cx="20" cy="20" r="22" fill="#ffffff" opacity="0.15" />
+                    <circle cx="20" cy="20" r="18" fill="var(--secondary-color)" />
+                    <!-- Phone receiver icon -->
+                    <path d="M 13,13 C 13,18 17,22 22,22 C 24,22 25,21 26,20 L 23,17 L 22,18 C 20,17 18,15 17,13 L 18,12 L 15,9 C 14,10 13,11 13,13 Z" fill="#ffffff" stroke="#ffffff" stroke-width="1" />
+                </g>
+            </svg>
+        </div>
     </div>
+</section>
 
-    <div class="section-title-wrapper" style="text-align: center; margin-bottom: 40px;">
-        <span class="section-badge">Mạng Lưới Trung Tâm</span>
-        <h2>Danh Sách Chi Nhánh Tiêm Chủng Medicare</h2>
-        <p>Medicare tự hào phục vụ quý khách hàng tại 2 chi nhánh trung tâm hiện đại với đầy đủ nguồn vắc xin chất lượng cao.</p>
-    </div>
+<div class="contact-wrapper" style="max-width: 1200px; margin: 0 auto 40px; padding: 0 20px;">
 
     <!-- Danh sách 2 Chi nhánh Chi Tiết -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 36px; margin-bottom: 50px;">

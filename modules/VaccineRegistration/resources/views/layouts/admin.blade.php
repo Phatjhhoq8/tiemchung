@@ -721,9 +721,9 @@
                         <i data-lucide="layout-dashboard"></i> Dashboard
                     </a>
                 </li>
-                <li class="{{ Route::currentRouteName() === 'admin.live-editor' ? 'active' : '' }}" style="{{ Route::currentRouteName() === 'admin.live-editor' ? 'background: rgba(200, 16, 46, 0.18); border-left: 4px solid #dc2626;' : '' }}">
-                    <a href="{{ route('admin.live-editor') }}" style="color: #fecaca; font-weight: 700;">
-                        <i data-lucide="layout-template" style="color: #fecaca;"></i> Chỉnh Sửa Trực Quan (Live)
+                <li class="{{ Route::currentRouteName() === 'admin.live-editor' ? 'active' : '' }}">
+                    <a href="{{ route('admin.live-editor') }}">
+                        <i data-lucide="layout-template"></i> Chỉnh Sửa Trực Quan (Live)
                     </a>
                 </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.vaccines') ? 'active' : '' }}">

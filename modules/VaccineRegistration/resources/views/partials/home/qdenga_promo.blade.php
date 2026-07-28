@@ -39,7 +39,7 @@
                             </span>
                             <!-- Vaccine Name -->
                             <h3 class="font-black text-slate-900 text-base md:text-lg leading-snug hover:text-[#c8102e] transition-colors">
-                                <a href="{{ route('vaccine.index', ['search' => $vaccine->name]) }}">{{ $vaccine->name }}</a>
+                                <a href="{{ route('register.show', ['add_vaccine_id' => $vaccine->id]) }}" onclick="event.preventDefault(); selectVaccineAndBook({{ $vaccine->id }});">{{ $vaccine->name }}</a>
                             </h3>
                             <!-- Prevention Info -->
                             <p class="text-slate-500 text-xs line-clamp-2 leading-relaxed mt-1">
@@ -62,7 +62,7 @@
                                     <span class="text-[#c8102e] font-black text-sm md:text-base leading-none">{{ number_format($vaccine->price, 0, ',', '.') }} đ</span>
                                 @endif
                             </div>
-                            <a href="{{ route('vaccine.index', ['search' => $vaccine->name]) }}" class="inline-flex items-center gap-1.5 bg-[#c8102e] hover:bg-[#a00d24] text-white font-bold py-1.5 px-3.5 rounded-lg text-xs transition-all shadow-sm hover:shadow">
+                            <a href="{{ route('register.show', ['add_vaccine_id' => $vaccine->id]) }}" onclick="event.preventDefault(); selectVaccineAndBook({{ $vaccine->id }});" class="inline-flex items-center gap-1.5 bg-[#c8102e] hover:bg-[#a00d24] text-white font-bold py-1.5 px-3.5 rounded-lg text-xs transition-all shadow-sm hover:shadow">
                                 <i data-lucide="syringe" class="w-3.5 h-3.5"></i> Đặt lịch
                             </a>
                         </div>

@@ -3,8 +3,9 @@
 @section('title', 'Danh Mục Sản Phẩm Tiêm Chủng')
 
 @section('content')
-<div class="product-catalog-page">
-    <section class="catalog-hero">
+<!-- CATALOG HERO BANNER (Tràn viền) -->
+<section class="catalog-hero" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%), url('https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=1600&q=80') no-repeat center center / cover; margin-top: -2rem;">
+    <div class="catalog-hero-container">
         <div class="catalog-hero-content">
             <div class="catalog-breadcrumb">
                 <a href="{{ route('home') }}">Trang chủ</a>
@@ -28,7 +29,10 @@
                 </div>
             @endforeach
         </div>
-    </section>
+    </div>
+</section>
+
+<div class="product-catalog-page" style="margin-top: 0;">
 
     @if($productCategories->isNotEmpty())
         <section class="catalog-category-section">

@@ -15,6 +15,13 @@
     <meta name="description" content="@yield('meta_description', 'Medicare - Hệ thống tiêm chủng vắc xin an toàn, chất lượng hàng đầu tại Cần Thơ cho trẻ em và người lớn.')">
     <title>@yield('title', 'Hệ Thống Tiêm Chủng Medicare')</title>
     
+    <script>
+        window.Laravel = {
+            baseUrl: "{{ url('/') }}",
+            csrfToken: "{{ csrf_token() }}"
+        };
+    </script>
+    
     <!-- Google Fonts (Roboto + Inter for headings) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -78,7 +85,6 @@
                 <a href="{{ route('home') }}" class="nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}">Trang Chủ</a>
                 <a href="{{ route('about') }}" class="nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}">Giới Thiệu</a>
                 <a href="{{ route('vaccine.index') }}" class="nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}">Danh Mục Sản Phẩm</a>
-                <a href="{{ route('services') }}" class="nav-link {{ Route::currentRouteName() === 'services' ? 'active' : '' }}">Dịch Vụ</a>
                 <a href="{{ route('news.index') }}" class="nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}">Tin Tức</a>
                 <a href="{{ route('contact') }}" class="nav-link {{ Route::currentRouteName() === 'contact' ? 'active' : '' }}">Liên Hệ</a>
             </nav>
@@ -125,9 +131,12 @@
                                     <div class="cart-item-row" data-id="{{ $id }}">
                                         <div class="cart-item-info">
                                             <strong class="cart-item-name">{{ $item['name'] }}</strong>
-                                            <span class="cart-item-price">{{ number_format($item['price'], 0, ',', '.') }} đ</span>
+                                            <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                                                <span class="cart-item-price" style="font-weight: 700; color: var(--primary-color); font-size: 13.5px;">{{ number_format($item['price'], 0, ',', '.') }} đ</span>
+                                                <span style="font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-weight: 600;">SL: {{ $item['quantity'] ?? 1 }}</span>
+                                            </div>
                                         </div>
-                                        <button type="button" onclick="toggleCart({{ $id }})" class="cart-item-remove" title="Xóa vắc xin">
+                                        <button type="button" onclick="toggleCart({{ $id }}, true)" class="cart-item-remove" title="Xóa vắc xin">
                                             <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                                         </button>
                                     </div>
@@ -175,7 +184,6 @@
             <a href="{{ route('home') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}"><i data-lucide="home" class="w-5 h-5"></i> Trang Chủ</a>
             <a href="{{ route('about') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}"><i data-lucide="info" class="w-5 h-5"></i> Giới Thiệu</a>
             <a href="{{ route('vaccine.index') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}"><i data-lucide="syringe" class="w-5 h-5"></i> Danh Mục Sản Phẩm</a>
-            <a href="{{ route('services') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'services' ? 'active' : '' }}"><i data-lucide="briefcase-medical" class="w-5 h-5"></i> Dịch Vụ</a>
             <a href="{{ route('news.index') }}" class="mobile-nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}"><i data-lucide="newspaper" class="w-5 h-5"></i> Tin Tức</a>
             <a href="{{ route('contact') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'contact' ? 'active' : '' }}"><i data-lucide="map-pin" class="w-5 h-5"></i> Liên Hệ</a>
         </div>
@@ -313,8 +321,6 @@
                 <div class="footer-left-col">
                     <div class="footer-policy-links">
                         <a href="{{ route('about') }}">Chính sách bảo mật</a>
-                        <span>•</span>
-                        <a href="{{ route('services') }}">Khảo sát tiêm chủng</a>
                         <span>•</span>
                         <a href="{{ route('vaccine.index') }}">Chính sách thanh toán</a>
                         <span>•</span>

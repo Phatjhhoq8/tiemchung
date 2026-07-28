@@ -58,7 +58,7 @@ if not exist .env (
 call %PHP_CMD% database/create_db.php
 if errorlevel 1 (
     echo.
-    echo [LOI] Khong the khoi tao database MySQL. Vui long dam bao MySQL (XAMPP/Herd) da duoc mo.
+    echo [LOI] Khong the khoi tao database MySQL. Vui long dam bao MySQL XAMPP hoac Herd da duoc mo.
     pause
     exit
 )

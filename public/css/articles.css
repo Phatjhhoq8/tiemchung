@@ -16,24 +16,7 @@
 }
 
 /* CATALOG HERO BANNER (Đo theo chuẩn 100% của .about-hero trên trang /about) */
-.catalog-hero {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius-lg, 20px);
-    background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%), 
-                url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1920&q=80') no-repeat center center / cover;
-    color: #fff;
-    min-height: 310px;
-    padding: 4.5rem 2.5rem;
-    margin-bottom: 32px;
-    box-shadow: var(--shadow-md, 0 12px 30px rgba(200, 16, 46, 0.20));
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 340px;
-    align-items: center;
-    gap: 2rem;
-    width: 100%;
-    box-sizing: border-box;
-}
+
 
 /* DIỆT SẠCH HOÀN TOÀN VỆT TRÒN NỀN ::after */
 .catalog-hero::after,
@@ -46,16 +29,7 @@
     height: 0 !important;
 }
 
-@media (max-width: 992px) {
-    .catalog-hero {
-        grid-template-columns: 1fr;
-        padding: 3rem 2rem;
-        text-align: center;
-    }
-    .catalog-hero-visual {
-        display: none;
-    }
-}
+
 
 .catalog-hero-content {
     position: relative;

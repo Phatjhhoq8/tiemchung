@@ -11,6 +11,12 @@ const getCsrfToken = () => {
     return meta ? meta.getAttribute('content') : '';
 };
 
+const getAbsoluteUrl = (path) => {
+    const base = (window.Laravel && window.Laravel.baseUrl) ? window.Laravel.baseUrl : '';
+    const slash = (base && !path.startsWith('/')) ? '/' : '';
+    return base + slash + path;
+};
+
 // ==========================================================================
 // TOAST NOTIFICATIONS SYSTEM
 // ==========================================================================
@@ -66,18 +72,20 @@ function toggleCartDrawer() {
     }
 }
 
-async function toggleCart(vaccineId) {
+async function toggleCart(vaccineId, forceRemove = false) {
     const cards = document.querySelectorAll(`.vaccine-card[data-id="${vaccineId}"], .catalog-product-card[data-id="${vaccineId}"]`);
     const detailBtns = document.querySelectorAll(`.btn-select-detail[data-id="${vaccineId}"], .btn-select-detail`);
     
     let isSelected = false;
-    if (cards.length > 0 && cards[0].classList.contains('selected')) {
+    if (forceRemove) {
+        isSelected = true;
+    } else if (cards.length > 0 && cards[0].classList.contains('selected')) {
         isSelected = true;
     } else if (detailBtns.length > 0 && detailBtns[0].classList.contains('btn-selected')) {
         isSelected = true;
     }
     
-    const url = isSelected ? '/cart/remove' : '/cart/add';
+    const url = getAbsoluteUrl(isSelected ? '/cart/remove' : '/cart/add');
     
     try {
         const response = await fetch(url, {
@@ -163,6 +171,39 @@ async function toggleCart(vaccineId) {
     }
 }
 
+async function selectVaccineAndBook(vaccineId) {
+    try {
+        const response = await fetch(getAbsoluteUrl('/cart/add'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ vaccine_id: vaccineId })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                updateFloatingCart(data.cart, data.cart_count, data.total_price);
+                showToast('Đã chọn vắc xin, đang mở form đăng ký...', 'success');
+                
+                setTimeout(() => {
+                    openSpaRegisterModal(null);
+                }, 300);
+            } else {
+                window.location.href = getAbsoluteUrl(`/register?add_vaccine_id=${vaccineId}`);
+            }
+        } else {
+            window.location.href = getAbsoluteUrl(`/register?add_vaccine_id=${vaccineId}`);
+        }
+    } catch (error) {
+        console.error('Lỗi đăng ký nhanh:', error);
+        window.location.href = getAbsoluteUrl(`/register?add_vaccine_id=${vaccineId}`);
+    }
+}
+
 function toggleHeaderCartDropdown(event) {
     if (event) {
         event.stopPropagation();
@@ -217,9 +258,12 @@ function updateFloatingCart(cart, count, totalPrice) {
                     <div class="cart-item-row" data-id="${id}">
                         <div class="cart-item-info">
                             <strong class="cart-item-name">${item.name}</strong>
-                            <span class="cart-item-price">${itemPriceFormatted}</span>
+                            <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                                <span class="cart-item-price" style="font-weight: 700; color: var(--primary-color); font-size: 13.5px;">${itemPriceFormatted}</span>
+                                <span style="font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-weight: 600;">SL: ${item.quantity || 1}</span>
+                            </div>
                         </div>
-                        <button type="button" onclick="toggleCart(${id})" class="cart-item-remove" title="Xóa vắc xin">
+                        <button type="button" onclick="toggleCart(${id}, true)" class="cart-item-remove" title="Xóa vắc xin">
                             <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                         </button>
                     </div>
@@ -235,7 +279,7 @@ function updateFloatingCart(cart, count, totalPrice) {
 
 async function clearCartUI() {
     try {
-        const response = await fetch('/cart/clear', {
+        const response = await fetch(getAbsoluteUrl('/cart/clear'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -281,7 +325,7 @@ async function openVaccineDetailModal(vaccineId, event) {
     lucide.createIcons();
 
     try {
-        const response = await fetch(`/vaccines/${vaccineId}`, {
+        const response = await fetch(getAbsoluteUrl(`/vaccines/${vaccineId}`), {
             headers: {
                 'X-CSRF-TOKEN': getCsrfToken(),
                 'Accept': 'application/json'
@@ -393,7 +437,7 @@ async function openSpaRegisterModal(event) {
     lucide.createIcons();
 
     try {
-        const response = await fetch('/register', {
+        const response = await fetch(getAbsoluteUrl('/register'), {
             headers: {
                 'X-CSRF-TOKEN': getCsrfToken(),
                 'Accept': 'application/json'
@@ -448,16 +492,160 @@ function switchSpaModalTab(tab) {
     }
 }
 
+let spaPatientCount = 0;
+let globalSpaCartData = {};
+
+function addSpaPatientField() {
+    const container = document.getElementById('spaPatientsContainer');
+    if (!container) return;
+    
+    const index = spaPatientCount;
+    
+    // Generate vaccine checklist html for this index
+    let checklistHtml = '';
+    Object.entries(globalSpaCartData).forEach(([vId, item]) => {
+        const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
+        const imageUrl = getAbsoluteUrl(`/images/vaccines/${item.image || 'hexaxim.jpg'}`);
+        const desc = item.disease_prevention || 'Phòng ngừa các bệnh truyền nhiễm nguy hiểm';
+        checklistHtml += `
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; transition: border-color 0.2s; margin-bottom: 6px; width: 100%;">
+                <input type="checkbox" name="patients[${index}][vaccine_ids][]" value="${vId}" data-price="${item.price}" checked class="spa-patient-vaccine-checkbox" onchange="recalculateSpaRegisterPrices()" style="margin-top: 3px; width: 15px; height: 15px;">
+                <img src="${imageUrl}" alt="${item.name}" style="width: 44px; height: 44px; border-radius: 6px; object-fit: cover; border: 1px solid #f1f5f9; flex-shrink: 0;">
+                <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+                    <span style="font-size: 13px; font-weight: 700; color: #1e293b;">${item.name}</span>
+                    <span style="font-size: 11px; color: #64748b; line-height: 1.3;"><strong>Phòng bệnh:</strong> ${desc}</span>
+                    <span style="font-size: 12.5px; font-weight: 800; color: var(--primary-color, #c8102e); margin-top: 1px;">${formattedPrice}</span>
+                </div>
+            </label>
+        `;
+    });
+    
+    const todayStr = new Date().toISOString().split('T')[0];
+    const blockHtml = `
+        <div class="spa-patient-form-block" id="spaPatientBlock_${index}" style="padding: 16px; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 16px; background: #ffffff; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+                <strong style="font-size: 14px; color: var(--accent-color, #004b8f);">Người tiêm #${index + 1}</strong>
+                ${index > 0 ? `
+                    <button type="button" onclick="removeSpaPatientField(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                        <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i> Xóa người này
+                    </button>
+                ` : ''}
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 2px;">Họ tên <span style="color: #ef4444;">*</span></label>
+                    <input type="text" name="patients[${index}][name]" required placeholder="Ví dụ: Nguyễn Văn A" style="width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 2px;">Ngày sinh <span style="color: #ef4444;">*</span></label>
+                    <input type="date" name="patients[${index}][dob]" required max="${todayStr}" onchange="checkSpaPatientAge()" class="spa-patient-dob-input" style="width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 2px;">Giới tính <span style="color: #ef4444;">*</span></label>
+                    <select name="patients[${index}][gender]" required style="width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 2px;">Số điện thoại <span style="color: #ef4444;">*</span></label>
+                    <input type="text" name="patients[${index}][phone]" required placeholder="Ví dụ: 0938603839" style="width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 2px;">Địa chỉ thường trú <span style="color: #ef4444;">*</span></label>
+                    <input type="text" name="patients[${index}][address]" required placeholder="Số nhà, đường, phường/xã..." style="width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                </div>
+            </div>
+            
+            <div style="margin-top: 10px; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
+                <span style="display: block; font-size: 12.5px; font-weight: 700; color: #334155; margin-bottom: 6px;">Chọn vắc xin cho người này:</span>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    ${checklistHtml}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', blockHtml);
+    spaPatientCount++;
+    
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+    
+    recalculateSpaRegisterPrices();
+}
+
+function removeSpaPatientField(index) {
+    const block = document.getElementById(`spaPatientBlock_${index}`);
+    if (block) {
+        block.remove();
+        recalculateSpaRegisterPrices();
+        checkSpaPatientAge();
+    }
+}
+
+function checkSpaPatientAge() {
+    let hasMinor = false;
+    document.querySelectorAll('.spa-patient-dob-input').forEach(input => {
+        if (input.value) {
+            const dob = new Date(input.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            if (age < 15) {
+                hasMinor = true;
+            }
+        }
+    });
+
+    const guardianSec = document.getElementById('spaGuardianSection');
+    const gName = document.querySelector('input[name="guardian_name"]');
+    const gPhone = document.querySelector('input[name="guardian_phone"]');
+    
+    if (guardianSec && gName && gPhone) {
+        if (hasMinor) {
+            guardianSec.style.display = 'block';
+            gName.setAttribute('required', 'required');
+            gPhone.setAttribute('required', 'required');
+        } else {
+            guardianSec.style.display = 'none';
+            gName.removeAttribute('required');
+            gPhone.removeAttribute('required');
+        }
+    }
+}
+
+function recalculateSpaRegisterPrices() {
+    let total = 0;
+    document.querySelectorAll('.spa-patient-vaccine-checkbox:checked').forEach(cb => {
+        total += parseFloat(cb.getAttribute('data-price') || 0);
+    });
+
+    const totalEl = document.getElementById('spaGrandTotalPrice');
+    if (totalEl) {
+        totalEl.textContent = new Intl.NumberFormat('vi-VN').format(total) + ' đ';
+    }
+}
+
+// Expose functions globally
+window.addSpaPatientField = addSpaPatientField;
+window.removeSpaPatientField = removeSpaPatientField;
+window.checkSpaPatientAge = checkSpaPatientAge;
+window.recalculateSpaRegisterPrices = recalculateSpaRegisterPrices;
+
 function renderSpaRegisterForm(data) {
     const body = document.getElementById('spaRegisterBody');
     if (!body) return;
 
-    const cartItems = Object.entries(data.cart).map(([id, item]) => `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; font-size: 13.5px;">
-            <strong style="color: #1e293b;">${item.name}</strong>
-            <span style="color: var(--primary-color, #c8102e); font-weight: 700;">${new Intl.NumberFormat('vi-VN').format(item.price)} đ</span>
-        </div>
-    `).join('');
+    // Reset counters and cache cart data
+    spaPatientCount = 0;
+    globalSpaCartData = data.cart;
 
     const centerOptions = data.centers.map(c => `
         <option value="${c.name}">📍 ${c.name} — ${c.address} (${c.phone})</option>
@@ -487,37 +675,32 @@ function renderSpaRegisterForm(data) {
 
                     <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
                         <i data-lucide="user" style="width: 18px; height: 18px; color: var(--primary-color);"></i>
-                        1. Thông tin cá nhân người tiêm
+                        1. Thông tin người tiêm & Chọn vắc xin
                     </h4>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
-                        <div>
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 4px;">Họ tên người tiêm <span style="color: #ef4444;">*</span></label>
-                            <input type="text" name="patient_name" required placeholder="Ví dụ: Nguyễn Văn A" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;">
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 4px;">Ngày sinh <span style="color: #ef4444;">*</span></label>
-                            <input type="date" name="patient_dob" required max="${todayStr}" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;">
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 4px;">Giới tính <span style="color: #ef4444;">*</span></label>
-                            <select name="patient_gender" required style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;">
-                                <option value="Nam">Nam</option>
-                                <option value="Nữ">Nữ</option>
-                                <option value="Khác">Khác</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 4px;">Số điện thoại <span style="color: #ef4444;">*</span></label>
-                            <input type="text" name="patient_phone" required placeholder="0938603839" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;">
-                        </div>
-                        <div style="grid-column: span 2;">
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 4px;">Địa chỉ liên hệ <span style="color: #ef4444;">*</span></label>
-                            <input type="text" name="patient_address" required placeholder="Số nhà, đường, phường/xã, huyện..." style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;">
+                    <!-- Container cho các người tiêm -->
+                    <div id="spaPatientsContainer"></div>
+
+                    <button type="button" onclick="addSpaPatientField()" style="margin-top: 10px; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-weight: 700; background: #f8fafc; border: 1px dashed #cbd5e1; cursor: pointer; color: #475569; transition: all 0.2s; font-size: 13px;">
+                        <i data-lucide="user-plus" style="width: 15px; height: 15px;"></i> Thêm người tiêm khác
+                    </button>
+
+                    <!-- Người giám hộ (nếu người tiêm < 15 tuổi) -->
+                    <div id="spaGuardianSection" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #cbd5e1;">
+                        <h4 style="font-size: 14px; font-weight: 700; color: var(--primary-color); margin-bottom: 10px;">Thông tin người giám hộ</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;">Họ tên người giám hộ <span style="color: #ef4444;">*</span></label>
+                                <input type="text" name="guardian_name" placeholder="Ví dụ: Nguyễn Văn B" style="width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;">Số điện thoại người giám hộ <span style="color: #ef4444;">*</span></label>
+                                <input type="text" name="guardian_phone" placeholder="Ví dụ: 0932477184" style="width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                            </div>
                         </div>
                     </div>
 
-                    <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                    <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-top: 24px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
                         <i data-lucide="map-pin" style="width: 18px; height: 18px; color: #0284c7;"></i>
                         2. Địa điểm & Ngày hẹn tiêm
                     </h4>
@@ -559,23 +742,32 @@ function renderSpaRegisterForm(data) {
             </div>
 
             <!-- Tóm tắt đơn hàng -->
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; position: sticky; top: 10px; height: fit-content;">
                 <div>
-                    <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Vắc xin đăng ký</h4>
-                    ${cartItems}
+                    <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Danh sách vắc xin</h4>
+                    <div id="spaCartSummaryList">
+                        ${Object.entries(data.cart).map(([id, item]) => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; font-size: 13.5px;">
+                                <strong style="color: #1e293b;">${item.name}</strong>
+                                <span style="color: var(--primary-color, #c8102e); font-weight: 700;">${new Intl.NumberFormat('vi-VN').format(item.price)} đ</span>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
 
                 <div style="border-top: 2px solid #e2e8f0; padding-top: 14px; margin-top: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 13px; color: #64748b; font-weight: 600;">TỔNG CHI PHÍ:</span>
-                        <strong style="font-size: 20px; color: var(--primary-color, #c8102e); font-weight: 800;">${data.formatted_total_price}</strong>
+                        <strong id="spaGrandTotalPrice" style="font-size: 20px; color: var(--primary-color, #c8102e); font-weight: 800;">${data.formatted_total_price}</strong>
                     </div>
                     <p style="font-size: 11.5px; color: #64748b; margin-top: 10px; line-height: 1.5;">Đã bao gồm phí khám lâm sàng trước tiêm và theo dõi sau tiêm tại Medicare.</p>
                 </div>
             </div>
         </div>
     `;
-    lucide.createIcons();
+
+    // Render first patient block immediately
+    addSpaPatientField();
 }
 
 async function submitSpaRegistrationForm(event) {
@@ -592,6 +784,27 @@ async function submitSpaRegistrationForm(event) {
     btn.disabled = true;
     btn.innerHTML = `<i data-lucide="loader-2" style="width: 20px; height: 20px; animation: spin 1s linear infinite;"></i> Đang xử lý đăng ký...`;
     lucide.createIcons();
+
+    // Check that each patient block has at least one vaccine selected
+    const patientBlocks = document.querySelectorAll('.spa-patient-form-block');
+    if (patientBlocks.length === 0) {
+        alert('Vui lòng thêm ít nhất một người tiêm.');
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="shield-check" style="width: 20px; height: 20px;"></i> <span>Xác Nhận Đăng Ký Tiêm Chủng</span>`;
+        lucide.createIcons();
+        return;
+    }
+    for (let i = 0; i < patientBlocks.length; i++) {
+        const block = patientBlocks[i];
+        const checked = block.querySelectorAll('.spa-patient-vaccine-checkbox:checked');
+        if (checked.length === 0) {
+            alert(`Vui lòng chọn ít nhất một loại vắc xin cho Người tiêm #${i + 1}.`);
+            btn.disabled = false;
+            btn.innerHTML = `<i data-lucide="shield-check" style="width: 20px; height: 20px;"></i> <span>Xác Nhận Đăng Ký Tiêm Chủng</span>`;
+            lucide.createIcons();
+            return;
+        }
+    }
 
     const formData = new FormData(form);
 
@@ -626,8 +839,10 @@ async function submitSpaRegistrationForm(event) {
 
         if (data.success) {
             updateFloatingCart({}, 0, 0);
-            renderRegistrationTicketSuccess(data);
             showToast('Đăng ký tiêm chủng thành công!', 'success');
+            setTimeout(() => {
+                window.location.href = data.redirect;
+            }, 300);
         } else {
             throw new Error(data.message || 'Đăng ký không thành công.');
         }
@@ -872,6 +1087,18 @@ async function filterVaccinesSpa(event, page = null) {
             if (countEl) countEl.textContent = data.count;
 
             window.history.pushState({}, '', url);
+
+            // Cuộn mượt về đầu danh sách sản phẩm để cố định khung nhìn (không bị trôi lên banner)
+            const catalogLayout = document.querySelector('.catalog-layout');
+            if (catalogLayout) {
+                const headerOffset = 90;
+                const elementPosition = catalogLayout.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
         }
     } catch (e) {
         console.error(e);
