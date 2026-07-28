@@ -3,7 +3,7 @@
 @section('title', 'Tin Tức - Medicare Cờ Đỏ')
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('css/articles.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/articles.css') }}?v={{ filemtime(public_path('css/articles.css')) }}">
 @endsection
 
 @section('content')
