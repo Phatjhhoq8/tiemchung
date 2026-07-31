@@ -67,7 +67,7 @@
         <div class="topbar-container">
             <div class="topbar-info" style="display: flex; gap: 16px; align-items: center; font-size: 13px;">
                 <a href="{{ route('contact') }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                    <i data-lucide="map-pin" style="color: var(--secondary-color);"></i> <strong>Đang chọn:</strong> {{ $currentCenter?->name ?? 'Medicare' }} (Hotline: {{ $hotline }})
+                    <i data-lucide="map-pin" style="color: var(--secondary-color);"></i> <strong>Đang chọn:</strong> <span id="topbarBranchText">{{ $currentCenter?->name ?? 'Medicare' }} (Hotline: {{ $hotline }})</span>
                 </a>
             </div>
             <div class="topbar-social">
@@ -96,9 +96,9 @@
             <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
                 <!-- 1. Nút Điện Thoại (Chỉ còn icon và số điện thoại, bỏ chữ 'Tư vấn:') -->
                 <div class="header-branch-wrapper" style="position: relative;">
-                    <button type="button" class="hotline-btn hotline-btn-desktop" onclick="toggleBranchDropdown(event)" title="Đổi chi nhánh hiện tại">
+                    <button type="button" class="hotline-btn hotline-btn-desktop" id="headerBranchButton" onclick="toggleBranchDropdown(event)" title="Đổi chi nhánh hiện tại">
                         <i data-lucide="map-pin"></i>
-                        <span>{{ $currentCenter?->name ?? 'Chi nhánh' }}<span class="hotline-phone-suffix"> - {{ $hotline }}</span></span>
+                        <span id="headerBranchText">{{ $currentCenter?->name ?? 'Chi nhánh' }}<span class="hotline-phone-suffix"> - {{ $hotline }}</span></span>
                     </button>
                     <style>
                         .branch-item-btn {

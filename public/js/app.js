@@ -511,14 +511,16 @@ function addSpaPatientField() {
         const desc = item.disease_prevention || 'Phòng ngừa các bệnh truyền nhiễm nguy hiểm';
         const unavailable = Boolean(item.unavailable_for_center);
         checklistHtml += `
-            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: ${unavailable ? 'not-allowed' : 'pointer'}; padding: 10px; border: 1px solid ${unavailable ? '#fecaca' : '#e2e8f0'}; border-radius: 8px; background: ${unavailable ? '#fef2f2' : '#ffffff'}; transition: border-color 0.2s; margin-bottom: 6px; width: 100%;">
-                <input type="checkbox" name="patients[${index}][vaccine_ids][]" value="${vId}" data-price="${item.price}" ${unavailable ? 'disabled' : 'checked'} class="spa-patient-vaccine-checkbox" onchange="recalculateSpaRegisterPrices()" style="margin-top: 3px; width: 15px; height: 15px;">
+            <label class="spa-vaccine-label-${vId}" style="display: flex; align-items: flex-start; gap: 10px; cursor: ${unavailable ? 'not-allowed' : 'pointer'}; padding: 10px; border: 1px solid ${unavailable ? '#fecaca' : '#e2e8f0'}; border-radius: 8px; background: ${unavailable ? '#fef2f2' : '#ffffff'}; transition: border-color 0.2s; margin-bottom: 6px; width: 100%;">
+                <input type="checkbox" name="patients[${index}][vaccine_ids][]" value="${vId}" data-price="${item.price}" data-vaccine-id="${vId}" ${unavailable ? 'disabled' : 'checked'} class="spa-patient-vaccine-checkbox" onchange="recalculateSpaRegisterPrices()" style="margin-top: 3px; width: 15px; height: 15px;">
                 <img src="${imageUrl}" alt="${item.name}" style="width: 44px; height: 44px; border-radius: 6px; object-fit: cover; border: 1px solid #f1f5f9; flex-shrink: 0;">
                 <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
                     <span style="font-size: 13px; font-weight: 700; color: #1e293b;">${item.name}</span>
                     <span style="font-size: 11px; color: #64748b; line-height: 1.3;"><strong>Phòng bệnh:</strong> ${desc}</span>
-                    <span style="font-size: 12.5px; font-weight: 800; color: var(--primary-color, #c8102e); margin-top: 1px;">${formattedPrice}</span>
-                    ${unavailable ? '<span style="font-size: 11.5px; color: #b91c1c; font-weight: 800;">Sản phẩm này không có ở chi nhánh hiện tại</span>' : ''}
+                    <span class="spa-vaccine-price-${vId}" style="font-size: 12.5px; font-weight: 800; color: var(--primary-color, #c8102e); margin-top: 1px;">${formattedPrice}</span>
+                    <div class="spa-vaccine-status-container-${vId}" style="margin-top: 2px;">
+                        ${unavailable ? '<span style="font-size: 11.5px; color: #b91c1c; font-weight: 800;">Sản phẩm này không có ở chi nhánh hiện tại</span>' : ''}
+                    </div>
                 </div>
             </label>
         `;
@@ -643,14 +645,112 @@ window.removeSpaPatientField = removeSpaPatientField;
 window.checkSpaPatientAge = checkSpaPatientAge;
 window.recalculateSpaRegisterPrices = recalculateSpaRegisterPrices;
 
-function changeSpaRegisterCenter(centerId) {
+async function changeSpaRegisterCenter(centerId) {
     if (!centerId) return;
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = getAbsoluteUrl('/centers/select');
-    form.innerHTML = `<input type="hidden" name="_token" value="${getCsrfToken()}"><input type="hidden" name="center_id" value="${centerId}">`;
-    document.body.appendChild(form);
-    form.submit();
+    
+    const selectEl = document.querySelector('select[name="center_id"]');
+    if (selectEl) selectEl.disabled = true; // Lock select element during loading
+    
+    try {
+        const response = await fetch(getAbsoluteUrl('/centers/select'), {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': getCsrfToken(),
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ center_id: centerId })
+        });
+        
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        if (data.success) {
+            // 1. Update local cache
+            globalSpaCartData = data.cart;
+            window.lastCartData = data;
+            
+            // 2. Update status and prices of each vaccine checkbox in patient blocks
+            Object.entries(data.cart).forEach(([vId, item]) => {
+                const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
+                const unavailable = Boolean(item.unavailable_for_center);
+                
+                // Update all checkboxes for this vaccine
+                document.querySelectorAll(`input[data-vaccine-id="${vId}"]`).forEach(cb => {
+                    cb.setAttribute('data-price', item.price);
+                    cb.disabled = unavailable;
+                    if (unavailable) {
+                        cb.checked = false;
+                    }
+                });
+                
+                // Update display price
+                document.querySelectorAll(`.spa-vaccine-price-${vId}`).forEach(el => {
+                    el.textContent = formattedPrice;
+                });
+                
+                // Update wrapper label styling
+                document.querySelectorAll(`.spa-vaccine-label-${vId}`).forEach(label => {
+                    label.style.cursor = unavailable ? 'not-allowed' : 'pointer';
+                    label.style.borderColor = unavailable ? '#fecaca' : '#e2e8f0';
+                    label.style.background = unavailable ? '#fef2f2' : '#ffffff';
+                });
+                
+                // Update availability message
+                document.querySelectorAll(`.spa-vaccine-status-container-${vId}`).forEach(el => {
+                    el.innerHTML = unavailable ? '<span style="font-size: 11.5px; color: #b91c1c; font-weight: 800;">Sản phẩm này không có ở chi nhánh hiện tại</span>' : '';
+                });
+            });
+            
+            // 3. Update Cart Summary List on the right column
+            const summaryList = document.getElementById('spaCartSummaryList');
+            if (summaryList) {
+                summaryList.innerHTML = Object.entries(data.cart).map(([id, item]) => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; font-size: 13.5px;">
+                        <strong style="color: #1e293b;">${item.name}</strong>
+                        <span style="color: var(--primary-color, #c8102e); font-weight: 700;">${new Intl.NumberFormat('vi-VN').format(item.price)} đ</span>
+                    </div>
+                `).join('');
+            }
+            
+            // Re-calculate grand total
+            recalculateSpaRegisterPrices();
+            
+            // 4. Synchronize active branch on the main website Header
+            const headerBranchText = document.getElementById('headerBranchText');
+            if (headerBranchText) {
+                const phoneSuffix = document.querySelector('.hotline-phone-suffix') ? `<span class="hotline-phone-suffix"> - ${data.center.phone}</span>` : ``;
+                headerBranchText.innerHTML = `${data.center.name}${phoneSuffix}`;
+            }
+            const topbarBranchText = document.getElementById('topbarBranchText');
+            if (topbarBranchText) {
+                topbarBranchText.textContent = `${data.center.name} (Hotline: ${data.center.phone})`;
+            }
+            
+            // Sync active state class in header dropdown list
+            document.querySelectorAll('.branch-item-btn').forEach(btn => {
+                const btnForm = btn.closest('form');
+                if (btnForm) {
+                    const centerIdInput = btnForm.querySelector('input[name="center_id"]');
+                    if (centerIdInput && String(centerIdInput.value) === String(centerId)) {
+                        btn.classList.add('active');
+                        const icon = btn.querySelector('i');
+                        if (icon) icon.setAttribute('data-lucide', 'check-circle');
+                    } else {
+                        btn.classList.remove('active');
+                        const icon = btn.querySelector('i');
+                        if (icon) icon.setAttribute('data-lucide', 'map-pin');
+                    }
+                }
+            });
+            if (window.lucide) lucide.createIcons();
+        }
+    } catch (err) {
+        console.error('AJAX center selection update failed:', err);
+        alert('Không thể cập nhật giá theo chi nhánh mới. Vui lòng thử lại.');
+    } finally {
+        if (selectEl) selectEl.disabled = false;
+    }
 }
 
 window.changeSpaRegisterCenter = changeSpaRegisterCenter;
