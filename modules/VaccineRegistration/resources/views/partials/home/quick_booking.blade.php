@@ -38,7 +38,13 @@
                 </div>
                 <div>
                     <div class="font-bold text-slate-900 text-sm group-hover:text-[#c8102e] transition-colors">Tìm Chi Nhánh Gần Bạn</div>
-                    <div class="text-xs text-slate-500 font-medium">Chi nhánh Cờ Đỏ & Thới Lai</div>
+                    @php
+                        $centerNames = \Modules\VaccineRegistration\Support\CenterContext::activeCenters()
+                            ->pluck('name')
+                            ->map(fn($name) => str_replace('Medicare ', '', $name))
+                            ->implode(', ');
+                    @endphp
+                    <div class="text-xs text-slate-500 font-medium">Chi nhánh {{ $centerNames }}</div>
                 </div>
             </a>
         </div>

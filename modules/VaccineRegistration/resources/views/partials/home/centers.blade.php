@@ -22,7 +22,10 @@
                 <div class="w-14 h-14 mx-auto mb-4 bg-[#c8102e]/5 text-[#c8102e] rounded-2xl flex items-center justify-center group-hover:bg-[#c8102e] group-hover:text-white transition-colors duration-300">
                     <i data-lucide="building-2" class="w-7 h-7"></i>
                 </div>
-                <div class="counter-number text-3xl md:text-4xl font-black text-[#c8102e] mb-1" data-target="2">2</div>
+                @php
+                    $activeCentersCount = \Modules\VaccineRegistration\Support\CenterContext::activeCenters()->count();
+                @endphp
+                <div class="counter-number text-3xl md:text-4xl font-black text-[#c8102e] mb-1" data-target="{{ $activeCentersCount }}">{{ $activeCentersCount }}</div>
                 <div class="text-sm font-semibold text-slate-700">Chi Nhánh</div>
                 <div class="text-xs text-slate-500 mt-1">Tại TP. Cần Thơ</div>
             </div>

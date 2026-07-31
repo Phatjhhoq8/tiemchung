@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.19] - 2026-07-31
+
+### Dynamic Branches & Register Center Selection Fix
+
+* **Dynamic Home Branch Indicators**: Updated homepage partial view [centers.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/partials/home/centers.blade.php) and [quick_booking.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/partials/home/quick_booking.blade.php) to pull the active branches dynamically from `\Modules\VaccineRegistration\Support\CenterContext::activeCenters()`. Replaced the hardcoded '2' branch count and 'Chi nhánh Cờ Đỏ & Thới Lai' string with database-driven counts and concatenated branch names, resolving inconsistencies between the homepage and the contact page.
+* **Local Register Center Selection**: Removed the automatic page reload and global center redirect behavior from the center dropdown in [register.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/register.blade.php). Changing the center in Step 2 now functions as a standard local form input selector, preserving filled form fields and preventing unnecessary redirect-back loops.
+
 ## [v3.5.18] - 2026-07-31
 
 ### Branch Maps Integration, CSS Dropdown/Button Refinements & Flash Messages to Floating Toast Transformation

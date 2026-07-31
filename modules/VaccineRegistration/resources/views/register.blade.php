@@ -94,7 +94,7 @@
                     <div class="form-grid">
                         <div class="form-group full-width">
                             <label for="center_id">Chi nhánh trung tâm tiêm chủng Medicare <span class="required">*</span></label>
-                            <select name="center_id" id="center_id" required onchange="changeRegisterCenter(this.value)" style="padding: 12px; font-size: 15px; border-radius: 8px;">
+                            <select name="center_id" id="center_id" required style="padding: 12px; font-size: 15px; border-radius: 8px;">
                                 <option value="">-- Vui lòng chọn chi nhánh Medicare --</option>
                                 @foreach($centers as $center)
                                     <option value="{{ $center->id }}" {{ (string) old('center_id', $currentCenter?->id) === (string) $center->id ? 'selected' : '' }}>
@@ -408,15 +408,7 @@
         updateStepperUI();
     }
 
-    function changeRegisterCenter(centerId) {
-        if (!centerId) return;
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ route('centers.select') }}';
-        form.innerHTML = `@csrf<input type="hidden" name="center_id" value="${centerId}">`;
-        document.body.appendChild(form);
-        form.submit();
-    }
+
 
     function updateStepperUI() {
         document.querySelectorAll('.form-step-content').forEach(el => el.classList.remove('active'));
