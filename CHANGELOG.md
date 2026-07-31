@@ -1,5 +1,14 @@
 # Release Notes
 
+## [v3.9.0] - 2026-08-01
+
+### M7: Schedules, Slots & Concurrency Control (R3, Ponytail Style)
+
+* **Schedules & Slots Schema & Models**: Created migration `2026_08_01_000003_create_schedules_and_slots_tables.php` defining `schedules` (`center_id`, `date`, `is_active`, `note`) and `slots` (`schedule_id`, `start_at`, `end_at`, `capacity`, `reserved_count`, `is_active`), and added `slot_id` foreign key to `registrations` table. Created [Schedule.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/Schedule.php) and [Slot.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/Slot.php) models and updated [Registration.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/Registration.php).
+* **Atomic Concurrency Control**: Implemented pessimistic row-locking (`Slot::where('id', $slotId)->lockForUpdate()->first()`) inside `DB::transaction()` within `postRegister` in [VaccineController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/VaccineController.php). Enforced capacity limits where attempts exceeding capacity are rejected with a 422 HTTP status and error message "Khung giờ đã đầy công suất", ensuring zero overbooking and atomic increment of `reserved_count`.
+* **Admin Schedule & Slot Management**: Created [AdminScheduleController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminScheduleController.php) and [AdminSlotController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminSlotController.php) with admin routes in [web.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/routes/web.php) allowing administrators to manage center working dates and slot capacities.
+* **Feature Test Suite**: Created [SchedulesSlotsConcurrencyTest.php](file:///home/hongphuoc/Desktop/thue/tests/Feature/SchedulesSlotsConcurrencyTest.php) covering schedule & slot creation, reservation increment, capacity overflow rejection (422 HTTP status with zero overbooking), and simulated concurrent reservation locking, achieving 100% test pass rate across 58 tests in the suite.
+
 ## [v3.8.0] - 2026-08-01
 
 ### M6: CRM Consultation Leads, Registration Standardization & Backend Idempotency (R2, Ponytail Style)

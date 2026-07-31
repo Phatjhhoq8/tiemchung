@@ -1,9 +1,9 @@
 # Project Progress Tracker - Medicare Vaccination System Refactoring (Phases 1-6)
 
-Last visited: 2026-07-31T17:47:48Z
+Last visited: 2026-07-31T17:49:00Z
 
 ## Iteration Status
-Current iteration: 9 / 32
+Current iteration: 10 / 32
 
 ## Milestone Status Summary
 | Milestone | Description | Status | Verification / Artifact |
@@ -14,8 +14,8 @@ Current iteration: 9 / 32
 | **M4** | Content Security, SVG Blocking & Hardening | DONE | Passed Worker, Reviewer, Challenger (140 assertions), & Auditor (CLEAN) |
 | **M5** | Audit Logs & Resource Status Management | DONE | Passed Worker, Reviewer (29 assertions), & Auditor (CLEAN) |
 | **M6** | CRM Leads & Registration Standardization | DONE | Passed Worker, Reviewer (25 assertions), & Auditor (CLEAN) |
-| **M7** | Schedules, Slots & Concurrency Control | IN_PROGRESS | Worker M7 dispatched |
-| **M8** | FEFO Inventory Lots & Stock Reservation | PLANNED | Pending M7 completion |
+| **M7** | Schedules, Slots & Concurrency Control | VERIFYING | M7 code & tests complete. Reviewer & Auditor dispatched |
+| **M8** | FEFO Inventory Lots & Stock Reservation | IN_PROGRESS | Worker M8 dispatched |
 | **M9** | Patient History & 3-step Vaccination Workflow | PLANNED | Pending M8 completion |
 | **M10** | Payment Webhook & Background Queue Jobs | PLANNED | Pending M9 completion |
 | **M11** | E2E Integration, Seeding & Forensic Audit | PLANNED | Pending M10 completion |
