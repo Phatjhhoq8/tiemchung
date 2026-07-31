@@ -12,7 +12,11 @@ use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Models\Registration;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
+use Modules\VaccineRegistration\Models\Schedule;
+use Modules\VaccineRegistration\Models\Slot;
 use Modules\VaccineRegistration\Support\CenterContext;
+use Modules\VaccineRegistration\Models\ConsultationLead;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -388,11 +392,31 @@ class VaccineController extends Controller
     /**
      * Xử lý đăng ký tiêm chủng.
      */
+    /**
+     * Xử lý đăng ký tiêm chủng.
+     */
     public function postRegister(Request $request)
     {
+        $idempotencyKey = $request->header('Idempotency-Key')
+            ?? $request->header('X-Idempotency-Key')
+            ?? $request->header('idempotency_key')
+            ?? $request->input('idempotency_key');
+
+        if ($idempotencyKey) {
+            $cacheKey = 'idempotency:' . md5((string)$idempotencyKey);
+            if (Cache::has($cacheKey)) {
+                $cached = Cache::get($cacheKey);
+                if (is_array($cached) && isset($cached['content'], $cached['status'])) {
+                    return response($cached['content'], $cached['status'])
+                        ->header('Content-Type', $cached['content_type'] ?? 'application/json')
+                        ->header('X-Idempotency-Hit', 'true');
+                }
+            }
+        }
+
         $cart = session()->get('cart', []);
 
-        if (empty($cart)) {
+        if (empty($cart) && !$request->has('patients')) {
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => 'Giỏ hàng của bạn đang trống.'], 400);
             }
@@ -409,10 +433,13 @@ class VaccineController extends Controller
             'patients.*.address' => 'required|string|max:500',
             'patients.*.vaccine_ids' => 'required|array|min:1',
             'patients.*.vaccine_ids.*' => 'exists:vaccines,id',
+            'patients.*.quantity' => 'nullable|integer|min:1',
             'guardian_name' => 'nullable|string|max:255',
             'guardian_phone' => 'nullable|string|regex:/^[0-9]{9,11}$/',
             'center_id' => 'required|exists:centers,id',
             'injection_date' => 'required|date|after_or_equal:today',
+            'slot_id' => 'nullable|exists:slots,id',
+            'patients.*.slot_id' => 'nullable|exists:slots,id',
             'payment_method' => 'required|string|in:Tại trung tâm,QR,Thẻ,Chuyển khoản,Thẻ ATM / QR Code',
         ], [
             'patients.required' => 'Vui lòng cung cấp thông tin người đăng ký tiêm.',
@@ -444,13 +471,16 @@ class VaccineController extends Controller
         $validated = $validator->validated();
         $selectedCenter = Center::active()->findOrFail($validated['center_id']);
         CenterContext::set($selectedCenter->id);
-        $cartState = CenterContext::resolveCart($selectedCenter->id);
-        if ($cartState['unavailable_count'] > 0) {
-            $message = 'Có sản phẩm không có ở chi nhánh ' . $selectedCenter->name . '. Vui lòng xóa sản phẩm đó hoặc chọn chi nhánh khác.';
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => $message], 422);
+
+        if (!empty($cart)) {
+            $cartState = CenterContext::resolveCart($selectedCenter->id);
+            if ($cartState['unavailable_count'] > 0) {
+                $message = 'Có sản phẩm không có ở chi nhánh ' . $selectedCenter->name . '. Vui lòng xóa sản phẩm đó hoặc chọn chi nhánh khác.';
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => $message], 422);
+                }
+                return redirect()->back()->with('error', $message)->withInput();
             }
-            return redirect()->back()->with('error', $message)->withInput();
         }
 
         $patientsData = $validated['patients'];
@@ -459,6 +489,18 @@ class VaccineController extends Controller
         DB::beginTransaction();
         try {
             foreach ($patientsData as $index => $patient) {
+                // Check & reserve time slot with row lock
+                $slotId = $patient['slot_id'] ?? $validated['slot_id'] ?? $request->input('slot_id');
+                if ($slotId) {
+                    $slot = Slot::where('id', $slotId)->lockForUpdate()->first();
+                    if (!$slot || !$slot->is_active || $slot->reserved_count >= $slot->capacity) {
+                        throw new \Exception("Khung giờ đã đầy công suất");
+                    }
+                    $slot->increment('reserved_count');
+                } else {
+                    $slotId = null;
+                }
+
                 // Generate unique registration code
                 $registrationCode = 'MCD-' . strtoupper(\Illuminate\Support\Str::random(8)) . '-' . ($index + 1);
 
@@ -469,12 +511,13 @@ class VaccineController extends Controller
                     ->where('is_active', true)
                     ->get()
                     ->keyBy('vaccine_id');
-                if ($centerVaccines->count() !== count($patient['vaccine_ids'])) {
-                    throw new \RuntimeException('Có sản phẩm không có ở chi nhánh đã chọn.');
+
+                $subtotalPrice = 0;
+                foreach ($patient['vaccine_ids'] as $vId) {
+                    $cv = $centerVaccines->get($vId);
+                    $price = $cv ? ($cv->hasSalePrice() ? $cv->sale_price : $cv->price) : ($vaccines->get($vId)?->price ?? 0);
+                    $subtotalPrice += $price * ($patient['quantity'] ?? 1);
                 }
-                $subtotalPrice = $centerVaccines->sum(function ($cv) {
-                    return $cv->hasSalePrice() ? $cv->sale_price : $cv->price;
-                });
 
                 // Create patient registration
                 $registration = Registration::create([
@@ -489,17 +532,22 @@ class VaccineController extends Controller
                     'center_id' => $selectedCenter->id,
                     'center_name' => $selectedCenter->name,
                     'injection_date' => $validated['injection_date'],
-                    'status' => $validated['payment_method'] === 'Tại trung tâm' ? 'Chờ thanh toán' : 'Đã thanh toán',
+                    'slot_id' => $slotId,
+                    'status' => 'Chờ thanh toán',
                     'payment_method' => $validated['payment_method'],
                     'total_price' => $subtotalPrice,
                 ]);
 
-                // Attach vaccines
+                // Attach vaccines with quantity, price, and sale_price in registration_vaccines pivot
                 foreach ($vaccines as $v) {
                     $centerVaccine = $centerVaccines->get($v->id);
+                    $price = $centerVaccine ? $centerVaccine->price : $v->price;
+                    $salePrice = ($centerVaccine && $centerVaccine->hasSalePrice()) ? $centerVaccine->sale_price : ($v->hasSalePrice() ? $v->sale_price : null);
+                    $qty = isset($patient['quantity']) ? (int)$patient['quantity'] : 1;
                     $registration->vaccines()->attach($v->id, [
-                        'price' => $centerVaccine->hasSalePrice() ? $centerVaccine->sale_price : $centerVaccine->price,
-                        'quantity' => 1,
+                        'price' => $price,
+                        'sale_price' => $salePrice,
+                        'quantity' => $qty,
                     ]);
                 }
 
@@ -515,24 +563,45 @@ class VaccineController extends Controller
                 session()->put('success_code', $successCodes[0]);
             }
 
+            $responsePayload = [
+                'success' => true,
+                'message' => 'Đăng ký tiêm chủng thành công!',
+                'registration_codes' => $successCodes,
+                'redirect' => route('register.success')
+            ];
+
+            if ($idempotencyKey) {
+                $cacheKey = 'idempotency:' . md5((string)$idempotencyKey);
+                Cache::put($cacheKey, [
+                    'status' => 200,
+                    'content' => json_encode($responsePayload),
+                    'content_type' => 'application/json',
+                ], now()->addHours(24));
+            }
+
             if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Đăng ký tiêm chủng thành công!',
-                    'registration_codes' => $successCodes,
-                    'redirect' => route('register.success')
-                ]);
+                return response()->json($responsePayload);
             }
 
             return redirect()->route('register.success');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Illuminate\Support\Facades\Log::error('Multi-patient registration error: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Multi-patient registration error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            if ($e->getMessage() === 'Khung giờ đã đầy công suất') {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Khung giờ đã đầy công suất',
+                        'errors' => ['slot_id' => ['Khung giờ đã đầy công suất']]
+                    ], 422);
+                }
+                return redirect()->back()->with('error', 'Khung giờ đã đầy công suất')->withInput();
+            }
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Có lỗi xảy ra khi lưu đăng ký: ' . $e->getMessage()
+                    'message' => 'Có lỗi xảy ra khi lưu đăng ký. Vui lòng thử lại.'
                 ], 500);
             }
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi lưu đăng ký. Vui lòng thử lại.')->withInput();
@@ -617,9 +686,10 @@ class VaccineController extends Controller
 
         // Fallback mặc định nếu không khớp bệnh phổ biến
         if (!$info) {
+            $safeDisease = htmlspecialchars($diseaseDecoded, ENT_QUOTES, 'UTF-8');
             $info = [
-                'title' => 'Vắc xin phòng bệnh ' . $diseaseDecoded,
-                'description' => '<h6>Chủ động phòng ngừa bệnh ' . $diseaseDecoded . ' hiệu quả</h6><p>Bệnh <strong>' . $diseaseDecoded . '</strong> là bệnh truyền nhiễm có diễn biến phức tạp và có thể gây ra các biến chứng nguy hiểm đối với sức khỏe. Việc chủ động tiêm ngừa vắc xin là phương pháp phòng bệnh khoa học, an toàn và tiết kiệm nhất cho cả gia đình.</p><p>💉 Hãy liên hệ Medicare để nhận tư vấn chi tiết về phác đồ và lịch tiêm chủng vắc xin phòng bệnh ' . $diseaseDecoded . ' phù hợp nhất với độ tuổi của bạn.</p>'
+                'title' => 'Vắc xin phòng bệnh ' . $safeDisease,
+                'description' => '<h6>Chủ động phòng ngừa bệnh ' . $safeDisease . ' hiệu quả</h6><p>Bệnh <strong>' . $safeDisease . '</strong> là bệnh truyền nhiễm có diễn biến phức tạp và có thể gây ra các biến chứng nguy hiểm đối với sức khỏe. Việc chủ động tiêm ngừa vắc xin là phương pháp phòng bệnh khoa học, an toàn và tiết kiệm nhất cho cả gia đình.</p><p>💉 Hãy liên hệ Medicare để nhận tư vấn chi tiết về phác đồ và lịch tiêm chủng vắc xin phòng bệnh ' . $safeDisease . ' phù hợp nhất với độ tuổi của bạn.</p>'
             ];
         }
 
@@ -627,7 +697,7 @@ class VaccineController extends Controller
     }
 
     /**
-     * Xử lý gửi yêu cầu tư vấn nhóm bệnh.
+     * Xử lý gửi yêu cầu tư vấn nhóm bệnh (Lưu duy nhất vào consultation_leads).
      */
     public function postDiseaseConsult(Request $request, $disease)
     {
@@ -654,65 +724,42 @@ class VaccineController extends Controller
         }
 
         $validated = $validator->validated();
-        $registrationCode = 'MCD-CS-' . strtoupper(Str::random(6));
-
-        // Lấy danh sách vắc xin của nhóm bệnh này để đính kèm (nếu có)
         $currentCenter = CenterContext::current();
-        $vaccines = Vaccine::forCenter($currentCenter?->id)
-            ->where(function ($q) use ($diseaseDecoded) {
-                $q->where('category', 'like', '%' . $diseaseDecoded . '%')
-                    ->orWhere('disease_prevention', 'like', '%' . $diseaseDecoded . '%');
-            })
-            ->get();
 
         $selectedCenter = null;
         if ($validated['consultType'] === 'offline') {
             $selectedCenter = Center::active()->where('name', $validated['centerName'])->first();
         }
         $selectedCenter = $selectedCenter ?: $currentCenter;
-        $centerName = $validated['consultType'] === 'online' ? 'Tư vấn Online (Qua điện thoại) - ' . ($selectedCenter?->name ?? 'Medicare') : $validated['centerName'];
-        $patientAddress = 'Hình thức: ' . ($validated['consultType'] === 'online' ? 'Online' : 'Trực tiếp tại trung tâm') . ' - Đăng ký tư vấn: ' . $diseaseDecoded . ($validated['customerNote'] ? (' - Ghi chú: ' . $validated['customerNote']) : '');
+
+        $note = 'Hình thức: ' . ($validated['consultType'] === 'online' ? 'Online' : 'Trực tiếp tại trung tâm') . ' - Đăng ký tư vấn: ' . $diseaseDecoded . ($validated['customerNote'] ? (' - Ghi chú: ' . $validated['customerNote']) : '');
 
         DB::beginTransaction();
         try {
-            // Tạo bản ghi tư vấn trong registrations
-            $registration = Registration::create([
-                'registration_code' => $registrationCode,
-                'patient_name' => $validated['customerName'],
-                'patient_dob' => '2000-01-01',
-                'patient_gender' => 'Khác',
-                'patient_phone' => $validated['customerPhone'],
-                'patient_address' => $validated['consultType'] === 'online' ? $patientAddress : 'Đăng ký tư vấn trực tiếp: ' . $diseaseDecoded . ($validated['customerNote'] ? (' - Ghi chú: ' . $validated['customerNote']) : ''),
-                'guardian_name' => null,
-                'guardian_phone' => null,
+            // Lưu duy nhất vào consultation_leads, KHÔNG tạo dummy registration
+            $lead = ConsultationLead::create([
+                'name' => $validated['customerName'],
+                'phone' => $validated['customerPhone'],
+                'source' => 'Nhóm bệnh: ' . $diseaseDecoded,
+                'status' => 'new',
+                'note' => $note,
                 'center_id' => $selectedCenter?->id,
-                'center_name' => $centerName,
-                'injection_date' => now()->toDateString(),
-                'status' => 'Chờ tư vấn',
-                'payment_method' => 'Tại trung tâm',
-                'total_price' => 0,
             ]);
-
-            // Đính kèm các vắc xin thuộc nhóm bệnh nếu có
-            if ($vaccines->isNotEmpty()) {
-                foreach ($vaccines as $vac) {
-                    $registration->vaccines()->attach($vac->id, ['price' => $vac->price]);
-                }
-            }
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Gửi yêu cầu tư vấn thành công! Nhân viên y tế Medicare sẽ liên hệ hỗ trợ bạn qua SĐT ' . $validated['customerPhone'] . ' trong thời gian sớm nhất.',
-                'registration_code' => $registrationCode
+                'lead_id' => $lead->id
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Consultation lead creation error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             return response()->json([
                 'success' => false,
-                'message' => 'Có lỗi xảy ra khi lưu yêu cầu tư vấn: ' . $e->getMessage()
+                'message' => 'Có lỗi xảy ra khi lưu yêu cầu tư vấn. Vui lòng thử lại.'
             ], 500);
         }
     }

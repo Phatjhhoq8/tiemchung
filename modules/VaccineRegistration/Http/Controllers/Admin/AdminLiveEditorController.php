@@ -15,8 +15,15 @@ use Modules\VaccineRegistration\Models\Article;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\Setting;
 
+use Modules\VaccineRegistration\Support\AdminContext;
+
 class AdminLiveEditorController extends Controller
 {
+    public function __construct()
+    {
+        // Protected by route middleware 'super.admin' and explicit abort_unless checks
+    }
+
     public static $defaultSections = [
         'quick_booking' => 'Form Đăng ký nhanh',
         'centers' => 'Hệ thống Trung tâm',
@@ -114,8 +121,18 @@ class AdminLiveEditorController extends Controller
             'banner_id' => 'required|integer',
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:500',
-            'link_url' => 'nullable|string|max:500',
-            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'link_url' => [
+                'nullable',
+                'string',
+                'max:500',
+                function ($attribute, $value, $fail) {
+                    $lowerVal = strtolower(trim($value));
+                    if (preg_match('/^\s*(javascript|data|vbscript)\s*:/i', $value) || str_contains($lowerVal, 'javascript:') || str_contains($lowerVal, 'data:')) {
+                        $fail('Đường dẫn link không hợp lệ.');
+                    }
+                }
+            ],
+            'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096', new \App\Rules\SafeImageFile()],
             'image_existing' => 'nullable|string',
         ]);
 
@@ -156,7 +173,7 @@ class AdminLiveEditorController extends Controller
             'price' => 'required|integer|min:0',
             'sale_price' => 'nullable|integer|min:0',
             'disease_prevention' => 'required|string|max:255',
-            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096', new \App\Rules\SafeImageFile()],
             'image_existing' => 'nullable|string',
             'is_featured' => 'nullable|boolean',
         ]);
@@ -243,7 +260,7 @@ class AdminLiveEditorController extends Controller
             return $avatar;
         }
 
-        if (!preg_match('/^data:image\/(jpeg|jpg|png|webp|gif);base64,(.+)$/', $avatar, $matches)) {
+        if (!preg_match('/^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/', $avatar, $matches)) {
             return '';
         }
 

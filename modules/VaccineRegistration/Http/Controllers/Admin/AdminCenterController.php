@@ -10,13 +10,21 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Center;
 
+use Modules\VaccineRegistration\Support\AdminContext;
+
 class AdminCenterController extends Controller
 {
+    public function __construct()
+    {
+        // Protected by route middleware 'super.admin' and explicit abort_unless checks
+    }
+
     /**
      * Danh sách trung tâm.
      */
     public function index()
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $centers = Center::orderBy('is_active', 'desc')->orderBy('name', 'asc')->paginate(10);
         return view('vaccine::admin.centers.index', compact('centers'));
     }
@@ -41,7 +49,20 @@ class AdminCenterController extends Controller
             'address' => 'required|string|max:500',
             'phone' => 'nullable|string|max:20',
             'zalo_phone' => 'nullable|string|max:20',
-            'map_url' => 'nullable|string',
+            'map_url' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $lowerVal = strtolower(trim($value));
+                    if (preg_match('/^\s*(javascript|data|vbscript)\s*:/i', $value) || str_contains($lowerVal, 'javascript:') || str_contains($lowerVal, 'data:')) {
+                        $fail('Bản đồ phải là đường dẫn Google Maps hợp lệ.');
+                        return;
+                    }
+                    if (!str_starts_with($value, 'https://www.google.com/maps/embed') && !str_starts_with($value, 'https://www.google.com/maps/place') && !str_starts_with($value, 'https://www.google.com/maps/')) {
+                        $fail('Bản đồ phải là đường dẫn Google Maps hợp lệ.');
+                    }
+                }
+            ],
             'working_hours' => 'nullable|string|max:255',
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'required|boolean',
@@ -51,7 +72,7 @@ class AdminCenterController extends Controller
             'is_active.required' => 'Vui lòng chọn trạng thái hoạt động.',
         ]);
 
-        $validated['slug'] = $validated['slug'] ?: \Illuminate\Support\Str::slug($validated['name']);
+        $validated['slug'] = ($validated['slug'] ?? null) ?: \Illuminate\Support\Str::slug($validated['name']);
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
 
         Center::create($validated);
@@ -81,7 +102,20 @@ class AdminCenterController extends Controller
             'address' => 'required|string|max:500',
             'phone' => 'nullable|string|max:20',
             'zalo_phone' => 'nullable|string|max:20',
-            'map_url' => 'nullable|string',
+            'map_url' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $lowerVal = strtolower(trim($value));
+                    if (preg_match('/^\s*(javascript|data|vbscript)\s*:/i', $value) || str_contains($lowerVal, 'javascript:') || str_contains($lowerVal, 'data:')) {
+                        $fail('Bản đồ phải là đường dẫn Google Maps hợp lệ.');
+                        return;
+                    }
+                    if (!str_starts_with($value, 'https://www.google.com/maps/embed') && !str_starts_with($value, 'https://www.google.com/maps/place') && !str_starts_with($value, 'https://www.google.com/maps/')) {
+                        $fail('Bản đồ phải là đường dẫn Google Maps hợp lệ.');
+                    }
+                }
+            ],
             'working_hours' => 'nullable|string|max:255',
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'required|boolean',
@@ -91,7 +125,7 @@ class AdminCenterController extends Controller
             'is_active.required' => 'Vui lòng chọn trạng thái hoạt động.',
         ]);
 
-        $validated['slug'] = $validated['slug'] ?: \Illuminate\Support\Str::slug($validated['name']);
+        $validated['slug'] = ($validated['slug'] ?? null) ?: \Illuminate\Support\Str::slug($validated['name']);
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
 
         $center->update($validated);
@@ -100,13 +134,16 @@ class AdminCenterController extends Controller
     }
 
     /**
-     * Xóa trung tâm.
+     * Xóa trung tâm (Soft deactivation).
      */
     public function destroy($id)
     {
         $center = Center::findOrFail($id);
-        $center->delete();
+        $center->is_active = false;
+        $center->save();
 
-        return redirect()->route('admin.centers.index')->with('success', 'Xóa trung tâm tiêm chủng thành công.');
+        \Modules\VaccineRegistration\Models\CenterVaccine::where('center_id', $center->id)->update(['is_active' => false]);
+
+        return redirect()->route('admin.centers.index')->with('success', 'Vô hiệu hóa trung tâm tiêm chủng thành công.');
     }
 }

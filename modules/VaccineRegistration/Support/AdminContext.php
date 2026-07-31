@@ -10,13 +10,25 @@ class AdminContext
 {
     public static function user(): ?User
     {
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            return \Illuminate\Support\Facades\Auth::user();
+        }
+
         $userId = session('admin_user_id');
         if ($userId) {
-            return User::with('center')->find($userId);
+            $user = User::with('center')->find($userId);
+            if ($user) {
+                \Illuminate\Support\Facades\Auth::setUser($user);
+            }
+            return $user;
         }
 
         if (session('admin_logged_in') === true) {
-            return User::where('role', 'super_admin')->where('is_active', true)->first();
+            $user = User::where('role', 'super_admin')->where('is_active', true)->first();
+            if ($user) {
+                \Illuminate\Support\Facades\Auth::setUser($user);
+            }
+            return $user;
         }
 
         return null;

@@ -17,6 +17,10 @@ use Modules\VaccineRegistration\Http\Controllers\Admin\AdminBannerController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminLiveEditorController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminUserController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminStockController;
+use Modules\VaccineRegistration\Http\Controllers\ConsultationLeadController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminConsultationLeadController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminScheduleController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSlotController;
 use Modules\VaccineRegistration\Http\Controllers\AdminArticleController;
 use Modules\VaccineRegistration\Http\Controllers\ArticleController;
 
@@ -42,6 +46,10 @@ Route::middleware('web')->group(function () {
     Route::post('/cart/remove', [VaccineController::class, 'removeFromCart'])->name('cart.remove');
     Route::post('/cart/clear', [VaccineController::class, 'clearCart'])->name('cart.clear');
     
+    // Yêu cầu tư vấn (CRM Leads)
+    Route::post('/consultations', [ConsultationLeadController::class, 'store'])->name('consultations.store');
+    Route::post('/leads', [ConsultationLeadController::class, 'store'])->name('leads.store');
+    
     // Quy trình đăng ký tiêm
     Route::get('/register', [VaccineController::class, 'showRegister'])->name('register.show');
     Route::post('/register', [VaccineController::class, 'postRegister'])->name('register.post');
@@ -64,6 +72,11 @@ Route::middleware('web')->group(function () {
         // Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
+        // Quản lý CRM Consultation Leads
+        Route::get('/leads', [AdminConsultationLeadController::class, 'index'])->name('leads.index');
+        Route::get('/leads/{id}', [AdminConsultationLeadController::class, 'show'])->name('leads.show');
+        Route::patch('/leads/{id}/status', [AdminConsultationLeadController::class, 'updateStatus'])->name('leads.status');
+
         // Quản lý Vắc xin
         Route::get('/vaccin', function() { return redirect()->route('admin.vaccines.index'); });
         Route::post('/vaccines/{id}/toggle-featured', [AdminVaccineController::class, 'toggleFeatured'])->name('vaccines.toggle-featured');
@@ -75,6 +88,11 @@ Route::middleware('web')->group(function () {
         Route::get('/registrations/export/csv', [AdminRegistrationController::class, 'exportCsv'])->name('registrations.export.csv');
         Route::get('/registrations/{id}', [AdminRegistrationController::class, 'show'])->name('registrations.show');
         Route::patch('/registrations/{id}/status', [AdminRegistrationController::class, 'updateStatus'])->name('registrations.status');
+
+        // Quản lý Lịch & Khung giờ (Schedules & Slots)
+        Route::resource('schedules', AdminScheduleController::class);
+        Route::post('/schedules/{schedule}/slots', [AdminScheduleController::class, 'storeSlot'])->name('schedules.slots.store');
+        Route::resource('slots', AdminSlotController::class)->only(['index', 'store', 'update', 'destroy']);
 
         // Nhập/xuất/tồn kho theo chi nhánh
         Route::get('/stock', [AdminStockController::class, 'index'])->name('stock.index');

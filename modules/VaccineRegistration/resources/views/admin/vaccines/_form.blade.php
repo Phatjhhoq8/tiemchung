@@ -18,7 +18,7 @@
         <!-- Tên Vắc xin -->
         <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0;">
             <label for="name" class="form-label-modern">Tên vắc xin / Gói vắc xin <span style="color: #ef4444;">*</span></label>
-            <input type="text" name="name" id="name" value="{{ old('name', $vaccine->name) }}" required class="form-control-modern">
+            <input type="text" name="name" id="name" value="{{ old('name', $vaccine->name) }}" required class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
         </div>
 
         @if(isset($centers) && ($isSuperAdmin ?? false))
@@ -39,7 +39,7 @@
         <!-- Phân loại -->
         <div class="form-group-modern" style="margin-bottom: 0;">
             <label for="type" class="form-label-modern">Phân loại <span style="color: #ef4444;">*</span></label>
-            <select name="type" id="type" required class="form-control-modern" style="background-image: none;">
+            <select name="type" id="type" required class="form-control-modern" style="background-image: none;" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
                 <option value="single" {{ old('type', $vaccine->type) === 'single' ? 'selected' : '' }}>Vắc xin lẻ</option>
                 <option value="package" {{ old('type', $vaccine->type) === 'package' ? 'selected' : '' }}>Gói vắc xin</option>
             </select>
@@ -48,7 +48,7 @@
         <!-- Danh mục bệnh -->
         <div class="form-group-modern" style="margin-bottom: 0;">
             <label for="category" class="form-label-modern">Danh mục bệnh</label>
-            <input type="text" name="category" id="category" value="{{ old('category', $vaccine->category) }}" placeholder="VD: Cúm, HPV, Viêm gan, Bạch hầu..." list="category-list" class="form-control-modern">
+            <input type="text" name="category" id="category" value="{{ old('category', $vaccine->category) }}" placeholder="VD: Cúm, HPV, Viêm gan, Bạch hầu..." list="category-list" class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
             @if(isset($categories) && $categories->count())
             <datalist id="category-list">
                 @foreach($categories as $cat)
@@ -61,7 +61,7 @@
         <!-- Bệnh phòng ngừa -->
         <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0;">
             <label for="disease_prevention" class="form-label-modern">Bệnh phòng ngừa <span style="color: #ef4444;">*</span></label>
-            <input type="text" name="disease_prevention" id="disease_prevention" value="{{ old('disease_prevention', $vaccine->disease_prevention) }}" placeholder="VD: Bạch hầu, Ho gà, Uốn ván, Bại liệt..." required class="form-control-modern">
+            <input type="text" name="disease_prevention" id="disease_prevention" value="{{ old('disease_prevention', $vaccine->disease_prevention) }}" placeholder="VD: Bạch hầu, Ho gà, Uốn ván, Bại liệt..." required class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
         </div>
     </div>
 </div>
@@ -91,7 +91,7 @@
         <!-- Số mũi tiêm -->
         <div class="form-group-modern" style="margin-bottom: 0;">
             <label for="doses" class="form-label-modern">Số mũi tiêm theo phác đồ <span style="color: #ef4444;">*</span></label>
-            <input type="number" name="doses" id="doses" value="{{ old('doses', $vaccine->doses ?: 1) }}" required min="1" class="form-control-modern">
+            <input type="number" name="doses" id="doses" value="{{ old('doses', $vaccine->doses ?: 1) }}" required min="1" class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
         </div>
 
         <!-- Tình trạng kho -->
@@ -116,19 +116,19 @@
         <!-- Hãng sản xuất -->
         <div class="form-group-modern" style="margin-bottom: 0;">
             <label for="manufacturer" class="form-label-modern">Hãng sản xuất</label>
-            <input type="text" name="manufacturer" id="manufacturer" value="{{ old('manufacturer', $vaccine->manufacturer) }}" placeholder="VD: MSD, Sanofi, GlaxoSmithKline..." class="form-control-modern">
+            <input type="text" name="manufacturer" id="manufacturer" value="{{ old('manufacturer', $vaccine->manufacturer) }}" placeholder="VD: MSD, Sanofi, GlaxoSmithKline..." class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
         </div>
 
         <!-- Quốc gia nguồn gốc -->
         <div class="form-group-modern" style="margin-bottom: 0;">
             <label for="origin" class="form-label-modern">Nước sản xuất (Nguồn gốc)</label>
-            <input type="text" name="origin" id="origin" value="{{ old('origin', $vaccine->origin) }}" placeholder="VD: Mỹ, Pháp, Bỉ, Đức..." class="form-control-modern">
+            <input type="text" name="origin" id="origin" value="{{ old('origin', $vaccine->origin) }}" placeholder="VD: Mỹ, Pháp, Bỉ, Đức..." class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
         </div>
 
         <!-- Quy cách đóng gói -->
         <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0;">
             <label for="dosage" class="form-label-modern">Quy cách liều lượng (Hàm lượng/Đóng gói)</label>
-            <input type="text" name="dosage" id="dosage" value="{{ old('dosage', $vaccine->dosage) }}" placeholder="VD: Hộp 1 bơm tiêm đóng sẵn gia liều 0.5ml dung dịch..." class="form-control-modern">
+            <input type="text" name="dosage" id="dosage" value="{{ old('dosage', $vaccine->dosage) }}" placeholder="VD: Hộp 1 bơm tiêm đóng sẵn gia liều 0.5ml dung dịch..." class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
         </div>
     </div>
 </div>
@@ -143,10 +143,10 @@
         <!-- Tải lên hình ảnh -->
         <div class="form-group-modern" style="margin-bottom: 0; grid-column: span 2;">
             <label class="form-label-modern">Hình ảnh vắc xin / Gói vắc xin</label>
-            <input type="file" name="image_file" id="image_file" accept="image/*" style="display: none;">
+            <input type="file" name="image_file" id="image_file" accept="image/*" style="display: none;" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
             <input type="hidden" name="image" id="image_hidden" value="{{ old('image', $vaccine->image) }}">
             
-            <div id="image_dropzone" class="image-upload-zone">
+            <div id="image_dropzone" class="image-upload-zone" style="{{ !($isSuperAdmin ?? false) ? 'pointer-events: none; opacity: 0.7;' : '' }}">
                 <div id="dropzone_prompt" style="{{ $vaccine->image ? 'display: none;' : '' }}">
                     <i data-lucide="upload-cloud" style="width: 40px; height: 40px; color: var(--text-light); margin-bottom: 8px; display: inline-block;"></i>
                     <p style="font-weight: 600; color: var(--text-muted); margin: 0 0 4px 0;">Kéo thả hình ảnh vào đây hoặc click để tải lên</p>
@@ -155,9 +155,11 @@
                 <div id="image_preview_container" class="image-upload-preview-container" style="{{ $vaccine->image ? 'display: block;' : '' }}">
                     <div class="image-upload-preview-wrapper">
                         <img id="image_preview" class="image-upload-preview" src="{{ $vaccine->image ? asset('images/vaccines/' . $vaccine->image) : '' }}" alt="Preview">
+                        @if($isSuperAdmin ?? false)
                         <button type="button" id="btn_remove_image" class="image-upload-remove-btn" title="Xóa hình ảnh">
                             <i data-lucide="x" style="width: 14px; height: 14px;"></i>
                         </button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -190,7 +192,7 @@
         Mô tả chi tiết
     </h3>
     <div class="form-group-modern" style="margin-bottom: 0;">
-        <textarea name="description" id="description" rows="5" placeholder="Nhập công dụng chi tiết, hướng dẫn, lưu ý phác đồ tiêm chủng..." class="form-control-modern" style="font-family: inherit; resize: vertical;">{{ old('description', $vaccine->description) }}</textarea>
+        <textarea name="description" id="description" rows="5" placeholder="Nhập công dụng chi tiết, hướng dẫn, lưu ý phác đồ tiêm chủng..." class="form-control-modern" style="font-family: inherit; resize: vertical;" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>{{ old('description', $vaccine->description) }}</textarea>
     </div>
 </div>
 

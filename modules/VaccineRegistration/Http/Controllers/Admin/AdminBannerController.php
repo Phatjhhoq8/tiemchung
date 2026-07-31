@@ -10,13 +10,21 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Banner;
 
+use Modules\VaccineRegistration\Support\AdminContext;
+
 class AdminBannerController extends Controller
 {
+    public function __construct()
+    {
+        // Protected by route middleware 'super.admin' and explicit abort_unless checks
+    }
+
     /**
      * Danh sách banner.
      */
     public function index()
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $banners = Banner::ordered()->paginate(10);
         return view('vaccine::admin.banners.index', compact('banners'));
     }
@@ -39,8 +47,18 @@ class AdminBannerController extends Controller
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:500',
             'image_url' => 'nullable|string|max:500',
-            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
-            'link_url' => 'nullable|string|max:500',
+            'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new \App\Rules\SafeImageFile()],
+            'link_url' => [
+                'nullable',
+                'string',
+                'max:500',
+                function ($attribute, $value, $fail) {
+                    $lowerVal = strtolower(trim($value));
+                    if (preg_match('/^\s*(javascript|data|vbscript)\s*:/i', $value) || str_contains($lowerVal, 'javascript:') || str_contains($lowerVal, 'data:')) {
+                        $fail('Đường dẫn link không hợp lệ.');
+                    }
+                }
+            ],
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'nullable',
         ], [
@@ -87,8 +105,18 @@ class AdminBannerController extends Controller
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:500',
             'image_url' => 'nullable|string|max:500',
-            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
-            'link_url' => 'nullable|string|max:500',
+            'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new \App\Rules\SafeImageFile()],
+            'link_url' => [
+                'nullable',
+                'string',
+                'max:500',
+                function ($attribute, $value, $fail) {
+                    $lowerVal = strtolower(trim($value));
+                    if (preg_match('/^\s*(javascript|data|vbscript)\s*:/i', $value) || str_contains($lowerVal, 'javascript:') || str_contains($lowerVal, 'data:')) {
+                        $fail('Đường dẫn link không hợp lệ.');
+                    }
+                }
+            ],
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'nullable',
         ], [
@@ -123,13 +151,14 @@ class AdminBannerController extends Controller
     }
 
     /**
-     * Xóa banner.
+     * Xóa banner (Soft deactivation).
      */
     public function destroy($id)
     {
         $banner = Banner::findOrFail($id);
-        $banner->delete();
+        $banner->is_active = false;
+        $banner->save();
 
-        return redirect()->route('admin.banners.index')->with('success', 'Xóa banner thành công.');
+        return redirect()->route('admin.banners.index')->with('success', 'Vô hiệu hóa banner thành công.');
     }
 }

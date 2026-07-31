@@ -31,6 +31,12 @@ class AdminAuth
                 $request->session()->forget(['admin_logged_in', 'admin_user_id', 'admin_role', 'admin_center_id']);
                 return redirect()->route('admin.login.show')->with('error', 'Tài khoản quản trị không còn hoạt động.');
             }
+            \Illuminate\Support\Facades\Auth::setUser($user);
+        } elseif ($request->session()->get('admin_logged_in') === true) {
+            $user = \App\Models\User::where('role', 'super_admin')->where('is_active', true)->first();
+            if ($user) {
+                \Illuminate\Support\Facades\Auth::setUser($user);
+            }
         }
 
         return $next($request);

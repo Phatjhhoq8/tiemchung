@@ -10,13 +10,21 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Setting;
 
+use Modules\VaccineRegistration\Support\AdminContext;
+
 class AdminSettingController extends Controller
 {
+    public function __construct()
+    {
+        // Protected by route middleware 'super.admin' and explicit abort_unless checks
+    }
+
     /**
      * Hiển thị danh sách cấu hình.
      */
     public function index()
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $settings = [
             'site_name' => Setting::get('site_name', 'Medicare Cờ Đỏ'),
             'hotline' => Setting::get('hotline', '0938 60 38 39'),

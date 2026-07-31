@@ -11,10 +11,18 @@ use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Article;
 use Illuminate\Support\Str;
 
+use Modules\VaccineRegistration\Support\AdminContext;
+
 class AdminArticleController extends Controller
 {
+    public function __construct()
+    {
+        // Protected by route middleware 'super.admin' and explicit abort_unless checks
+    }
+
     public function index()
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $articles = Article::latest()->paginate(10);
         return view('vaccine::admin.articles.index', compact('articles'));
     }
@@ -32,10 +40,14 @@ class AdminArticleController extends Controller
             'content' => 'nullable|string',
             'category' => 'required|string',
             'image' => 'nullable|string',
-            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new \App\Rules\SafeImageFile()],
             'is_published' => 'boolean',
             'is_featured' => 'boolean',
         ]);
+
+        if (isset($validated['content'])) {
+            $validated['content'] = \App\Services\Security\HtmlSanitizer::clean($validated['content']);
+        }
 
         // Xử lý tải lên hình ảnh từ file
         if ($request->hasFile('image_file')) {
@@ -70,8 +82,12 @@ class AdminArticleController extends Controller
             'content' => 'nullable|string',
             'category' => 'required|string',
             'image' => 'nullable|string',
-            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new \App\Rules\SafeImageFile()],
         ]);
+
+        if (isset($validated['content'])) {
+            $validated['content'] = \App\Services\Security\HtmlSanitizer::clean($validated['content']);
+        }
 
         // Xử lý tải lên hình ảnh từ file
         if ($request->hasFile('image_file')) {
@@ -100,9 +116,11 @@ class AdminArticleController extends Controller
     public function destroy($id)
     {
         $article = Article::findOrFail($id);
-        $article->delete();
+        $article->is_active = false;
+        $article->is_published = false;
+        $article->save();
 
-        return redirect()->route('admin.articles.index')->with('success', 'Xóa bài viết thành công!');
+        return redirect()->route('admin.articles.index')->with('success', 'Vô hiệu hóa bài viết thành công!');
     }
 
     /**
@@ -110,15 +128,23 @@ class AdminArticleController extends Controller
      */
     public function uploadEditorImage(Request $request)
     {
+        $request->validate([
+            'file' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new \App\Rules\SafeImageFile()],
+        ], [
+            'file.mimes' => 'File không đúng định dạng ảnh (chỉ chấp nhận jpg, jpeg, png, webp).',
+            'file.image' => 'File tải lên phải là hình ảnh hợp lệ.',
+        ]);
+
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            
-            // Validate sơ bộ định dạng ảnh
-            if (!in_array(strtolower($file->getClientOriginalExtension()), ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'])) {
-                return response()->json(['error' => 'File không đúng định dạng ảnh.'], 400);
+            $ext = strtolower($file->getClientOriginalExtension());
+            $mime = strtolower($file->getMimeType());
+
+            if ($ext === 'svg' || str_contains($mime, 'svg')) {
+                return response()->json(['error' => 'File SVG không được phép tải lên.'], 400);
             }
             
-            $filename = 'editor_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $filename = 'editor_' . time() . '_' . uniqid() . '.' . $ext;
             $file->move(public_path('images/vaccines'), $filename);
             
             $location = asset('images/vaccines/' . $filename);

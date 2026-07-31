@@ -24,6 +24,7 @@ class Registration extends Model
         'status',
         'payment_method',
         'total_price',
+        'slot_id',
     ];
 
     /**
@@ -32,12 +33,17 @@ class Registration extends Model
     public function vaccines()
     {
         return $this->belongsToMany(Vaccine::class, 'registration_vaccines')
-                    ->withPivot('price')
+                    ->withPivot(['quantity', 'price', 'sale_price'])
                     ->withTimestamps();
     }
 
     public function center()
     {
         return $this->belongsTo(Center::class);
+    }
+
+    public function slot()
+    {
+        return $this->belongsTo(Slot::class);
     }
 }

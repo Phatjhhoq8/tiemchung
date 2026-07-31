@@ -14,6 +14,10 @@ class AdminStockController extends Controller
 {
     public function index(Request $request)
     {
+        if (AdminContext::isBranchAdmin() && $request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
+            abort(403, 'Cross-branch access forbidden.');
+        }
+
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
         $selectedCenterId = AdminContext::selectedCenterId($request->filled('center_id') ? (int) $request->input('center_id') : null);
 
@@ -29,6 +33,10 @@ class AdminStockController extends Controller
     public function create(Request $request)
     {
         abort_unless(AdminContext::isBranchAdmin(), 403);
+
+        if (AdminContext::isBranchAdmin() && $request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
+            abort(403, 'Cross-branch access forbidden.');
+        }
 
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
         $selectedCenterId = AdminContext::selectedCenterId($request->filled('center_id') ? (int) $request->input('center_id') : null);
@@ -70,9 +78,17 @@ class AdminStockController extends Controller
             ['price' => Vaccine::findOrFail($validated['vaccine_id'])->price, 'stock_status' => 'available']
         );
 
+        $oldQuantity = (int) $centerVaccine->stock_quantity;
         $centerVaccine->stock_quantity = max(0, (int) $centerVaccine->stock_quantity + (int) $movement->quantity);
         $centerVaccine->stock_status = $centerVaccine->stock_quantity <= 0 ? 'out_of_stock' : ($centerVaccine->stock_quantity <= 5 ? 'limited' : 'available');
         $centerVaccine->save();
+
+        \App\Services\AuditLogger::logStockUpdate(
+            resourceId: $centerVaccine->id,
+            oldValues: ['stock_quantity' => $oldQuantity],
+            newValues: ['stock_quantity' => $centerVaccine->stock_quantity, 'stock_status' => $centerVaccine->stock_status],
+            centerId: $centerId
+        );
 
         return redirect()->route('admin.stock.index', ['center_id' => $centerId])->with('success', 'Đã ghi nhận nhập/điều chỉnh kho.');
     }

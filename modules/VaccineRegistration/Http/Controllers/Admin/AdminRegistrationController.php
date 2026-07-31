@@ -20,6 +20,10 @@ class AdminRegistrationController extends Controller
      */
     public function index(Request $request)
     {
+        if (AdminContext::isBranchAdmin() && $request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
+            abort(403, 'Cross-branch access forbidden.');
+        }
+
         $query = AdminContext::applyCenterScope(Registration::query());
 
         // Lọc theo trạng thái
@@ -46,7 +50,10 @@ class AdminRegistrationController extends Controller
      */
     public function show($id)
     {
-        $registration = AdminContext::applyCenterScope(Registration::with('vaccines'))->findOrFail($id);
+        $registration = Registration::with('vaccines')->findOrFail($id);
+        if (AdminContext::isBranchAdmin() && (int) $registration->center_id !== (int) AdminContext::centerId()) {
+            abort(403, 'Cross-branch access forbidden.');
+        }
         
         $statuses = [
             'Chờ thanh toán',
@@ -65,7 +72,10 @@ class AdminRegistrationController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
-        $registration = AdminContext::applyCenterScope(Registration::with('vaccines'))->findOrFail($id);
+        $registration = Registration::with('vaccines')->findOrFail($id);
+        if (AdminContext::isBranchAdmin() && (int) $registration->center_id !== (int) AdminContext::centerId()) {
+            abort(403, 'Cross-branch access forbidden.');
+        }
         $oldStatus = $registration->status;
 
         $validated = $request->validate([
@@ -75,29 +85,110 @@ class AdminRegistrationController extends Controller
             'status.in' => 'Trạng thái không hợp lệ.'
         ]);
 
-        $registration->update([
-            'status' => $validated['status']
-        ]);
-
-        if (!in_array($oldStatus, ['Đã thanh toán', 'Đã tiêm'], true) && in_array($validated['status'], ['Đã thanh toán', 'Đã tiêm'], true)) {
-            foreach ($registration->vaccines as $vaccine) {
-                VaccineStockMovement::create([
-                    'center_id' => $registration->center_id,
-                    'vaccine_id' => $vaccine->id,
-                    'type' => 'sale',
-                    'quantity' => 1,
-                    'unit_price' => (int) ($vaccine->pivot->price ?? 0),
-                    'note' => 'Ghi nhận bán từ đơn ' . $registration->registration_code,
-                    'created_by' => AdminContext::user()?->id,
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($registration, $validated, $oldStatus) {
+                $registration->update([
+                    'status' => $validated['status']
                 ]);
 
-                $centerVaccine = CenterVaccine::where('center_id', $registration->center_id)->where('vaccine_id', $vaccine->id)->first();
-                if ($centerVaccine) {
-                    $centerVaccine->stock_quantity = max(0, (int) $centerVaccine->stock_quantity - 1);
-                    $centerVaccine->stock_status = $centerVaccine->stock_quantity <= 0 ? 'out_of_stock' : ($centerVaccine->stock_quantity <= 5 ? 'limited' : 'available');
-                    $centerVaccine->save();
+                if ($oldStatus !== $validated['status']) {
+                    \App\Services\AuditLogger::logOrderStatusUpdate(
+                        resourceId: $registration->id,
+                        oldValues: ['status' => $oldStatus],
+                        newValues: ['status' => $validated['status']],
+                        centerId: $registration->center_id
+                    );
                 }
-            }
+
+                $wasPaidOrInjected = in_array($oldStatus, ['Đã thanh toán', 'Đã tiêm'], true);
+                $isPaidOrInjected = in_array($validated['status'], ['Đã thanh toán', 'Đã tiêm'], true);
+
+                if ($wasPaidOrInjected && !$isPaidOrInjected) {
+                    \App\Services\AuditLogger::logRefund(
+                        resourceId: $registration->id,
+                        oldValues: ['status' => $oldStatus, 'total_price' => $registration->total_price],
+                        newValues: ['status' => $validated['status']],
+                        centerId: $registration->center_id
+                    );
+                }
+
+                if (!$wasPaidOrInjected && $isPaidOrInjected) {
+                    // Trừ tồn kho
+                    foreach ($registration->vaccines as $vaccine) {
+                        $centerVaccine = CenterVaccine::where('center_id', $registration->center_id)
+                            ->where('vaccine_id', $vaccine->id)
+                            ->lockForUpdate()
+                            ->first();
+
+                        if ($centerVaccine) {
+                            if ($centerVaccine->stock_quantity < 1) {
+                                throw \Illuminate\Validation\ValidationException::withMessages([
+                                    'status' => "Vắc xin '{$vaccine->name}' tại chi nhánh hiện tại đã hết hàng."
+                                ]);
+                            }
+
+                            $oldStock = (int) $centerVaccine->stock_quantity;
+                            $centerVaccine->stock_quantity = (int) $centerVaccine->stock_quantity - 1;
+                            $centerVaccine->stock_status = $centerVaccine->stock_quantity <= 0 ? 'out_of_stock' : ($centerVaccine->stock_quantity <= 5 ? 'limited' : 'available');
+                            $centerVaccine->save();
+
+                            \App\Services\AuditLogger::logStockUpdate(
+                                resourceId: $centerVaccine->id,
+                                oldValues: ['stock_quantity' => $oldStock],
+                                newValues: ['stock_quantity' => $centerVaccine->stock_quantity, 'stock_status' => $centerVaccine->stock_status],
+                                centerId: $registration->center_id
+                            );
+
+                            VaccineStockMovement::create([
+                                'center_id' => $registration->center_id,
+                                'vaccine_id' => $vaccine->id,
+                                'type' => 'sale',
+                                'quantity' => 1,
+                                'unit_price' => (int) ($vaccine->pivot->price ?? 0),
+                                'note' => 'Ghi nhận bán từ đơn ' . $registration->registration_code,
+                                'created_by' => AdminContext::user()?->id,
+                            ]);
+                        }
+                    }
+                } elseif ($wasPaidOrInjected && !$isPaidOrInjected) {
+                    // Hoàn lại tồn kho
+                    foreach ($registration->vaccines as $vaccine) {
+                        $centerVaccine = CenterVaccine::where('center_id', $registration->center_id)
+                            ->where('vaccine_id', $vaccine->id)
+                            ->lockForUpdate()
+                            ->first();
+
+                        if ($centerVaccine) {
+                            $oldStock = (int) $centerVaccine->stock_quantity;
+                            $centerVaccine->stock_quantity = (int) $centerVaccine->stock_quantity + 1;
+                            $centerVaccine->stock_status = $centerVaccine->stock_quantity <= 0 ? 'out_of_stock' : ($centerVaccine->stock_quantity <= 5 ? 'limited' : 'available');
+                            $centerVaccine->save();
+
+                            \App\Services\AuditLogger::logStockUpdate(
+                                resourceId: $centerVaccine->id,
+                                oldValues: ['stock_quantity' => $oldStock],
+                                newValues: ['stock_quantity' => $centerVaccine->stock_quantity, 'stock_status' => $centerVaccine->stock_status],
+                                centerId: $registration->center_id
+                            );
+
+                            VaccineStockMovement::create([
+                                'center_id' => $registration->center_id,
+                                'vaccine_id' => $vaccine->id,
+                                'type' => 'import',
+                                'quantity' => 1,
+                                'unit_price' => (int) ($vaccine->pivot->price ?? 0),
+                                'note' => 'Hoàn tồn do thay đổi trạng thái từ đơn ' . $registration->registration_code,
+                                'created_by' => AdminContext::user()?->id,
+                            ]);
+                        }
+                    }
+                }
+            });
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to update registration status: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật trạng thái đơn đăng ký.');
         }
 
         return redirect()->route('admin.registrations.show', $id)
@@ -109,6 +200,10 @@ class AdminRegistrationController extends Controller
      */
     public function schedule(Request $request)
     {
+        if (AdminContext::isBranchAdmin() && $request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
+            abort(403, 'Cross-branch access forbidden.');
+        }
+
         $weekParam = $request->input('week');
         
         try {
@@ -164,6 +259,10 @@ class AdminRegistrationController extends Controller
      */
     public function exportCsv(Request $request)
     {
+        if (AdminContext::isBranchAdmin() && $request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
+            abort(403, 'Cross-branch access forbidden.');
+        }
+
         $registrations = AdminContext::applyCenterScope(Registration::with('vaccines'))->latest()->get();
 
         $filename = 'don_dang_ky_tiem_' . date('Y-m-d_His') . '.csv';
@@ -189,19 +288,19 @@ class AdminRegistrationController extends Controller
             foreach ($registrations as $reg) {
                 $vaccineNames = $reg->vaccines->pluck('name')->implode(', ');
                 fputcsv($file, [
-                    $reg->registration_code,
-                    $reg->patient_name,
-                    $reg->patient_phone,
-                    $reg->patient_email ?? '',
-                    $reg->patient_birth_year ?? '',
-                    $reg->patient_gender ?? '',
-                    $reg->patient_address ?? '',
-                    $reg->center_name,
-                    $reg->injection_date,
-                    $reg->total_price,
-                    $reg->status,
-                    $vaccineNames,
-                    $reg->created_at->format('d/m/Y H:i'),
+                    $this->safeCsvCell($reg->registration_code),
+                    $this->safeCsvCell($reg->patient_name),
+                    $this->safeCsvCell($reg->patient_phone),
+                    $this->safeCsvCell($reg->patient_email ?? ''),
+                    $this->safeCsvCell($reg->patient_birth_year ?? ''),
+                    $this->safeCsvCell($reg->patient_gender ?? ''),
+                    $this->safeCsvCell($reg->patient_address ?? ''),
+                    $this->safeCsvCell($reg->center_name),
+                    $this->safeCsvCell($reg->injection_date),
+                    $this->safeCsvCell((string) $reg->total_price),
+                    $this->safeCsvCell($reg->status),
+                    $this->safeCsvCell($vaccineNames),
+                    $this->safeCsvCell($reg->created_at->format('d/m/Y H:i')),
                 ]);
             }
 
@@ -209,5 +308,10 @@ class AdminRegistrationController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    private function safeCsvCell(?string $value): string
+    {
+        return \App\Services\Security\CsvSanitizer::sanitizeCell($value);
     }
 }

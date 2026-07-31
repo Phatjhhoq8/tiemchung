@@ -22,6 +22,15 @@ class Banner extends Model
         'is_active',
     ];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Banner $banner) {
+            $banner->is_active = false;
+            $banner->save();
+            return false; // Prevent hard deletion
+        });
+    }
+
     /**
      * Scope lọc banner đang hoạt động
      */

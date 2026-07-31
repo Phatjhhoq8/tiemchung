@@ -24,12 +24,29 @@ class Article extends Model
         'category',
         'is_published',
         'is_featured',
+        'is_active',
         'views',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
         'is_featured' => 'boolean',
+        'is_active' => 'boolean',
         'views' => 'integer',
     ];
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Article $article) {
+            $article->is_active = false;
+            $article->is_published = false;
+            $article->save();
+            return false; // Prevent hard deletion
+        });
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }

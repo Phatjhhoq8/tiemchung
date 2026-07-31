@@ -31,6 +31,7 @@ class Vaccine extends Model
         'is_featured',      // Vắc xin nổi bật
         'sort_order',       // Thứ tự hiển thị
         'views',            // Lượt xem vắc xin
+        'is_active',
     ];
 
     /**
@@ -38,11 +39,27 @@ class Vaccine extends Model
      */
     protected $casts = [
         'is_featured' => 'boolean',
+        'is_active' => 'boolean',
         'sale_price' => 'integer',
         'price' => 'integer',
         'sort_order' => 'integer',
         'views' => 'integer',
     ];
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Vaccine $vaccine) {
+            $vaccine->is_active = false;
+            $vaccine->save();
+            CenterVaccine::where('vaccine_id', $vaccine->id)->update(['is_active' => false]);
+            return false; // Prevent hard deletion
+        });
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 
     /**
      * Kiểm tra có đang giảm giá không
@@ -137,7 +154,7 @@ class Vaccine extends Model
     public function registrations()
     {
         return $this->belongsToMany(Registration::class, 'registration_vaccines')
-                    ->withPivot('price')
+                    ->withPivot(['quantity', 'price', 'sale_price'])
                     ->withTimestamps();
     }
 

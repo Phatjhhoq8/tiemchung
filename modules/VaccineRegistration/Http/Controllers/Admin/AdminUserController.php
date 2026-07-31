@@ -77,8 +77,11 @@ class AdminUserController extends Controller
             return back()->with('error', 'Không thể xóa tài khoản đang đăng nhập.');
         }
 
-        $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'Đã xóa tài khoản.');
+        $user->is_active = false;
+        $user->status = 'inactive';
+        $user->save();
+
+        return redirect()->route('admin.users.index')->with('success', 'Đã vô hiệu hóa tài khoản.');
     }
 
     private function validateUser(Request $request, ?User $user = null): array

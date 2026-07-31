@@ -17,6 +17,17 @@ const getAbsoluteUrl = (path) => {
     return base + slash + path;
 };
 
+const escapeHtml = (str) => {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    }[m]));
+};
+
 // ==========================================================================
 // TOAST NOTIFICATIONS SYSTEM
 // ==========================================================================
@@ -258,7 +269,7 @@ function updateFloatingCart(cart, count, totalPrice) {
                 const itemHtml = `
                     <div class="cart-item-row" data-id="${id}">
                         <div class="cart-item-info">
-                            <strong class="cart-item-name">${item.name}</strong>
+                            <strong class="cart-item-name">${escapeHtml(item.name)}</strong>
                             <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
                                 <span class="cart-item-price" style="font-weight: 700; color: var(--primary-color); font-size: 13.5px;">${itemPriceFormatted}</span>
                                 <span style="font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-weight: 600;">SL: ${item.quantity || 1}</span>
@@ -349,40 +360,40 @@ async function openVaccineDetailModal(vaccineId, event) {
             content.innerHTML = `
                 <div style="display: flex; flex-wrap: wrap; overflow: hidden; border-radius: 16px;">
                     <div style="flex: 1 1 300px; background: #f8fafc; display: flex; align-items: center; justify-content: center; position: relative; min-height: 280px; padding: 20px;">
-                        <img src="${v.image}" alt="${v.name}" style="max-width: 100%; max-height: 260px; object-fit: contain; border-radius: 12px;">
+                        <img src="${escapeHtml(v.image)}" alt="${escapeHtml(v.name)}" style="max-width: 100%; max-height: 260px; object-fit: contain; border-radius: 12px;">
                         <span style="position: absolute; top: 16px; left: 16px; background: ${v.type === 'package' ? '#0284c7' : '#c8102e'}; color: #ffffff; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase;">
-                            ${v.type_label}
+                            ${escapeHtml(v.type_label)}
                         </span>
                         <span style="position: absolute; bottom: 16px; left: 16px; background: rgba(0,0,0,0.6); color: #ffffff; padding: 4px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 5px;">
-                            <i data-lucide="eye" style="width: 13px; height: 13px;"></i> ${v.formatted_views || (v.views + ' lượt xem')}
+                            <i data-lucide="eye" style="width: 13px; height: 13px;"></i> ${escapeHtml(v.formatted_views || (v.views + ' lượt xem'))}
                         </span>
                     </div>
 
                     <div style="flex: 1 1 400px; padding: 32px; display: flex; flex-direction: column; justify-content: space-between;">
                         <div>
                             <div style="display: flex; items-center; justify-content: space-between;">
-                                <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Xuất xứ: ${v.origin}</span>
-                                <span style="font-size: 12px; font-weight: 600; color: #64748b; display: flex; align-items: center; gap: 4px;"><i data-lucide="eye" style="width: 14px; height: 14px;"></i> ${v.formatted_views || (v.views + ' lượt xem')}</span>
+                                <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Xuất xứ: ${escapeHtml(v.origin)}</span>
+                                <span style="font-size: 12px; font-weight: 600; color: #64748b; display: flex; align-items: center; gap: 4px;"><i data-lucide="eye" style="width: 14px; height: 14px;"></i> ${escapeHtml(v.formatted_views || (v.views + ' lượt xem'))}</span>
                             </div>
-                            <h2 style="font-size: 24px; font-weight: 800; color: #1e293b; margin: 6px 0 12px 0; line-height: 1.3;">${v.name}</h2>
-                            <p style="font-size: 14px; color: #475569; line-height: 1.6; margin-bottom: 20px;">${v.description || 'Vắc xin an toàn, đã được kiểm định nghiêm ngặt theo tiêu chuẩn của Bộ Y Tế.'}</p>
+                            <h2 style="font-size: 24px; font-weight: 800; color: #1e293b; margin: 6px 0 12px 0; line-height: 1.3;">${escapeHtml(v.name)}</h2>
+                            <p style="font-size: 14px; color: #475569; line-height: 1.6; margin-bottom: 20px;">${escapeHtml(v.description || 'Vắc xin an toàn, đã được kiểm định nghiêm ngặt theo tiêu chuẩn của Bộ Y Tế.')}</p>
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
                                 <div>
                                     <span style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase;">Phòng bệnh</span>
-                                    <strong style="display: block; font-size: 13.5px; color: #1e293b; margin-top: 2px;">${v.disease_prevention}</strong>
+                                    <strong style="display: block; font-size: 13.5px; color: #1e293b; margin-top: 2px;">${escapeHtml(v.disease_prevention)}</strong>
                                 </div>
                                 <div>
                                     <span style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase;">Độ tuổi chỉ định</span>
-                                    <strong style="display: block; font-size: 13.5px; color: #1e293b; margin-top: 2px;">${v.age_group}</strong>
+                                    <strong style="display: block; font-size: 13.5px; color: #1e293b; margin-top: 2px;">${escapeHtml(v.age_group)}</strong>
                                 </div>
                                 <div>
                                     <span style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase;">Phác đồ tiêm</span>
-                                    <strong style="display: block; font-size: 13.5px; color: #1e293b; margin-top: 2px;">${v.doses} mũi tiêm</strong>
+                                    <strong style="display: block; font-size: 13.5px; color: #1e293b; margin-top: 2px;">${escapeHtml(v.doses)} mũi tiêm</strong>
                                 </div>
                                 <div>
                                     <span style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase;">Nhà sản xuất</span>
-                                    <strong style="display: block; font-size: 13.5px; color: #1e293b; margin-top: 2px;">${v.manufacturer || v.origin}</strong>
+                                    <strong style="display: block; font-size: 13.5px; color: #1e293b; margin-top: 2px;">${escapeHtml(v.manufacturer || v.origin)}</strong>
                                 </div>
                             </div>
                         </div>
