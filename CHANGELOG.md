@@ -2,10 +2,12 @@
 
 ## [v3.5.19] - 2026-07-31
 
-### Dynamic Branches & Register Center Selection Fix
+### Dynamic Branches, Register Center Selection, Admin Imports & Responsive Header Fix
 
 * **Dynamic Home Branch Indicators**: Updated homepage partial view [centers.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/partials/home/centers.blade.php) and [quick_booking.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/partials/home/quick_booking.blade.php) to pull the active branches dynamically from `\Modules\VaccineRegistration\Support\CenterContext::activeCenters()`. Replaced the hardcoded '2' branch count and 'Chi nhánh Cờ Đỏ & Thới Lai' string with database-driven counts and concatenated branch names, resolving inconsistencies between the homepage and the contact page.
 * **Local Register Center Selection**: Removed the automatic page reload and global center redirect behavior from the center dropdown in [register.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/register.blade.php). Changing the center in Step 2 now functions as a standard local form input selector, preserving filled form fields and preventing unnecessary redirect-back loops.
+* **Admin Controller Namespace Fix**: Added the missing namespace import statement for `Modules\VaccineRegistration\Support\AdminContext` inside [AdminVaccineController.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/Http/Controllers/Admin/AdminVaccineController.php), fixing the PHP "Class AdminContext not found" runtime crash when loading the Admin Vaccine Catalog list view.
+* **Responsive Header Style Updates**: Wrapped the phone number in the desktop hotline button in [app.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php) inside a `.hotline-phone-suffix` span, and added a media query to [style.css](file:///c:/Users/Admin/Desktop/tiemchung/public/css/style.css) for screens below 1250px. This query reduces the main header menu gaps, shrinks font sizes, and hides the hotline phone suffix to prevent navigation link wrap-arounds on medium-sized screens.
 
 ## [v3.5.18] - 2026-07-31
 

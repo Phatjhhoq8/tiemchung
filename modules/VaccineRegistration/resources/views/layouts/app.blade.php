@@ -98,7 +98,7 @@
                 <div class="header-branch-wrapper" style="position: relative;">
                     <button type="button" class="hotline-btn hotline-btn-desktop" onclick="toggleBranchDropdown(event)" title="Đổi chi nhánh hiện tại">
                         <i data-lucide="map-pin"></i>
-                        <span>{{ $currentCenter?->name ?? 'Chi nhánh' }} - {{ $hotline }}</span>
+                        <span>{{ $currentCenter?->name ?? 'Chi nhánh' }}<span class="hotline-phone-suffix"> - {{ $hotline }}</span></span>
                     </button>
                     <style>
                         .branch-item-btn {

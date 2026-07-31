@@ -13,6 +13,7 @@ use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
 use Modules\VaccineRegistration\Support\CenterContext;
+use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminVaccineController extends Controller
 {
