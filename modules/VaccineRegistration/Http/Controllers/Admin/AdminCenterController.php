@@ -37,14 +37,22 @@ class AdminCenterController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:centers,slug',
             'address' => 'required|string|max:500',
             'phone' => 'nullable|string|max:20',
+            'zalo_phone' => 'nullable|string|max:20',
+            'map_url' => 'nullable|string',
+            'working_hours' => 'nullable|string|max:255',
+            'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'required|boolean',
         ], [
             'name.required' => 'Tên trung tâm không được để trống.',
             'address.required' => 'Địa chỉ không được để trống.',
             'is_active.required' => 'Vui lòng chọn trạng thái hoạt động.',
         ]);
+
+        $validated['slug'] = $validated['slug'] ?: \Illuminate\Support\Str::slug($validated['name']);
+        $validated['sort_order'] = $validated['sort_order'] ?? 0;
 
         Center::create($validated);
 
@@ -69,14 +77,22 @@ class AdminCenterController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:centers,slug,' . $center->id,
             'address' => 'required|string|max:500',
             'phone' => 'nullable|string|max:20',
+            'zalo_phone' => 'nullable|string|max:20',
+            'map_url' => 'nullable|string',
+            'working_hours' => 'nullable|string|max:255',
+            'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'required|boolean',
         ], [
             'name.required' => 'Tên trung tâm không được để trống.',
             'address.required' => 'Địa chỉ không được để trống.',
             'is_active.required' => 'Vui lòng chọn trạng thái hoạt động.',
         ]);
+
+        $validated['slug'] = $validated['slug'] ?: \Illuminate\Support\Str::slug($validated['name']);
+        $validated['sort_order'] = $validated['sort_order'] ?? 0;
 
         $center->update($validated);
 

@@ -254,6 +254,7 @@ function updateFloatingCart(cart, count, totalPrice) {
             cartListEl.innerHTML = '';
             Object.entries(cart).forEach(([id, item]) => {
                 const itemPriceFormatted = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
+                const warningHtml = item.unavailable_for_center ? `<div style="margin-top: 6px; color: #b91c1c; font-size: 12px; font-weight: 700;">Sản phẩm này không có ở chi nhánh hiện tại</div>` : '';
                 const itemHtml = `
                     <div class="cart-item-row" data-id="${id}">
                         <div class="cart-item-info">
@@ -262,6 +263,7 @@ function updateFloatingCart(cart, count, totalPrice) {
                                 <span class="cart-item-price" style="font-weight: 700; color: var(--primary-color); font-size: 13.5px;">${itemPriceFormatted}</span>
                                 <span style="font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-weight: 600;">SL: ${item.quantity || 1}</span>
                             </div>
+                            ${warningHtml}
                         </div>
                         <button type="button" onclick="toggleCart(${id}, true)" class="cart-item-remove" title="Xóa vắc xin">
                             <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
@@ -507,14 +509,16 @@ function addSpaPatientField() {
         const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
         const imageUrl = getAbsoluteUrl(`/images/vaccines/${item.image || 'hexaxim.jpg'}`);
         const desc = item.disease_prevention || 'Phòng ngừa các bệnh truyền nhiễm nguy hiểm';
+        const unavailable = Boolean(item.unavailable_for_center);
         checklistHtml += `
-            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; transition: border-color 0.2s; margin-bottom: 6px; width: 100%;">
-                <input type="checkbox" name="patients[${index}][vaccine_ids][]" value="${vId}" data-price="${item.price}" checked class="spa-patient-vaccine-checkbox" onchange="recalculateSpaRegisterPrices()" style="margin-top: 3px; width: 15px; height: 15px;">
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: ${unavailable ? 'not-allowed' : 'pointer'}; padding: 10px; border: 1px solid ${unavailable ? '#fecaca' : '#e2e8f0'}; border-radius: 8px; background: ${unavailable ? '#fef2f2' : '#ffffff'}; transition: border-color 0.2s; margin-bottom: 6px; width: 100%;">
+                <input type="checkbox" name="patients[${index}][vaccine_ids][]" value="${vId}" data-price="${item.price}" ${unavailable ? 'disabled' : 'checked'} class="spa-patient-vaccine-checkbox" onchange="recalculateSpaRegisterPrices()" style="margin-top: 3px; width: 15px; height: 15px;">
                 <img src="${imageUrl}" alt="${item.name}" style="width: 44px; height: 44px; border-radius: 6px; object-fit: cover; border: 1px solid #f1f5f9; flex-shrink: 0;">
                 <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
                     <span style="font-size: 13px; font-weight: 700; color: #1e293b;">${item.name}</span>
                     <span style="font-size: 11px; color: #64748b; line-height: 1.3;"><strong>Phòng bệnh:</strong> ${desc}</span>
                     <span style="font-size: 12.5px; font-weight: 800; color: var(--primary-color, #c8102e); margin-top: 1px;">${formattedPrice}</span>
+                    ${unavailable ? '<span style="font-size: 11.5px; color: #b91c1c; font-weight: 800;">Sản phẩm này không có ở chi nhánh hiện tại</span>' : ''}
                 </div>
             </label>
         `;
@@ -639,6 +643,18 @@ window.removeSpaPatientField = removeSpaPatientField;
 window.checkSpaPatientAge = checkSpaPatientAge;
 window.recalculateSpaRegisterPrices = recalculateSpaRegisterPrices;
 
+function changeSpaRegisterCenter(centerId) {
+    if (!centerId) return;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = getAbsoluteUrl('/centers/select');
+    form.innerHTML = `<input type="hidden" name="_token" value="${getCsrfToken()}"><input type="hidden" name="center_id" value="${centerId}">`;
+    document.body.appendChild(form);
+    form.submit();
+}
+
+window.changeSpaRegisterCenter = changeSpaRegisterCenter;
+
 function renderSpaRegisterForm(data) {
     const body = document.getElementById('spaRegisterBody');
     if (!body) return;
@@ -647,9 +663,11 @@ function renderSpaRegisterForm(data) {
     spaPatientCount = 0;
     globalSpaCartData = data.cart;
 
+    const selectedCenterId = String(data.selected_center_id || '');
     const centerOptions = data.centers.map(c => `
-        <option value="${c.name}">📍 ${c.name} — ${c.address} (${c.phone})</option>
+        <option value="${c.id}" ${String(c.id) === selectedCenterId ? 'selected' : ''}>📍 ${c.name} — ${c.address} (${c.phone})</option>
     `).join('');
+    const unavailableCount = Number(data.unavailable_count || 0);
 
     const todayStr = new Date().toISOString().split('T')[0];
 
@@ -672,6 +690,7 @@ function renderSpaRegisterForm(data) {
             <div>
                 <form id="spaFormRegisterSubmit" onsubmit="submitSpaRegistrationForm(event)">
                     <div id="spaFormErrorAlert" style="display: none; background: #fef2f2; border: 1px solid #ef4444; color: #991b1b; padding: 12px 16px; border-radius: 8px; font-size: 13.5px; margin-bottom: 20px;"></div>
+                    ${unavailableCount > 0 ? `<div style="background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:12px 16px; border-radius:8px; font-size:13px; font-weight:700; margin-bottom:16px;">Có ${unavailableCount} sản phẩm không có ở chi nhánh hiện tại. Vui lòng xóa sản phẩm đó hoặc đổi chi nhánh trước khi đăng ký.</div>` : ''}
 
                     <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
                         <i data-lucide="user" style="width: 18px; height: 18px; color: var(--primary-color);"></i>
@@ -708,7 +727,7 @@ function renderSpaRegisterForm(data) {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
                         <div style="grid-column: span 2;">
                             <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 4px;">Chi nhánh trung tâm Medicare <span style="color: #ef4444;">*</span></label>
-                            <select name="center_name" required style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;">
+                            <select name="center_id" required onchange="changeSpaRegisterCenter(this.value)" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;">
                                 ${centerOptions}
                             </select>
                         </div>

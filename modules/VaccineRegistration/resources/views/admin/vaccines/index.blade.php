@@ -63,9 +63,11 @@
             Danh sách Vắc xin 
             <span style="font-size: 14px; font-weight: 400; color: var(--text-muted);">({{ $vaccines->total() }} sản phẩm)</span>
         </h2>
-        <a href="{{ route('admin.vaccines.create') }}" class="btn-modern btn-modern-primary">
-            <i data-lucide="plus-circle"></i> Thêm Vắc xin Mới
-        </a>
+        @if(!($isSuperAdmin ?? false))
+            <a href="{{ route('admin.vaccines.create', ['center_id' => $selectedCenterId]) }}" class="btn-modern btn-modern-primary">
+                <i data-lucide="plus-circle"></i> Thêm Vắc xin Mới
+            </a>
+        @endif
     </div>
 
     {{-- Thanh tìm kiếm & lọc --}}
@@ -78,6 +80,18 @@
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Tên vắc xin, bệnh phòng, hãng SX..." class="form-control-modern" style="padding-left: 36px;">
             </div>
         </div>
+
+        {{-- Lọc phân loại --}}
+        @if(isset($centers) && ($isSuperAdmin ?? false))
+        <div class="filter-group-select">
+            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Chi nhánh</label>
+            <select name="center_id" class="form-control-modern" style="background-image: none;">
+                @foreach($centers as $center)
+                    <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        @endif
 
         {{-- Lọc phân loại --}}
         <div class="filter-group-select">
@@ -118,7 +132,7 @@
             <button type="submit" class="btn-modern btn-modern-primary" style="padding: 10px 18px; border-radius: 8px;">
                 <i data-lucide="filter" style="width: 14px; height: 14px;"></i> Lọc
             </button>
-            @if(request()->hasAny(['search', 'type', 'stock_status', 'category', 'featured']))
+            @if(request()->hasAny(['search', 'type', 'stock_status', 'category', 'featured', 'center_id']))
             <a href="{{ route('admin.vaccines.index') }}" class="btn-modern btn-modern-secondary" style="padding: 10px 18px; border-radius: 8px;">
                 <i data-lucide="x" style="width: 14px; height: 14px;"></i> Xóa lọc
             </a>
@@ -230,9 +244,13 @@
 
                             {{-- Hành động --}}
                             <td style="text-align: center;">
+                                @if($isSuperAdmin ?? false)
+                                    <span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>
+                                @else
                                 <div style="display: inline-flex; gap: 6px; align-items: center; justify-content: center;">
                                     <form action="{{ route('admin.vaccines.toggle-featured', $vac->id) }}" method="POST" style="margin: 0;">
                                         @csrf
+                                        <input type="hidden" name="center_id" value="{{ $selectedCenterId }}">
                                         <button type="submit" class="btn-action-sm" title="{{ $vac->is_featured ? 'Bỏ nổi bật' : 'Đánh dấu NỔI BẬT trang chủ' }}" style="border-color: {{ $vac->is_featured ? '#fde68a' : '#cbd5e1' }}; background-color: {{ $vac->is_featured ? '#fffbeb' : '#ffffff' }}; color: {{ $vac->is_featured ? '#d97706' : '#475569' }};">
                                             @if($vac->is_featured)
                                                 <i data-lucide="star-off" style="width: 13px; height: 13px;"></i> Bỏ Nổi Bật
@@ -241,7 +259,7 @@
                                             @endif
                                         </button>
                                     </form>
-                                    <a href="{{ route('admin.vaccines.edit', $vac->id) }}" class="btn-action-sm">
+                                    <a href="{{ route('admin.vaccines.edit', ['vaccine' => $vac->id, 'center_id' => $selectedCenterId]) }}" class="btn-action-sm">
                                         <i data-lucide="edit-2" style="width: 13px; height: 13px;"></i> Sửa
                                     </a>
                                     <form action="{{ route('admin.vaccines.destroy', $vac->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa vắc xin này?')" style="margin: 0;">
@@ -252,6 +270,7 @@
                                         </button>
                                     </form>
                                 </div>
+                                @endif
                             </td>
                         </tr>
                     @endforeach

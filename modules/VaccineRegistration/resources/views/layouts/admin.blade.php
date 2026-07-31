@@ -721,11 +721,13 @@
                         <i data-lucide="layout-dashboard"></i> Dashboard
                     </a>
                 </li>
+                @if($isSuperAdmin ?? false)
                 <li class="{{ Route::currentRouteName() === 'admin.live-editor' ? 'active' : '' }}">
                     <a href="{{ route('admin.live-editor') }}">
                         <i data-lucide="layout-template"></i> Chỉnh Sửa Trực Quan (Live)
                     </a>
                 </li>
+                @endif
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.vaccines') ? 'active' : '' }}">
                     <a href="{{ route('admin.vaccines.index') }}">
                         <i data-lucide="syringe"></i> Quản lý Vắc Xin
@@ -741,11 +743,26 @@
                         <i data-lucide="calendar"></i> Lịch Hẹn Tuần
                     </a>
                 </li>
+                <li class="{{ str_contains(Route::currentRouteName(), 'admin.stock') ? 'active' : '' }}">
+                    <a href="{{ route('admin.stock.index') }}">
+                        <i data-lucide="package-plus"></i> Nhập / Xuất Kho
+                    </a>
+                </li>
+                @if($isSuperAdmin ?? false)
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.centers') ? 'active' : '' }}">
                     <a href="{{ route('admin.centers.index') }}">
                         <i data-lucide="map-pinned"></i> Quản lý Trung Tâm
                     </a>
                 </li>
+                @endif
+                @if($isSuperAdmin ?? false)
+                <li class="{{ str_contains(Route::currentRouteName(), 'admin.users') ? 'active' : '' }}">
+                    <a href="{{ route('admin.users.index') }}">
+                        <i data-lucide="users"></i> Tài Khoản Chi Nhánh
+                    </a>
+                </li>
+                @endif
+                @if($isSuperAdmin ?? false)
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.banners') ? 'active' : '' }}">
                     <a href="{{ route('admin.banners.index') }}">
                         <i data-lucide="image"></i> Quản lý Banner
@@ -761,6 +778,7 @@
                         <i data-lucide="settings"></i> Cấu Hình Website
                     </a>
                 </li>
+                @endif
                 <li style="margin-top: 30px; border-top: 1px dashed #1b2e4c; padding-top: 10px;">
                     <a href="{{ route('home') }}">
                         <i data-lucide="arrow-left-right"></i> Xem Trang Khách
@@ -793,7 +811,7 @@
                         <i data-lucide="moon" class="moon-icon" style="width: 16px; height: 16px;"></i>
                     </button>
                     <i data-lucide="circle-user"></i>
-                    <span>Xin chào, Admin</span>
+                    <span>Xin chào, {{ $adminUser?->name ?? 'Admin' }}</span>
                 </div>
             </header>
             

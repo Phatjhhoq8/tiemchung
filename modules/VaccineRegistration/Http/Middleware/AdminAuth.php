@@ -24,6 +24,15 @@ class AdminAuth
             return redirect()->route('admin.login.show')->with('error', 'Vui lòng đăng nhập tài khoản Quản trị viên.');
         }
 
+        $userId = $request->session()->get('admin_user_id');
+        if ($userId) {
+            $user = \App\Models\User::find($userId);
+            if (!$user || !$user->is_active) {
+                $request->session()->forget(['admin_logged_in', 'admin_user_id', 'admin_role', 'admin_center_id']);
+                return redirect()->route('admin.login.show')->with('error', 'Tài khoản quản trị không còn hoạt động.');
+            }
+        }
+
         return $next($request);
     }
 }

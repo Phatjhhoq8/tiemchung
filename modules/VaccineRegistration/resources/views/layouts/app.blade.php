@@ -5,6 +5,14 @@
     $email = \Modules\VaccineRegistration\Models\Setting::get('email', 'cskh@medicare.vn');
     $address = \Modules\VaccineRegistration\Models\Setting::get('address', 'Chi nhánh 1: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ');
     $footer_text = \Modules\VaccineRegistration\Models\Setting::get('footer_text', '© 2026 Medicare - Hệ Thống Tiêm Chủng Vắc Xin Trẻ Em và Người Lớn.');
+    $currentCenter = $currentCenter ?? \Modules\VaccineRegistration\Support\CenterContext::current();
+    $activeCenters = $activeCenters ?? \Modules\VaccineRegistration\Support\CenterContext::activeCenters();
+    if ($currentCenter) {
+        $hotline = $currentCenter->phone ?: $hotline;
+        $address = $currentCenter->address ?: $address;
+    }
+    $currentCenterPhoneHref = \Modules\VaccineRegistration\Support\CenterContext::phoneHref($hotline);
+    $currentCenterZalo = \Modules\VaccineRegistration\Support\CenterContext::phoneHref($currentCenter?->zalo_phone ?: $hotline);
 @endphp
 <!DOCTYPE html>
 <html lang="vi">
@@ -59,11 +67,7 @@
         <div class="topbar-container">
             <div class="topbar-info" style="display: flex; gap: 16px; align-items: center; font-size: 13px;">
                 <a href="{{ route('contact') }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                    <i data-lucide="map-pin" style="color: var(--secondary-color);"></i> <strong>Chi nhánh 1:</strong> Cờ Đỏ (Hotline: 0938 60 38 39)
-                </a>
-                <span class="divider">|</span>
-                <a href="{{ route('contact') }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                    <i data-lucide="map-pin" style="color: var(--secondary-color);"></i> <strong>Chi nhánh 2:</strong> Thới Lai (Hotline: 0932 477 184)
+                    <i data-lucide="map-pin" style="color: var(--secondary-color);"></i> <strong>Đang chọn:</strong> {{ $currentCenter?->name ?? 'Medicare' }} (Hotline: {{ $hotline }})
                 </a>
             </div>
             <div class="topbar-social">
@@ -91,16 +95,68 @@
             
             <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
                 <!-- 1. Nút Điện Thoại (Chỉ còn icon và số điện thoại, bỏ chữ 'Tư vấn:') -->
-                <a href="tel:{{ str_replace(' ', '', $hotline) }}" class="hotline-btn hotline-btn-desktop" title="Gọi hotline {{ $hotline }}">
-                    <i data-lucide="phone-call"></i>
-                    <span>{{ $hotline }}</span>
-                </a>
+                <div class="header-branch-wrapper" style="position: relative;">
+                    <button type="button" class="hotline-btn hotline-btn-desktop" onclick="toggleBranchDropdown(event)" title="Đổi chi nhánh hiện tại">
+                        <i data-lucide="map-pin"></i>
+                        <span>{{ $currentCenter?->name ?? 'Chi nhánh' }} - {{ $hotline }}</span>
+                    </button>
+                    <style>
+                        .branch-item-btn {
+                            width: 100%;
+                            border: 0;
+                            background: #ffffff;
+                            text-align: left;
+                            padding: 10px;
+                            border-radius: 10px;
+                            cursor: pointer;
+                            display: flex;
+                            gap: 8px;
+                            align-items: flex-start;
+                            color: #334155;
+                            transition: all 0.2s ease;
+                        }
+                        .branch-item-btn:hover {
+                            background-color: rgba(200, 16, 46, 0.05);
+                            color: var(--primary-color, #c8102e);
+                        }
+                        .branch-item-btn:hover strong {
+                            color: var(--primary-color, #c8102e) !important;
+                        }
+                        .branch-item-btn.active {
+                            background-color: rgba(200, 16, 46, 0.08);
+                            color: var(--primary-color, #c8102e);
+                        }
+                        .branch-item-btn.active:hover {
+                            background-color: rgba(200, 16, 46, 0.12);
+                        }
+                        .branch-item-btn.active strong {
+                            color: var(--primary-color, #c8102e) !important;
+                        }
+                    </style>
+                    <div id="branchDropdown" class="hidden" style="position: absolute; right: 0; top: calc(100% + 10px); width: min(360px, 90vw); background: #fff; border: 1px solid #fecaca; box-shadow: 0 18px 45px rgba(127,29,29,.18); border-radius: 14px; padding: 10px; z-index: 9999;">
+                        <div style="font-size: 13px; font-weight: 800; color: #0f172a; padding: 8px 10px 10px;">Chọn chi nhánh Medicare</div>
+                        @foreach($activeCenters as $center)
+                            <form method="POST" action="{{ route('centers.select') }}" style="margin: 0;">
+                                @csrf
+                                <input type="hidden" name="center_id" value="{{ $center->id }}">
+                                <button type="submit" class="branch-item-btn {{ $currentCenter?->id === $center->id ? 'active' : '' }}">
+                                    <i data-lucide="{{ $currentCenter?->id === $center->id ? 'check-circle' : 'map-pin' }}" style="width: 17px; height: 17px; color: var(--primary-color); margin-top: 2px;"></i>
+                                    <span style="display: flex; flex-direction: column; gap: 3px;">
+                                        <strong style="color: #0f172a;">{{ $center->name }} - {{ $center->phone }}</strong>
+                                        <small style="line-height: 1.35;">{{ $center->address }}</small>
+                                    </span>
+                                </button>
+                            </form>
+                        @endforeach
+                    </div>
+                </div>
 
                 <!-- 2. Nút Giỏ Hàng (Thiết kế Pill giống hệt & cùng màu nút Điện Thoại) -->
                 @php
-                    $layoutCart = session()->get('cart', []);
+                    $layoutCartState = \Modules\VaccineRegistration\Support\CenterContext::resolveCart($currentCenter?->id);
+                    $layoutCart = $layoutCartState['cart'];
                     $layoutCartCount = count($layoutCart);
-                    $layoutTotalPrice = collect($layoutCart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['quantity'] ?? 1));
+                    $layoutTotalPrice = $layoutCartState['total_price'];
                 @endphp
                 <div class="header-cart-wrapper" id="headerCartWrapper">
                     <button type="button" class="hotline-btn header-cart-btn-pill" id="headerCartBtn" onclick="toggleHeaderCartDropdown(event)" title="Danh sách vắc xin đã chọn tiêm">
@@ -135,6 +191,9 @@
                                                 <span class="cart-item-price" style="font-weight: 700; color: var(--primary-color); font-size: 13.5px;">{{ number_format($item['price'], 0, ',', '.') }} đ</span>
                                                 <span style="font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-weight: 600;">SL: {{ $item['quantity'] ?? 1 }}</span>
                                             </div>
+                                            @if(!empty($item['unavailable_for_center']))
+                                                <div style="margin-top: 6px; color: #b91c1c; font-size: 12px; font-weight: 700;">Sản phẩm này không có ở chi nhánh hiện tại</div>
+                                            @endif
                                         </div>
                                         <button type="button" onclick="toggleCart({{ $id }}, true)" class="cart-item-remove" title="Xóa vắc xin">
                                             <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
@@ -201,36 +260,113 @@
     <!-- Main Content -->
     <main class="app-main {{ Route::currentRouteName() === 'home' ? 'home-main' : '' }}">
         @if(session('success') || session('error') || session('warning') || session('info'))
-            <div class="flash-messages-container" style="max-width: 1200px; margin: 20px auto 0 auto; padding: 0 20px;">
+            <style>
+                .flash-messages-container {
+                    position: fixed;
+                    top: 24px;
+                    right: 24px;
+                    z-index: 9999;
+                    width: 380px;
+                    max-width: calc(100vw - 48px);
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                    pointer-events: none;
+                }
+                .flash-messages-container .alert {
+                    pointer-events: auto;
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+                    backdrop-filter: blur(8px);
+                    -webkit-backdrop-filter: blur(8px);
+                    animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                    transition: all 0.3s ease;
+                    border-radius: 12px !important;
+                    border: 1px solid transparent;
+                }
+                @keyframes toastSlideIn {
+                    from {
+                        transform: translateX(120%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes toastFadeOut {
+                    from {
+                        transform: scale(1);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: scale(0.95);
+                        opacity: 0;
+                    }
+                }
+            </style>
+
+            <div class="flash-messages-container">
                 @if(session('success'))
-                    <div class="alert alert-success" style="background-color: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 16px; border-radius: 8px; display: flex; align-items: center; gap: 12px; font-weight: 500; position: relative;">
+                    <div class="alert alert-success" style="background-color: rgba(236, 253, 245, 0.95); border-color: #10b981; color: #065f46; padding: 16px; display: flex; align-items: center; gap: 12px; font-weight: 500; position: relative;">
                         <i data-lucide="check-circle" style="color: #10b981; width: 20px; height: 20px; flex-shrink: 0;"></i>
                         <span style="flex-grow: 1;">{{ session('success') }}</span>
-                        <button onclick="this.parentElement.remove()" style="background: none; border: none; color: #065f46; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+                        <button class="close-toast-btn" style="background: none; border: none; color: #065f46; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
                     </div>
                 @endif
                 @if(session('error'))
-                    <div class="alert alert-danger" style="background-color: #fef2f2; border: 1px solid #ef4444; color: #991b1b; padding: 16px; border-radius: 8px; display: flex; align-items: center; gap: 12px; font-weight: 500; position: relative;">
+                    <div class="alert alert-danger" style="background-color: rgba(254, 242, 242, 0.95); border-color: #ef4444; color: #991b1b; padding: 16px; display: flex; align-items: center; gap: 12px; font-weight: 500; position: relative;">
                         <i data-lucide="x-circle" style="color: #ef4444; width: 20px; height: 20px; flex-shrink: 0;"></i>
                         <span style="flex-grow: 1;">{{ session('error') }}</span>
-                        <button onclick="this.parentElement.remove()" style="background: none; border: none; color: #991b1b; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+                        <button class="close-toast-btn" style="background: none; border: none; color: #991b1b; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
                     </div>
                 @endif
                 @if(session('warning'))
-                    <div class="alert alert-warning" style="background-color: #fffbeb; border: 1px solid #f59e0b; color: #92400e; padding: 16px; border-radius: 8px; display: flex; align-items: center; gap: 12px; font-weight: 500; position: relative;">
+                    <div class="alert alert-warning" style="background-color: rgba(255, 251, 235, 0.95); border-color: #f59e0b; color: #92400e; padding: 16px; display: flex; align-items: center; gap: 12px; font-weight: 500; position: relative;">
                         <i data-lucide="alert-circle" style="color: #f59e0b; width: 20px; height: 20px; flex-shrink: 0;"></i>
                         <span style="flex-grow: 1;">{{ session('warning') }}</span>
-                        <button onclick="this.parentElement.remove()" style="background: none; border: none; color: #92400e; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+                        <button class="close-toast-btn" style="background: none; border: none; color: #92400e; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
                     </div>
                 @endif
                 @if(session('info'))
-                    <div class="alert alert-info" style="background-color: #fff1f2; border: 1px solid #f87171; color: #991b1b; padding: 16px; border-radius: 8px; display: flex; align-items: center; gap: 12px; font-weight: 500; position: relative;">
-                        <i data-lucide="info" style="color: #dc2626; width: 20px; height: 20px; flex-shrink: 0;"></i>
+                    <div class="alert alert-info" style="background-color: rgba(240, 249, 255, 0.95); border-color: #0ea5e9; color: #0369a1; padding: 16px; display: flex; align-items: center; gap: 12px; font-weight: 500; position: relative;">
+                        <i data-lucide="info" style="color: #0ea5e9; width: 20px; height: 20px; flex-shrink: 0;"></i>
                         <span style="flex-grow: 1;">{{ session('info') }}</span>
-                        <button onclick="this.parentElement.remove()" style="background: none; border: none; color: #991b1b; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+                        <button class="close-toast-btn" style="background: none; border: none; color: #0369a1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
                     </div>
                 @endif
             </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const alerts = document.querySelectorAll('.flash-messages-container .alert');
+                    alerts.forEach(alert => {
+                        // Tự động đóng sau 4 giây
+                        const timeoutId = setTimeout(() => {
+                            closeToast(alert);
+                        }, 4000);
+
+                        // Nút đóng thủ công
+                        const closeBtn = alert.querySelector('.close-toast-btn');
+                        if (closeBtn) {
+                            closeBtn.addEventListener('click', function() {
+                                clearTimeout(timeoutId);
+                                closeToast(alert);
+                            });
+                        }
+                    });
+
+                    function closeToast(alertEl) {
+                        alertEl.style.animation = 'toastFadeOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+                        setTimeout(() => {
+                            alertEl.remove();
+                            const container = document.querySelector('.flash-messages-container');
+                            if (container && container.querySelectorAll('.alert').length === 0) {
+                                container.remove();
+                            }
+                        }, 300);
+                    }
+                });
+            </script>
         @endif
         @yield('content')
     </main>
@@ -273,15 +409,15 @@
             </div>
             
             <div class="footer-branch-list">
-                <!-- Chi nhánh 1 -->
+                @foreach($activeCenters as $center)
                 <div class="footer-branch-item">
-                    <h4>Medicare Cờ Đỏ (Chi nhánh 1)</h4>
+                    <h4>{{ $center->name }} {{ $currentCenter?->id === $center->id ? '(Đang chọn)' : '' }}</h4>
                     <div class="footer-branch-info">
-                        <p><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ</p>
+                        <p><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> {{ $center->address }}</p>
                         <p>
-                            <i data-lucide="phone" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Hotline: <strong>0938 60 38 39</strong>
+                            <i data-lucide="phone" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Hotline: <strong>{{ $center->phone }}</strong>
                             <span style="opacity: 0.3; margin: 0 10px;">|</span>
-                            <i data-lucide="clock" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Thứ 2 – Thứ 7: 7:30 – 17:00
+                            <i data-lucide="clock" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> {{ $center->working_hours ?: '7:00 – 17:00' }}
                         </p>
                     </div>
                     <div class="footer-branch-item-actions">
@@ -289,31 +425,11 @@
                             <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Xem bản đồ & chỉ đường
                         </a>
                         <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="footer-branch-link-book">
-                            Đặt lịch tại CN1 →
+                            Đặt lịch tại chi nhánh →
                         </a>
                     </div>
                 </div>
-
-                <!-- Chi nhánh 2 -->
-                <div class="footer-branch-item">
-                    <h4>Medicare Thới Lai (Chi nhánh 2)</h4>
-                    <div class="footer-branch-info">
-                        <p><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Trung tâm Y tế Huyện Thới Lai, Thị trấn Thới Lai, Huyện Thới Lai, TP. Cần Thơ</p>
-                        <p>
-                            <i data-lucide="phone" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Hotline: <strong>0932 477 184</strong>
-                            <span style="opacity: 0.3; margin: 0 10px;">|</span>
-                            <i data-lucide="clock" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Thứ 2 – Thứ 7: 7:30 – 17:00
-                        </p>
-                    </div>
-                    <div class="footer-branch-item-actions">
-                        <a href="{{ route('contact') }}" class="footer-branch-link-map">
-                            <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Xem bản đồ & chỉ đường
-                        </a>
-                        <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="footer-branch-link-book">
-                            Đặt lịch tại CN2 →
-                        </a>
-                    </div>
-                </div>
+                @endforeach
             </div>
 
             <!-- Footer Main Layout: Legal Info & Policy Links (Left) + QR Code (Right) -->
@@ -329,9 +445,10 @@
                     <div class="footer-company-details">
                         <h3>CÔNG TY CỔ PHẦN VẮC XIN MEDICARE</h3>
                         <p>Giấy chứng nhận ĐKKD số 0107631488 do Sở Kế hoạch và Đầu tư TP. Cần Thơ cấp ngày 11/11/2016</p>
-                        <p><strong>Chi Nhánh 1:</strong> Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ</p>
-                        <p><strong>Chi Nhánh 2:</strong> Trung tâm Y tế Huyện Thới Lai, Thị trấn Thới Lai, Huyện Thới Lai, TP. Cần Thơ</p>
-                        <p><strong>Email:</strong> {{ $email }} | <strong>Số điện thoại:</strong> {{ $hotline }} - {{ $hotline_2 }}</p>
+                        @foreach($activeCenters as $center)
+                            <p><strong>{{ $center->name }}:</strong> {{ $center->address }}</p>
+                        @endforeach
+                        <p><strong>Email:</strong> {{ $email }} | <strong>Số điện thoại:</strong> {{ $hotline }}</p>
                         <p>Chịu trách nhiệm nội dung: Ban Giám Đốc HỆ THỐNG TIÊM CHỦNG MEDICARE</p>
                         <p style="margin-top: 10px; opacity: 0.75; font-size: 0.8rem;">Bản quyền ©2026 thuộc về CÔNG TY CỔ PHẦN VẮC XIN MEDICARE</p>
                     </div>
@@ -379,7 +496,7 @@
     <!-- Floating Contact & Zalo Widget Stack (Bên phải) -->
     <div class="floating-chat-widget">
         <!-- 1. Nút Chat Zalo Bác Sĩ -->
-        <a href="https://zalo.me/0938603839" target="_blank" rel="noopener noreferrer" class="floating-btn-expandable" style="background-color: #0068ff; box-shadow: 0 8px 24px rgba(0, 104, 255, 0.35);" title="Chat Zalo Tư Vấn Vắc Xin Tức Thì">
+        <a href="https://zalo.me/{{ $currentCenterZalo }}" target="_blank" rel="noopener noreferrer" class="floating-btn-expandable" style="background-color: #0068ff; box-shadow: 0 8px 24px rgba(0, 104, 255, 0.35);" title="Chat Zalo {{ $currentCenter?->name ?? 'Medicare' }}">
             <div class="btn-icon">
                 <div style="width: 26px; height: 26px; background: #ffffff; color: #0068ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 11px;">Zalo</div>
             </div>
@@ -387,11 +504,11 @@
         </a>
 
         <!-- 2. Nút Hotline Tư Vấn 24/7 -->
-        <a href="tel:0938603839" class="floating-btn-expandable" style="background-color: var(--primary-color, #c8102e); box-shadow: 0 8px 24px rgba(200, 16, 46, 0.35);" title="Gọi Hotline 0938 60 38 39">
+        <a href="tel:{{ $currentCenterPhoneHref }}" class="floating-btn-expandable" style="background-color: var(--primary-color, #c8102e); box-shadow: 0 8px 24px rgba(200, 16, 46, 0.35);" title="Gọi Hotline {{ $hotline }}">
             <div class="btn-icon">
                 <i data-lucide="phone-call" style="width: 20px; height: 20px;"></i>
             </div>
-            <span class="btn-text">0938 60 38 39</span>
+            <span class="btn-text">{{ $hotline }}</span>
         </a>
     </div>
 
@@ -412,6 +529,20 @@
     <script src="{{ asset('js/app.js') }}?v={{ $js_ver }}"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
+        function toggleBranchDropdown(event) {
+            if (event) event.stopPropagation();
+            const dropdown = document.getElementById('branchDropdown');
+            if (dropdown) dropdown.classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('branchDropdown');
+            const wrapper = document.querySelector('.header-branch-wrapper');
+            if (dropdown && wrapper && !wrapper.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
         // Khởi tạo các Lucide Icons an toàn
         if (typeof lucide !== 'undefined') {
             try {

@@ -34,7 +34,12 @@
                     @foreach($centers as $center)
                         <tr>
                             <td style="font-weight: 600;">{{ $center->id }}</td>
-                            <td style="font-weight: 700; color: var(--text-primary);">{{ $center->name }}</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">
+                                {{ $center->name }}
+                                @if($center->slug)
+                                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 500;">{{ $center->slug }}</div>
+                                @endif
+                            </td>
                             <td style="color: var(--text-muted);">{{ $center->address }}</td>
                             <td style="white-space: nowrap; font-weight: 500;">{{ $center->phone ?: 'Chưa cập nhật' }}</td>
                             <td style="text-align: center;">

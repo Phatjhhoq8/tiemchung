@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Models\Registration;
 use Modules\VaccineRegistration\Models\Center;
+use Modules\VaccineRegistration\Models\CenterVaccine;
+use Modules\VaccineRegistration\Support\CenterContext;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -21,7 +23,8 @@ class VaccineController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Vaccine::query();
+        $currentCenter = CenterContext::current();
+        $query = Vaccine::forCenter($currentCenter?->id);
         $type = $request->input('type');
 
         // Tìm kiếm theo tên sản phẩm. Lọc theo bệnh dùng tham số disease riêng.
@@ -60,13 +63,14 @@ class VaccineController extends Controller
             'price_asc' => $query->orderBy('price', 'asc'),
             'price_desc' => $query->orderBy('price', 'desc'),
             'name_asc' => $query->orderBy('name', 'asc'),
-            default => $query->orderBy('views', 'desc')->orderBy('id', 'asc'),
+            default => $query->orderBy('views', 'desc')->orderBy('vaccines.id', 'asc'),
         };
 
         $vaccines = $query->paginate(12)->withQueryString();
-        $cart = session()->get('cart', []);
+        $cartState = CenterContext::resolveCart($currentCenter?->id);
+        $cart = $cartState['cart'];
 
-        $allVaccines = Vaccine::all();
+        $allVaccines = Vaccine::forCenter($currentCenter?->id)->get();
         $diseaseOptions = $this->buildDiseaseOptions($allVaccines);
         $diseases = $diseaseOptions;
         
@@ -176,12 +180,13 @@ class VaccineController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $vaccine = Vaccine::findOrFail($id);
+        $currentCenter = CenterContext::current();
+        $vaccine = Vaccine::forCenter($currentCenter?->id)->where('vaccines.id', $id)->firstOrFail();
         
         // Tăng số lượt xem sản phẩm khi xem chi tiết
         $vaccine->increment('views');
         
-        $cart = session()->get('cart', []);
+        $cart = CenterContext::resolveCart($currentCenter?->id)['cart'];
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -209,7 +214,7 @@ class VaccineController extends Controller
         }
 
         // Lấy 8 vắc xin liên quan cùng phòng bệnh hoặc cùng xuất xứ
-        $relatedVaccines = Vaccine::where('id', '!=', $vaccine->id)
+        $relatedVaccines = Vaccine::forCenter($currentCenter?->id)->where('vaccines.id', '!=', $vaccine->id)
             ->where(function ($q) use ($vaccine) {
                 $q->where('disease_prevention', 'like', '%' . $vaccine->disease_prevention . '%')
                   ->orWhere('origin', $vaccine->origin);
@@ -219,7 +224,7 @@ class VaccineController extends Controller
 
         if ($relatedVaccines->count() < 8) {
             $existingIds = $relatedVaccines->pluck('id')->push($vaccine->id)->toArray();
-            $extraVaccines = Vaccine::whereNotIn('id', $existingIds)->take(8 - $relatedVaccines->count())->get();
+            $extraVaccines = Vaccine::forCenter($currentCenter?->id)->whereNotIn('vaccines.id', $existingIds)->take(8 - $relatedVaccines->count())->get();
             $relatedVaccines = $relatedVaccines->concat($extraVaccines);
         }
 
@@ -237,14 +242,12 @@ class VaccineController extends Controller
         $vaccine = Vaccine::findOrFail($vaccineId);
         $cart = session()->get('cart', []);
 
-        $priceToUse = $vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price;
-
         if (isset($cart[$vaccineId])) {
             $cart[$vaccineId]['quantity'] = 1;
         } else {
             $cart[$vaccineId] = [
                 'name' => $vaccine->name,
-                'price' => $priceToUse,
+                'price' => 0,
                 'image' => $vaccine->image ?: 'hexaxim.jpg',
                 'quantity' => 1,
                 'type' => $vaccine->type,
@@ -253,10 +256,9 @@ class VaccineController extends Controller
         }
 
         session()->put('cart', $cart);
-
-        $totalPrice = collect($cart)->sum(function ($item) {
-            return ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
-        });
+        $cartState = CenterContext::resolveCart();
+        $cart = $cartState['cart'];
+        $totalPrice = $cartState['total_price'];
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -285,9 +287,9 @@ class VaccineController extends Controller
             session()->put('cart', $cart);
         }
 
-        $totalPrice = collect($cart)->sum(function ($item) {
-            return ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
-        });
+        $cartState = CenterContext::resolveCart();
+        $cart = $cartState['cart'];
+        $totalPrice = $cartState['total_price'];
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -329,16 +331,16 @@ class VaccineController extends Controller
      */
     public function showRegister(Request $request)
     {
+        $currentCenter = CenterContext::current();
         $cart = session()->get('cart', []);
 
         if ($request->has('add_vaccine_id')) {
             $vaccineId = $request->input('add_vaccine_id');
             $vaccine = Vaccine::find($vaccineId);
             if ($vaccine) {
-                $priceToUse = $vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price;
                 $cart[$vaccine->id] = [
                     'name' => $vaccine->name,
-                    'price' => $priceToUse,
+                    'price' => 0,
                     'quantity' => 1,
                     'image' => $vaccine->image ?: 'hexaxim.jpg',
                     'type' => $vaccine->type,
@@ -347,6 +349,9 @@ class VaccineController extends Controller
                 session()->put('cart', $cart);
             }
         }
+
+        $cartState = CenterContext::resolveCart($currentCenter?->id);
+        $cart = $cartState['cart'];
 
         if (empty($cart) && ($request->ajax() || $request->wantsJson())) {
             $centers = Center::active()->get();
@@ -361,9 +366,8 @@ class VaccineController extends Controller
             return redirect()->route('vaccine.index')->with('warning', 'Vui lòng chọn ít nhất một loại vắc xin để đăng ký.');
         }
 
-        $totalPrice = collect($cart)->sum(function ($item) {
-            return ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
-        });
+        $totalPrice = $cartState['total_price'];
+        $unavailableCount = $cartState['unavailable_count'];
         $centers = Center::active()->get();
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -372,11 +376,13 @@ class VaccineController extends Controller
                 'cart' => $cart,
                 'total_price' => $totalPrice,
                 'formatted_total_price' => number_format($totalPrice, 0, ',', '.') . ' đ',
-                'centers' => $centers
+                'centers' => $centers,
+                'selected_center_id' => $currentCenter?->id,
+                'unavailable_count' => $unavailableCount,
             ]);
         }
 
-        return view('vaccine::register', compact('cart', 'totalPrice', 'centers'));
+        return view('vaccine::register', compact('cart', 'totalPrice', 'centers', 'unavailableCount'));
     }
 
     /**
@@ -405,7 +411,7 @@ class VaccineController extends Controller
             'patients.*.vaccine_ids.*' => 'exists:vaccines,id',
             'guardian_name' => 'nullable|string|max:255',
             'guardian_phone' => 'nullable|string|regex:/^[0-9]{9,11}$/',
-            'center_name' => 'required|string',
+            'center_id' => 'required|exists:centers,id',
             'injection_date' => 'required|date|after_or_equal:today',
             'payment_method' => 'required|string|in:Tại trung tâm,QR,Thẻ,Chuyển khoản,Thẻ ATM / QR Code',
         ], [
@@ -419,7 +425,7 @@ class VaccineController extends Controller
             'patients.*.phone.regex' => 'Số điện thoại không hợp lệ (9 - 11 chữ số).',
             'patients.*.address.required' => 'Địa chỉ người tiêm không được để trống.',
             'patients.*.vaccine_ids.required' => 'Vui lòng chọn ít nhất một loại vắc xin cho mỗi người.',
-            'center_name.required' => 'Vui lòng chọn trung tâm tiêm chủng.',
+            'center_id.required' => 'Vui lòng chọn trung tâm tiêm chủng.',
             'injection_date.required' => 'Vui lòng chọn ngày tiêm dự kiến.',
             'injection_date.after_or_equal' => 'Ngày tiêm dự kiến không được ở quá khứ.',
             'payment_method.required' => 'Vui lòng chọn phương thức thanh toán.',
@@ -436,6 +442,17 @@ class VaccineController extends Controller
         }
 
         $validated = $validator->validated();
+        $selectedCenter = Center::active()->findOrFail($validated['center_id']);
+        CenterContext::set($selectedCenter->id);
+        $cartState = CenterContext::resolveCart($selectedCenter->id);
+        if ($cartState['unavailable_count'] > 0) {
+            $message = 'Có sản phẩm không có ở chi nhánh ' . $selectedCenter->name . '. Vui lòng xóa sản phẩm đó hoặc chọn chi nhánh khác.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $message], 422);
+            }
+            return redirect()->back()->with('error', $message)->withInput();
+        }
+
         $patientsData = $validated['patients'];
         $successCodes = [];
 
@@ -446,9 +463,17 @@ class VaccineController extends Controller
                 $registrationCode = 'MCD-' . strtoupper(\Illuminate\Support\Str::random(8)) . '-' . ($index + 1);
 
                 // Load vaccine models to calculate the subtotal price for this patient
-                $vaccines = Vaccine::whereIn('id', $patient['vaccine_ids'])->get();
-                $subtotalPrice = $vaccines->sum(function ($v) {
-                    return $v->hasSalePrice() ? $v->sale_price : $v->price;
+                $vaccines = Vaccine::whereIn('id', $patient['vaccine_ids'])->get()->keyBy('id');
+                $centerVaccines = CenterVaccine::where('center_id', $selectedCenter->id)
+                    ->whereIn('vaccine_id', $patient['vaccine_ids'])
+                    ->where('is_active', true)
+                    ->get()
+                    ->keyBy('vaccine_id');
+                if ($centerVaccines->count() !== count($patient['vaccine_ids'])) {
+                    throw new \RuntimeException('Có sản phẩm không có ở chi nhánh đã chọn.');
+                }
+                $subtotalPrice = $centerVaccines->sum(function ($cv) {
+                    return $cv->hasSalePrice() ? $cv->sale_price : $cv->price;
                 });
 
                 // Create patient registration
@@ -461,7 +486,8 @@ class VaccineController extends Controller
                     'patient_address' => $patient['address'],
                     'guardian_name' => $validated['guardian_name'] ?? null,
                     'guardian_phone' => $validated['guardian_phone'] ?? null,
-                    'center_name' => $validated['center_name'],
+                    'center_id' => $selectedCenter->id,
+                    'center_name' => $selectedCenter->name,
                     'injection_date' => $validated['injection_date'],
                     'status' => $validated['payment_method'] === 'Tại trung tâm' ? 'Chờ thanh toán' : 'Đã thanh toán',
                     'payment_method' => $validated['payment_method'],
@@ -470,8 +496,9 @@ class VaccineController extends Controller
 
                 // Attach vaccines
                 foreach ($vaccines as $v) {
+                    $centerVaccine = $centerVaccines->get($v->id);
                     $registration->vaccines()->attach($v->id, [
-                        'price' => $v->hasSalePrice() ? $v->sale_price : $v->price,
+                        'price' => $centerVaccine->hasSalePrice() ? $centerVaccine->sale_price : $centerVaccine->price,
                         'quantity' => 1,
                     ]);
                 }
@@ -542,12 +569,16 @@ class VaccineController extends Controller
         $diseaseDecoded = urldecode($disease);
         
         // Lọc danh sách vắc xin thuộc nhóm bệnh này
-        $vaccines = Vaccine::where('category', 'like', '%' . $diseaseDecoded . '%')
-            ->orWhere('disease_prevention', 'like', '%' . $diseaseDecoded . '%')
-            ->orderBy('sort_order', 'asc')
+        $currentCenter = CenterContext::current();
+        $vaccines = Vaccine::forCenter($currentCenter?->id)
+            ->where(function ($q) use ($diseaseDecoded) {
+                $q->where('category', 'like', '%' . $diseaseDecoded . '%')
+                    ->orWhere('disease_prevention', 'like', '%' . $diseaseDecoded . '%');
+            })
+            ->orderBy('center_vaccines.sort_order', 'asc')
             ->get();
-              
-        $cart = session()->get('cart', []);
+               
+        $cart = CenterContext::resolveCart($currentCenter?->id)['cart'];
         $centers = Center::active()->get();
 
         // Mảng dữ liệu tĩnh chứa thông tin sơ bộ chuyên môn cho các bệnh phổ biến
@@ -626,11 +657,20 @@ class VaccineController extends Controller
         $registrationCode = 'MCD-CS-' . strtoupper(Str::random(6));
 
         // Lấy danh sách vắc xin của nhóm bệnh này để đính kèm (nếu có)
-        $vaccines = Vaccine::where('category', 'like', '%' . $diseaseDecoded . '%')
-            ->orWhere('disease_prevention', 'like', '%' . $diseaseDecoded . '%')
+        $currentCenter = CenterContext::current();
+        $vaccines = Vaccine::forCenter($currentCenter?->id)
+            ->where(function ($q) use ($diseaseDecoded) {
+                $q->where('category', 'like', '%' . $diseaseDecoded . '%')
+                    ->orWhere('disease_prevention', 'like', '%' . $diseaseDecoded . '%');
+            })
             ->get();
 
-        $centerName = $validated['consultType'] === 'online' ? 'Tư vấn Online (Qua điện thoại)' : $validated['centerName'];
+        $selectedCenter = null;
+        if ($validated['consultType'] === 'offline') {
+            $selectedCenter = Center::active()->where('name', $validated['centerName'])->first();
+        }
+        $selectedCenter = $selectedCenter ?: $currentCenter;
+        $centerName = $validated['consultType'] === 'online' ? 'Tư vấn Online (Qua điện thoại) - ' . ($selectedCenter?->name ?? 'Medicare') : $validated['centerName'];
         $patientAddress = 'Hình thức: ' . ($validated['consultType'] === 'online' ? 'Online' : 'Trực tiếp tại trung tâm') . ' - Đăng ký tư vấn: ' . $diseaseDecoded . ($validated['customerNote'] ? (' - Ghi chú: ' . $validated['customerNote']) : '');
 
         DB::beginTransaction();
@@ -645,6 +685,7 @@ class VaccineController extends Controller
                 'patient_address' => $validated['consultType'] === 'online' ? $patientAddress : 'Đăng ký tư vấn trực tiếp: ' . $diseaseDecoded . ($validated['customerNote'] ? (' - Ghi chú: ' . $validated['customerNote']) : ''),
                 'guardian_name' => null,
                 'guardian_phone' => null,
+                'center_id' => $selectedCenter?->id,
                 'center_name' => $centerName,
                 'injection_date' => now()->toDateString(),
                 'status' => 'Chờ tư vấn',

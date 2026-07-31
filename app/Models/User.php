@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Modules\VaccineRegistration\Models\Center;
 
 class User extends Authenticatable
 {
@@ -19,8 +20,12 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
+        'role',
+        'center_id',
+        'is_active',
     ];
 
     /**
@@ -43,6 +48,22 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
+    }
+
+    public function center()
+    {
+        return $this->belongsTo(Center::class);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
+    public function isBranchAdmin(): bool
+    {
+        return $this->role === 'branch_admin';
     }
 }

@@ -9,6 +9,9 @@ namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Registration;
+use Modules\VaccineRegistration\Models\CenterVaccine;
+use Modules\VaccineRegistration\Models\VaccineStockMovement;
+use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminRegistrationController extends Controller
 {
@@ -17,7 +20,7 @@ class AdminRegistrationController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Registration::query();
+        $query = AdminContext::applyCenterScope(Registration::query());
 
         // Lọc theo trạng thái
         if ($request->filled('status')) {
@@ -43,7 +46,7 @@ class AdminRegistrationController extends Controller
      */
     public function show($id)
     {
-        $registration = Registration::with('vaccines')->findOrFail($id);
+        $registration = AdminContext::applyCenterScope(Registration::with('vaccines'))->findOrFail($id);
         
         $statuses = [
             'Chờ thanh toán',
@@ -62,7 +65,8 @@ class AdminRegistrationController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
-        $registration = Registration::findOrFail($id);
+        $registration = AdminContext::applyCenterScope(Registration::with('vaccines'))->findOrFail($id);
+        $oldStatus = $registration->status;
 
         $validated = $request->validate([
             'status' => 'required|string|in:Chờ thanh toán,Đã thanh toán,Đã tiêm,Đã hủy,Chờ tư vấn,Đã tư vấn',
@@ -74,6 +78,27 @@ class AdminRegistrationController extends Controller
         $registration->update([
             'status' => $validated['status']
         ]);
+
+        if (!in_array($oldStatus, ['Đã thanh toán', 'Đã tiêm'], true) && in_array($validated['status'], ['Đã thanh toán', 'Đã tiêm'], true)) {
+            foreach ($registration->vaccines as $vaccine) {
+                VaccineStockMovement::create([
+                    'center_id' => $registration->center_id,
+                    'vaccine_id' => $vaccine->id,
+                    'type' => 'sale',
+                    'quantity' => 1,
+                    'unit_price' => (int) ($vaccine->pivot->price ?? 0),
+                    'note' => 'Ghi nhận bán từ đơn ' . $registration->registration_code,
+                    'created_by' => AdminContext::user()?->id,
+                ]);
+
+                $centerVaccine = CenterVaccine::where('center_id', $registration->center_id)->where('vaccine_id', $vaccine->id)->first();
+                if ($centerVaccine) {
+                    $centerVaccine->stock_quantity = max(0, (int) $centerVaccine->stock_quantity - 1);
+                    $centerVaccine->stock_status = $centerVaccine->stock_quantity <= 0 ? 'out_of_stock' : ($centerVaccine->stock_quantity <= 5 ? 'limited' : 'available');
+                    $centerVaccine->save();
+                }
+            }
+        }
 
         return redirect()->route('admin.registrations.show', $id)
             ->with('success', 'Cập nhật trạng thái đơn đăng ký thành công.');
@@ -97,7 +122,7 @@ class AdminRegistrationController extends Controller
         $endOfWeek = $startOfWeek->copy()->endOfWeek();
 
         // Lấy toàn bộ đơn đăng ký trong tuần này
-        $registrations = Registration::with('vaccines')
+        $registrations = AdminContext::applyCenterScope(Registration::with('vaccines'))
             ->whereBetween('injection_date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
             ->get();
 
@@ -139,7 +164,7 @@ class AdminRegistrationController extends Controller
      */
     public function exportCsv(Request $request)
     {
-        $registrations = Registration::with('vaccines')->latest()->get();
+        $registrations = AdminContext::applyCenterScope(Registration::with('vaccines'))->latest()->get();
 
         $filename = 'don_dang_ky_tiem_' . date('Y-m-d_His') . '.csv';
 

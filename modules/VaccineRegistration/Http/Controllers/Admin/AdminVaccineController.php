@@ -10,6 +10,9 @@ namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Vaccine;
+use Modules\VaccineRegistration\Models\Center;
+use Modules\VaccineRegistration\Models\CenterVaccine;
+use Modules\VaccineRegistration\Support\CenterContext;
 
 class AdminVaccineController extends Controller
 {
@@ -18,7 +21,9 @@ class AdminVaccineController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Vaccine::query();
+        $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) $request->input('center_id', CenterContext::current()?->id));
+        $query = Vaccine::forCenter($selectedCenterId);
 
         // Tìm kiếm theo tên hoặc bệnh phòng ngừa
         if ($request->filled('search')) {
@@ -38,7 +43,7 @@ class AdminVaccineController extends Controller
 
         // Lọc theo tình trạng kho
         if ($request->filled('stock_status')) {
-            $query->where('stock_status', $request->input('stock_status'));
+            $query->where('center_vaccines.stock_status', $request->input('stock_status'));
         }
 
         // Lọc theo danh mục bệnh
@@ -51,7 +56,7 @@ class AdminVaccineController extends Controller
             $query->where('is_featured', true);
         }
 
-        $vaccines = $query->orderBy('id', 'asc')
+        $vaccines = $query->orderBy('vaccines.id', 'asc')
                           ->orderBy('type', 'asc')
                           ->orderBy('name', 'asc')
                           ->paginate(15)
@@ -65,7 +70,7 @@ class AdminVaccineController extends Controller
                              ->sort()
                              ->values();
 
-        return view('vaccine::admin.vaccines.index', compact('vaccines', 'categories'));
+        return view('vaccine::admin.vaccines.index', compact('vaccines', 'categories', 'centers', 'selectedCenterId'));
     }
 
     /**
@@ -73,7 +78,11 @@ class AdminVaccineController extends Controller
      */
     public function create()
     {
+        abort_unless(AdminContext::isBranchAdmin(), 403);
+
         $vaccine = new Vaccine(); // Khởi tạo đối tượng rỗng phục vụ form partial
+        $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) request('center_id', CenterContext::current()?->id));
         $categories = Vaccine::whereNotNull('category')
                              ->where('category', '!=', '')
                              ->distinct()
@@ -81,7 +90,7 @@ class AdminVaccineController extends Controller
                              ->sort()
                              ->values();
 
-        return view('vaccine::admin.vaccines.create', compact('vaccine', 'categories'));
+        return view('vaccine::admin.vaccines.create', compact('vaccine', 'categories', 'centers', 'selectedCenterId'));
     }
 
     /**
@@ -89,6 +98,8 @@ class AdminVaccineController extends Controller
      */
     public function store(Request $request)
     {
+        abort_unless(AdminContext::isBranchAdmin(), 403);
+
         $validated = $this->validateVaccine($request);
 
         // Xử lý tải lên hình ảnh từ file
@@ -107,9 +118,13 @@ class AdminVaccineController extends Controller
         // Xử lý checkbox is_featured
         $validated['is_featured'] = $request->has('is_featured');
 
-        Vaccine::create($validated);
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) ($validated['center_id'] ?? CenterContext::current()?->id));
+        unset($validated['center_id']);
 
-        return redirect()->route('admin.vaccines.index')->with('success', 'Thêm mới vắc xin thành công.');
+        $vaccine = Vaccine::create($validated);
+        $this->syncCenterVaccine($vaccine, $selectedCenterId, $validated);
+
+        return redirect()->route('admin.vaccines.index', ['center_id' => $selectedCenterId])->with('success', 'Thêm mới vắc xin thành công.');
     }
 
     /**
@@ -117,7 +132,19 @@ class AdminVaccineController extends Controller
      */
     public function edit($id)
     {
+        abort_unless(AdminContext::isBranchAdmin(), 403);
+
         $vaccine = Vaccine::findOrFail($id);
+        $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) request('center_id', CenterContext::current()?->id));
+        $centerVaccine = CenterVaccine::where('center_id', $selectedCenterId)->where('vaccine_id', $vaccine->id)->first();
+        if ($centerVaccine) {
+            $vaccine->price = $centerVaccine->price;
+            $vaccine->sale_price = $centerVaccine->sale_price;
+            $vaccine->stock_status = $centerVaccine->stock_status;
+            $vaccine->is_featured = $centerVaccine->is_featured;
+            $vaccine->sort_order = $centerVaccine->sort_order;
+        }
         $categories = Vaccine::whereNotNull('category')
                              ->where('category', '!=', '')
                              ->distinct()
@@ -125,7 +152,7 @@ class AdminVaccineController extends Controller
                              ->sort()
                              ->values();
 
-        return view('vaccine::admin.vaccines.edit', compact('vaccine', 'categories'));
+        return view('vaccine::admin.vaccines.edit', compact('vaccine', 'categories', 'centers', 'selectedCenterId'));
     }
 
     /**
@@ -133,9 +160,13 @@ class AdminVaccineController extends Controller
      */
     public function update(Request $request, $id)
     {
+        abort_unless(AdminContext::isBranchAdmin(), 403);
+
         $vaccine = Vaccine::findOrFail($id);
 
         $validated = $this->validateVaccine($request);
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) ($validated['center_id'] ?? CenterContext::current()?->id));
+        unset($validated['center_id']);
 
         // Xử lý tải lên hình ảnh từ file
         if ($request->hasFile('image_file')) {
@@ -160,8 +191,9 @@ class AdminVaccineController extends Controller
         $validated['is_featured'] = $request->has('is_featured');
 
         $vaccine->update($validated);
+        $this->syncCenterVaccine($vaccine, $selectedCenterId, $validated);
 
-        return redirect()->route('admin.vaccines.index')->with('success', 'Cập nhật thông tin vắc xin thành công.');
+        return redirect()->route('admin.vaccines.index', ['center_id' => $selectedCenterId])->with('success', 'Cập nhật thông tin vắc xin thành công.');
     }
 
     /**
@@ -169,11 +201,18 @@ class AdminVaccineController extends Controller
      */
     public function toggleFeatured($id)
     {
-        $vaccine = Vaccine::findOrFail($id);
-        $vaccine->is_featured = !$vaccine->is_featured;
-        $vaccine->save();
+        abort_unless(AdminContext::isBranchAdmin(), 403);
 
-        $statusMessage = $vaccine->is_featured ? 'Đã bật hiển thị NỔI BẬT trên Trang chủ.' : 'Đã bỏ trạng thái NỔI BẬT.';
+        $vaccine = Vaccine::findOrFail($id);
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) request('center_id', CenterContext::current()?->id));
+        $centerVaccine = CenterVaccine::firstOrCreate(
+            ['center_id' => $selectedCenterId, 'vaccine_id' => $vaccine->id],
+            ['price' => $vaccine->price, 'sale_price' => $vaccine->sale_price, 'stock_status' => $vaccine->stock_status ?? 'available']
+        );
+        $centerVaccine->is_featured = !$centerVaccine->is_featured;
+        $centerVaccine->save();
+
+        $statusMessage = $centerVaccine->is_featured ? 'Đã bật hiển thị NỔI BẬT trên Trang chủ.' : 'Đã bỏ trạng thái NỔI BẬT.';
         return redirect()->back()->with('success', "Vắc xin '{$vaccine->name}': {$statusMessage}");
     }
 
@@ -182,6 +221,8 @@ class AdminVaccineController extends Controller
      */
     public function destroy($id)
     {
+        abort_unless(AdminContext::isBranchAdmin(), 403);
+
         $vaccine = Vaccine::findOrFail($id);
         
         // Hủy liên kết với các đơn tiêm chủng trước khi xóa (hoặc báo lỗi nếu có ràng buộc đơn hàng)
@@ -198,6 +239,7 @@ class AdminVaccineController extends Controller
     {
         return $request->validate([
             'name' => 'required|string|max:255',
+            'center_id' => 'required|exists:centers,id',
             'price' => 'required|integer|min:0',
             'sale_price' => 'nullable|integer|min:0',
             'type' => 'required|string|in:single,package',
@@ -231,5 +273,20 @@ class AdminVaccineController extends Controller
             'age_group.required' => 'Độ tuổi chỉ định không được để trống.',
             'origin.required' => 'Nguồn gốc xuất xứ không được để trống.',
         ]);
+    }
+
+    private function syncCenterVaccine(Vaccine $vaccine, int $centerId, array $data): void
+    {
+        CenterVaccine::updateOrCreate(
+            ['center_id' => $centerId, 'vaccine_id' => $vaccine->id],
+            [
+                'price' => $data['price'],
+                'sale_price' => $data['sale_price'] ?? null,
+                'stock_status' => $data['stock_status'] ?? 'available',
+                'is_active' => true,
+                'is_featured' => (bool) ($data['is_featured'] ?? false),
+                'sort_order' => (int) ($data['sort_order'] ?? 0),
+            ]
+        );
     }
 }

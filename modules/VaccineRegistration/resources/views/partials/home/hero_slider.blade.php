@@ -44,7 +44,7 @@
             <!-- Carousel wrapper with EXPLICIT height -->
             <div class="hero-carousel-wrapper relative h-[460px] sm:h-[500px] lg:h-[520px] overflow-hidden">
                 @foreach($banners as $index => $banner)
-                    <div class="hidden duration-700 ease-in-out h-full w-full" data-carousel-item="{{ $index === 0 ? 'active' : '' }}">
+                    <div class="{{ $index === 0 ? '' : 'hidden' }} duration-700 ease-in-out h-full w-full" data-carousel-item="{{ $index === 0 ? 'active' : '' }}">
                         <div class="text-white w-full h-full border-y border-red-800/40 shadow-xl overflow-hidden relative flex items-center" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%);">
                             <!-- Background ambient glow effect -->
                             <div class="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>

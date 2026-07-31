@@ -21,6 +21,21 @@
             <input type="text" name="name" id="name" value="{{ old('name', $vaccine->name) }}" required class="form-control-modern">
         </div>
 
+        @if(isset($centers) && ($isSuperAdmin ?? false))
+        <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0;">
+            <label for="center_id" class="form-label-modern">Chi nhánh áp dụng giá/tồn kho <span style="color: #ef4444;">*</span></label>
+            <select name="center_id" id="center_id" required class="form-control-modern" style="background-image: none;">
+                @foreach($centers as $center)
+                    <option value="{{ $center->id }}" {{ (string) old('center_id', $selectedCenterId ?? null) === (string) $center->id ? 'selected' : '' }}>{{ $center->name }} - {{ $center->phone }}</option>
+                @endforeach
+            </select>
+            <small style="display:block; margin-top:6px; color:#64748b;">Thông tin giá, ưu đãi, tồn kho và nổi bật sẽ lưu riêng cho chi nhánh này.</small>
+        </div>
+        @endif
+        @if(!($isSuperAdmin ?? false))
+            <input type="hidden" name="center_id" value="{{ $adminUser?->center_id }}">
+        @endif
+
         <!-- Phân loại -->
         <div class="form-group-modern" style="margin-bottom: 0;">
             <label for="type" class="form-label-modern">Phân loại <span style="color: #ef4444;">*</span></label>

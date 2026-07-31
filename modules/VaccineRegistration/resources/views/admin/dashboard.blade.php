@@ -15,6 +15,25 @@
 @endsection
 
 @section('admin_content')
+@if($isSuperAdmin ?? false)
+<form method="GET" action="{{ route('admin.dashboard') }}" class="card-modern" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:24px;">
+    <div style="flex:1 1 260px;">
+        <label class="form-label-modern">Lọc thống kê theo chi nhánh</label>
+        <select name="center_id" class="form-control-modern" style="background-image:none;">
+            <option value="">Toàn hệ thống</option>
+            @foreach($centers as $center)
+                <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
+            @endforeach
+        </select>
+    </div>
+    <button type="submit" class="btn-modern btn-modern-primary">Lọc</button>
+</form>
+@else
+<div class="card-modern" style="margin-bottom:24px; color:var(--text-muted); font-weight:700;">
+    Thống kê chi nhánh: {{ $adminUser?->center?->name ?? 'Chi nhánh của bạn' }}
+</div>
+@endif
+
 <!-- Thẻ thống kê Widgets -->
 <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 40px;">
     <!-- Widget 1: Tổng đăng ký -->
@@ -58,6 +77,36 @@
         </div>
         <div class="stat-card-icon-wrapper" style="background-color: #f5f3ff; color: #7c3aed;">
             <i data-lucide="shield-check"></i>
+        </div>
+    </div>
+
+    <div class="stat-card-modern">
+        <div>
+            <span class="stat-card-title">Yêu Cầu Tư Vấn</span>
+            <strong class="stat-card-number">{{ $consultCount }}</strong>
+        </div>
+        <div class="stat-card-icon-wrapper" style="background-color: #eff6ff; color: #0284c7;">
+            <i data-lucide="headphones"></i>
+        </div>
+    </div>
+
+    <div class="stat-card-modern">
+        <div>
+            <span class="stat-card-title">Sản Phẩm Bán Ra</span>
+            <strong class="stat-card-number">{{ $soldQuantity }}</strong>
+        </div>
+        <div class="stat-card-icon-wrapper" style="background-color: #ecfdf5; color: #16a34a;">
+            <i data-lucide="shopping-bag"></i>
+        </div>
+    </div>
+
+    <div class="stat-card-modern">
+        <div>
+            <span class="stat-card-title">Sản Phẩm Nhập Vào</span>
+            <strong class="stat-card-number">{{ $importedQuantity }}</strong>
+        </div>
+        <div class="stat-card-icon-wrapper" style="background-color: #fff7ed; color: #ea580c;">
+            <i data-lucide="package-plus"></i>
         </div>
     </div>
 </div>

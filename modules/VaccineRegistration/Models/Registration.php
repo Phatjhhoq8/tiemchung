@@ -18,6 +18,7 @@ class Registration extends Model
         'patient_address',
         'guardian_name',
         'guardian_phone',
+        'center_id',
         'center_name',
         'injection_date',
         'status',
@@ -33,5 +34,10 @@ class Registration extends Model
         return $this->belongsToMany(Vaccine::class, 'registration_vaccines')
                     ->withPivot('price')
                     ->withTimestamps();
+    }
+
+    public function center()
+    {
+        return $this->belongsTo(Center::class);
     }
 }

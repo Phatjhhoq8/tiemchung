@@ -93,15 +93,16 @@
 
                     <div class="form-grid">
                         <div class="form-group full-width">
-                            <label for="center_name">Chi nhánh trung tâm tiêm chủng Medicare <span class="required">*</span></label>
-                            <select name="center_name" id="center_name" required style="padding: 12px; font-size: 15px; border-radius: 8px;">
-                                <option value="">-- Vui lòng chọn 1 trong 2 chi nhánh Medicare --</option>
+                            <label for="center_id">Chi nhánh trung tâm tiêm chủng Medicare <span class="required">*</span></label>
+                            <select name="center_id" id="center_id" required onchange="changeRegisterCenter(this.value)" style="padding: 12px; font-size: 15px; border-radius: 8px;">
+                                <option value="">-- Vui lòng chọn chi nhánh Medicare --</option>
                                 @foreach($centers as $center)
-                                    <option value="{{ $center->name }}" {{ old('center_name') === $center->name ? 'selected' : '' }}>
+                                    <option value="{{ $center->id }}" {{ (string) old('center_id', $currentCenter?->id) === (string) $center->id ? 'selected' : '' }}>
                                         📍 {{ $center->name }} — Địa chỉ: {{ $center->address }} (Hotline: {{ $center->phone }})
                                     </option>
                                 @endforeach
                             </select>
+                            <small style="display: block; margin-top: 8px; color: #64748b;">Đổi chi nhánh tại đây sẽ cập nhật giá theo chi nhánh đã chọn.</small>
                         </div>
 
                         <div class="form-group">
@@ -186,11 +187,19 @@
                         <div class="item-name">
                             <strong>{{ $item['name'] }}</strong>
                             <span>{{ $item['disease_prevention'] ?? 'Vắc xin phòng bệnh' }}</span>
+                            @if(!empty($item['unavailable_for_center']))
+                                <span style="color: #b91c1c; font-weight: 800; margin-top: 4px;">Sản phẩm này không có ở chi nhánh hiện tại</span>
+                            @endif
                         </div>
                         <span class="item-price">{{ number_format($item['price'], 0, ',', '.') }} đ</span>
                     </div>
                 @endforeach
             </div>
+            @if(($unavailableCount ?? 0) > 0)
+                <div style="margin-top: 14px; padding: 12px; border-radius: 10px; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; font-size: 13px; font-weight: 700; line-height: 1.5;">
+                    Có {{ $unavailableCount }} sản phẩm không có ở chi nhánh hiện tại. Vui lòng xóa sản phẩm đó hoặc đổi chi nhánh trước khi đăng ký.
+                </div>
+            @endif
             
             <div class="summary-divider"></div>
             
@@ -201,7 +210,7 @@
 
             <div class="summary-note">
                 <i data-lucide="sparkles"></i>
-                <p>Giá vắc xin đã bao gồm: phí khám lâm sàng trước tiêm, phí dịch vụ tiêm chủng và các tiện ích đi kèm tại Medicare Cờ Đỏ.</p>
+                <p>Giá vắc xin đang được tính theo chi nhánh {{ $currentCenter?->name ?? 'Medicare' }}.</p>
             </div>
         </div>
     </div>
@@ -211,6 +220,7 @@
 @section('scripts')
 <script>
     const cartData = {!! json_encode($cart) !!};
+    const unavailableCount = {{ (int) ($unavailableCount ?? 0) }};
     const todayStr = "{{ date('Y-m-d') }}";
     const baseAssetUrl = "{{ asset('images/vaccines') }}";
     let patientCount = 0;
@@ -221,14 +231,16 @@
             const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
             const imageUrl = `${baseAssetUrl}/${item.image || 'hexaxim.jpg'}`;
             const desc = item.disease_prevention || 'Phòng ngừa các bệnh truyền nhiễm nguy hiểm';
+            const unavailable = Boolean(item.unavailable_for_center);
             html += `
-                <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; transition: border-color 0.2s; margin-bottom: 8px; width: 100%;">
-                    <input type="checkbox" name="patients[${index}][vaccine_ids][]" value="${vId}" data-price="${item.price}" checked class="patient-vaccine-checkbox" onchange="recalculateRegisterPrices()" style="margin-top: 4px; width: 16px; height: 16px;">
+                <label style="display: flex; align-items: flex-start; gap: 12px; cursor: ${unavailable ? 'not-allowed' : 'pointer'}; padding: 12px; border: 1px solid ${unavailable ? '#fecaca' : '#e2e8f0'}; border-radius: 8px; background: ${unavailable ? '#fef2f2' : '#ffffff'}; transition: border-color 0.2s; margin-bottom: 8px; width: 100%;">
+                    <input type="checkbox" name="patients[${index}][vaccine_ids][]" value="${vId}" data-price="${item.price}" ${unavailable ? 'disabled' : 'checked'} class="patient-vaccine-checkbox" onchange="recalculateRegisterPrices()" style="margin-top: 4px; width: 16px; height: 16px;">
                     <img src="${imageUrl}" alt="${item.name}" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover; border: 1px solid #f1f5f9; flex-shrink: 0;">
                     <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
                         <span style="font-size: 13.5px; font-weight: 700; color: #1e293b;">${item.name}</span>
                         <span style="font-size: 11.5px; color: #64748b; line-height: 1.4;"><strong>Phòng bệnh:</strong> ${desc}</span>
                         <span style="font-size: 13px; font-weight: 800; color: var(--primary-color, #c8102e); margin-top: 2px;">${formattedPrice}</span>
+                        ${unavailable ? '<span style="font-size: 12px; color: #b91c1c; font-weight: 800;">Sản phẩm này không có ở chi nhánh hiện tại</span>' : ''}
                     </div>
                 </label>
             `;
@@ -381,6 +393,10 @@
     let currentStep = 1;
 
     function nextStep(step) {
+        if (step === 2 && unavailableCount > 0) {
+            alert('Có sản phẩm không có ở chi nhánh hiện tại. Vui lòng xóa sản phẩm đó hoặc đổi chi nhánh trước khi đăng ký.');
+            return;
+        }
         if (!validateStep(step)) return;
 
         currentStep = step + 1;
@@ -390,6 +406,16 @@
     function prevStep(step) {
         currentStep = step - 1;
         updateStepperUI();
+    }
+
+    function changeRegisterCenter(centerId) {
+        if (!centerId) return;
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route('centers.select') }}';
+        form.innerHTML = `@csrf<input type="hidden" name="center_id" value="${centerId}">`;
+        document.body.appendChild(form);
+        form.submit();
     }
 
     function updateStepperUI() {

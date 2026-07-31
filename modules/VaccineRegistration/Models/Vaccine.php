@@ -86,7 +86,30 @@ class Vaccine extends Model
      */
     public function scopeFeatured($query)
     {
-        return $query->where('is_featured', true);
+        return $query->where($this->hasCenterVaccineJoin($query) ? 'center_vaccines.is_featured' : 'vaccines.is_featured', true);
+    }
+
+    /**
+     * Lọc và lấy giá/trạng thái sản phẩm theo chi nhánh hiện tại.
+     */
+    public function scopeForCenter($query, ?int $centerId)
+    {
+        if (!$centerId) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->join('center_vaccines', 'vaccines.id', '=', 'center_vaccines.vaccine_id')
+            ->where('center_vaccines.center_id', $centerId)
+            ->where('center_vaccines.is_active', true)
+            ->select(
+                'vaccines.*',
+                'center_vaccines.price as price',
+                'center_vaccines.sale_price as sale_price',
+                'center_vaccines.stock_quantity as stock_quantity',
+                'center_vaccines.stock_status as stock_status',
+                'center_vaccines.is_featured as is_featured',
+                'center_vaccines.sort_order as sort_order'
+            );
     }
 
     /**
@@ -94,7 +117,18 @@ class Vaccine extends Model
      */
     public function scopeInStock($query)
     {
-        return $query->where('stock_status', '!=', 'out_of_stock');
+        return $query->where($this->hasCenterVaccineJoin($query) ? 'center_vaccines.stock_status' : 'vaccines.stock_status', '!=', 'out_of_stock');
+    }
+
+    private function hasCenterVaccineJoin($query): bool
+    {
+        foreach ($query->getQuery()->joins ?? [] as $join) {
+            if ($join->table === 'center_vaccines') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -105,5 +139,10 @@ class Vaccine extends Model
         return $this->belongsToMany(Registration::class, 'registration_vaccines')
                     ->withPivot('price')
                     ->withTimestamps();
+    }
+
+    public function centerVaccines()
+    {
+        return $this->hasMany(CenterVaccine::class);
     }
 }

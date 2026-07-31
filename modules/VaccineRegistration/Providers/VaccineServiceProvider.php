@@ -7,6 +7,9 @@
 namespace Modules\VaccineRegistration\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
+use Modules\VaccineRegistration\Support\CenterContext;
+use Modules\VaccineRegistration\Support\AdminContext;
 
 class VaccineServiceProvider extends ServiceProvider
 {
@@ -34,5 +37,17 @@ class VaccineServiceProvider extends ServiceProvider
 
         // 4. Đăng ký middleware quản trị
         $this->app['router']->aliasMiddleware('admin.auth', \Modules\VaccineRegistration\Http\Middleware\AdminAuth::class);
+        $this->app['router']->aliasMiddleware('super.admin', \Modules\VaccineRegistration\Http\Middleware\SuperAdminOnly::class);
+
+        View::composer('vaccine::*', function ($view) {
+            if (app()->runningInConsole()) {
+                return;
+            }
+
+            $view->with('currentCenter', CenterContext::current());
+            $view->with('activeCenters', CenterContext::activeCenters());
+            $view->with('adminUser', AdminContext::user());
+            $view->with('isSuperAdmin', AdminContext::isSuperAdmin());
+        });
     }
 }

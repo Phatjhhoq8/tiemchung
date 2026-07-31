@@ -1,5 +1,14 @@
 # Release Notes
 
+## [v3.5.17] - 2026-07-31
+
+### Branch Maps Integration, CSS Dropdown/Button Refinements & Flash Messages to Floating Toast Transformation
+
+* **Google Maps Integration**: Updated [CenterSeeder.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/Database/Seeders/CenterSeeder.php) to insert official Google Maps embed iframe URLs (`map_url`) for the 4 primary Medicare centers (Medicare Cờ Đỏ, Medicare Thới Lai, Medicare Phong Điền, and Medicare Trà Nóc) and executed the seeder to populate the database, which automatically renders interactive maps in the branch cards on the contact/selection page ([contact.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/contact.blade.php)).
+* **Header Branch Dropdown Style Refinements**: Refactored the branch selector dropdown in the header layout ([app.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php)). Replaced inline styles with a dedicated class `.branch-item-btn`. Styled the active branch with a red-tinted background (`rgba(200,16,46,0.08)`) and Medicare Red text, and added a smooth background transition with a subtle hover effect (`#f8fafc` for inactive, `#ffe4e6` for active hover).
+* **Contact Branch Selection Button Refinement**: Replaced the default `.btn-secondary` class on the "Chọn chi nhánh này" submit button in [contact.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/contact.blade.php) with a custom `.contact-branch-btn-select` class. Configured it to display a solid red border and red text on a clean white background, smoothly flipping to a solid Medicare Red background with white text when hovered, ensuring excellent contrast and high visibility.
+* **Floating Toast Messages**: Transformed the static flash message alerts inside the main layout ([app.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php)) into responsive, non-blocking floating Toast notifications. Configured them in a fixed container (`top: 24px; right: 24px; z-index: 9999;`) with elegant glassmorphism backgrounds, custom color-coded borders (Success, Error, Warning, Info), a smooth slide-in/fade-out transition, and a Javascript auto-dismiss timeout of 4 seconds (with manual close button fallback).
+
 ## [v3.5.16] - 2026-07-28
 
 ### Fixed Admin Sidebar Duplicate Border Styling & Sub-page Hero Banner Alignment

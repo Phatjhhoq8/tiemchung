@@ -15,6 +15,8 @@ use Modules\VaccineRegistration\Http\Controllers\Admin\AdminCenterController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSettingController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminBannerController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminLiveEditorController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminUserController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminStockController;
 use Modules\VaccineRegistration\Http\Controllers\AdminArticleController;
 use Modules\VaccineRegistration\Http\Controllers\ArticleController;
 
@@ -23,6 +25,7 @@ Route::middleware('web')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('/about', [HomeController::class, 'about'])->name('about');
     Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+    Route::post('/centers/select', [HomeController::class, 'selectCenter'])->name('centers.select');
 
     // Tin tức & Kiến thức y khoa
     Route::get('/news', [ArticleController::class, 'index'])->name('news.index');
@@ -73,27 +76,37 @@ Route::middleware('web')->group(function () {
         Route::get('/registrations/{id}', [AdminRegistrationController::class, 'show'])->name('registrations.show');
         Route::patch('/registrations/{id}/status', [AdminRegistrationController::class, 'updateStatus'])->name('registrations.status');
 
-        // Quản lý Trung tâm
-        Route::resource('centers', AdminCenterController::class)->except(['show']);
+        // Nhập/xuất/tồn kho theo chi nhánh
+        Route::get('/stock', [AdminStockController::class, 'index'])->name('stock.index');
+        Route::get('/stock/create', [AdminStockController::class, 'create'])->name('stock.create');
+        Route::post('/stock', [AdminStockController::class, 'store'])->name('stock.store');
 
-        // Quản lý Banner trang chủ
-        Route::resource('banners', AdminBannerController::class)->except(['show']);
+        Route::middleware('super.admin')->group(function () {
+            // Quản lý Trung tâm
+            Route::resource('centers', AdminCenterController::class)->except(['show']);
 
-        // Quản lý Bài viết / Tin tức y tế (Mục 10)
-        Route::post('/articles/upload-image', [AdminArticleController::class, 'uploadEditorImage'])->name('articles.upload-image');
-        Route::resource('articles', AdminArticleController::class)->except(['show']);
+            // Quản lý tài khoản chi nhánh
+            Route::resource('users', AdminUserController::class)->except(['show']);
 
-        // Trình Chỉnh Sửa Trực Quan Xem Trước (Visual Live Page Customizer)
-        Route::get('/live-editor', [AdminLiveEditorController::class, 'index'])->name('live-editor');
-        Route::post('/live-editor/banner', [AdminLiveEditorController::class, 'updateBanner'])->name('live-editor.banner');
-        Route::post('/live-editor/vaccine', [AdminLiveEditorController::class, 'updateVaccine'])->name('live-editor.vaccine');
-        Route::post('/live-editor/settings', [AdminLiveEditorController::class, 'updateSettings'])->name('live-editor.settings');
-        Route::post('/live-editor/layout/save', [AdminLiveEditorController::class, 'saveLayoutConfig'])->name('live-editor.layout.save');
-        Route::post('/live-editor/layout/publish', [AdminLiveEditorController::class, 'publishLayoutConfig'])->name('live-editor.layout.publish');
-        Route::post('/live-editor/layout/reset', [AdminLiveEditorController::class, 'resetLayoutConfig'])->name('live-editor.layout.reset');
+            // Quản lý Banner trang chủ
+            Route::resource('banners', AdminBannerController::class)->except(['show']);
 
-        // Quản lý Cấu hình động (Settings)
-        Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
-        Route::post('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
+            // Quản lý Bài viết / Tin tức y tế (Mục 10)
+            Route::post('/articles/upload-image', [AdminArticleController::class, 'uploadEditorImage'])->name('articles.upload-image');
+            Route::resource('articles', AdminArticleController::class)->except(['show']);
+
+            // Trình Chỉnh Sửa Trực Quan Xem Trước (Visual Live Page Customizer)
+            Route::get('/live-editor', [AdminLiveEditorController::class, 'index'])->name('live-editor');
+            Route::post('/live-editor/banner', [AdminLiveEditorController::class, 'updateBanner'])->name('live-editor.banner');
+            Route::post('/live-editor/vaccine', [AdminLiveEditorController::class, 'updateVaccine'])->name('live-editor.vaccine');
+            Route::post('/live-editor/settings', [AdminLiveEditorController::class, 'updateSettings'])->name('live-editor.settings');
+            Route::post('/live-editor/layout/save', [AdminLiveEditorController::class, 'saveLayoutConfig'])->name('live-editor.layout.save');
+            Route::post('/live-editor/layout/publish', [AdminLiveEditorController::class, 'publishLayoutConfig'])->name('live-editor.layout.publish');
+            Route::post('/live-editor/layout/reset', [AdminLiveEditorController::class, 'resetLayoutConfig'])->name('live-editor.layout.reset');
+
+            // Quản lý Cấu hình động (Settings)
+            Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
+            Route::post('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
+        });
     });
 });
