@@ -6,6 +6,7 @@ use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
 use Modules\VaccineRegistration\Models\Registration;
@@ -48,11 +49,13 @@ class RbacMultiBranchTest extends TestCase
         $this->centerA = $centers[0];
         $this->centerB = $centers[1];
 
+        $unique = Str::random(6);
+
         // Create Super Admin
         $this->superAdmin = User::create([
-            'name' => 'Super Admin Test',
-            'username' => 'superadmin_rbac_test',
-            'email' => 'superadmin_rbac_test@medicare.local',
+            'name' => 'Super Admin Test ' . $unique,
+            'email' => 'superadmin_rbac_' . $unique . '@medicare.local',
+            'username' => 'superadmin_rbac_' . $unique,
             'password' => Hash::make('Password123!'),
             'role' => 'super_admin',
             'is_active' => true,
@@ -61,9 +64,9 @@ class RbacMultiBranchTest extends TestCase
 
         // Create Branch Admin for Center A
         $this->branchAdminA = User::create([
-            'name' => 'Branch Admin A',
-            'username' => 'branchadmin_a_rbac_test',
-            'email' => 'branchadmin_a_rbac_test@medicare.local',
+            'name' => 'Branch Admin A ' . $unique,
+            'email' => 'branchadmin_a_rbac_' . $unique . '@medicare.local',
+            'username' => 'branchadmin_a_rbac_' . $unique,
             'password' => Hash::make('Password123!'),
             'role' => 'branch_admin',
             'center_id' => $this->centerA->id,
@@ -73,9 +76,9 @@ class RbacMultiBranchTest extends TestCase
 
         // Create Branch Admin for Center B
         $this->branchAdminB = User::create([
-            'name' => 'Branch Admin B',
-            'username' => 'branchadmin_b_rbac_test',
-            'email' => 'branchadmin_b_rbac_test@medicare.local',
+            'name' => 'Branch Admin B ' . $unique,
+            'email' => 'branchadmin_b_rbac_' . $unique . '@medicare.local',
+            'username' => 'branchadmin_b_rbac_' . $unique,
             'password' => Hash::make('Password123!'),
             'role' => 'branch_admin',
             'center_id' => $this->centerB->id,

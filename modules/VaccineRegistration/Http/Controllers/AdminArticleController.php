@@ -29,11 +29,13 @@ class AdminArticleController extends Controller
 
     public function create()
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         return view('vaccine::admin.articles.create');
     }
 
     public function store(Request $request)
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'summary' => 'nullable|string',
@@ -68,12 +70,14 @@ class AdminArticleController extends Controller
 
     public function edit($id)
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $article = Article::findOrFail($id);
         return view('vaccine::admin.articles.edit', compact('article'));
     }
 
     public function update(Request $request, $id)
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $article = Article::findOrFail($id);
 
         $validated = $request->validate([
@@ -115,6 +119,7 @@ class AdminArticleController extends Controller
 
     public function destroy($id)
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $article = Article::findOrFail($id);
         $article->is_active = false;
         $article->is_published = false;
@@ -128,6 +133,7 @@ class AdminArticleController extends Controller
      */
     public function uploadEditorImage(Request $request)
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $request->validate([
             'file' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new \App\Rules\SafeImageFile()],
         ], [

@@ -1,9 +1,9 @@
 # Project Progress Tracker - Medicare Vaccination System Refactoring (Phases 1-6)
 
-Last visited: 2026-07-31T17:49:00Z
+Last visited: 2026-08-01T10:50:15+07:00
 
 ## Iteration Status
-Current iteration: 10 / 32
+Current iteration: 11 / 32
 
 ## Milestone Status Summary
 | Milestone | Description | Status | Verification / Artifact |
@@ -14,9 +14,9 @@ Current iteration: 10 / 32
 | **M4** | Content Security, SVG Blocking & Hardening | DONE | Passed Worker, Reviewer, Challenger (140 assertions), & Auditor (CLEAN) |
 | **M5** | Audit Logs & Resource Status Management | DONE | Passed Worker, Reviewer (29 assertions), & Auditor (CLEAN) |
 | **M6** | CRM Leads & Registration Standardization | DONE | Passed Worker, Reviewer (25 assertions), & Auditor (CLEAN) |
-| **M7** | Schedules, Slots & Concurrency Control | VERIFYING | M7 code & tests complete. Reviewer & Auditor dispatched |
-| **M8** | FEFO Inventory Lots & Stock Reservation | IN_PROGRESS | Worker M8 dispatched |
-| **M9** | Patient History & 3-step Vaccination Workflow | PLANNED | Pending M8 completion |
+| **M7** | Schedules, Slots & Concurrency Control | DONE | Passed Worker, Reviewer (16 assertions), & Auditor (CLEAN) |
+| **M8** | FEFO Inventory Lots & Stock Reservation | DONE | Passed Worker, Reviewer (432 assertions), & Auditor (CLEAN) |
+| **M9** | Patient History & 3-step Vaccination Workflow | IN_PROGRESS | Worker M9 (Patch) adding cross-branch anti-IDOR 403 protection |
 | **M10** | Payment Webhook & Background Queue Jobs | PLANNED | Pending M9 completion |
 | **M11** | E2E Integration, Seeding & Forensic Audit | PLANNED | Pending M10 completion |
 
@@ -29,3 +29,8 @@ Current iteration: 10 / 32
 - **2026-07-31T23:24:21+07:00**: M3 completed and verified. 6 Laravel Policies registered, server-side anti-IDOR cross-branch 403 checks enforced, master catalog edit protection verified, feature tests 100% pass, Forensic Auditor verdict CLEAN.
 - **2026-07-31T23:37:30+07:00**: Expanded Refactoring Scope to Phases 1-6 (Ponytail Style). Updated Master Plan (M1 to M11). Heartbeat cron active (`task-25`).
 - **2026-07-31T23:53:00+07:00**: M4 completed and verified. HTML Sanitizer, SVG blocking & file content inspection (`SafeImageFile`), dangerous URL filtering, CSV formula injection guard (`CsvSanitizer`), 17 feature tests (140 assertions) & 45 full suite tests pass 100%, Reviewer APPROVE, Challenger PASS, Forensic Auditor verdict CLEAN.
+- **2026-08-01T00:15:00+07:00**: M5 completed and verified. `audit_logs` table created, automatic audit logging on price, stock, status, refund changes. Soft deactivation (`is_active = false` / `status = 'inactive'`) on vaccines, centers, users, banners, articles. Reviewer APPROVE, Auditor verdict CLEAN.
+- **2026-08-01T00:30:00+07:00**: M6 completed and verified. `consultation_leads` table created (0 dummy registrations created on consultation request), `registration_vaccines` pivot table with `quantity` and `price`, backend `IdempotencyMiddleware` preventing duplicate orders. Reviewer APPROVE, Auditor verdict CLEAN.
+- **2026-08-01T10:30:00+07:00**: Resumed Orchestration for M7-M11. M7 Worker completed schedules, slots, and pessimistic `lockForUpdate()` concurrency control with 4 feature tests (16 assertions) passing. Dispatching Reviewer M7 and Forensic Auditor M7.
+- **2026-08-01T10:32:00+07:00**: M7 completed and verified. Reviewer APPROVE, Forensic Auditor verdict CLEAN. Pessimistic row locking on slot reservations verified. Moving to M8.
+- **2026-08-01T10:41:00+07:00**: M8 completed and verified. Test isolation patch applied. Reviewer APPROVE, Forensic Auditor verdict CLEAN. 115 tests pass 100% (432 assertions). Moving to M9.

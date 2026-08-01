@@ -1,5 +1,30 @@
 # Release Notes
 
+## [v5.0.0] - 2026-08-01
+
+### M9: Centralized Patients & 3-Step Vaccination Workflow (R5, Ponytail Style)
+
+* **Centralized Patients & Workflow Schema & Migration**: Created migration `2026_08_01_000005_create_patients_and_vaccination_workflow_tables.php` creating `patients` table (`identity_card`, `full_name`, `dob`, `gender`, `phone`, `address`, `medical_history`, `is_active`), updating `registrations` table (`patient_id`, `screening_status`, `screening_notes`), and creating `administered_doses` table (`registration_id`, `patient_id`, `vaccine_id`, `inventory_lot_id`, `center_id`, `administered_by`, `administered_at`, `screening_status`, `screening_notes`, `observation_notes`, `observation_ended_at`, `status`).
+* **Models & Workflow Methods**: Created [Patient.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/Patient.php) with non-duplicating centralized lookup `findOrCreateCentralized()` and [AdministeredDose.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/AdministeredDose.php). Updated [Registration.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/Registration.php) with `patient()`, `administeredDoses()`, and 3-step workflow methods `checkIn()`, `screening()`, and `administer()`.
+* **Controllers & Routes**: Implemented [AdminPatientController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminPatientController.php) for central patient profiles and [VaccinationWorkflowController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/VaccinationWorkflowController.php) for the 3-step workflow (Check-in, Clinical Screening, Vaccine Administration with post-vaccination observation timer). Registered admin routes under `admin.auth` in [web.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/routes/web.php).
+* **Feature Test Suite**: Created [PatientVaccinationWorkflowTest.php](file:///home/hongphuoc/Desktop/thue/tests/Feature/PatientVaccinationWorkflowTest.php) covering non-duplicate central patient profile management, Step 1 check-in status updates, Step 2 screening logic (permits eligible; blocks deferred/contraindicated with HTTP 422), and Step 3 administration execution creating `AdministeredDose` records with vaccinator ID, lot number, and observation timestamp.
+
+## [v4.0.1] - 2026-08-01
+
+### M8 (Patch): FEFO Inventory Reservation Test Fixes
+
+* **Test Registration Query Fix**: Fixed `tests/Feature/FefoInventoryStockReservationTest.php` line 256 to query patient `Le Van C` specifically (`Registration::where('patient_name', 'Le Van C')->latest()->first()`), preventing retrieval of registrations created in prior test methods.
+* **Cached Relation Invalidation**: Updated `allocateAndReserve()` in [FefoInventoryService.php](file:///home/hongphuoc/Desktop/thue/app/Services/FefoInventoryService.php) to call `$registration->unsetRelation('vaccines');` before returning `$registration`, ensuring stale cached relations are cleared.
+
+## [v4.0.0] - 2026-08-01
+
+### M8: FEFO Inventory Lots & Stock Reservation (R4, Ponytail Style)
+
+* **Inventory Lots & Stock Movements Schema & Models**: Created migration `2026_08_01_000004_create_inventory_lots_and_stock_movements_tables.php` defining `inventory_lots` (`vaccine_id`, `center_id`, `lot_number`, `initial_quantity`, `available_quantity`, `reserved_quantity`, `expires_at`, `status`), `stock_movements` (`inventory_lot_id`, `user_id`, `type`, `quantity`, `reference_type`, `reference_id`, `note`), and added `inventory_lot_id` foreign key to `registration_vaccines` table. Created models [InventoryLot.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/InventoryLot.php) and [StockMovement.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/StockMovement.php).
+* **FEFO Inventory Allocation Service**: Implemented [FefoInventoryService.php](file:///home/hongphuoc/Desktop/thue/app/Services/FefoInventoryService.php) with `allocateAndReserve`, `releaseStock`, and `commitDeduction` methods using atomic `DB::transaction()` with pessimistic row locks (`lockForUpdate()`). Prioritized non-expired active lots ordered by earliest expiration date (`expires_at ASC`) and rejected recalled, quarantined, or expired lots.
+* **Controller & Route Integrations**: Integrated `FefoInventoryService` into [VaccineController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/VaccineController.php) for reservation on post-register, cancellation, and payment. Added center-restricted lot management controller [AdminInventoryLotController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminInventoryLotController.php) under `admin.auth` in [web.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/routes/web.php).
+* **Feature Test Suite**: Created [FefoInventoryStockReservationTest.php](file:///home/hongphuoc/Desktop/thue/tests/Feature/FefoInventoryStockReservationTest.php) covering earliest-expiration FEFO lot selection, rejection of recalled/quarantined/expired lots, stock reservation on pending order, stock release on cancellation, and stock deduction commit on paid order, achieving 100% test pass rate.
+
 ## [v3.9.0] - 2026-08-01
 
 ### M7: Schedules, Slots & Concurrency Control (R3, Ponytail Style)

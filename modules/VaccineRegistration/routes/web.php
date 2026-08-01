@@ -23,6 +23,9 @@ use Modules\VaccineRegistration\Http\Controllers\Admin\AdminScheduleController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSlotController;
 use Modules\VaccineRegistration\Http\Controllers\AdminArticleController;
 use Modules\VaccineRegistration\Http\Controllers\ArticleController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminInventoryLotController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminPatientController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\VaccinationWorkflowController;
 
 Route::middleware('web')->group(function () {
     // --- Giao diện Khách hàng (Client Multi-Page SPA) ---
@@ -89,6 +92,14 @@ Route::middleware('web')->group(function () {
         Route::get('/registrations/{id}', [AdminRegistrationController::class, 'show'])->name('registrations.show');
         Route::patch('/registrations/{id}/status', [AdminRegistrationController::class, 'updateStatus'])->name('registrations.status');
 
+        // Quản lý Hồ sơ bệnh nhân tập trung (Centralized Patients)
+        Route::resource('patients', AdminPatientController::class);
+
+        // Quy trình 3 bước Tiêm chủng (3-Step Vaccination Workflow)
+        Route::post('/registrations/{id}/check-in', [VaccinationWorkflowController::class, 'checkIn'])->name('registrations.check-in');
+        Route::post('/registrations/{id}/screening', [VaccinationWorkflowController::class, 'screening'])->name('registrations.screening');
+        Route::post('/registrations/{id}/administer', [VaccinationWorkflowController::class, 'administer'])->name('registrations.administer');
+
         // Quản lý Lịch & Khung giờ (Schedules & Slots)
         Route::resource('schedules', AdminScheduleController::class);
         Route::post('/schedules/{schedule}/slots', [AdminScheduleController::class, 'storeSlot'])->name('schedules.slots.store');
@@ -98,6 +109,10 @@ Route::middleware('web')->group(function () {
         Route::get('/stock', [AdminStockController::class, 'index'])->name('stock.index');
         Route::get('/stock/create', [AdminStockController::class, 'create'])->name('stock.create');
         Route::post('/stock', [AdminStockController::class, 'store'])->name('stock.store');
+
+        // Quản lý lô vắc xin (Inventory Lots)
+        Route::patch('/inventory-lots/{id}/status', [AdminInventoryLotController::class, 'updateStatus'])->name('inventory-lots.status');
+        Route::resource('inventory-lots', AdminInventoryLotController::class)->except(['create', 'edit', 'show']);
 
         Route::middleware('super.admin')->group(function () {
             // Quản lý Trung tâm

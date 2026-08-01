@@ -88,7 +88,7 @@ class ExampleTest extends TestCase
         $response->assertRedirect(route('register.success'));
         $response->assertSessionMissing('cart');
 
-        $registration = Registration::latest()->firstOrFail();
+        $registration = Registration::where('patient_phone', '0912345678')->latest()->firstOrFail();
         $this->assertSame('Chờ thanh toán', $registration->status);
         $this->assertDatabaseHas('registration_vaccines', [
             'registration_id' => $registration->id,

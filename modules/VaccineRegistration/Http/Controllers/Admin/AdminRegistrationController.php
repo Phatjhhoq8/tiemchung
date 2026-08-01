@@ -112,7 +112,13 @@ class AdminRegistrationController extends Controller
                     );
                 }
 
+                if ($validated['status'] === 'Đã hủy' && $oldStatus !== 'Đã hủy') {
+                    app(\App\Services\FefoInventoryService::class)->releaseStock($registration);
+                }
+
                 if (!$wasPaidOrInjected && $isPaidOrInjected) {
+                    app(\App\Services\FefoInventoryService::class)->commitDeduction($registration);
+
                     // Trừ tồn kho
                     foreach ($registration->vaccines as $vaccine) {
                         $centerVaccine = CenterVaccine::where('center_id', $registration->center_id)

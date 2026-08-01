@@ -49,39 +49,45 @@ class M3EmpiricalChallengerTest extends TestCase
         $this->centerB = $centers[1];
 
         // Create Super Admin
-        $this->superAdmin = User::create([
-            'name' => 'Challenger Super Admin',
-            'username' => 'challenger_m3_super',
-            'email' => 'challenger_m3_super@medicare.local',
-            'password' => Hash::make('Password123!'),
-            'role' => 'super_admin',
-            'is_active' => true,
-            'status' => 'active',
-        ]);
+        $this->superAdmin = User::firstOrCreate(
+            ['email' => 'challenger_m3_super@medicare.local'],
+            [
+                'name' => 'Challenger Super Admin',
+                'username' => 'challenger_m3_super',
+                'password' => Hash::make('Password123!'),
+                'role' => 'super_admin',
+                'is_active' => true,
+                'status' => 'active',
+            ]
+        );
 
         // Create Branch Admin A
-        $this->branchAdminA = User::create([
-            'name' => 'Challenger Branch Admin A',
-            'username' => 'challenger_m3_branch_a',
-            'email' => 'challenger_m3_branch_a@medicare.local',
-            'password' => Hash::make('Password123!'),
-            'role' => 'branch_admin',
-            'center_id' => $this->centerA->id,
-            'is_active' => true,
-            'status' => 'active',
-        ]);
+        $this->branchAdminA = User::firstOrCreate(
+            ['email' => 'challenger_m3_branch_a@medicare.local'],
+            [
+                'name' => 'Challenger Branch Admin A',
+                'username' => 'challenger_m3_branch_a',
+                'password' => Hash::make('Password123!'),
+                'role' => 'branch_admin',
+                'center_id' => $this->centerA->id,
+                'is_active' => true,
+                'status' => 'active',
+            ]
+        );
 
         // Create Branch Admin B
-        $this->branchAdminB = User::create([
-            'name' => 'Challenger Branch Admin B',
-            'username' => 'challenger_m3_branch_b',
-            'email' => 'challenger_m3_branch_b@medicare.local',
-            'password' => Hash::make('Password123!'),
-            'role' => 'branch_admin',
-            'center_id' => $this->centerB->id,
-            'is_active' => true,
-            'status' => 'active',
-        ]);
+        $this->branchAdminB = User::firstOrCreate(
+            ['email' => 'challenger_m3_branch_b@medicare.local'],
+            [
+                'name' => 'Challenger Branch Admin B',
+                'username' => 'challenger_m3_branch_b',
+                'password' => Hash::make('Password123!'),
+                'role' => 'branch_admin',
+                'center_id' => $this->centerB->id,
+                'is_active' => true,
+                'status' => 'active',
+            ]
+        );
 
         // Create master vaccine
         $this->vaccine = Vaccine::create([

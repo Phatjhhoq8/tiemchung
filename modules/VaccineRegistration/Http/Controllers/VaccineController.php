@@ -16,6 +16,7 @@ use Modules\VaccineRegistration\Models\Schedule;
 use Modules\VaccineRegistration\Models\Slot;
 use Modules\VaccineRegistration\Support\CenterContext;
 use Modules\VaccineRegistration\Models\ConsultationLead;
+use App\Services\FefoInventoryService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -551,6 +552,9 @@ class VaccineController extends Controller
                     ]);
                 }
 
+                // Trigger FEFO Inventory Allocation & Reservation
+                app(FefoInventoryService::class)->allocateAndReserve($registration);
+
                 $successCodes[] = $registrationCode;
             }
 
@@ -761,6 +765,61 @@ class VaccineController extends Controller
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi lưu yêu cầu tư vấn. Vui lòng thử lại.'
             ], 500);
+        }
+    }
+
+    /**
+     * Hủy đơn đăng ký tiêm chủng và giải phóng tồn kho FEFO.
+     */
+    public function cancelRegistration(Request $request, $id)
+    {
+        $registration = Registration::findOrFail($id);
+        if ($registration->status === 'Đã hủy') {
+            return response()->json(['success' => true, 'message' => 'Đơn đăng ký đã bị hủy trước đó.']);
+        }
+
+        DB::beginTransaction();
+        try {
+            $registration->update(['status' => 'Đã hủy']);
+            app(FefoInventoryService::class)->releaseStock($registration);
+            DB::commit();
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'Hủy đơn đăng ký thành công và đã giải phóng tồn kho.']);
+            }
+            return redirect()->back()->with('success', 'Hủy đơn đăng ký thành công.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            }
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Xác nhận thanh toán đơn đăng ký tiêm chủng và khấu trừ tồn kho FEFO.
+     */
+    public function payRegistration(Request $request, $id)
+    {
+        $registration = Registration::findOrFail($id);
+
+        DB::beginTransaction();
+        try {
+            $registration->update(['status' => 'Đã thanh toán']);
+            app(FefoInventoryService::class)->commitDeduction($registration);
+            DB::commit();
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'Thanh toán đơn đăng ký thành công và đã khấu trừ tồn kho.']);
+            }
+            return redirect()->back()->with('success', 'Thanh toán đơn đăng ký thành công.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            }
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 }

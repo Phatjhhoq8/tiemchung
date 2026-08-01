@@ -34,6 +34,7 @@ class AdminBannerController extends Controller
      */
     public function create()
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $banner = new Banner();
         return view('vaccine::admin.banners.create', compact('banner'));
     }
@@ -43,6 +44,7 @@ class AdminBannerController extends Controller
      */
     public function store(Request $request)
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:500',
@@ -90,6 +92,7 @@ class AdminBannerController extends Controller
      */
     public function edit($id)
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $banner = Banner::findOrFail($id);
         return view('vaccine::admin.banners.edit', compact('banner'));
     }
@@ -99,6 +102,7 @@ class AdminBannerController extends Controller
      */
     public function update(Request $request, $id)
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $banner = Banner::findOrFail($id);
 
         $validated = $request->validate([
@@ -155,6 +159,7 @@ class AdminBannerController extends Controller
      */
     public function destroy($id)
     {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
         $banner = Banner::findOrFail($id);
         $banner->is_active = false;
         $banner->save();

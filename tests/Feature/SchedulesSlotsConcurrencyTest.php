@@ -217,6 +217,8 @@ class SchedulesSlotsConcurrencyTest extends TestCase
             'is_active' => true,
         ]);
 
+        $testPhone = '098' . rand(1000000, 9999999);
+
         $payload = [
             'center_id' => $this->center->id,
             'injection_date' => $schedule->date->toDateString(),
@@ -227,7 +229,7 @@ class SchedulesSlotsConcurrencyTest extends TestCase
                     'name' => 'Nguyễn Quá Tải',
                     'dob' => '1998-11-20',
                     'gender' => 'Nữ',
-                    'phone' => '0988776655',
+                    'phone' => $testPhone,
                     'address' => '789 Mậu Thân, Cần Thơ',
                     'vaccine_ids' => [$this->vaccine->id],
                     'quantity' => 1,
@@ -249,7 +251,7 @@ class SchedulesSlotsConcurrencyTest extends TestCase
         $this->assertEquals(2, $slot->reserved_count);
 
         $this->assertDatabaseMissing('registrations', [
-            'patient_phone' => '0988776655',
+            'patient_phone' => $testPhone,
         ]);
     }
 
