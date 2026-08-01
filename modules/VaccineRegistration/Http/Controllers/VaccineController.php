@@ -555,6 +555,10 @@ class VaccineController extends Controller
                 // Trigger FEFO Inventory Allocation & Reservation
                 app(FefoInventoryService::class)->allocateAndReserve($registration);
 
+                // Dispatch background Queue Jobs for Email and SMS notifications
+                \App\Jobs\SendRegistrationEmailJob::dispatch($registration, 'created');
+                \App\Jobs\SendNotificationSmsJob::dispatch($registration, 'created');
+
                 $successCodes[] = $registrationCode;
             }
 

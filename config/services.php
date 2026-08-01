@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'payment' => [
+        'webhook_secret' => env('PAYMENT_WEBHOOK_SECRET', 'test_webhook_secret_key_12345'),
+    ],
+
 ];

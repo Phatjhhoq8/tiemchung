@@ -57,6 +57,8 @@ Route::middleware('web')->group(function () {
     Route::get('/register', [VaccineController::class, 'showRegister'])->name('register.show');
     Route::post('/register', [VaccineController::class, 'postRegister'])->name('register.post');
     Route::get('/success', [VaccineController::class, 'showSuccess'])->name('register.success');
+    Route::match(['get', 'post'], '/payment/return', [\App\Http\Controllers\PaymentWebhookController::class, 'handleBrowserReturn'])->name('payment.return');
+    Route::match(['get', 'post'], '/payment/callback', [\App\Http\Controllers\PaymentWebhookController::class, 'handleBrowserReturn'])->name('payment.callback');
 
     // --- Quản trị viên (Admin Auth) ---
     Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login.show');

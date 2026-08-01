@@ -1,5 +1,23 @@
 # Release Notes
 
+## [v6.0.0] - 2026-08-01
+
+### M11: E2E Integration, Migration & Seeding Verification (Ponytail Style)
+
+* **Migration & Seeding Verification**: Executed `/opt/lampp/bin/php artisan migrate:fresh --seed` on a fresh database. Verified that all 27 database migrations and seeders (`VaccineSeeder`, `CenterSeeder`, `SettingSeeder`, `BannerSeeder`, `ArticleSeeder`) ran cleanly with zero errors, zero warnings, and 100% data integrity.
+* **Full Test Suite Verification**: Ran complete project test suite using `/opt/lampp/bin/php ./vendor/bin/phpunit`. Verified that 100% of test suites (76 tests, 432 assertions) passed cleanly with 0 failures and 0 errors.
+* **Cross-Module Cohesion & Integration Check**: Verified seamless inter-module cohesion across RBAC & Multi-branch isolation (`RbacMultiBranchTest`), Audit Logging (`AuditLogsAndResourceStatusTest`), CRM Lead Capturing & Idempotency (`CrmLeadsAndRegistrationIdempotencyTest`), Schedules & Slot Capacity Control via Pessimistic Locking (`SchedulesSlotsConcurrencyTest`), FEFO Stock Allocation & Movements (`FefoInventoryStockReservationTest`), Patient Profiles & 3-Step Vaccination Workflow (`PatientVaccinationWorkflowTest`), and Payment Webhooks & Async Queue Jobs (`PaymentWebhookAndQueueTest`).
+
+## [v5.1.0] - 2026-08-01
+
+### M10: Payment Webhook Verification & Background Queue Jobs (R6, Ponytail Style)
+
+* **Server-to-Server Payment Webhook Endpoint**: Created [PaymentWebhookController.php](file:///home/hongphuoc/Desktop/thue/app/Http/Controllers/PaymentWebhookController.php) providing `POST /api/webhooks/payment` for secure payment verification. Validates HMAC SHA-256 signatures against `config('services.payment.webhook_secret')`, verifies registration transaction references, and checks payment amount against registration total amount. On valid signature and amount match, atomically updates registration status to `paid` inside a database transaction.
+* **Browser Return URL Protection**: Implemented `handleBrowserReturn()` on `GET/POST /payment/return` and `/payment/callback` preventing unverified browser return URLs from directly mutating payment status to `paid` without verified server-to-server signature validation (rejects unauthorized status mutation attempts with HTTP 403 Forbidden).
+* **Background Queue Jobs**: Created [SendRegistrationEmailJob.php](file:///home/hongphuoc/Desktop/thue/app/Jobs/SendRegistrationEmailJob.php) and [SendNotificationSmsJob.php](file:///home/hongphuoc/Desktop/thue/app/Jobs/SendNotificationSmsJob.php) implementing `ShouldQueue`. Moved Email and SMS notification dispatching on registration creation and payment into background queue jobs so main HTTP transaction requests are never blocked.
+* **API Route & Configuration**: Configured `routes/api.php` in [bootstrap/app.php](file:///home/hongphuoc/Desktop/thue/bootstrap/app.php) and updated [services.php](file:///home/hongphuoc/Desktop/thue/config/services.php) with payment webhook secret configuration.
+* **Feature Test Suite**: Created [PaymentWebhookAndQueueTest.php](file:///home/hongphuoc/Desktop/thue/tests/Feature/PaymentWebhookAndQueueTest.php) covering signature verification, amount validation, nonexistent reference handling (404), blocking unverified browser return status updates (403), and queue job dispatching for creation and payment events, achieving 100% test pass rate.
+
 ## [v5.0.0] - 2026-08-01
 
 ### M9: Centralized Patients & 3-Step Vaccination Workflow (R5, Ponytail Style)

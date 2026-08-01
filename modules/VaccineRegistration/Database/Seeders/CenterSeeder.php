@@ -73,8 +73,10 @@ class CenterSeeder extends Seeder
             $legacyNames = $center['legacy_names'] ?? [];
             unset($center['legacy_names']);
 
-            $savedCenter = Center::where('slug', $center['slug'])->first()
-                ?: Center::whereIn('name', $legacyNames)->first();
+            $savedCenter = Center::where('slug', $center['slug'])
+                ->orWhere('name', $center['name'])
+                ->when(!empty($legacyNames), fn ($q) => $q->orWhereIn('name', $legacyNames))
+                ->first();
 
             if ($savedCenter) {
                 $savedCenter->update($center);

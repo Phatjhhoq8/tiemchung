@@ -15,13 +15,13 @@
 | 2 | M2: R1 Admin Account & Security | `admin:create` command, `users` schema fields, login audit logging & 5-fail lockout | M1 | DONE |
 | 3 | M3: R2 RBAC & Multi-branch Isolation | Policies, IDOR prevention (403 on cross-branch access), master catalog protection | M2 | DONE |
 | 4 | M4: Content Security & Hardening | HTML Sanitizer, SVG upload blocking, dangerous URL scheme filtering, CSV injection guard | M3 | DONE |
-| 5 | M5: Audit Logs & Resource Status | `audit_logs` table, automatic log on price/stock/order changes, deactivation (`is_active` / `status`) | M4 | IN_PROGRESS |
-| 6 | M6: CRM Leads & Registration Transactions | `consultation_leads` table, `registrations` transaction pivot `registration_vaccines`, `idempotency_key` | M5 | PLANNED |
-| 7 | M7: Slots & Concurrency Control | `schedules`, `slots` tables, `DB::transaction` with `lockForUpdate()` on slot reservations | M6 | PLANNED |
-| 8 | M8: FEFO Inventory & Reservation | `inventory_lots`, `stock_movements`, FEFO allocation logic, pending order reservation/release | M7 | PLANNED |
-| 9 | M9: Patient Profiles & 3-Step Workflow | `patients` table, 3-step workflow (check-in, screening, execution `administered_doses`) | M8 | PLANNED |
-| 10 | M10: Payment Webhook & Queue Jobs | Server-to-server payment webhook verification, background Queue Jobs for Email/SMS | M9 | PLANNED |
-| 11 | M11: Migration & Forensic Audit | `php artisan migrate:fresh --seed`, full feature test pass & forensic audit verification | M10 | PLANNED |
+| 5 | M5: Audit Logs & Resource Status | `audit_logs` table, automatic log on price/stock/order changes, deactivation (`is_active` / `status`) | M4 | DONE |
+| 6 | M6: CRM Leads & Registration Transactions | `consultation_leads` table, `registrations` transaction pivot `registration_vaccines`, `idempotency_key` | M5 | DONE |
+| 7 | M7: Slots & Concurrency Control | `schedules`, `slots` tables, `DB::transaction` with `lockForUpdate()` on slot reservations | M6 | DONE |
+| 8 | M8: FEFO Inventory & Reservation | `inventory_lots`, `stock_movements`, FEFO allocation logic, pending order reservation/release | M7 | DONE |
+| 9 | M9: Patient Profiles & 3-Step Workflow | `patients` table, 3-step workflow (check-in, screening, execution `administered_doses`) | M8 | DONE |
+| 10 | M10: Payment Webhook & Queue Jobs | Server-to-server payment webhook verification, background Queue Jobs for Email/SMS | M9 | DONE |
+| 11 | M11: Migration & Forensic Audit | `php artisan migrate:fresh --seed`, full feature test pass & forensic audit verification | M10 | DONE |
 
 ---
 

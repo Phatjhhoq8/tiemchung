@@ -16,9 +16,9 @@ Current iteration: 11 / 32
 | **M6** | CRM Leads & Registration Standardization | DONE | Passed Worker, Reviewer (25 assertions), & Auditor (CLEAN) |
 | **M7** | Schedules, Slots & Concurrency Control | DONE | Passed Worker, Reviewer (16 assertions), & Auditor (CLEAN) |
 | **M8** | FEFO Inventory Lots & Stock Reservation | DONE | Passed Worker, Reviewer (432 assertions), & Auditor (CLEAN) |
-| **M9** | Patient History & 3-step Vaccination Workflow | IN_PROGRESS | Worker M9 (Patch) adding cross-branch anti-IDOR 403 protection |
-| **M10** | Payment Webhook & Background Queue Jobs | PLANNED | Pending M9 completion |
-| **M11** | E2E Integration, Seeding & Forensic Audit | PLANNED | Pending M10 completion |
+| **M9** | Patient History & 3-step Vaccination Workflow | DONE | Passed Worker, Reviewer (28 assertions), & Auditor M9 (CLEAN) |
+| **M10** | Payment Webhook & Background Queue Jobs | DONE | Passed Worker, Reviewer (23 assertions), & Auditor M10 (CLEAN) |
+| **M11** | E2E Integration, Seeding & Forensic Audit | DONE | Fresh DB seed clean, 76/76 PHPUnit tests pass 100% (432 assertions) |
 
 ---
 
@@ -34,3 +34,6 @@ Current iteration: 11 / 32
 - **2026-08-01T10:30:00+07:00**: Resumed Orchestration for M7-M11. M7 Worker completed schedules, slots, and pessimistic `lockForUpdate()` concurrency control with 4 feature tests (16 assertions) passing. Dispatching Reviewer M7 and Forensic Auditor M7.
 - **2026-08-01T10:32:00+07:00**: M7 completed and verified. Reviewer APPROVE, Forensic Auditor verdict CLEAN. Pessimistic row locking on slot reservations verified. Moving to M8.
 - **2026-08-01T10:41:00+07:00**: M8 completed and verified. Test isolation patch applied. Reviewer APPROVE, Forensic Auditor verdict CLEAN. 115 tests pass 100% (432 assertions). Moving to M9.
+- **2026-08-01T11:02:00+07:00**: M9 completed and verified. Patient History & 3-Step Vaccination Workflow implemented and verified CLEAN by Forensic Auditor M9 (`.agents/auditor_m9/handoff.md`).
+- **2026-08-01T11:09:00+07:00**: M10 completed and verified. Webhook HMAC signature verification, browser return URL protection (403), and background Queue Jobs (`SendRegistrationEmailJob`, `SendNotificationSmsJob`) verified by Reviewer M10 (APPROVE) and Forensic Auditor M10 (CLEAN).
+- **2026-08-01T11:10:00+07:00**: M11 completed and verified. Fresh migration and database seeding (`/opt/lampp/bin/php artisan migrate:fresh --seed`) executed with 0 errors/warnings. Full PHPUnit test suite executed: 76/76 tests pass 100% (432 assertions). Project refactoring (Phases 1-6) 100% COMPLETE.
