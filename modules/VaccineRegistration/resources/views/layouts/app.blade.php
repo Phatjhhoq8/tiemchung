@@ -93,14 +93,59 @@
                 <a href="{{ route('contact') }}" class="nav-link {{ Route::currentRouteName() === 'contact' ? 'active' : '' }}">Liên Hệ</a>
             </nav>
             
-            <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
-                <!-- 1. Nút Điện Thoại (Chỉ còn icon và số điện thoại, bỏ chữ 'Tư vấn:') -->
+            <div class="header-actions" style="display: flex; align-items: center; gap: 10px;">
+                <!-- 1. Nút Chọn Chi Nhánh Gọn Đẹp (Compact Branch Picker Badge) -->
                 <div class="header-branch-wrapper" style="position: relative;">
-                    <button type="button" class="hotline-btn hotline-btn-desktop" id="headerBranchButton" onclick="toggleBranchDropdown(event)" title="Đổi chi nhánh hiện tại">
-                        <i data-lucide="map-pin"></i>
-                        <span id="headerBranchText">{{ $currentCenter?->name ?? 'Chi nhánh' }}<span class="hotline-phone-suffix"> - {{ $hotline }}</span></span>
+                    <button type="button" class="header-branch-select-pill" id="headerBranchButton" onclick="toggleBranchDropdown(event)" title="Đổi chi nhánh tiêm chủng">
+                        <i data-lucide="map-pin" style="width: 16px; height: 16px; color: var(--primary-color, #c8102e);"></i>
+                        <span id="headerBranchText">{{ $currentCenter?->name ?? 'Chi nhánh' }}</span>
+                        <i data-lucide="chevron-down" style="width: 14px; height: 14px; color: #64748b; margin-left: 2px;"></i>
                     </button>
                     <style>
+                        .header-branch-select-pill {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 6px;
+                            background-color: #f8fafc;
+                            color: #0f172a;
+                            padding: 0.5rem 0.85rem;
+                            border-radius: 50px;
+                            font-weight: 700;
+                            font-size: 0.875rem;
+                            border: 1px solid #cbd5e1;
+                            transition: all 0.2s ease;
+                            cursor: pointer;
+                            white-space: nowrap;
+                        }
+                        .header-branch-select-pill:hover {
+                            background-color: rgba(200, 16, 46, 0.05);
+                            border-color: var(--primary-color, #c8102e);
+                            color: var(--primary-color, #c8102e);
+                            transform: translateY(-1px);
+                        }
+                        .header-hotline-action-btn {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 6px;
+                            background-color: var(--primary-color, #c8102e);
+                            color: #ffffff !important;
+                            padding: 0.5rem 0.95rem;
+                            border-radius: 50px;
+                            font-weight: 700;
+                            font-size: 0.875rem;
+                            border: 1px solid var(--primary-color, #c8102e);
+                            box-shadow: 0 4px 12px rgba(200, 16, 46, 0.22);
+                            transition: all 0.2s ease;
+                            text-decoration: none !important;
+                            white-space: nowrap;
+                        }
+                        .header-hotline-action-btn:hover {
+                            background-color: #a00d24;
+                            border-color: #a00d24;
+                            color: #ffffff !important;
+                            transform: translateY(-1px);
+                            box-shadow: 0 6px 16px rgba(200, 16, 46, 0.32);
+                        }
                         .branch-item-btn {
                             width: 100%;
                             border: 0;
@@ -148,8 +193,20 @@
                                 </button>
                             </form>
                         @endforeach
+                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e2e8f0; text-align: center;">
+                            <a href="{{ route('contact') }}" style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--primary-color, #c8102e); text-decoration: none; padding: 8px 10px; border-radius: 8px; background: rgba(200,16,46,0.04); transition: all 0.2s ease;">
+                                <i data-lucide="map-pin" style="width: 15px; height: 15px;"></i>
+                                <span>Xem địa chỉ & bản đồ tất cả chi nhánh</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
+
+                <!-- 2. Nút Hotline Gọi Điện Trực Tiếp (Direct Call Action) -->
+                <a href="tel:{{ preg_replace('/[^0-9]/', '', $hotline) }}" class="header-hotline-action-btn" title="Gọi tư vấn tiêm chủng">
+                    <i data-lucide="phone-call" style="width: 15px; height: 15px;"></i>
+                    <span>{{ $hotline }}</span>
+                </a>
 
                 <!-- 2. Nút Giỏ Hàng (Thiết kế Pill giống hệt & cùng màu nút Điện Thoại) -->
                 @php

@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v3.5.21] - 2026-08-02
+
+### Header UX Redesign: Compact Branch Selector & Dedicated Call Action Button
+
+* **Header Branch Selector & Hotline Action Split**: Refactored the header action items in [app.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php). Separated the combined long button into two distinct components: a compact, clean branch picker badge (`📍 Medicare Cờ Đỏ ▾`) for switching active centers, and a prominent Medicare Red call button (`📞 0938 60 38 39`) for direct telephone dialing (`tel:`). Integrated a direct contact/map link inside the branch dropdown view for seamless navigation to the contact page.
+
 ## [v3.5.20] - 2026-08-02
 
 ### Pagination CSS Centering & Ellipsis Border Elimination
