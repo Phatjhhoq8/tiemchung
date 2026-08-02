@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v3.5.22] - 2026-08-02
+
+### Article & Product Detail Table of Contents (TOC) Layout Shift & Callout Box Elimination
+
+* **Zero Layout Shift & Clean TOC Styling**: Refactored `.toc-link-item` CSS definitions in [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css) and [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css). Removed the heavy yellow background (`#fff9e6`) and thick border boxes on active/hover TOC links. Locked font weight (`font-weight: 600`) and reserved border spacing to completely eliminate text wrapping jumps and layout shifts when scrolling or hovering over Table of Contents items.
+
 ## [v3.5.21] - 2026-08-02
 
 ### Header UX Redesign: Compact Branch Selector & Dedicated Call Action Button
