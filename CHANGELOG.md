@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.26] - 2026-08-02
+
+### Option A: Related Articles Grid & Independent Sticky TOC Sidebar Redesign
+
+* **Independent Sticky TOC Sidebar**: Simplified the right sidebar in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php) by setting `.sticky-sidebar-container` to `position: sticky; top: 95px`. The Table of Contents (TOC) widget now remains permanently fixed in view at the top of the reader's viewport, 100% immune to being scrolled away.
+* **Bottom Related Articles Grid Layout (Option A)**: Relocated the 5 related articles from the sidebar down to the bottom section above multi-topic recommendations. Designed a 5-card responsive horizontal grid (`.related-carousel-grid`) with `Medicare Navy` badges (`Cùng Chuyên Mục`), hover zoom animations, and clear typography separation in [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css).
+
 ## [v3.5.25] - 2026-08-02
 
 ### CSS Refactoring & Legacy Pagination Rule Cleanup
