@@ -177,7 +177,7 @@
                             color: var(--primary-color, #c8102e) !important;
                         }
                     </style>
-                    <div id="branchDropdown" class="hidden" style="position: absolute; right: 0; top: calc(100% + 10px); width: min(360px, 90vw); background: #fff; border: 1px solid #fecaca; box-shadow: 0 18px 45px rgba(127,29,29,.18); border-radius: 14px; padding: 10px; z-index: 9999;">
+                    <div id="branchDropdown" class="hidden" style="position: absolute; left: 50%; transform: translateX(-50%); top: calc(100% + 10px); width: min(360px, 90vw); background: #fff; border: 1px solid #fecaca; box-shadow: 0 18px 45px rgba(127,29,29,.18); border-radius: 14px; padding: 10px; z-index: 9999;">
                         <div style="font-size: 13px; font-weight: 800; color: #0f172a; padding: 8px 10px 10px;">Chọn chi nhánh Medicare</div>
                         @foreach($activeCenters as $center)
                             <form method="POST" action="{{ route('centers.select') }}" style="margin: 0;">
