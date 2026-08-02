@@ -902,7 +902,8 @@
     display: flex;
     flex-direction: column;
     gap: 28px;
-    align-self: flex-start;
+    align-self: stretch;
+    position: relative;
     box-sizing: border-box;
 }
 
@@ -913,6 +914,15 @@
     flex-direction: column;
     gap: 20px;
     z-index: 50;
+}
+
+.related-card-container {
+    background: #ffffff;
+    border-radius: var(--radius-lg, 20px);
+    border: 1px solid #e2e8f0;
+    padding: 28px 32px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
 }
 
 .sidebar-widget,

@@ -1,5 +1,12 @@
 # Release Notes
 
+## [v3.5.27] - 2026-08-02
+
+### Sidebar Sticky Layout Fix & Related Articles Card Enclosure
+
+* **Sidebar Sticky Height Fix**: Fixed `.article-sidebar` alignment from `align-self: flex-start` to `align-self: stretch` in [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css). The sidebar container now stretches to match 100% of the main article content height, enabling `.sticky-sidebar-container` (TOC widget) to remain permanently sticky along the entire length of long articles.
+* **Enclosed Related Articles Section**: Enclosed the bottom related articles section in a clean white rounded card container (`.related-card-container`) with `1px solid #e2e8f0` border, 20px radius, and subtle shadow in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php), matching the exact design language of the site.
+
 ## [v3.5.26] - 2026-08-02
 
 ### Option A: Related Articles Grid & Independent Sticky TOC Sidebar Redesign

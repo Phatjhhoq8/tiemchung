@@ -84,15 +84,15 @@
         </aside>
     </div>
 
-    <!-- Option A: Related Articles Grid Section (Bài viết cùng chuyên mục) -->
+    <!-- Option A: Related Articles Grid Section (Bài viết cùng chuyên mục - Enclosed in White Card Container) -->
     @if(isset($relatedArticles) && $relatedArticles->isNotEmpty())
-        <section class="related-carousel-section" data-aos="fade-up" style="margin-top: 50px;">
-            <div class="suggested-news-header" style="margin-bottom: 20px;">
-                <h2 style="display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 800; color: #0f172a;">
+        <section class="suggested-news-section related-card-container" data-aos="fade-up" style="margin-top: 40px;">
+            <div class="suggested-news-header" style="margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--primary-color, #c8102e);">
+                <h2 style="display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 800; color: #0f172a; margin: 0;">
                     <i data-lucide="layers" style="width: 22px; height: 22px; color: var(--accent-color, #004b8f);"></i>
                     Bài Viết Cùng Chuyên Mục: <span style="color: var(--primary-color, #c8102e);">{{ $article->category }}</span>
                 </h2>
-                <p>Khám phá thêm các bài viết y khoa hữu ích liên quan trực tiếp đến chuyên mục bạn vừa xem.</p>
+                <p style="margin: 6px 0 0 0; color: #64748b; font-size: 14px;">Khám phá thêm các bài viết y khoa hữu ích liên quan trực tiếp đến chuyên mục bạn vừa xem.</p>
             </div>
 
             <div class="related-carousel-grid">
