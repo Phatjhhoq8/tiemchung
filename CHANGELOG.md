@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v3.5.24] - 2026-08-02
+
+### Global Pagination System Standardization
+
+* **Unified Dynamic Red-Pill Pagination Across All Views**: Standardized the approved dynamic red-pill pagination template (`partials.pagination`) across all site components: Product Catalog ([grid.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/partials/grid.blade.php)), News Catalog ([articles/index.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/index.blade.php)), Article Detail recommendations ([articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php)), and Product Detail pages. Synchronized global `.news-pagination-custom` and `.pagination-btn` CSS rules into [style.css](file:///d:/Projects/tiemchung/public/css/style.css), ensuring 100% visual consistency and dynamic page handling site-wide.
+
 ## [v3.5.23] - 2026-08-02
 
 ### Dynamic Laravel Pagination Template Engine & Global Default View

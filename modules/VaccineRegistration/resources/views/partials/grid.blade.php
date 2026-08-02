@@ -60,7 +60,7 @@
 
     @if($vaccines->hasPages())
         <div class="catalog-pagination">
-            {{ $vaccines->links() }}
+            {{ $vaccines->links('partials.pagination') }}
         </div>
     @endif
 @endif

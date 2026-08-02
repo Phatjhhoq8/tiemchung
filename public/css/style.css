@@ -1133,6 +1133,69 @@ nav[role="navigation"] span[aria-current="page"] > span {
     box-shadow: 0 4px 12px rgba(200, 16, 46, 0.25) !important;
 }
 
+/* Standardized Dynamic Pill-Shaped Centered Pagination System */
+.news-pagination-custom {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+}
+
+.pagination-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    padding: 0 10px !important;
+    border-radius: 50px !important;
+    border: 1px solid #cbd5e1 !important;
+    background-color: #ffffff !important;
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03) !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+}
+
+.pagination-btn.active {
+    background-color: var(--primary-color, #c8102e) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-color, #c8102e) !important;
+    box-shadow: 0 4px 12px rgba(200, 16, 46, 0.25) !important;
+    border-radius: 50px !important;
+}
+
+.pagination-btn.disabled {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+}
+
+.pagination-btn:hover:not(.disabled):not(.active) {
+    background-color: #fef2f2 !important;
+    border-color: var(--primary-color, #c8102e) !important;
+    color: var(--primary-color, #c8102e) !important;
+    transform: translateY(-1px) !important;
+}
+
+.pagination-dots {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 38px !important;
+    font-weight: 800 !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
 /* Ellipsis (...) and Disabled items - STRICTLY NO BORDER, NO BACKGROUND */
 .catalog-pagination span[aria-disabled="true"],
 .catalog-pagination span[aria-disabled="true"] > span,

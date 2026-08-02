@@ -193,7 +193,7 @@
 
         <!-- Dynamic Centered Pill-Shaped Pagination -->
         <div class="news-pagination">
-            {{ $articles->links() }}
+            {{ $articles->links('partials.pagination') }}
         </div>
     </section>
 
