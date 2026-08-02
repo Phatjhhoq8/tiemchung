@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v3.5.28] - 2026-08-02
+
+### Header Action Pill Buttons Standardization
+
+* **Unified 3 Header Action Buttons**: Standardized all 3 header action items (Branch Selector `📍 Medicare Trà Nóc ▾`, Hotline Direct Call `📞 092 1331233`, and Cart Pill `🛒 Giỏ hàng (0)`) into a single, identical `.header-action-pill` component system in [app.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php). All 3 buttons now share identical height (40px), 50px pill radius, font styling (13.5px font-weight 700), white background, subtle Medicare Red border (`#fecaca`), and active hover transition to solid Medicare Red (`#c8102e`).
+
 ## [v3.5.27] - 2026-08-02
 
 ### Sidebar Sticky Layout Fix & Related Articles Card Enclosure
