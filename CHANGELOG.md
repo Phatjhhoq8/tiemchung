@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v3.5.25] - 2026-08-02
+
+### CSS Refactoring & Legacy Pagination Rule Cleanup
+
+* **Clean CSS Optimization**: Removed over 120 lines of redundant, heavy Tailwind pagination overrides (`nav[role="navigation"]`, `.shadow-sm`, `.catalog-pagination a:hover`, `span[aria-disabled="true"] > span`) from [style.css](file:///d:/Projects/tiemchung/public/css/style.css). Streamlined the entire site-wide pagination stylesheet into a single, clean `.news-pagination-custom` system for optimal CSS payload size and rendering performance.
+
 ## [v3.5.24] - 2026-08-02
 
 ### Global Pagination System Standardization
