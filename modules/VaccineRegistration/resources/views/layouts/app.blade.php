@@ -180,8 +180,62 @@
                     .branch-item-btn.active:hover {
                         background-color: rgba(200, 16, 46, 0.12);
                     }
-                    .branch-item-btn.active strong {
-                        color: var(--primary-color, #c8102e) !important;
+                    @media (max-width: 768px) {
+                        .header-actions {
+                            gap: 6px !important;
+                        }
+                        .header-action-pill {
+                            padding: 0 10px !important;
+                            height: 36px !important;
+                            font-size: 12px !important;
+                        }
+                        .header-action-pill.hide-mobile-text span:not(.header-cart-badge-inline) {
+                            display: none !important;
+                        }
+                        .header-actions .btn-primary-header span {
+                            display: none !important;
+                        }
+                        .header-actions .btn-primary-header {
+                            padding: 0 10px !important;
+                            height: 36px !important;
+                            min-width: 36px !important;
+                            border-radius: 50px !important;
+                        }
+                        .mobile-menu-toggle {
+                            flex-shrink: 0 !important;
+                        }
+                    }
+                    /* Hide floating contact buttons when mobile drawer menu is open */
+                    body.mobile-drawer-open .floating-chat-widget,
+                    .mobile-drawer.open ~ .floating-chat-widget,
+                    .mobile-menu-overlay.open ~ .floating-chat-widget {
+                        display: none !important;
+                        opacity: 0 !important;
+                        visibility: hidden !important;
+                        pointer-events: none !important;
+                    }
+                    .mobile-drawer-branch-card {
+                        width: 100%;
+                        border: 1px solid #e2e8f0;
+                        background: #ffffff;
+                        text-align: left;
+                        padding: 10px 12px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        display: flex;
+                        gap: 10px;
+                        align-items: flex-start;
+                        transition: all 0.2s ease;
+                        text-decoration: none;
+                        box-sizing: border-box;
+                    }
+                    .mobile-drawer-branch-card:hover {
+                        background-color: rgba(200, 16, 46, 0.04);
+                        border-color: rgba(200, 16, 46, 0.4);
+                    }
+                    .mobile-drawer-branch-card.active {
+                        border-color: var(--primary-color, #c8102e);
+                        background-color: rgba(200, 16, 46, 0.06);
                     }
                 </style>
 
@@ -218,7 +272,7 @@
                 </div>
 
                 <!-- 2. Nút Hotline Gọi Điện Trực Tiếp (Pill Standard) -->
-                <a href="tel:{{ preg_replace('/[^0-9]/', '', $hotline) }}" class="header-action-pill" title="Gọi tư vấn tiêm chủng">
+                <a href="tel:{{ preg_replace('/[^0-9]/', '', $hotline) }}" class="header-action-pill hide-mobile-text" title="Gọi tư vấn tiêm chủng">
                     <i data-lucide="phone-call"></i>
                     <span>{{ $hotline }}</span>
                 </a>
@@ -231,7 +285,7 @@
                     $layoutTotalPrice = $layoutCartState['total_price'];
                 @endphp
                 <div class="header-cart-wrapper" id="headerCartWrapper">
-                    <button type="button" class="header-action-pill" id="headerCartBtn" onclick="toggleHeaderCartDropdown(event)" title="Danh sách vắc xin đã chọn tiêm">
+                    <button type="button" class="header-action-pill hide-mobile-text" id="headerCartBtn" onclick="toggleHeaderCartDropdown(event)" title="Danh sách vắc xin đã chọn tiêm">
                         <i data-lucide="shopping-cart"></i>
                         <span>Giỏ hàng</span>
                         <span class="header-cart-badge-inline" id="cartCount">{{ $layoutCartCount }}</span>
@@ -312,25 +366,33 @@
             </button>
         </div>
         <div class="mobile-drawer-links">
-            <a href="{{ route('home') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}"><i data-lucide="home" class="w-5 h-5"></i> Trang Chủ</a>
-            <a href="{{ route('about') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}"><i data-lucide="info" class="w-5 h-5"></i> Giới Thiệu</a>
-            <a href="{{ route('vaccine.index') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}"><i data-lucide="syringe" class="w-5 h-5"></i> Danh Mục Sản Phẩm</a>
-            <a href="{{ route('news.index') }}" class="mobile-nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}"><i data-lucide="newspaper" class="w-5 h-5"></i> Tin Tức</a>
-            <a href="{{ route('booking.lookup') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'booking.lookup' ? 'active' : '' }}"><i data-lucide="search" class="w-5 h-5"></i> Tra Cứu Lịch Hẹn</a>
-            <a href="{{ route('contact') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'contact' ? 'active' : '' }}"><i data-lucide="map-pin" class="w-5 h-5"></i> Liên Hệ</a>
+            <a href="{{ route('home') }}" onclick="toggleMobileMenu()" class="mobile-nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}"><i data-lucide="home" class="w-5 h-5"></i> Trang Chủ</a>
+            <a href="{{ route('about') }}" onclick="toggleMobileMenu()" class="mobile-nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}"><i data-lucide="info" class="w-5 h-5"></i> Giới Thiệu</a>
+            <a href="{{ route('vaccine.index') }}" onclick="toggleMobileMenu()" class="mobile-nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}"><i data-lucide="syringe" class="w-5 h-5"></i> Danh Mục Sản Phẩm</a>
+            <a href="{{ route('news.index') }}" onclick="toggleMobileMenu()" class="mobile-nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}"><i data-lucide="newspaper" class="w-5 h-5"></i> Tin Tức</a>
+            <a href="{{ route('booking.lookup') }}" onclick="toggleMobileMenu()" class="mobile-nav-link {{ Route::currentRouteName() === 'booking.lookup' ? 'active' : '' }}"><i data-lucide="search" class="w-5 h-5"></i> Tra Cứu Lịch Hẹn</a>
+            <a href="{{ route('contact') }}" onclick="toggleMobileMenu()" class="mobile-nav-link {{ Route::currentRouteName() === 'contact' ? 'active' : '' }}"><i data-lucide="map-pin" class="w-5 h-5"></i> Liên Hệ</a>
         </div>
-        <form method="POST" action="{{ route('centers.select') }}" style="padding: 16px 20px; border-top: 1px solid var(--border-color);">
-            @csrf
-            <label for="mobile_center_id" style="display:block; font-size:13px; font-weight:700; margin-bottom:8px;">Chi nhánh đang chọn</label>
-            <select id="mobile_center_id" name="center_id" onchange="this.form.submit()" style="width:100%; min-height:44px; border-radius:8px; padding:8px;">
-                @foreach($activeCenters as $center)
-                    <option value="{{ $center->id }}" {{ $currentCenter?->id === $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
-                @endforeach
-            </select>
-            <noscript><button type="submit" class="btn-secondary" style="margin-top:8px;">Đổi chi nhánh</button></noscript>
-        </form>
+        <div class="mobile-drawer-branches" style="padding: 14px 20px; border-top: 1px solid var(--border-color);">
+            <div style="font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="map-pin" style="width: 15px; height: 15px; color: var(--primary-color, #c8102e);"></i>
+                <span>Chi nhánh tiêm chủng</span>
+            </div>
+
+            <!-- Trigger Button to Open Popup Modal -->
+            <button type="button" class="mobile-drawer-branch-card active" onclick="openBranchModal()" style="width: 100%; justify-content: space-between; align-items: center; cursor: pointer;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <i data-lucide="check-circle" style="width: 16px; height: 16px; color: var(--primary-color, #c8102e); flex-shrink: 0;"></i>
+                    <span style="display: flex; flex-direction: column; text-align: left; gap: 1px;">
+                        <strong style="font-size: 12.5px; color: var(--primary-color, #c8102e); font-weight: 700;">{{ $currentCenter?->name ?? 'Medicare Cờ Đỏ' }} - {{ $hotline }}</strong>
+                        <small style="font-size: 11px; color: #64748b;">Chạm để đổi chi nhánh khác</small>
+                    </span>
+                </div>
+                <span style="font-size: 11px; font-weight: 800; color: var(--primary-color, #c8102e); background: rgba(200, 16, 46, 0.08); padding: 4px 8px; border-radius: 20px; white-space: nowrap;">Đổi ></span>
+            </button>
+        </div>
         <div class="mobile-drawer-footer">
-            <a href="{{ route('register.show') }}" class="mobile-cta-btn">
+            <a href="{{ route('register.show') }}" onclick="toggleMobileMenu()" class="mobile-cta-btn">
                 <i data-lucide="calendar-plus" class="w-5 h-5"></i> Đăng ký tiêm chủng
             </a>
             <a href="tel:{{ str_replace(' ', '', $hotline) }}" class="mobile-hotline-btn">
@@ -338,6 +400,40 @@
             </a>
         </div>
     </nav>
+
+    <!-- Mobile Branch Selection Popup Modal -->
+    <div class="mobile-branch-modal-overlay" id="mobileBranchModalOverlay" onclick="closeBranchModal()"></div>
+    <div class="mobile-branch-modal" id="mobileBranchModal">
+        <div class="mobile-branch-modal-header">
+            <h3>
+                <i data-lucide="map-pin"></i>
+                Chọn chi nhánh Medicare
+            </h3>
+            <button type="button" onclick="closeBranchModal()" class="modal-close-btn">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <div class="mobile-branch-modal-body">
+            @foreach($activeCenters as $center)
+                <form method="POST" action="{{ route('centers.select') }}" style="margin: 0;">
+                    @csrf
+                    <input type="hidden" name="center_id" value="{{ $center->id }}">
+                    <button type="submit" class="modal-branch-option {{ $currentCenter?->id === $center->id ? 'active' : '' }}">
+                        <div class="branch-option-icon">
+                            <i data-lucide="{{ $currentCenter?->id === $center->id ? 'check-circle-2' : 'building-2' }}"></i>
+                        </div>
+                        <div class="branch-option-content">
+                            <strong>{{ $center->name }} - {{ $center->phone }}</strong>
+                            <small>{{ $center->address }}</small>
+                        </div>
+                        @if($currentCenter?->id === $center->id)
+                            <span class="active-badge">Đang chọn</span>
+                        @endif
+                    </button>
+                </form>
+            @endforeach
+        </div>
+    </div>
 
 
     <!-- Main Content -->
@@ -619,11 +715,27 @@
         function toggleMobileMenu() {
             const drawer = document.getElementById('mobile-drawer');
             const overlay = document.getElementById('mobile-menu-overlay');
-            drawer.classList.toggle('open');
+            const isOpen = drawer.classList.toggle('open');
             overlay.classList.toggle('open');
-            document.body.style.overflow = drawer.classList.contains('open') ? 'hidden' : '';
-            // Re-init lucide icons for drawer
+            document.body.classList.toggle('mobile-drawer-open', isOpen);
+            document.body.style.overflow = isOpen ? 'hidden' : '';
             setTimeout(() => lucide.createIcons(), 100);
+        }
+
+        // Mobile Branch Accordion Toggle
+        function toggleMobileBranchAccordion(event) {
+            if (event) event.stopPropagation();
+            const list = document.getElementById('mobileBranchAccordionList');
+            const icon = document.getElementById('mobileBranchAccordionIcon');
+            if (!list) return;
+            const isHidden = list.classList.contains('hidden');
+            if (isHidden) {
+                list.classList.remove('hidden');
+                if (icon) icon.style.transform = 'rotate(180deg)';
+            } else {
+                list.classList.add('hidden');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            }
         }
 
         // Hàm cuộn mượt SPA (Single-Page Navigation)

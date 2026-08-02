@@ -9,34 +9,61 @@
     box-sizing: border-box;
 }
 
-/* Breadcrumb Navigation */
-.vaccine-detail-page .news-breadcrumb {
+/* Sleek Modern Breadcrumb Bar */
+.news-breadcrumb-bar {
+    margin-bottom: 20px;
+    padding: 10px 16px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.breadcrumb-list {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13.5px;
-    color: #64748b;
-    margin-bottom: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 12.5px;
+    flex-wrap: nowrap;
+    overflow: hidden;
 }
 
-.vaccine-detail-page .news-breadcrumb a {
+.breadcrumb-item a {
     color: #64748b;
     text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-.vaccine-detail-page .news-breadcrumb a:hover {
-    color: var(--primary-color, #c8102e);
-}
-
-.vaccine-detail-page .news-breadcrumb i {
-    width: 14px;
-    height: 14px;
-}
-
-.vaccine-detail-page .news-breadcrumb span {
-    color: var(--primary-color, #c8102e);
     font-weight: 600;
+    white-space: nowrap;
+    transition: color 0.15s ease;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--primary-color, #c8102e);
+}
+
+.breadcrumb-item.active span {
+    color: var(--primary-color, #c8102e);
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+.breadcrumb-separator {
+    display: flex;
+    align-items: center;
+    color: #cbd5e1;
+    flex-shrink: 0;
+}
+
+.breadcrumb-separator svg,
+.breadcrumb-separator i {
+    width: 13px;
+    height: 13px;
 }
 
 /* 2-Column Main Layout for Vaccine Detail Page (Margin bottom 54px sang trọng) */
@@ -88,6 +115,19 @@
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+/* Mobile TOC widget: hidden on desktop, visible on mobile */
+.mobile-article-toc {
+    display: none;
+}
+
+/* Smooth Scroll Section Anchor Offset */
+.article-main-content section,
+.article-main-content h2,
+.article-main-content h3,
+.article-main-content [id] {
+    scroll-margin-top: 110px !important;
 }
 
 .toc-link-item {
@@ -382,4 +422,75 @@
     color: #ffffff;
     border-color: var(--primary-color, #c8102e);
     transform: scale(1.05);
+}
+
+/* Mobile Responsive Optimization for Smartphone Viewports */
+@media (max-width: 768px) {
+    .vaccine-detail-page {
+        padding: 12px 12px 90px 12px !important;
+    }
+    .vaccine-header-card {
+        padding: 16px !important;
+        background: #ffffff !important;
+        border-radius: 16px !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+    }
+    .vaccine-detail-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+    .vaccine-detail-media {
+        height: 210px !important;
+        border-radius: 12px !important;
+    }
+    .article-detail-title {
+        font-size: 20px !important;
+        line-height: 1.35 !important;
+    }
+    .vaccine-specs-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        padding: 12px !important;
+    }
+    .vaccine-action-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 14px !important;
+    }
+    .vaccine-action-bar > div {
+        width: 100% !important;
+    }
+    .vaccine-action-buttons {
+        width: 100% !important;
+        flex-direction: column !important;
+    }
+    .desktop-only-back-btn {
+        display: none !important;
+    }
+    .btn-select-detail {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 14px 20px !important;
+        font-size: 15px !important;
+        border-radius: 30px !important;
+    }
+    .vaccine-detail-layout {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .article-main-content {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+    }
+    .article-sidebar {
+        display: none !important;
+    }
+    .mobile-article-toc {
+        display: block !important;
+        margin-bottom: 24px !important;
+    }
+    .vaccine-detail-page .suggested-news-section {
+        display: none !important;
+    }
 }

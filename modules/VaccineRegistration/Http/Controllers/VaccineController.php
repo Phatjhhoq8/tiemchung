@@ -90,7 +90,7 @@ class VaccineController extends Controller
 
         $productCategories = $this->buildProductCategories($allVaccines);
 
-        if ($request->ajax() || $request->wantsJson()) {
+        if ($request->header('X-Vaccine-Filter') || $request->boolean('filter_spa')) {
             return response()->json([
                 'success' => true,
                 'html' => view('vaccine::partials.grid', compact('vaccines', 'cart'))->render(),
@@ -193,7 +193,7 @@ class VaccineController extends Controller
         
         $cart = CenterContext::resolveCart($currentCenter?->id)['cart'];
 
-        if ($request->ajax() || $request->wantsJson()) {
+        if ($request->header('X-Vaccine-Detail-Json') || ($request->wantsJson() && !$request->header('X-SPA-Request') && !$request->ajax())) {
             return response()->json([
                 'success' => true,
                 'vaccine' => [

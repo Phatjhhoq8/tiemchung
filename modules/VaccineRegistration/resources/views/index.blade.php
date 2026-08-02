@@ -45,7 +45,7 @@
             </div>
             <div class="catalog-category-grid collapsed" id="categoryGrid">
                 @foreach($productCategories->take(24) as $category)
-                    <a href="{{ route('vaccine.disease', ['disease' => urlencode($category['name'])]) }}" class="catalog-category-card" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer;">
+                    <a href="{{ route('vaccine.disease', ['disease' => urlencode($category['name'])]) }}" class="catalog-category-card" style="text-decoration: none; color: inherit; cursor: pointer;">
                         <div class="catalog-category-icon">
                             <img src="{{ asset('images/vaccines/' . ($category['image'] ?: 'hexaxim.jpg')) }}" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/hexaxim.jpg') }}';" alt="{{ $category['name'] }}">
                         </div>
@@ -172,6 +172,21 @@
         </aside>
 
         <section class="catalog-products-section">
+            <!-- Mobile Clean Catalog Header Toolbar -->
+            <div class="mobile-catalog-header-bar">
+                <div class="mobile-catalog-title">
+                    <span>{{ request('type') === 'package' ? 'Danh sách gói vắc xin' : 'Danh sách vắc xin' }}</span>
+                    <small>({{ $vaccines->total() }} sản phẩm)</small>
+                </div>
+                <button type="button" class="btn-mobile-filter-pill" onclick="toggleMobileFilterBottomSheet(true)">
+                    <i data-lucide="sliders-horizontal"></i>
+                    <span>Bộ lọc</span>
+                    @if(request('age_group') || request('disease') || request('origin') || request('doses') || (request('sort') && request('sort') !== 'popular'))
+                        <span class="filter-active-dot"></span>
+                    @endif
+                </button>
+            </div>
+
             <div class="catalog-toolbar">
                 <div>
                     <h2 id="vaccineSectionTitle">
@@ -196,6 +211,7 @@
         </section>
     </div>
 
+    <!-- TẦNG BANNER TƯ VẤN MEDICARE -->
     <section class="catalog-advice-banner">
         <div>
             <span>Tư vấn tiêm chủng</span>
@@ -206,6 +222,66 @@
             Bắt đầu ngay <i data-lucide="arrow-right"></i>
         </a>
     </section>
+</div>
+
+<!-- Mobile Bottom Sheet Filter Drawer -->
+<div class="mobile-filter-overlay" id="mobileFilterOverlay" onclick="toggleMobileFilterBottomSheet(false)"></div>
+<div class="mobile-filter-bottom-sheet" id="mobileFilterBottomSheet">
+    <div class="mobile-filter-sheet-header">
+        <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; margin: 0;">
+            <i data-lucide="sliders-horizontal" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
+            Bộ lọc & Sắp xếp vắc xin
+        </h3>
+        <button type="button" onclick="toggleMobileFilterBottomSheet(false)" style="border: none; background: #f1f5f9; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i data-lucide="x" style="width: 18px; height: 18px; color: #64748b;"></i>
+        </button>
+    </div>
+    <div class="mobile-filter-sheet-body" style="padding: 16px 20px; max-height: 65vh; overflow-y: auto;">
+        <!-- Sort Options -->
+        <div style="margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px dashed #e2e8f0;">
+            <label style="font-size: 13px; font-weight: 800; color: #0f172a; display: block; margin-bottom: 8px;">Sắp xếp sản phẩm</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <button type="button" onclick="setSortFilter('popular', event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ request('sort', 'popular') === 'popular' ? 'active' : '' }}">Được quan tâm</button>
+                <button type="button" onclick="setSortFilter('price_asc', event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ request('sort') === 'price_asc' ? 'active' : '' }}">Giá: Thấp -> Cao</option>
+                <button type="button" onclick="setSortFilter('price_desc', event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ request('sort') === 'price_desc' ? 'active' : '' }}">Giá: Cao -> Thấp</option>
+                <button type="button" onclick="setSortFilter('name_asc', event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ request('sort') === 'name_asc' ? 'active' : '' }}">Tên A-Z</option>
+            </div>
+        </div>
+        <!-- Age Groups -->
+        <div style="margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px dashed #e2e8f0;">
+            <label style="font-size: 13px; font-weight: 800; color: #0f172a; display: block; margin-bottom: 8px;">Độ tuổi chỉ định</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <button type="button" onclick="setAgeGroupFilter('', event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ !request('age_group') ? 'active' : '' }}">Tất cả</button>
+                @foreach($ageGroups as $ageGroup)
+                    <button type="button" onclick="setAgeGroupFilter(@js($ageGroup), event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ request('age_group') == $ageGroup ? 'active' : '' }}">{{ $ageGroup }}</button>
+                @endforeach
+            </div>
+        </div>
+        <!-- Origins -->
+        <div style="margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px dashed #e2e8f0;">
+            <label style="font-size: 13px; font-weight: 800; color: #0f172a; display: block; margin-bottom: 8px;">Xuất xứ / Nơi sản xuất</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <button type="button" onclick="setOriginFilter('', event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ !request('origin') ? 'active' : '' }}">Tất cả</button>
+                @foreach($origins as $origin)
+                    <button type="button" onclick="setOriginFilter(@js($origin), event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ request('origin') == $origin ? 'active' : '' }}">{{ $origin }}</button>
+                @endforeach
+            </div>
+        </div>
+        <!-- Doses -->
+        <div style="margin-bottom: 10px;">
+            <label style="font-size: 13px; font-weight: 800; color: #0f172a; display: block; margin-bottom: 8px;">Số liều theo phác đồ</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <button type="button" onclick="setDoseFilter('', event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ !request('doses') ? 'active' : '' }}">Tất cả</button>
+                @foreach($doses as $dose)
+                    <button type="button" onclick="setDoseFilter(@js((string)$dose), event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ request('doses') == (string)$dose ? 'active' : '' }}">{{ $dose }} liều</button>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    <div class="mobile-filter-sheet-footer" style="padding: 12px 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px;">
+        <button type="button" onclick="resetVaccineFilters(event); toggleMobileFilterBottomSheet(false);" style="flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; font-size: 13px; font-weight: 700; cursor: pointer;">Đặt lại</button>
+        <button type="button" onclick="toggleMobileFilterBottomSheet(false)" style="flex: 1; padding: 10px; border-radius: 20px; border: none; background: var(--primary-color, #c8102e); color: #ffffff; font-size: 13px; font-weight: 800; cursor: pointer;">Áp dụng</button>
+    </div>
 </div>
 
 @endsection

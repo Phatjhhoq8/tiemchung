@@ -1,3 +1,8 @@
+if (window.__MEDICARE_APP_INITIALIZED__) {
+    console.warn('Medicare App JS already initialized.');
+} else {
+    window.__MEDICARE_APP_INITIALIZED__ = true;
+
 if (typeof window.lucide === 'undefined') {
     window.lucide = {
         createIcons: () => console.warn('Thư viện Lucide không được tải thành công từ CDN.')
@@ -363,7 +368,7 @@ async function filterVaccinesSpa(event, page = null) {
     try {
         const response = await fetch(getAbsoluteUrl(path), {
             signal: request.signal,
-            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-Vaccine-Filter': 'true', 'Accept': 'application/json' }
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok || !data.success) throw new Error('Lọc vắc xin thất bại.');
@@ -410,38 +415,135 @@ function filterDiseaseOptions(keyword) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', initDynamicTOC);
+function toggleMobileFilterBottomSheet(show) {
+    const overlay = document.getElementById('mobileFilterOverlay');
+    const sheet = document.getElementById('mobileFilterBottomSheet');
+    if (!overlay || !sheet) return;
+    if (show) {
+        overlay.classList.add('open');
+        sheet.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    } else {
+        overlay.classList.remove('open');
+        sheet.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+}
+
+function openBranchModal() {
+    const overlay = document.getElementById('mobileBranchModalOverlay');
+    const modal = document.getElementById('mobileBranchModal');
+    if (!overlay || !modal) return;
+    overlay.classList.add('open');
+    modal.classList.add('open');
+}
+
+function closeBranchModal() {
+    const overlay = document.getElementById('mobileBranchModalOverlay');
+    const modal = document.getElementById('mobileBranchModal');
+    if (!overlay || !modal) return;
+    overlay.classList.remove('open');
+    modal.classList.remove('open');
+}
+
+function toggleCustomDropdown(event, menuId) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById(menuId);
+    if (!menu) return;
+    const isOpen = menu.classList.contains('open');
+    closeAllCustomDropdowns();
+    if (!isOpen) {
+        menu.classList.add('open');
+        const trigger = event.currentTarget;
+        const icon = trigger ? trigger.querySelector('.dropdown-chevron-icon') : null;
+        if (icon) icon.style.transform = 'rotate(180deg)';
+    }
+}
+
+function closeAllCustomDropdowns() {
+    document.querySelectorAll('.custom-dropdown-menu.open').forEach(menu => {
+        menu.classList.remove('open');
+    });
+    document.querySelectorAll('.dropdown-chevron-icon').forEach(icon => {
+        icon.style.transform = 'rotate(0deg)';
+    });
+}
+
+document.addEventListener('click', closeAllCustomDropdowns);
+
+function toggleMobileTocAccordion(event) {
+    if (event) event.stopPropagation();
+    const nav = document.getElementById('mobileAutoTocNav');
+    const icon = document.getElementById('mobileTocChevronIcon');
+    if (!nav) return;
+    const isHidden = nav.style.display === 'none' || nav.style.display === '' || getComputedStyle(nav).display === 'none';
+    if (isHidden) {
+        nav.style.display = 'flex';
+        nav.style.flexDirection = 'column';
+        nav.style.marginTop = '12px';
+        nav.style.paddingTop = '10px';
+        nav.style.borderTop = '1px dashed #e2e8f0';
+        nav.style.gap = '6px';
+        if (icon) icon.style.transform = 'rotate(180deg)';
+    } else {
+        nav.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+    }
+}
 
 function initDynamicTOC() {
-    const targetNav = document.getElementById('autoTocNav') || document.getElementById('vaccineTocNav');
+    const desktopNav = document.getElementById('autoTocNav') || document.getElementById('vaccineTocNav');
+    const mobileNav = document.getElementById('mobileAutoTocNav');
     const widget = document.getElementById('autoTocWidget');
-    if (!targetNav) return;
+    const mobileWidget = document.getElementById('mobileAutoTocWidget');
+
+    if (!desktopNav && !mobileNav) return;
 
     const headings = document.querySelectorAll('.article-main-content .article-body-content h2, .article-main-content section h2, .vaccine-detail-section h2');
     if (!headings.length) {
         if (widget) widget.style.display = 'none';
+        if (mobileWidget) mobileWidget.style.display = 'none';
         return;
     }
 
     if (widget) widget.style.display = 'block';
-    targetNav.replaceChildren();
+    if (mobileWidget) mobileWidget.style.display = 'block';
+
+    if (desktopNav) desktopNav.replaceChildren();
+    if (mobileNav) mobileNav.replaceChildren();
+
     const items = [];
     headings.forEach((heading, index) => {
         heading.id ||= `heading-toc-${index}`;
-        const link = document.createElement('a');
-        link.href = `#${heading.id}`;
-        link.className = `toc-link-item${index === 0 ? ' active' : ''}`;
-        link.style.cssText = 'display:flex;align-items:flex-start;gap:8px;';
-        link.innerHTML = '<i data-lucide="chevron-right" style="width:14px;height:14px;flex-shrink:0;margin-top:3px;"></i><span></span>';
-        link.querySelector('span').textContent = heading.textContent.trim();
-        link.addEventListener('click', (event) => {
-            event.preventDefault();
-            link.blur();
-            window.scrollTo({ top: heading.getBoundingClientRect().top + window.scrollY - 110, behavior: 'smooth' });
-            items.forEach((item) => item.link.classList.toggle('active', item.link === link));
-        });
-        targetNav.appendChild(link);
-        items.push({ heading, link });
+
+        const createLink = () => {
+            const link = document.createElement('a');
+            link.href = `#${heading.id}`;
+            link.className = `toc-link-item${index === 0 ? ' active' : ''}`;
+            link.style.cssText = 'display:flex;align-items:flex-start;gap:8px;';
+            link.innerHTML = '<i data-lucide="chevron-right" style="width:14px;height:14px;flex-shrink:0;margin-top:3px;"></i><span></span>';
+            link.querySelector('span').textContent = heading.textContent.trim();
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                link.blur();
+                const targetEl = heading.closest('section') || heading;
+                const targetTop = Math.max(0, targetEl.getBoundingClientRect().top + window.pageYOffset - 100);
+                window.scrollTo({ top: targetTop, behavior: 'smooth' });
+                items.forEach((item) => {
+                    if (item.desktopLink) item.desktopLink.classList.toggle('active', item.heading === heading);
+                    if (item.mobileLink) item.mobileLink.classList.toggle('active', item.heading === heading);
+                });
+            });
+            return link;
+        };
+
+        const desktopLink = desktopNav ? createLink() : null;
+        const mobileLink = mobileNav ? createLink() : null;
+
+        if (desktopNav && desktopLink) desktopNav.appendChild(desktopLink);
+        if (mobileNav && mobileLink) mobileNav.appendChild(mobileLink);
+
+        items.push({ heading, desktopLink, mobileLink });
     });
     renderIcons();
 
@@ -460,7 +562,8 @@ function initDynamicTOC() {
         }
 
         items.forEach((item, idx) => {
-            item.link.classList.toggle('active', idx === currentActiveIndex);
+            if (item.desktopLink) item.desktopLink.classList.toggle('active', idx === currentActiveIndex);
+            if (item.mobileLink) item.mobileLink.classList.toggle('active', idx === currentActiveIndex);
         });
 
         isTicking = false;
@@ -475,3 +578,257 @@ function initDynamicTOC() {
 
     updateActiveTocOnScroll();
 }
+
+// ==================== NEWS PAGE SPA FILTERING ====================
+let newsFilterTimer;
+let newsFilterRequest;
+let currentNewsCategory = new URLSearchParams(window.location.search).get('category') || '';
+let currentNewsSearch = new URLSearchParams(window.location.search).get('search') || '';
+let currentNewsPage = new URLSearchParams(window.location.search).get('page') || '1';
+
+function debouncedFilterNewsSpa() {
+    window.clearTimeout(newsFilterTimer);
+    newsFilterTimer = window.setTimeout(() => {
+        currentNewsSearch = document.getElementById('newsSearchInput')?.value || '';
+        currentNewsPage = '1';
+        filterNewsSpa();
+    }, 300);
+}
+
+function filterNewsCategorySpa(category, event) {
+    event?.preventDefault();
+    currentNewsCategory = category || '';
+    currentNewsPage = '1';
+    
+    document.querySelectorAll('#newsNavTabs .news-nav-tab').forEach((tab) => {
+        tab.classList.toggle('active', (tab.dataset.cat || '') === currentNewsCategory);
+    });
+    document.querySelectorAll('.news-type-cloud .news-cloud-item').forEach((item) => {
+        const itemCat = new URL(item.href, window.location.origin).searchParams.get('category') || '';
+        item.classList.toggle('active', itemCat === currentNewsCategory);
+    });
+    
+    filterNewsSpa();
+}
+
+async function filterNewsSpa(event, page = null) {
+    event?.preventDefault();
+    if (page) currentNewsPage = page;
+    if (event?.type === 'submit') currentNewsPage = '1';
+
+    const container = document.querySelector('.app-main');
+    if (!container) return;
+    currentNewsSearch = document.getElementById('newsSearchInput')?.value || currentNewsSearch;
+
+    const params = new URLSearchParams();
+    if (currentNewsCategory) params.set('category', currentNewsCategory);
+    if (currentNewsSearch) params.set('search', currentNewsSearch);
+    if (currentNewsPage !== '1') params.set('page', currentNewsPage);
+
+    newsFilterRequest?.abort();
+    const request = new AbortController();
+    newsFilterRequest = request;
+    const path = params.toString() ? `/news?${params}` : '/news';
+
+    const catalogPage = document.getElementById('newsCatalogContainer');
+    if (catalogPage) {
+        catalogPage.style.opacity = '.4';
+        catalogPage.style.transition = 'opacity .2s ease';
+    }
+
+    try {
+        const response = await fetch(getAbsoluteUrl(path), {
+            signal: request.signal,
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-SPA-Request': 'true', 'Accept': 'application/json' }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.success) throw new Error('Lọc tin tức thất bại.');
+        if (newsFilterRequest !== request) return;
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data.html, 'text/html');
+        const newMain = doc.querySelector('.app-main');
+
+        if (newMain) {
+            container.innerHTML = newMain.innerHTML;
+            if (data.title) document.title = data.title;
+            window.history.pushState({ spa: true, url: path }, '', getAbsoluteUrl(path));
+            window.scrollTo({ top: 180, behavior: 'smooth' });
+            renderIcons();
+            if (typeof AOS !== 'undefined') AOS.init({ once: true, offset: 50 });
+            initDynamicTOC();
+        }
+    } catch (error) {
+        if (error.name !== 'AbortError') console.error('Lỗi lọc tin tức:', error);
+    } finally {
+        if (catalogPage) catalogPage.style.opacity = '1';
+    }
+}
+
+// News Pagination Click Interceptor
+document.addEventListener('click', (event) => {
+    const link = event.target.closest('.news-pagination a');
+    if (!link) return;
+    event.preventDefault();
+    const page = new URL(link.href).searchParams.get('page') || '1';
+    filterNewsSpa(event, page);
+});
+
+// ==================== GLOBAL SPA ROUTER ====================
+async function navigateSpa(url, pushState = true) {
+    try {
+        const targetUrl = new URL(url, window.location.origin);
+        const currentUrl = new URL(window.location.href);
+        
+        if (targetUrl.origin !== window.location.origin || 
+            targetUrl.pathname.startsWith('/admin') || 
+            targetUrl.pathname.match(/\.(pdf|zip|png|jpg|jpeg|csv|xlsx)$/i) ||
+            (targetUrl.hash && targetUrl.pathname === currentUrl.pathname && targetUrl.search === currentUrl.search)) {
+            return false;
+        }
+
+        const isSamePage = targetUrl.pathname === currentUrl.pathname;
+        
+        if (isSamePage) {
+            // SAME-PAGE TAB / FILTER SWITCH (Zero Flicker Strategy)
+            const targetSection = document.getElementById('newsArticlesFeed') || document.getElementById('newsCatalogContainer') || document.getElementById('vaccineGridContainer');
+            
+            if (targetSection) {
+                const targetCat = targetUrl.searchParams.get('category') || '';
+                document.querySelectorAll('#newsNavTabs .news-nav-tab').forEach((tab) => {
+                    const tabCat = new URL(tab.href, window.location.origin).searchParams.get('category') || '';
+                    tab.classList.toggle('active', tabCat === targetCat);
+                });
+                document.querySelectorAll('.news-type-cloud .news-cloud-item').forEach((item) => {
+                    const itemCat = new URL(item.href, window.location.origin).searchParams.get('category') || '';
+                    item.classList.toggle('active', itemCat === targetCat);
+                });
+
+                const response = await fetch(targetUrl.href, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-SPA-Request': 'true' }
+                });
+
+                if (!response.ok) return false;
+
+                const htmlText = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
+
+                const newSection = doc.getElementById(targetSection.id);
+                if (newSection) {
+                    targetSection.innerHTML = newSection.innerHTML;
+                    
+                    const newTitle = doc.querySelector('title')?.innerText;
+                    if (newTitle) document.title = newTitle;
+
+                    if (pushState) {
+                        window.history.pushState({ spa: true, url: targetUrl.href }, '', targetUrl.href);
+                    }
+
+                    renderIcons();
+                    return true;
+                }
+            }
+        }
+
+        // CROSS-PAGE NAVIGATION
+        const mainContainer = document.querySelector('.app-main');
+        if (!mainContainer) return false;
+
+        mainContainer.style.opacity = '0.3';
+        mainContainer.style.transition = 'opacity 0.15s ease-out';
+
+        const response = await fetch(targetUrl.href, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-SPA-Request': 'true'
+            }
+        });
+
+        if (!response.ok) return false;
+
+        const htmlText = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlText, 'text/html');
+
+        const newMain = doc.querySelector('.app-main');
+        if (!newMain) return false;
+
+        const newTitle = doc.querySelector('title')?.innerText;
+        if (newTitle) document.title = newTitle;
+
+        mainContainer.innerHTML = newMain.innerHTML;
+
+        if (pushState) {
+            window.history.pushState({ spa: true, url: targetUrl.href }, '', targetUrl.href);
+        }
+
+        document.querySelectorAll('.nav-menu .nav-link, .mobile-nav-link').forEach((link) => {
+            const linkUrl = new URL(link.href, window.location.origin);
+            const isActive = linkUrl.pathname === targetUrl.pathname;
+            link.classList.toggle('active', isActive);
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        renderIcons();
+        if (typeof AOS !== 'undefined') {
+            try { AOS.init({ once: true, offset: 50 }); } catch (e) {}
+        }
+        initDynamicTOC();
+
+        return true;
+    } catch (error) {
+        console.error('SPA Navigation Error:', error);
+        return false;
+    } finally {
+        const mainContainer = document.querySelector('.app-main');
+        if (mainContainer) mainContainer.style.opacity = '1';
+    }
+}
+
+// Global SPA Link Interceptor
+document.addEventListener('click', (event) => {
+    if (event.target.closest('.catalog-pagination, .news-pagination')) return;
+
+    const link = event.target.closest('a[href]');
+    if (!link) return;
+
+    const href = link.getAttribute('href');
+    if (!href || 
+        href.startsWith('#') || 
+        href.startsWith('javascript:') || 
+        href.startsWith('tel:') || 
+        href.startsWith('mailto:') ||
+        link.target === '_blank' ||
+        link.dataset.noSpa === 'true') {
+        return;
+    }
+
+    try {
+        const targetUrl = new URL(link.href, window.location.origin);
+        
+        if (targetUrl.origin === window.location.origin && 
+            !targetUrl.pathname.startsWith('/admin') && 
+            !targetUrl.pathname.match(/\.(pdf|zip|png|jpg|jpeg|csv|xlsx)$/i) &&
+            !(targetUrl.hash && targetUrl.pathname === window.location.pathname)) {
+            
+            event.preventDefault();
+            navigateSpa(targetUrl.href);
+        }
+    } catch (err) {
+        console.error('Lỗi định tuyến SPA link:', err);
+    }
+});
+
+// Handle Browser Back / Forward buttons
+window.addEventListener('popstate', () => {
+    navigateSpa(window.location.href, false);
+});
+}
+
+// Initial Page Load: Run initDynamicTOC on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    initDynamicTOC();
+});
+

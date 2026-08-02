@@ -26,9 +26,9 @@
             
             <!-- Dòng 4: Ô tìm kiếm viên thuốc dùng chung component -->
             <div class="search-bar-container catalog-search-box">
-                <form action="{{ route('news.index') }}" method="GET" class="search-form">
+                <form action="{{ route('news.index') }}" method="GET" class="search-form" onsubmit="filterNewsSpa(event)">
                     <i data-lucide="search" class="search-icon"></i>
-                    <input type="text" name="search" placeholder="Nhập từ khóa tìm kiếm bài viết y khoa..." value="{{ request('search') }}">
+                    <input type="text" name="search" id="newsSearchInput" placeholder="Nhập từ khóa tìm kiếm bài viết y khoa..." value="{{ request('search') }}" oninput="debouncedFilterNewsSpa()">
                     <button type="submit" class="search-btn">Tìm kiếm</button>
                 </form>
             </div>
@@ -69,9 +69,9 @@
 
 <div class="news-catalog-page" style="margin-top: 0;">
 
-    <!-- SUB-PAGE NAVIGATION NAV BAR (AOS animation fade-up) -->
+    <!-- SUB-PAGE NAVIGATION NAV BAR (STAYS COMPLETELY STILL & STATIC) -->
     <section class="news-nav-bar-container" data-aos="fade-up" data-aos-delay="100">
-        <nav class="news-nav-tabs">
+        <nav class="news-nav-tabs" id="newsNavTabs">
             <a href="{{ route('news.index', array_filter(['search' => request('search')])) }}" class="news-nav-tab {{ !request('category') ? 'active' : '' }}">
                 Tất cả bài viết
             </a>
@@ -82,6 +82,38 @@
             @endforeach
         </nav>
     </section>
+
+    <!-- DYNAMIC ARTICLES FEED (THIS AND ONLY THIS PART UPDATES VIA SPA) -->
+    <div id="newsArticlesFeed">
+
+    <!-- Mobile Clean News Header Toolbar (Synchronized SPA Page Animation) -->
+    <div class="mobile-news-header-bar" data-aos="fade-up" data-aos-delay="100">
+        <div class="mobile-news-title">
+            <span>Tin Tức Y Khoa</span>
+            @if(request('category'))
+                <small>({{ str_replace('&', 'và', request('category')) }})</small>
+            @endif
+        </div>
+        
+        <div class="custom-dropdown-wrapper">
+            <button type="button" class="custom-dropdown-trigger" onclick="toggleCustomDropdown(event, 'newsCategoryDropdown')">
+                <span>Chủ đề: {{ request('category') ? str_replace('&', 'và', request('category')) : 'Tất cả bài viết' }}</span>
+                <i data-lucide="chevron-down" class="dropdown-chevron-icon"></i>
+            </button>
+            <div class="custom-dropdown-menu" id="newsCategoryDropdown">
+                <a href="{{ route('news.index', array_filter(['search' => request('search')])) }}" class="custom-dropdown-item {{ !request('category') ? 'active' : '' }}">
+                    <i data-lucide="{{ !request('category') ? 'check' : 'circle' }}" class="item-check-icon"></i>
+                    <span>Tất cả bài viết</span>
+                </a>
+                @foreach($categories as $cat)
+                    <a href="{{ route('news.index', array_filter(['category' => $cat, 'search' => request('search')])) }}" class="custom-dropdown-item {{ request('category') === $cat ? 'active' : '' }}">
+                        <i data-lucide="{{ request('category') === $cat ? 'check' : 'circle' }}" class="item-check-icon"></i>
+                        <span>{{ str_replace('&', 'và', $cat) }}</span>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </div>
 
     <!-- TẦNG 1: BÁO MỚI HERO SECTION (AOS fade-up) -->
     @if($hotNews->isNotEmpty() && !request('search') && !request('category') && $articles->currentPage() == 1)
@@ -196,6 +228,7 @@
             {{ $articles->links('partials.pagination') }}
         </div>
     </section>
+    </div>
 
     <!-- TẦNG 3: BANNER TƯ VẤN MEDICARE CỜ ĐỎ (AOS fade-up) -->
     <section class="catalog-advice-banner" style="margin-top: 50px;" data-aos="fade-up">

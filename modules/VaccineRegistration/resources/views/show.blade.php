@@ -8,14 +8,16 @@
 
 @section('content')
 <div class="news-catalog-page vaccine-detail-page">
-    <!-- Breadcrumb Standard -->
-    <div class="news-breadcrumb" data-aos="fade-down">
-        <a href="{{ route('home') }}">Trang chủ</a>
-        <i data-lucide="chevron-right"></i>
-        <a href="{{ route('vaccine.index') }}">Danh mục vắc xin</a>
-        <i data-lucide="chevron-right"></i>
-        <span>{{ $vaccine->name }}</span>
-    </div>
+    <!-- Breadcrumb Standard (Sleek Modern Medical Style) -->
+    <nav class="news-breadcrumb-bar" data-aos="fade-down" aria-label="Breadcrumb">
+        <ol class="breadcrumb-list">
+            <li class="breadcrumb-item"><a href="{{ route('home') }}">Trang chủ</a></li>
+            <li class="breadcrumb-separator"><i data-lucide="chevron-right"></i></li>
+            <li class="breadcrumb-item"><a href="{{ route('vaccine.index') }}">Danh mục vắc xin</a></li>
+            <li class="breadcrumb-separator"><i data-lucide="chevron-right"></i></li>
+            <li class="breadcrumb-item active" aria-current="page"><span>{{ $vaccine->name }}</span></li>
+        </ol>
+    </nav>
 
     <!-- Main Detail Header 2-Column Card -->
     <div class="vaccine-header-card" style="flex: 1 1 100%; margin-bottom: 32px;" data-aos="fade-up">
@@ -76,13 +78,13 @@
                         <strong style="font-size: 28px; color: var(--primary-color, #c8102e); font-weight: 800;">{{ number_format($vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price, 0, ',', '.') }} đ</strong>
                     </div>
 
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <a href="{{ route('vaccine.index') }}" class="btn-secondary" style="padding: 10px 18px; border-radius: 30px; border: 1px solid #cbd5e1; color: #475569; font-weight: 700; font-size: 13.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: #ffffff; transition: all 0.2s ease;">
+                    <div class="vaccine-action-buttons" style="display: flex; gap: 10px; align-items: center;">
+                        <a href="{{ route('vaccine.index') }}" class="btn-secondary desktop-only-back-btn" style="padding: 10px 18px; border-radius: 30px; border: 1px solid #cbd5e1; color: #475569; font-weight: 700; font-size: 13.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: #ffffff; transition: all 0.2s ease;">
                             <i data-lucide="arrow-left" style="width: 15px; height: 15px;"></i>
                             <span>Quay lại danh mục</span>
                         </a>
-                        <button class="btn-select-detail {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" data-id="{{ $vaccine->id }}" onclick="toggleCart({{ $vaccine->id }})" style="padding: 10px 24px; border-radius: 30px; border: none; color: #ffffff; font-weight: 800; font-size: 14.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; background-color: {{ isset($cart[$vaccine->id]) ? 'var(--secondary-color, #eaaa00)' : 'var(--primary-color, #c8102e)' }};">
-                            <i data-lucide="{{ isset($cart[$vaccine->id]) ? 'check' : 'plus' }}" style="width: 17px; height: 17px;"></i>
+                        <button class="btn-select-detail {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" data-id="{{ $vaccine->id }}" onclick="toggleCart({{ $vaccine->id }})" style="padding: 12px 24px; border-radius: 30px; border: none; color: #ffffff; font-weight: 800; font-size: 15px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; background-color: {{ isset($cart[$vaccine->id]) ? 'var(--secondary-color, #eaaa00)' : 'var(--primary-color, #c8102e)' }}; box-shadow: 0 4px 15px rgba(200, 16, 46, 0.22);">
+                            <i data-lucide="{{ isset($cart[$vaccine->id]) ? 'check' : 'plus' }}" style="width: 18px; height: 18px;"></i>
                             <span>{{ isset($cart[$vaccine->id]) ? 'Đã chọn vắc xin' : 'Đăng ký tiêm chủng' }}</span>
                         </button>
                     </div>
@@ -95,6 +97,21 @@
     <div class="vaccine-detail-layout" data-aos="fade-up">
         <!-- Main Content Column (75% Width - Left Big Column) -->
         <main class="article-main-content" style="flex: 0 0 calc(75% - 16px);">
+
+            <!-- Mobile Top TOC (Collapsible Accordion identical to News Detail page) -->
+            <div class="vaccine-toc-widget mobile-article-toc" id="mobileAutoTocWidget">
+                <div class="widget-title" onclick="toggleMobileTocAccordion(event)" style="cursor: pointer; justify-content: space-between; display: flex; align-items: center;">
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="list" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
+                        <span>Mục Lục Nội Dung</span>
+                    </span>
+                    <i data-lucide="chevron-down" id="mobileTocChevronIcon" style="width: 16px; height: 16px; color: #64748b; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);"></i>
+                </div>
+                <nav style="display: none; flex-direction: column;" id="mobileAutoTocNav">
+                    <!-- Dynamic links generated via JS -->
+                </nav>
+            </div>
+
             <!-- Section 1: Thông tin vắc xin -->
             <section id="sec-thong-tin" style="margin-bottom: 36px;">
                 <h2 style="font-size: 21px; font-weight: 800; color: #0f172a; margin-top: 0; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-color, #c8102e);">
@@ -330,6 +347,5 @@
             behavior: 'smooth'
         });
     }
-
 </script>
 @endsection

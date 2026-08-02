@@ -8,14 +8,16 @@
 
 @section('content')
 <div class="news-catalog-page article-detail-page">
-    <!-- Breadcrumb Standard -->
-    <div class="news-breadcrumb" data-aos="fade-down">
-        <a href="{{ route('home') }}">Trang chủ</a>
-        <i data-lucide="chevron-right"></i>
-        <a href="{{ route('news.index') }}">Tin tức</a>
-        <i data-lucide="chevron-right"></i>
-        <span>{{ Str::limit($article->title, 45) }}</span>
-    </div>
+    <!-- Breadcrumb Standard (Sleek Modern Medical Style) -->
+    <nav class="news-breadcrumb-bar" data-aos="fade-down" aria-label="Breadcrumb">
+        <ol class="breadcrumb-list">
+            <li class="breadcrumb-item"><a href="{{ route('home') }}">Trang chủ</a></li>
+            <li class="breadcrumb-separator"><i data-lucide="chevron-right"></i></li>
+            <li class="breadcrumb-item"><a href="{{ route('news.index') }}">Tin tức</a></li>
+            <li class="breadcrumb-separator"><i data-lucide="chevron-right"></i></li>
+            <li class="breadcrumb-item active" aria-current="page"><span>{{ Str::limit($article->title, 40) }}</span></li>
+        </ol>
+    </nav>
 
     <!-- Main Detail 2-Column Layout -->
     <div class="article-detail-layout">
@@ -46,6 +48,20 @@
                 <p class="article-lead-text">{{ $article->summary }}</p>
             @endif
 
+            <!-- Mobile Top TOC (Placed directly above article body for fast mobile reading) -->
+            <div class="vaccine-toc-widget mobile-article-toc" id="mobileAutoTocWidget">
+                <div class="widget-title" onclick="toggleMobileTocAccordion(event)" style="cursor: pointer; justify-content: space-between; display: flex; align-items: center;">
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="list" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
+                        <span>Mục Lục Nội Dung</span>
+                    </span>
+                    <i data-lucide="chevron-down" id="mobileTocChevronIcon" style="width: 16px; height: 16px; color: #64748b; transition: transform 0.2s ease;"></i>
+                </div>
+                <nav style="display: flex; flex-direction: column;" id="mobileAutoTocNav">
+                    <!-- Dynamic links generated via JS -->
+                </nav>
+            </div>
+
             <!-- Rich Text Body Content (Pure text-align justify) -->
             <div class="article-body-content">
                 {!! $article->content !!}
@@ -64,14 +80,42 @@
                 <div class="vaccine-toc-widget" id="autoTocWidget">
                     <div class="widget-title">
                         <i data-lucide="list" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
-                        Mục Lục Nội Dung
+                        <span>Mục Lục Nội Dung</span>
                     </div>
                     <nav style="display: flex; flex-direction: column;" id="autoTocNav">
-                        <!-- Generates dynamic links via JS -->
+                        <!-- Dynamic links generated via JS -->
                     </nav>
                 </div>
 
-                <!-- Widget 1: Call to Action Booking Card (Justified text) -->
+                <!-- Widget 1: Related Category Articles -->
+                <div class="sidebar-widget">
+                    <div class="widget-title">
+                        <i data-lucide="layers" style="width: 18px; height: 18px; color: var(--primary-color, #c8102e);"></i>
+                        <span>Cùng Chuyên Mục</span>
+                    </div>
+                    @if(isset($relatedArticles) && $relatedArticles->isNotEmpty())
+                        <div class="related-articles-list">
+                            @foreach($relatedArticles->take(5) as $rel)
+                                @php
+                                    $relImg = $rel->image && !str_contains($rel->image, 'logo') ? $rel->image : 'vaxigrip.jpg';
+                                @endphp
+                                <a href="{{ route('news.show', $rel->slug) }}" class="related-article-card">
+                                    <div class="related-article-img">
+                                        <img src="{{ asset('images/vaccines/' . $relImg) }}" alt="{{ $rel->title }}" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/vaxigrip.jpg') }}';">
+                                    </div>
+                                    <div class="related-article-info">
+                                        <h4 class="related-article-title">{{ Str::limit($rel->title, 55) }}</h4>
+                                        <div class="news-meta-row">
+                                            <span><i data-lucide="calendar"></i> {{ $rel->created_at ? $rel->created_at->format('d/m/Y') : '26/07/2026' }}</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Widget 2: CTA Register Button -->
                 <div class="sidebar-cta-widget">
                     <i data-lucide="calendar-check" class="cta-widget-icon"></i>
                     <h3>Đặt Lịch Tiêm Vắc Xin</h3>
@@ -84,39 +128,6 @@
         </aside>
     </div>
 
-    <!-- Option A: Related Articles Grid Section (Bài viết cùng chuyên mục - Enclosed in White Card Container) -->
-    @if(isset($relatedArticles) && $relatedArticles->isNotEmpty())
-        <section class="suggested-news-section related-card-container" data-aos="fade-up" style="margin-top: 40px;">
-            <div class="suggested-news-header" style="margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--primary-color, #c8102e);">
-                <h2 style="display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 800; color: #0f172a; margin: 0;">
-                    <i data-lucide="layers" style="width: 22px; height: 22px; color: var(--accent-color, #004b8f);"></i>
-                    Bài Viết Cùng Chuyên Mục: <span style="color: var(--primary-color, #c8102e);">{{ $article->category }}</span>
-                </h2>
-                <p style="margin: 6px 0 0 0; color: #64748b; font-size: 14px;">Khám phá thêm các bài viết y khoa hữu ích liên quan trực tiếp đến chuyên mục bạn vừa xem.</p>
-            </div>
-
-            <div class="related-carousel-grid">
-                @foreach($relatedArticles as $rel)
-                    @php
-                        $relImg = $rel->image && !str_contains($rel->image, 'logo') ? $rel->image : 'vaxigrip.jpg';
-                    @endphp
-                    <a href="{{ route('news.show', $rel->slug) }}" class="related-carousel-card">
-                        <div class="related-carousel-media">
-                            <img src="{{ asset('images/vaccines/' . $relImg) }}" alt="{{ $rel->title }}" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/vaxigrip.jpg') }}';">
-                            <span class="related-badge">Cùng Chuyên Mục</span>
-                        </div>
-                        <div class="related-carousel-body">
-                            <h3 class="related-carousel-title">{{ Str::limit($rel->title, 55) }}</h3>
-                            <div class="related-carousel-meta">
-                                <span><i data-lucide="calendar" style="width: 12px; height: 12px;"></i> {{ $rel->created_at ? $rel->created_at->format('d/m/Y') : '26/07/2026' }}</span>
-                                <span><i data-lucide="eye" style="width: 12px; height: 12px;"></i> {{ number_format($rel->views) }}</span>
-                            </div>
-                        </div>
-                    </a>
-                @endforeach
-            </div>
-        </section>
-    @endif
 
     <!-- Multi-Topic Recommended Articles Section Below Article (Phân trang đề xuất đa chủ đề) -->
     <section class="suggested-news-section" data-aos="fade-up" style="margin-top: 50px;">

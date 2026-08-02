@@ -2,6 +2,14 @@
 
 ## [Unreleased] - 2026-08-02
 
+### Full System SPA Upgrade & Mobile UI Polish
+
+* **Global SPA Router Engine**: Added seamless client-side single-page navigation (`navigateSpa()`) across all public pages (Homepage, About, Product Catalog, News, Branch Contact, Booking Lookup).
+* **Fix Vaccines SPA Navigation**: Updated `VaccineController@index` to require `X-Vaccine-Filter` header for returning JSON grid partials, resolving SPA page navigation blockage for `/vaccines`.
+* **Mobile Header Action Compression**: Compressed Hotline and Cart action pills on mobile viewports (`max-width: 768px`) to icon-only buttons with badge counters to fit cleanly without overflow.
+* **Smooth TOC Section Jump Navigation**: Added `scroll-margin-top: 110px !important;` to section headers and updated `initDynamicTOC()` click handler to smoothly scroll and dock exactly 100px below the fixed site header when clicking any TOC item.
+* **Vite Asset Rebuild**: Recompiled production assets with `npm run build`.
+
 ### Bug Fixes
 
 * **Fix registration page**: Passed `activeCenters` variable to `vaccine::register` view to resolve `Undefined variable $activeCenters` error.
