@@ -970,6 +970,12 @@
     transition: color 0.15s ease;
 }
 
+.toc-link-item:focus,
+.toc-link-item:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
 .toc-link-item:hover i,
 .toc-link-item:hover svg,
 .toc-link-item.active i,

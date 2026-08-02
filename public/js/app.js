@@ -1469,8 +1469,8 @@ function initDynamicTOC() {
 
     if (!targetNav) return;
 
-    // Query ONLY main h2 section headings inside the actual article body text or vaccine sections
-    const headings = document.querySelectorAll('.article-main-content .article-body-content h2, .article-main-content section h2');
+    // Query main section headings inside article body text or vaccine sections
+    const headings = document.querySelectorAll('.article-main-content .article-body-content h2, .article-main-content section h2, .vaccine-detail-section h2');
     
     if (!headings || headings.length === 0) {
         if (tocWidget) tocWidget.style.display = 'none';
@@ -1490,17 +1490,23 @@ function initDynamicTOC() {
         link.href = '#' + heading.id;
         link.className = 'toc-link-item' + (index === 0 ? ' active' : '');
         link.style.display = 'flex';
-        link.style.alignItems = 'center';
-        link.style.gap = '6px';
-        link.innerHTML = `<i data-lucide="chevron-right" style="width: 14px; height: 14px; flex-shrink: 0;"></i> <span>${heading.textContent.trim()}</span>`;
+        link.style.alignItems = 'flex-start';
+        link.style.gap = '8px';
+        link.innerHTML = `<i data-lucide="chevron-right" style="width: 14px; height: 14px; flex-shrink: 0; margin-top: 3px;"></i> <span>${heading.textContent.trim()}</span>`;
         
         link.addEventListener('click', function(e) {
             e.preventDefault();
+            this.blur(); // Remove browser focus ring
             const targetEl = document.getElementById(heading.id);
             if (targetEl) {
                 const yOffset = -110;
                 const y = targetEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
                 window.scrollTo({ top: y, behavior: 'smooth' });
+                
+                // Immediately highlight clicked item
+                tocItems.forEach(item => {
+                    item.link.classList.toggle('active', item.link === link);
+                });
             }
         });
 
@@ -1512,26 +1518,35 @@ function initDynamicTOC() {
         lucide.createIcons();
     }
 
-    // Scroll active link observer
-    const observerOptions = {
-        root: null,
-        rootMargin: '-100px 0px -65% 0px',
-        threshold: 0
-    };
+    // Scroll Position Tracker for 100% Reliable Active TOC Highlighting
+    let isTicking = false;
+    function updateActiveTocOnScroll() {
+        const scrollPosition = window.pageYOffset + 140; // Header offset buffer
+        let currentActiveIndex = 0;
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                tocItems.forEach(item => {
-                    if (item.heading === entry.target) {
-                        item.link.classList.add('active');
-                    } else {
-                        item.link.classList.remove('active');
-                    }
-                });
+        for (let i = 0; i < tocItems.length; i++) {
+            const headingTop = tocItems[i].heading.getBoundingClientRect().top + window.pageYOffset;
+            if (headingTop <= scrollPosition) {
+                currentActiveIndex = i;
+            } else {
+                break;
             }
-        });
-    }, observerOptions);
+        }
 
-    headings.forEach(heading => observer.observe(heading));
+        tocItems.forEach((item, idx) => {
+            item.link.classList.toggle('active', idx === currentActiveIndex);
+        });
+
+        isTicking = false;
+    }
+
+    window.addEventListener('scroll', function() {
+        if (!isTicking) {
+            window.requestAnimationFrame(updateActiveTocOnScroll);
+            isTicking = true;
+        }
+    }, { passive: true });
+
+    // Initial check on load
+    updateActiveTocOnScroll();
 }

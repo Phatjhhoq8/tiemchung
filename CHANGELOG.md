@@ -2,9 +2,9 @@
 
 ## [v3.5.22] - 2026-08-02
 
-### Article & Product Detail Table of Contents (TOC) Layout Shift & Callout Box Elimination
+### Article & Product Detail Table of Contents (TOC) Dynamic Scroll Spy & Outline Elimination
 
-* **Zero Layout Shift & Clean TOC Styling**: Refactored `.toc-link-item` CSS definitions in [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css) and [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css). Removed the heavy yellow background (`#fff9e6`) and thick border boxes on active/hover TOC links. Locked font weight (`font-weight: 600`) and reserved border spacing to completely eliminate text wrapping jumps and layout shifts when scrolling or hovering over Table of Contents items.
+* **Dynamic Scroll Position Tracking & Zero Layout Shift**: Refactored `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to replace brittle `IntersectionObserver` thresholds with a high-performance scroll-position tracking algorithm. The Table of Contents (TOC) links on both Article Detail and Vaccine Product Detail pages now continuously and smoothly follow the reader's active section as they scroll. Removed browser default black focus ring outlines (`:focus`, `:focus-visible`) and heavy yellow callout box backgrounds from [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css) and [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css), eliminating text wrapping jumps and layout shifts.
 
 ## [v3.5.21] - 2026-08-02
 
