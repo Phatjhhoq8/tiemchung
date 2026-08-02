@@ -53,7 +53,7 @@
                 </div>
             </a>
 
-            <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="service-card-large bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-200 flex items-start gap-6 group" data-aos="fade-up" data-aos-delay="400">
+            <a href="{{ route('register.show') }}" class="service-card-large bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-200 flex items-start gap-6 group" data-aos="fade-up" data-aos-delay="400">
                 <div class="w-16 h-16 bg-gradient-to-br from-[#c8102e] to-[#a00d24] text-white rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
                     <i data-lucide="stethoscope" class="w-8 h-8"></i>
                 </div>

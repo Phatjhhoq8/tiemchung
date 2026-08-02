@@ -53,19 +53,6 @@
 @endsection
 
 @section('content')
-    @if(isset($isPreviewMode) && $isPreviewMode)
-        <!-- Preview mode simulator bar -->
-        <div class="bg-amber-500 text-white font-bold px-4 py-3 shadow-md flex items-center justify-between sticky top-[68px] z-50 animate-pulse">
-            <div class="flex items-center gap-2">
-                <i data-lucide="info" class="w-5 h-5"></i>
-                <span class="text-sm">CHẾ ĐỘ GIẢ LẬP XEM THỬ - Bản nháp chưa xuất bản chính thức</span>
-            </div>
-            <a href="{{ route('admin.live-editor') }}" class="bg-white text-slate-800 hover:bg-slate-100 px-4 py-1.5 rounded-lg text-xs font-black shadow-sm transition-all">
-                Quay lại Admin
-            </a>
-        </div>
-    @endif
-
     <div class="home-container w-full overflow-hidden flex flex-col gap-16 pb-16">
         <!-- 1. Hero Banner Slider (Always first at the top, not part of reorderable sections) -->
         @include('vaccine::partials.home.hero_slider')

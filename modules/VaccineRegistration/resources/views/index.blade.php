@@ -202,7 +202,7 @@
             <h2>Bạn chưa biết nên tiêm gì?</h2>
             <p>Chọn sản phẩm trong danh mục hoặc gửi thông tin để đội ngũ Medicare tư vấn phác đồ phù hợp.</p>
         </div>
-        <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="catalog-advice-btn">
+        <a href="{{ route('register.show') }}" class="catalog-advice-btn">
             Bắt đầu ngay <i data-lucide="arrow-right"></i>
         </a>
     </section>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Schedule;
 use Modules\VaccineRegistration\Models\Slot;
+use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminScheduleController extends Controller
@@ -16,11 +17,15 @@ class AdminScheduleController extends Controller
     public function index(Request $request)
     {
         $query = Schedule::with(['center', 'slots']);
+        $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get(['id', 'name']);
+        $selectedCenterId = AdminContext::isBranchAdmin()
+            ? AdminContext::centerId()
+            : ($request->filled('center_id') ? $request->integer('center_id') : AdminContext::selectedCenterId());
 
         if (AdminContext::isBranchAdmin()) {
             $query->where('center_id', AdminContext::centerId());
-        } elseif ($request->filled('center_id')) {
-            $query->where('center_id', $request->input('center_id'));
+        } elseif ($selectedCenterId) {
+            $query->where('center_id', $selectedCenterId);
         }
 
         if ($request->filled('date')) {
@@ -36,7 +41,7 @@ class AdminScheduleController extends Controller
             ]);
         }
 
-        return view('vaccine::admin.schedules.index', compact('schedules'));
+        return view('vaccine::admin.schedules.index', compact('schedules', 'centers', 'selectedCenterId'));
     }
 
     /**
@@ -46,12 +51,12 @@ class AdminScheduleController extends Controller
     {
         $validated = $request->validate([
             'center_id' => 'required|exists:centers,id',
-            'date' => 'required|date',
+            'date' => 'required|date|after_or_equal:today',
             'note' => 'nullable|string|max:1000',
             'is_active' => 'nullable|boolean',
-            'slots' => 'nullable|array',
-            'slots.*.start_at' => 'required|string',
-            'slots.*.end_at' => 'required|string',
+            'slots' => 'required|array|min:1',
+            'slots.*.start_at' => 'required|date_format:H:i',
+            'slots.*.end_at' => 'required|date_format:H:i',
             'slots.*.capacity' => 'required|integer|min:1',
             'slots.*.is_active' => 'nullable|boolean',
         ]);
@@ -60,18 +65,26 @@ class AdminScheduleController extends Controller
             abort(403, 'Cross-branch access forbidden.');
         }
 
-        $schedule = Schedule::create([
+        foreach ($validated['slots'] ?? [] as $slot) {
+            if ($slot['end_at'] <= $slot['start_at']) {
+                return back()->withErrors(['slots' => 'Giờ kết thúc phải sau giờ bắt đầu.'])->withInput();
+            }
+        }
+
+        $schedule = Schedule::updateOrCreate([
             'center_id' => $validated['center_id'],
             'date' => $validated['date'],
+        ], [
             'note' => $validated['note'] ?? null,
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
         if (!empty($validated['slots'])) {
             foreach ($validated['slots'] as $slotData) {
-                $schedule->slots()->create([
+                $schedule->slots()->firstOrCreate([
                     'start_at' => $slotData['start_at'],
                     'end_at' => $slotData['end_at'],
+                ], [
                     'capacity' => $slotData['capacity'],
                     'reserved_count' => 0,
                     'is_active' => $slotData['is_active'] ?? true,

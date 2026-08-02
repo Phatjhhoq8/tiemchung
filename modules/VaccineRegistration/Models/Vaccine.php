@@ -118,6 +118,7 @@ class Vaccine extends Model
         return $query->join('center_vaccines', 'vaccines.id', '=', 'center_vaccines.vaccine_id')
             ->where('center_vaccines.center_id', $centerId)
             ->where('center_vaccines.is_active', true)
+            ->where('vaccines.is_active', true)
             ->select(
                 'vaccines.*',
                 'center_vaccines.price as price',

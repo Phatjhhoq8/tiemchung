@@ -1,10 +1,16 @@
 @php
-    $site_name = \Modules\VaccineRegistration\Models\Setting::get('site_name', 'Medicare');
-    $hotline = \Modules\VaccineRegistration\Models\Setting::get('hotline', '0938 60 38 39');
-    $hotline_2 = \Modules\VaccineRegistration\Models\Setting::get('hotline_2', '0932 477 184');
-    $email = \Modules\VaccineRegistration\Models\Setting::get('email', 'cskh@medicare.vn');
-    $address = \Modules\VaccineRegistration\Models\Setting::get('address', 'Chi nhánh 1: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ');
-    $footer_text = \Modules\VaccineRegistration\Models\Setting::get('footer_text', '© 2026 Medicare - Hệ Thống Tiêm Chủng Vắc Xin Trẻ Em và Người Lớn.');
+    $settings = \Modules\VaccineRegistration\Models\Setting::values([
+        'site_name' => 'Medicare',
+        'hotline' => '0938 60 38 39',
+        'email' => 'cskh@medicare.vn',
+        'address' => 'Chi nhánh 1: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ',
+        'footer_text' => '© 2026 Medicare - Hệ Thống Tiêm Chủng Vắc Xin Trẻ Em và Người Lớn.',
+    ]);
+    $site_name = $settings['site_name'];
+    $hotline = $settings['hotline'];
+    $email = $settings['email'];
+    $address = $settings['address'];
+    $footer_text = $settings['footer_text'];
     $currentCenter = $currentCenter ?? \Modules\VaccineRegistration\Support\CenterContext::current();
     $activeCenters = $activeCenters ?? \Modules\VaccineRegistration\Support\CenterContext::activeCenters();
     if ($currentCenter) {
@@ -13,6 +19,7 @@
     }
     $currentCenterPhoneHref = \Modules\VaccineRegistration\Support\CenterContext::phoneHref($hotline);
     $currentCenterZalo = \Modules\VaccineRegistration\Support\CenterContext::phoneHref($currentCenter?->zalo_phone ?: $hotline);
+    $appJsVersion = file_exists(public_path('js/app.js')) ? filemtime(public_path('js/app.js')) : '1.0.0';
 @endphp
 <!DOCTYPE html>
 <html lang="vi">
@@ -36,7 +43,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap" rel="stylesheet">
     
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.468.0"></script>
     
     <!-- AOS Scroll Animation -->
     <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
@@ -45,15 +52,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <!-- Custom CSS -->
-    @php
-        $css_ver = '1.0.0';
-        try {
-            if (file_exists(public_path('css/style.css'))) {
-                $css_ver = filemtime(public_path('css/style.css'));
-            }
-        } catch (\Exception $e) {}
-    @endphp
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ $css_ver }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v=1.0.0">
     
     <!-- Dark Mode Check -->
     <script>
@@ -207,7 +206,7 @@
                                 <span style="font-size: 13px; color: #64748b;">Tổng tiền niêm yết:</span>
                                 <strong id="drawerTotalPrice" style="font-size: 17px; color: var(--primary-color, #c8102e); font-weight: 800;">{{ number_format($layoutTotalPrice, 0, ',', '.') }} đ</strong>
                             </div>
-                            <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-checkout-drawer">
+                            <a href="{{ route('register.show') }}" class="btn-checkout-drawer">
                                 <i data-lucide="calendar-check" style="width: 16px; height: 16px;"></i>
                                 <span>Đặt lịch ngay</span>
                             </a>
@@ -216,7 +215,7 @@
                 </div>
 
                 <!-- 3. Nút Đặt Lịch (Màu đỏ Medicare Red) -->
-                <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-primary-header">
+                <a href="{{ route('register.show') }}" class="btn-primary-header">
                     <i data-lucide="calendar-plus" style="width: 16px; height: 16px;"></i>
                     <span>Đặt lịch</span>
                 </a>
@@ -246,8 +245,18 @@
             <a href="{{ route('news.index') }}" class="mobile-nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}"><i data-lucide="newspaper" class="w-5 h-5"></i> Tin Tức</a>
             <a href="{{ route('contact') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'contact' ? 'active' : '' }}"><i data-lucide="map-pin" class="w-5 h-5"></i> Liên Hệ</a>
         </div>
+        <form method="POST" action="{{ route('centers.select') }}" style="padding: 16px 20px; border-top: 1px solid var(--border-color);">
+            @csrf
+            <label for="mobile_center_id" style="display:block; font-size:13px; font-weight:700; margin-bottom:8px;">Chi nhánh đang chọn</label>
+            <select id="mobile_center_id" name="center_id" onchange="this.form.submit()" style="width:100%; min-height:44px; border-radius:8px; padding:8px;">
+                @foreach($activeCenters as $center)
+                    <option value="{{ $center->id }}" {{ $currentCenter?->id === $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
+                @endforeach
+            </select>
+            <noscript><button type="submit" class="btn-secondary" style="margin-top:8px;">Đổi chi nhánh</button></noscript>
+        </form>
         <div class="mobile-drawer-footer">
-            <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event); toggleMobileMenu();" class="mobile-cta-btn">
+            <a href="{{ route('register.show') }}" class="mobile-cta-btn">
                 <i data-lucide="calendar-plus" class="w-5 h-5"></i> Đăng ký tiêm chủng
             </a>
             <a href="tel:{{ str_replace(' ', '', $hotline) }}" class="mobile-hotline-btn">
@@ -401,95 +410,69 @@
             </div>
         </div>
 
-        <!-- Footer Body: Branch Network & Legal Info -->
+        <!-- Footer Body: Branch Network & Legal Information -->
         <div class="footer-body-container">
-            <!-- Mạng Lưới Chi Nhánh -->
-            <div class="footer-branches-title">
-                HỆ THỐNG CHI NHÁNH TIÊM CHỦNG MEDICARE CẦN THƠ
-            </div>
-            
-            <div class="footer-branch-list">
-                @foreach($activeCenters as $center)
-                <div class="footer-branch-item">
-                    <h4>{{ $center->name }} {{ $currentCenter?->id === $center->id ? '(Đang chọn)' : '' }}</h4>
-                    <div class="footer-branch-info">
-                        <p><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> {{ $center->address }}</p>
-                        <p>
-                            <i data-lucide="phone" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Hotline: <strong>{{ $center->phone }}</strong>
-                            <span style="opacity: 0.3; margin: 0 10px;">|</span>
-                            <i data-lucide="clock" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> {{ $center->working_hours ?: '7:00 – 17:00' }}
-                        </p>
-                    </div>
-                    <div class="footer-branch-item-actions">
-                        <a href="{{ route('contact') }}" class="footer-branch-link-map">
-                            <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Xem bản đồ & chỉ đường
-                        </a>
-                        <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="footer-branch-link-book">
-                            Đặt lịch tại chi nhánh →
-                        </a>
-                    </div>
-                </div>
-                @endforeach
-            </div>
-
-            <!-- Footer Main Layout: Legal Info & Policy Links (Left) + QR Code (Right) -->
+            <!-- Footer Main Layout: Branch Network (Left) + Legal Information (Right) -->
             <div class="footer-main-layout">
                 <div class="footer-left-col">
-                    <div class="footer-policy-links">
-                        <a href="{{ route('about') }}">Chính sách bảo mật</a>
-                        <span>•</span>
-                        <a href="{{ route('vaccine.index') }}">Chính sách thanh toán</a>
-                        <span>•</span>
-                        <a href="{{ route('contact') }}">Điều khoản sử dụng</a>
+                    <div class="footer-branches-title">
+                        HỆ THỐNG CHI NHÁNH TIÊM CHỦNG MEDICARE CẦN THƠ
                     </div>
-                    <div class="footer-company-details">
-                        <h3>CÔNG TY CỔ PHẦN VẮC XIN MEDICARE</h3>
-                        <p>Giấy chứng nhận ĐKKD số 0107631488 do Sở Kế hoạch và Đầu tư TP. Cần Thơ cấp ngày 11/11/2016</p>
+                    <div class="footer-branch-list">
                         @foreach($activeCenters as $center)
-                            <p><strong>{{ $center->name }}:</strong> {{ $center->address }}</p>
+                        <div class="footer-branch-item">
+                            <h4>
+                                {{ $center->name }}
+                                @if($currentCenter?->id === $center->id)
+                                    <span class="footer-branch-selected">Đang chọn</span>
+                                @endif
+                            </h4>
+                            <div class="footer-branch-info">
+                                <p><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> {{ $center->address }}</p>
+                                <div class="footer-branch-meta">
+                                    <span><i data-lucide="phone" style="width: 14px; height: 14px;"></i> Hotline: <strong>{{ $center->phone }}</strong></span>
+                                    <span><i data-lucide="clock" style="width: 14px; height: 14px;"></i> {{ $center->working_hours ?: '7:00 – 17:00 (Tất cả các ngày trong tuần kể cả Thứ 7, Chủ Nhật & Ngày Lễ)' }}</span>
+                                </div>
+                            </div>
+                            <div class="footer-branch-item-actions">
+                                <a href="{{ route('contact') }}" class="footer-branch-link-map">
+                                    <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Xem bản đồ & chỉ đường
+                                </a>
+                                <form method="POST" action="{{ route('centers.select') }}" style="margin:0;">
+                                    @csrf
+                                    <input type="hidden" name="center_id" value="{{ $center->id }}">
+                                    <input type="hidden" name="redirect_to" value="register">
+                                    <button type="submit" class="footer-branch-link-book" style="border:0; cursor:pointer;">Đặt lịch tại chi nhánh →</button>
+                                </form>
+                            </div>
+                        </div>
                         @endforeach
-                        <p><strong>Email:</strong> {{ $email }} | <strong>Số điện thoại:</strong> {{ $hotline }}</p>
-                        <p>Chịu trách nhiệm nội dung: Ban Giám Đốc HỆ THỐNG TIÊM CHỦNG MEDICARE</p>
-                        <p style="margin-top: 10px; opacity: 0.75; font-size: 0.8rem;">Bản quyền ©2026 thuộc về CÔNG TY CỔ PHẦN VẮC XIN MEDICARE</p>
                     </div>
                 </div>
 
-                <div class="footer-right-col" style="display: flex; justify-content: flex-end;">
-                    <div class="footer-qr-card">
-                        <div class="footer-qr-title">SỬ DỤNG SỔ TIÊM CHỦNG ĐIỆN TỬ</div>
-                        <div class="footer-qr-img-wrapper">
-                            <!-- Clean SVG QR Code Representation -->
-                            <svg viewBox="0 0 100 100" width="140" height="140" fill="#0f172a" xmlns="http://www.w3.org/2000/svg">
-                                <rect width="100" height="100" fill="#ffffff" />
-                                <rect x="8" y="8" width="28" height="28" fill="#0f172a" />
-                                <rect x="12" y="12" width="20" height="20" fill="#ffffff" />
-                                <rect x="16" y="16" width="12" height="12" fill="#c8102e" />
-                                
-                                <rect x="64" y="8" width="28" height="28" fill="#0f172a" />
-                                <rect x="68" y="12" width="20" height="20" fill="#ffffff" />
-                                <rect x="72" y="16" width="12" height="12" fill="#c8102e" />
-                                
-                                <rect x="8" y="64" width="28" height="28" fill="#0f172a" />
-                                <rect x="12" y="68" width="20" height="20" fill="#ffffff" />
-                                <rect x="16" y="72" width="12" height="12" fill="#c8102e" />
-                                
-                                <rect x="42" y="10" width="14" height="6" fill="#0f172a" />
-                                <rect x="42" y="20" width="8" height="16" fill="#0f172a" />
-                                <rect x="10" y="42" width="18" height="8" fill="#0f172a" />
-                                <rect x="34" y="42" width="16" height="16" fill="#004b8f" />
-                                <rect x="56" y="42" width="12" height="8" fill="#0f172a" />
-                                <rect x="74" y="42" width="16" height="16" fill="#0f172a" />
-                                <rect x="42" y="64" width="8" height="28" fill="#0f172a" />
-                                <rect x="56" y="64" width="16" height="8" fill="#0f172a" />
-                                <rect x="78" y="64" width="14" height="14" fill="#c8102e" />
-                                <rect x="56" y="78" width="16" height="14" fill="#0f172a" />
-                            </svg>
+                <div class="footer-right-col">
+                    <div class="footer-legal-panel">
+                        <div class="footer-policy-links">
+                            <a href="{{ route('about') }}">Chính sách bảo mật</a>
+                            <span>•</span>
+                            <a href="{{ route('vaccine.index') }}">Chính sách thanh toán</a>
+                            <span>•</span>
+                            <a href="{{ route('contact') }}">Điều khoản sử dụng</a>
                         </div>
-                        <div class="footer-qr-subtext">Quét mã để tra cứu lịch tiêm & đăng ký tiêm chủng online</div>
+                        <div class="footer-company-details">
+                            <h3>CÔNG TY CỔ PHẦN VẮC XIN MEDICARE</h3>
+                            <p>Giấy chứng nhận ĐKKD số 0107631488 do Sở Kế hoạch và Đầu tư TP. Cần Thơ cấp ngày 11/11/2016</p>
+                            @foreach($activeCenters as $center)
+                                <p><strong>{{ $center->name }}:</strong> {{ $center->address }}</p>
+                            @endforeach
+                            <p><strong>Email:</strong> {{ $email }} | <strong>Số điện thoại:</strong> {{ $hotline }}</p>
+                            <p>Chịu trách nhiệm nội dung: Ban Giám Đốc HỆ THỐNG TIÊM CHỦNG MEDICARE</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        <div class="footer-copyright">Bản quyền ©2026 thuộc về CÔNG TY CỔ PHẦN VẮC XIN MEDICARE</div>
 
     </footer>
 
@@ -514,19 +497,10 @@
 
     <!-- SPA Modals & Toast Container -->
     @include('vaccine::partials.modal-detail')
-    @include('vaccine::partials.modal-register')
     <div id="toast-container" style="position: fixed; top: 24px; right: 24px; z-index: 9999999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
 
     <!-- JS Custom -->
-    @php
-        $js_ver = '1.0.0';
-        try {
-            if (file_exists(public_path('js/app.js'))) {
-                $js_ver = filemtime(public_path('js/app.js'));
-            }
-        } catch (\Exception $e) {}
-    @endphp
-    <script src="{{ asset('js/app.js') }}?v={{ $js_ver }}"></script>
+    <script src="{{ asset('js/app.js') }}?v={{ $appJsVersion }}"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
         function toggleBranchDropdown(event) {

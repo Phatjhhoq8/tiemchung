@@ -4,13 +4,26 @@ namespace Modules\VaccineRegistration\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Registration extends Model
 {
     use HasFactory;
 
+    public const BOOKING_PENDING = 'pending';
+    public const BOOKING_CONFIRMED = 'confirmed';
+    public const BOOKING_COMPLETED = 'completed';
+    public const BOOKING_CANCELLED = 'cancelled';
+    public const BOOKING_NO_SHOW = 'no_show';
+
+    public const PAYMENT_UNPAID = 'unpaid';
+    public const PAYMENT_PAID = 'paid';
+    public const PAYMENT_REFUNDED = 'refunded';
+
     protected $fillable = [
         'registration_code',
+        'customer_id',
         'patient_id',
         'patient_name',
         'patient_dob',
@@ -23,12 +36,33 @@ class Registration extends Model
         'center_name',
         'injection_date',
         'status',
+        'booking_status',
+        'payment_status',
+        'idempotency_key',
         'payment_method',
         'total_price',
+        'points_discount_amount',
+        'paid_at',
+        'refunded_at',
+        'settled_by',
         'slot_id',
         'screening_status',
         'screening_notes',
     ];
+
+    protected $casts = [
+        'patient_dob' => 'date',
+        'injection_date' => 'date',
+        'total_price' => 'integer',
+        'points_discount_amount' => 'integer',
+        'paid_at' => 'datetime',
+        'refunded_at' => 'datetime',
+    ];
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
 
     /**
      * Get the centralized patient.
@@ -41,7 +75,7 @@ class Registration extends Model
     /**
      * Get administered doses for this registration.
      */
-    public function administeredDoses()
+    public function administeredDoses(): HasMany
     {
         return $this->hasMany(AdministeredDose::class);
     }
@@ -56,14 +90,49 @@ class Registration extends Model
                     ->withTimestamps();
     }
 
-    public function center()
+    public function center(): BelongsTo
     {
         return $this->belongsTo(Center::class);
     }
 
-    public function slot()
+    public function slot(): BelongsTo
     {
         return $this->belongsTo(Slot::class);
+    }
+
+    public function settledBy(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'settled_by');
+    }
+
+    public function pointTransactions(): HasMany
+    {
+        return $this->hasMany(PointTransaction::class);
+    }
+
+    public function netPaidAmount(): int
+    {
+        return max(0, (int) $this->total_price - (int) $this->points_discount_amount);
+    }
+
+    public function bookingStatusLabel(): string
+    {
+        return match ($this->booking_status) {
+            self::BOOKING_CONFIRMED => 'Đã xác nhận',
+            self::BOOKING_COMPLETED => 'Đã hoàn tất',
+            self::BOOKING_CANCELLED => 'Đã hủy',
+            self::BOOKING_NO_SHOW => 'Không đến',
+            default => 'Chờ xác nhận',
+        };
+    }
+
+    public function paymentStatusLabel(): string
+    {
+        return match ($this->payment_status) {
+            self::PAYMENT_PAID => 'Đã thanh toán',
+            self::PAYMENT_REFUNDED => 'Đã hoàn tiền',
+            default => 'Chưa thanh toán',
+        };
     }
 
     /**
@@ -146,4 +215,3 @@ class Registration extends Model
         return $dose;
     }
 }
-

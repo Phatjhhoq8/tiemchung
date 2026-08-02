@@ -19,7 +19,7 @@
             </div>
             <h1 class="about-hero-title" style="color: #fff; font-size: clamp(2rem, 3vw, 2.7rem); font-weight: 800; line-height: 1.25; margin-bottom: 1rem;">{{ $settings['about_hero_title'] ?? 'Giới Thiệu Hệ Thống Tiêm Chủng Medicare' }}</h1>
             <p class="about-hero-desc" style="color: rgba(255, 255, 255, 0.94); font-size: 1.05rem; line-height: 1.6; max-width: 680px; margin: 0 0 2rem 0; text-align: justify;">{{ $settings['about_hero_desc'] ?? 'Đơn vị y tế uy tín hàng đầu chuyên cung cấp giải pháp phòng bệnh toàn diện bằng vắc xin chất lượng cao cho trẻ em và người lớn.' }}</p>
-            <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="about-hero-btn" style="margin-bottom: 0;">
+            <a href="{{ route('register.show') }}" class="about-hero-btn" style="margin-bottom: 0;">
                 <i data-lucide="calendar-check" style="width: 18px; height: 18px;"></i>
                 <span>Đăng ký tiêm ngay</span>
             </a>

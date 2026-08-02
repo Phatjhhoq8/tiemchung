@@ -7,7 +7,6 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Modules\VaccineRegistration\Models\Article;
-use Modules\VaccineRegistration\Models\Banner;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\Registration;
 use Modules\VaccineRegistration\Models\Vaccine;
@@ -176,45 +175,6 @@ class ContentSecurityAndHardeningTest extends TestCase
         $response->assertSessionHasErrors(['image_file']);
     }
 
-    public function test_live_editor_banner_upload_rejects_svg_file(): void
-    {
-        $banner = Banner::create(['title' => 'Banner Live Test', 'image_url' => '/images/banners/test.png']);
-        $svgFile = UploadedFile::fake()->create('banner.svg', 10, 'image/svg+xml');
-
-        $response = $this->actingAs($this->superAdmin)
-            ->withSession(['admin_logged_in' => true, 'admin_user_id' => $this->superAdmin->id])
-            ->postJson(route('admin.live-editor.banner'), [
-                'banner_id' => $banner->id,
-                'title' => 'Banner Updated',
-                'image_file' => $svgFile,
-            ]);
-
-        $response->assertStatus(422);
-    }
-
-    public function test_live_editor_team_avatar_rejects_svg_base64(): void
-    {
-        $svgBase64 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxzY3JpcHQ+YWxlcnQoMSk8L3NjcmlwdD48L3N2Zz4=';
-        $members = [
-            [
-                'name' => 'Bác sĩ A',
-                'role' => 'Chuyên khoa',
-                'avatar' => $svgBase64,
-            ]
-        ];
-
-        $response = $this->actingAs($this->superAdmin)
-            ->withSession(['admin_logged_in' => true, 'admin_user_id' => $this->superAdmin->id])
-            ->postJson(route('admin.live-editor.settings'), [
-                'about_team_members' => json_encode($members),
-            ]);
-
-        $response->assertOk();
-        $storedSetting = \Modules\VaccineRegistration\Models\Setting::get('about_team_members');
-        $decoded = json_decode($storedSetting, true);
-        $this->assertEquals('', $decoded[0]['avatar']);
-    }
-
     public function test_valid_raster_image_uploads_are_accepted(): void
     {
         $pngFile = UploadedFile::fake()->create('article.png', 100, 'image/png');
@@ -350,7 +310,6 @@ class ContentSecurityAndHardeningTest extends TestCase
         $this->assertStringContainsString("'=CMD", $content);
         $this->assertStringContainsString("'@HackerName", $content);
         $this->assertStringContainsString("'+0938603839", $content);
-        $this->assertStringContainsString("'-1+1", $content);
     }
 
     /**
@@ -523,5 +482,3 @@ class ContentSecurityAndHardeningTest extends TestCase
         }
     }
 }
-
-

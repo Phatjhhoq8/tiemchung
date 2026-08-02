@@ -10,8 +10,10 @@ use Modules\VaccineRegistration\Models\Article;
 use Modules\VaccineRegistration\Models\Banner;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
+use Modules\VaccineRegistration\Models\Customer;
 use Modules\VaccineRegistration\Models\Registration;
 use Modules\VaccineRegistration\Models\Vaccine;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class AuditLogsAndResourceStatusTest extends TestCase
@@ -67,7 +69,7 @@ class AuditLogsAndResourceStatusTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function test_audit_logger_creates_audit_log_entry()
     {
         $this->loginAs($this->superAdmin);
@@ -94,7 +96,7 @@ class AuditLogsAndResourceStatusTest extends TestCase
         $this->assertEquals(['price' => 550000], $log->fresh()->new_values);
     }
 
-    /** @test */
+    #[Test]
     public function test_audit_log_generated_on_vaccine_price_update()
     {
         $vaccine = Vaccine::create([
@@ -132,7 +134,7 @@ class AuditLogsAndResourceStatusTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function test_audit_log_generated_on_stock_update()
     {
         $vaccine = Vaccine::create([
@@ -164,8 +166,8 @@ class AuditLogsAndResourceStatusTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function test_audit_log_generated_on_order_status_update_and_refund()
+    #[Test]
+    public function test_audit_log_generated_on_manual_settlement_and_refund()
     {
         $vaccine = Vaccine::create([
             'name' => 'Vắc xin Phế Cầu Test M5',
@@ -188,8 +190,13 @@ class AuditLogsAndResourceStatusTest extends TestCase
             'is_active' => true,
         ]);
 
+        $customer = Customer::create([
+            'name' => 'Nguyễn Văn Test',
+            'phone' => '+849' . str_pad((string) random_int(0, 99999999), 8, '0', STR_PAD_LEFT),
+        ]);
         $registration = Registration::create([
             'registration_code' => 'TESTREG' . rand(1000, 9999),
+            'customer_id' => $customer->id,
             'patient_name' => 'Nguyễn Văn Test',
             'patient_dob' => '1995-05-15',
             'patient_gender' => 'Nam',
@@ -198,29 +205,27 @@ class AuditLogsAndResourceStatusTest extends TestCase
             'center_id' => $this->center->id,
             'center_name' => $this->center->name,
             'injection_date' => now()->addDays(2)->toDateString(),
-            'status' => 'Chờ thanh toán',
-            'payment_method' => 'CK',
+            'status' => 'pending',
+            'booking_status' => 'pending',
+            'payment_status' => 'unpaid',
+            'payment_method' => 'Tại trung tâm',
             'total_price' => 1000000,
         ]);
 
         $registration->vaccines()->attach($vaccine->id, ['price' => 1000000, 'quantity' => 1]);
 
-        // 1. Update status to 'Đã thanh toán' -> order_status_update & stock_update
-        $response1 = $this->loginAs($this->branchAdmin)->patch(route('admin.registrations.status', $registration->id), [
-            'status' => 'Đã thanh toán',
+        $response1 = $this->loginAs($this->branchAdmin)->post(route('admin.registrations.settle', $registration->id), [
+            'redeem_points' => 0,
         ]);
         $response1->assertRedirect();
 
         $this->assertDatabaseHas('audit_logs', [
-            'action' => 'order_status_update',
+            'action' => 'registration_settled',
             'resource_type' => 'registration',
             'resource_id' => (string) $registration->id,
         ]);
 
-        // 2. Update status to 'Đã hủy' from paid -> refund_issued & stock_update
-        $response2 = $this->loginAs($this->branchAdmin)->patch(route('admin.registrations.status', $registration->id), [
-            'status' => 'Đã hủy',
-        ]);
+        $response2 = $this->loginAs($this->branchAdmin)->post(route('admin.registrations.refund', $registration->id));
         $response2->assertRedirect();
 
         $this->assertDatabaseHas('audit_logs', [
@@ -230,7 +235,7 @@ class AuditLogsAndResourceStatusTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function test_soft_deactivation_on_vaccine()
     {
         $vaccine = Vaccine::create([
@@ -274,7 +279,7 @@ class AuditLogsAndResourceStatusTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function test_soft_deactivation_on_center()
     {
         $center = Center::create([
@@ -294,7 +299,7 @@ class AuditLogsAndResourceStatusTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function test_soft_deactivation_on_user()
     {
         $user = User::create([
@@ -318,7 +323,7 @@ class AuditLogsAndResourceStatusTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function test_soft_deactivation_on_banner()
     {
         $banner = Banner::create([
@@ -337,7 +342,7 @@ class AuditLogsAndResourceStatusTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function test_soft_deactivation_on_article()
     {
         $article = Article::create([

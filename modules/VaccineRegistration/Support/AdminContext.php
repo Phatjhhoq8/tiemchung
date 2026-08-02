@@ -8,6 +8,7 @@ use Modules\VaccineRegistration\Models\Center;
 
 class AdminContext
 {
+    public const SELECTED_CENTER_SESSION_KEY = 'admin_selected_center_id';
     public static function user(): ?User
     {
         if (\Illuminate\Support\Facades\Auth::check()) {
@@ -17,14 +18,6 @@ class AdminContext
         $userId = session('admin_user_id');
         if ($userId) {
             $user = User::with('center')->find($userId);
-            if ($user) {
-                \Illuminate\Support\Facades\Auth::setUser($user);
-            }
-            return $user;
-        }
-
-        if (session('admin_logged_in') === true) {
-            $user = User::where('role', 'super_admin')->where('is_active', true)->first();
             if ($user) {
                 \Illuminate\Support\Facades\Auth::setUser($user);
             }
@@ -56,7 +49,21 @@ class AdminContext
             return self::centerId();
         }
 
-        return $requestedCenterId ?: Center::active()->orderBy('sort_order')->orderBy('id')->value('id');
+        return $requestedCenterId
+            ?: session(self::SELECTED_CENTER_SESSION_KEY)
+            ?: Center::active()->orderBy('sort_order')->orderBy('id')->value('id');
+    }
+
+    public static function setSelectedCenter(int $centerId): Center
+    {
+        if (self::isBranchAdmin()) {
+            abort_unless($centerId === self::centerId(), 403, 'Cross-branch access forbidden.');
+        }
+
+        $center = Center::active()->findOrFail($centerId);
+        session([self::SELECTED_CENTER_SESSION_KEY => $center->id]);
+
+        return $center;
     }
 
     public static function applyCenterScope(Builder $query, string $column = 'center_id'): Builder

@@ -24,9 +24,11 @@ yarn-error.log
 .DS_Store
 Thumbs.db
 /session_data/
+/scratch/
+/report/
+/require/
 /composer.phar
 .agents/skills
-/scratch/
 /storage/app/public/*
 !/storage/app/public/.gitignore
 /storage/framework/cache/data/*
@@ -41,3 +43,7 @@ Thumbs.db
 /storage/logs/laravel.log
 /public/images/vaccines/article_*
 /public/images/vaccines/editor_*
+*.zip
+*.tar.gz
+*.rar
+*.7z

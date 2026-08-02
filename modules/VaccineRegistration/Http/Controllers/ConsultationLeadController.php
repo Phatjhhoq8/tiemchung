@@ -25,7 +25,6 @@ class ConsultationLeadController extends Controller
             'note' => 'nullable|string|max:2000',
             'customerNote' => 'nullable|string|max:2000',
             'center_id' => 'nullable|exists:centers,id',
-            'status' => 'nullable|string|max:50',
         ], [
             'name.required_without' => 'Vui lòng điền Họ và tên.',
             'customerName.required_without' => 'Vui lòng điền Họ và tên.',
@@ -49,13 +48,12 @@ class ConsultationLeadController extends Controller
         $source = $validated['source'] ?? 'Website Public Form';
         $note = $validated['note'] ?? $validated['customerNote'] ?? null;
         $centerId = $validated['center_id'] ?? CenterContext::current()?->id;
-        $status = $validated['status'] ?? 'new';
 
         $lead = ConsultationLead::create([
             'name' => $name,
             'phone' => $phone,
             'source' => $source,
-            'status' => $status,
+            'status' => 'new',
             'note' => $note,
             'center_id' => $centerId,
         ]);

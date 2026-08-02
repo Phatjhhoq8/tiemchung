@@ -129,9 +129,9 @@ button, select, input {
 }
 
 .header-container {
-    max-width: 1280px;
+    max-width: 1440px;
     margin: 0 auto;
-    padding: 1rem 2rem;
+    padding: 1rem 1.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -3678,19 +3678,22 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .footer-header-container {
-    max-width: 1280px;
+    max-width: 1440px;
+    width: 100%;
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0;
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 1.5rem;
 }
 
 .footer-brand-title {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 14px;
 }
 
@@ -3702,14 +3705,17 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
     letter-spacing: 0.03em;
     line-height: 1.4;
     margin: 0;
+    text-align: center;
 }
 
 .footer-top-actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
     gap: 1.5rem;
     font-size: 0.95rem;
+    text-align: center;
 }
 
 .footer-top-item {
@@ -3727,16 +3733,17 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .footer-body-container {
-    max-width: 1280px;
+    max-width: 1440px;
+    width: 100%;
     margin: 0 auto;
-    padding: 2.75rem 1.5rem;
+    padding: 2.75rem 0;
 }
 
 .footer-branches-title {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: 800;
     color: #ffffff;
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.25rem;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -3764,38 +3771,52 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
     }
 }
 
-/* Footer Branch List Layout (No cards/boxes) */
 .footer-branch-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin-bottom: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
 }
 
 .footer-branch-item {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding-bottom: 1.25rem;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.25rem;
 }
 
-.footer-branch-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
+.footer-branch-item:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
 }
 
 .footer-branch-item h4 {
-    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 1rem;
     font-weight: 800;
     color: var(--secondary-color);
-    margin-bottom: 8px;
+    margin: 0 0 0.85rem;
+}
+
+.footer-branch-selected {
+    background: var(--primary-color);
+    border-radius: 999px;
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 0.2rem 0.5rem;
+    text-transform: uppercase;
 }
 
 .footer-branch-info {
-    font-size: 0.92rem;
+    font-size: 0.84rem;
     color: #e2e8f0;
-    line-height: 1.6;
+    line-height: 1.5;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 0.75rem;
 }
 
 .footer-branch-info p {
@@ -3805,9 +3826,29 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
     gap: 8px;
 }
 
-.footer-branch-item-actions {
-    margin-top: 0.75rem;
+.footer-branch-meta {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.footer-branch-meta span {
+    align-items: flex-start;
     display: flex;
+    gap: 8px;
+}
+
+.footer-branch-meta i {
+    color: var(--secondary-color);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.footer-branch-item-actions {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    display: flex;
+    flex-wrap: wrap;
     gap: 16px;
 }
 
@@ -3840,10 +3881,8 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
 
 .footer-main-layout {
     display: grid;
-    grid-template-columns: 2.2fr 1fr;
-    gap: 3.5rem;
-    padding-top: 2.25rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    grid-template-columns: minmax(0, 1.5fr) minmax(340px, 1fr);
+    gap: 2.5rem;
 }
 
 @media (max-width: 992px) {
@@ -3856,9 +3895,10 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
 .footer-policy-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.75rem;
-    margin-bottom: 1.75rem;
-    font-size: 0.98rem;
+    column-gap: 1rem;
+    row-gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
 }
 
 .footer-policy-links a {
@@ -3873,14 +3913,21 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
     text-decoration: underline;
 }
 
+.footer-legal-panel {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
 .footer-company-details {
-    font-size: 0.95rem;
+    font-size: 0.87rem;
     color: #cbd5e1;
-    line-height: 1.8;
+    line-height: 1.7;
 }
 
 .footer-company-details h3 {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 800;
     color: #ffffff;
     text-transform: uppercase;
@@ -3889,50 +3936,35 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .footer-company-details p {
-    margin-bottom: 0.5rem;
+    margin: 0 0 0.7rem;
 }
 
-.footer-qr-card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    padding: 1.75rem;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.footer-qr-title {
-    font-size: 0.92rem;
-    font-weight: 800;
-    color: var(--secondary-color);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 1rem;
-}
-
-.footer-qr-img-wrapper {
-    background: #ffffff;
-    padding: 12px;
-    border-radius: 14px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
-    margin-bottom: 12px;
-}
-
-.footer-qr-img-wrapper svg,
-.footer-qr-img-wrapper img {
-    display: block;
-    width: 145px;
-    height: 145px;
-}
-
-.footer-qr-subtext {
-    font-size: 0.85rem;
+.footer-copyright {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     color: #cbd5e1;
-    font-weight: 500;
-    line-height: 1.5;
+    font-size: 0.85rem;
+    padding: 1.25rem 0;
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    .footer-branch-list {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-main-layout {
+        gap: 1.5rem;
+    }
+
+    .footer-branch-item:last-child:nth-child(odd) {
+        grid-column: auto;
+    }
+
+    .footer-legal-panel,
+    .footer-branch-item {
+        border-radius: 10px;
+        padding: 1rem;
+    }
 }
 
 

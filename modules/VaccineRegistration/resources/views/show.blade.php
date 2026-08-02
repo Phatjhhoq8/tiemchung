@@ -69,8 +69,11 @@
                 <!-- Price and Action Buttons -->
                 <div class="vaccine-action-bar" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 16px; border-top: 1px dashed #cbd5e1;">
                     <div>
-                        <span style="display: block; font-size: 12.5px; color: #64748b;">Giá tiêm lẻ niêm yết:</span>
-                        <strong style="font-size: 28px; color: var(--primary-color, #c8102e); font-weight: 800;">{{ number_format($vaccine->price, 0, ',', '.') }} đ</strong>
+                        <span style="display: block; font-size: 12.5px; color: #64748b;">Giá tại chi nhánh đang chọn:</span>
+                        @if($vaccine->hasSalePrice())
+                            <span style="display:block; color:#64748b; text-decoration:line-through; font-size:13px;">{{ number_format($vaccine->price, 0, ',', '.') }} đ</span>
+                        @endif
+                        <strong style="font-size: 28px; color: var(--primary-color, #c8102e); font-weight: 800;">{{ number_format($vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price, 0, ',', '.') }} đ</strong>
                     </div>
 
                     <div style="display: flex; gap: 10px; align-items: center;">

@@ -105,7 +105,7 @@
                     <i data-lucide="calendar-check" class="cta-widget-icon"></i>
                     <h3>Đặt Lịch Tiêm Vắc Xin</h3>
                     <p>Đăng ký lịch tiêm vắc xin trực tuyến để được ưu tiên khám sàng lọc miễn phí tại hệ thống Medicare Cờ Đỏ.</p>
-                    <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="cta-widget-btn">
+                    <a href="{{ route('register.show') }}" class="cta-widget-btn">
                         Đăng ký tiêm ngay →
                     </a>
                 </div>
@@ -166,4 +166,3 @@
     </section>
 </div>
 @endsection
-

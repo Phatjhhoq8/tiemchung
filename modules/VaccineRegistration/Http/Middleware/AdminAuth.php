@@ -25,19 +25,13 @@ class AdminAuth
         }
 
         $userId = $request->session()->get('admin_user_id');
-        if ($userId) {
-            $user = \App\Models\User::find($userId);
-            if (!$user || !$user->is_active) {
-                $request->session()->forget(['admin_logged_in', 'admin_user_id', 'admin_role', 'admin_center_id']);
-                return redirect()->route('admin.login.show')->with('error', 'Tài khoản quản trị không còn hoạt động.');
-            }
-            \Illuminate\Support\Facades\Auth::setUser($user);
-        } elseif ($request->session()->get('admin_logged_in') === true) {
-            $user = \App\Models\User::where('role', 'super_admin')->where('is_active', true)->first();
-            if ($user) {
-                \Illuminate\Support\Facades\Auth::setUser($user);
-            }
+        $user = $userId ? \App\Models\User::find($userId) : null;
+        if (!$user || !$user->is_active || $user->isLocked()) {
+            $request->session()->forget(['admin_logged_in', 'admin_user_id', 'admin_role', 'admin_center_id']);
+            return redirect()->route('admin.login.show')->with('error', 'Phiên đăng nhập không còn hợp lệ.');
         }
+
+        \Illuminate\Support\Facades\Auth::setUser($user);
 
         return $next($request);
     }

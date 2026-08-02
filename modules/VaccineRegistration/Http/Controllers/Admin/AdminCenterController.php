@@ -75,7 +75,18 @@ class AdminCenterController extends Controller
         $validated['slug'] = ($validated['slug'] ?? null) ?: \Illuminate\Support\Str::slug($validated['name']);
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
 
-        Center::create($validated);
+        $center = Center::create($validated);
+        \Modules\VaccineRegistration\Models\Vaccine::active()->each(function ($vaccine) use ($center) {
+            \Modules\VaccineRegistration\Models\CenterVaccine::firstOrCreate(
+                ['center_id' => $center->id, 'vaccine_id' => $vaccine->id],
+                [
+                    'price' => $vaccine->price,
+                    'sale_price' => $vaccine->sale_price,
+                    'stock_status' => 'out_of_stock',
+                    'is_active' => false,
+                ]
+            );
+        });
 
         return redirect()->route('admin.centers.index')->with('success', 'Thêm mới trung tâm tiêm chủng thành công.');
     }

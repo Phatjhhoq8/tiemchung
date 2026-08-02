@@ -6,16 +6,21 @@
 
 namespace Modules\VaccineRegistration\Database\Seeders;
 
+use Database\Seeders\Concerns\PreventsProductionSeeding;
 use Illuminate\Database\Seeder;
 use Modules\VaccineRegistration\Models\Banner;
 
 class BannerSeeder extends Seeder
 {
+    use PreventsProductionSeeding;
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
+        $this->assertSafeSeedingTarget();
+
         $banners = [
             [
                 'title' => 'Đăng Ký Tiêm Chủng Trực Tuyến Dễ Dàng',

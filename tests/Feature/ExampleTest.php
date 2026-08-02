@@ -19,6 +19,8 @@ class ExampleTest extends TestCase
             'vaccines',
             'registrations',
             'registration_vaccines',
+            'customers',
+            'point_transactions',
             'centers',
             'settings',
             'banners',
@@ -57,7 +59,12 @@ class ExampleTest extends TestCase
             $q->where('vaccine_id', $vaccine->id)->where('is_active', true);
         })->firstOrFail();
 
+        $slot = \Modules\VaccineRegistration\Models\Slot::whereHas('schedule', function ($query) use ($center) {
+            $query->where('center_id', $center->id)->whereDate('date', '>=', today())->where('is_active', true);
+        })->where('is_active', true)->whereColumn('reserved_count', '<', 'capacity')->firstOrFail();
+
         $response = $this->withSession([
+            'selected_center_id' => $center->id,
             'cart' => [
                 $vaccine->id => [
                     'name' => $vaccine->name,
@@ -70,26 +77,19 @@ class ExampleTest extends TestCase
                 ],
             ],
         ])->post('/register', [
-            'patients' => [
-                [
-                    'name' => 'Nguyen Van A',
-                    'dob' => now()->subYears(25)->format('Y-m-d'),
-                    'gender' => 'Nam',
-                    'phone' => '0912345678',
-                    'address' => 'Can Tho',
-                    'vaccine_ids' => [$vaccine->id],
-                ]
-            ],
-            'center_id' => $center->id,
-            'injection_date' => now()->addDay()->format('Y-m-d'),
-            'payment_method' => 'QR',
+            'patient_name' => 'Nguyen Van A',
+            'patient_phone' => '0912345678',
+            'slot_id' => $slot->id,
+            'vaccine_ids' => [$vaccine->id],
+            'idempotency_key' => 'example-booking-' . uniqid(),
         ]);
 
         $response->assertRedirect(route('register.success'));
         $response->assertSessionMissing('cart');
 
-        $registration = Registration::where('patient_phone', '0912345678')->latest()->firstOrFail();
-        $this->assertSame('Chờ thanh toán', $registration->status);
+        $registration = Registration::where('patient_phone', '+84912345678')->latest()->firstOrFail();
+        $this->assertSame('pending', $registration->booking_status);
+        $this->assertSame('unpaid', $registration->payment_status);
         $this->assertDatabaseHas('registration_vaccines', [
             'registration_id' => $registration->id,
             'vaccine_id' => $vaccine->id,

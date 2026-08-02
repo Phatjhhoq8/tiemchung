@@ -6,14 +6,19 @@
 
 namespace Modules\VaccineRegistration\Database\Seeders;
 
+use Database\Seeders\Concerns\PreventsProductionSeeding;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use Modules\VaccineRegistration\Models\Article;
 
 class ArticleSeeder extends Seeder
 {
+    use PreventsProductionSeeding;
+
     public function run()
     {
+        $this->assertSafeSeedingTarget();
+
         // Trống cơ sở dữ liệu bài viết cũ trước khi seed lại
         Article::truncate();
 

@@ -6,16 +6,21 @@
 
 namespace Modules\VaccineRegistration\Database\Seeders;
 
+use Database\Seeders\Concerns\PreventsProductionSeeding;
 use Illuminate\Database\Seeder;
 use Modules\VaccineRegistration\Models\Setting;
 
 class SettingSeeder extends Seeder
 {
+    use PreventsProductionSeeding;
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
+        $this->assertSafeSeedingTarget();
+
         $settings = [
             'site_name' => 'Medicare',
             'brand_title' => 'Hệ Thống Tiêm Chủng Medicare',

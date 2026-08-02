@@ -1,104 +1,71 @@
 @extends('vaccine::layouts.admin')
 
-@section('title', 'Quản lý Đơn Đăng Ký - Medicare Cờ Đỏ')
-@section('page_title', 'Danh Sách Đăng Ký Tiêm Chủng')
+@section('title', 'Quản lý đơn đặt lịch')
+@section('page_title', 'Đơn Đặt Lịch')
 
 @section('admin_content')
 <div class="card-modern">
-    
-    <!-- Bộ lọc & Tìm kiếm -->
-    <div style="margin-bottom: 30px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
-        <form action="{{ route('admin.registrations.index') }}" method="GET" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
-            <!-- Tìm kiếm -->
-            <div style="flex: 1 1 250px;">
-                <label for="search" class="form-label-modern">Tìm kiếm nhanh</label>
-                <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Nhập mã đơn, tên bệnh nhân, SĐT..." class="form-control-modern">
-            </div>
-
-            <!-- Trạng thái -->
-            <div style="width: 200px;">
-                <label for="status" class="form-label-modern">Trạng thái</label>
-                <select name="status" id="status" class="form-control-modern" style="background-image: none;">
-                    <option value="">-- Tất cả trạng thái --</option>
-                    <option value="Chờ thanh toán" {{ request('status') === 'Chờ thanh toán' ? 'selected' : '' }}>Chờ thanh toán</option>
-                    <option value="Đã thanh toán" {{ request('status') === 'Đã thanh toán' ? 'selected' : '' }}>Đã thanh toán</option>
-                    <option value="Đã tiêm" {{ request('status') === 'Đã tiêm' ? 'selected' : '' }}>Đã tiêm</option>
-                    <option value="Đã hủy" {{ request('status') === 'Đã hủy' ? 'selected' : '' }}>Đã hủy</option>
-                    <option value="Chờ tư vấn" {{ request('status') === 'Chờ tư vấn' ? 'selected' : '' }}>Chờ tư vấn</option>
-                    <option value="Đã tư vấn" {{ request('status') === 'Đã tư vấn' ? 'selected' : '' }}>Đã tư vấn</option>
+    <form action="{{ route('admin.registrations.index') }}" method="GET" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end; margin-bottom:24px;">
+        @if($isSuperAdmin ?? false)
+            <div style="flex:1 1 180px;">
+                <label class="form-label-modern" for="center_id">Chi nhánh</label>
+                <select class="form-control-modern" id="center_id" name="center_id">
+                    <option value="">Toàn hệ thống</option>
+                    @foreach($centers as $center)
+                        <option value="{{ $center->id }}" {{ (string) request('center_id') === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
+                    @endforeach
                 </select>
             </div>
-
-            <!-- Nút Lọc -->
-            <button type="submit" class="btn-modern btn-modern-primary" style="padding: 10px 24px; border-radius: 8px;">
-                <i data-lucide="filter" style="width: 14px; height: 14px;"></i> Lọc đơn
-            </button>
-            
-            @if(request()->anyFilled(['search', 'status']))
-                <a href="{{ route('admin.registrations.index') }}" class="btn-modern btn-modern-secondary" style="padding: 10px 20px; border-radius: 8px;">Xóa bộ lọc</a>
-            @endif
-
-            <a href="{{ route('admin.registrations.export.csv') }}" class="btn-modern btn-modern-secondary" style="padding: 10px 20px; border-radius: 8px; border-color: var(--accent-color); color: var(--accent-color);">
-                <i data-lucide="download" style="width: 14px; height: 14px;"></i> Xuất CSV
-            </a>
-        </form>
-    </div>
+        @endif
+        <div style="flex:1 1 220px;">
+            <label class="form-label-modern" for="search">Tìm kiếm</label>
+            <input class="form-control-modern" id="search" name="search" value="{{ request('search') }}" placeholder="Mã đơn, tên hoặc SĐT">
+        </div>
+        <div style="flex:1 1 170px;">
+            <label class="form-label-modern" for="booking_status">Lịch hẹn</label>
+            <select class="form-control-modern" id="booking_status" name="booking_status">
+                <option value="">Tất cả</option>
+                @foreach(['pending' => 'Chờ xác nhận', 'confirmed' => 'Đã xác nhận', 'completed' => 'Đã hoàn tất', 'no_show' => 'Không đến', 'cancelled' => 'Đã hủy'] as $value => $label)
+                    <option value="{{ $value }}" {{ request('booking_status') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div style="flex:1 1 170px;">
+            <label class="form-label-modern" for="payment_status">Thanh toán</label>
+            <select class="form-control-modern" id="payment_status" name="payment_status">
+                <option value="">Tất cả</option>
+                <option value="unpaid" {{ request('payment_status') === 'unpaid' ? 'selected' : '' }}>Chưa thanh toán</option>
+                <option value="paid" {{ request('payment_status') === 'paid' ? 'selected' : '' }}>Đã thanh toán</option>
+                <option value="refunded" {{ request('payment_status') === 'refunded' ? 'selected' : '' }}>Đã hoàn tiền</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-modern btn-modern-primary">Lọc</button>
+        <a href="{{ route('admin.registrations.export.csv', request()->query()) }}" class="btn-modern btn-modern-secondary">Xuất CSV</a>
+    </form>
 
     @if($registrations->isEmpty())
-        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-            <i data-lucide="inbox" style="width: 48px; height: 48px; margin-bottom: 12px; color: var(--text-light);"></i>
-            <p>Không tìm thấy hồ sơ đăng ký tiêm chủng nào.</p>
-        </div>
+        <p style="margin:0; color:var(--text-muted);">Không có đơn đặt lịch phù hợp.</p>
     @else
         <div class="table-responsive-modern">
             <table class="table-modern">
-                <thead>
-                    <tr>
-                        <th>Mã đơn</th>
-                        <th>Họ tên người tiêm</th>
-                        <th>Số điện thoại</th>
-                        <th>Địa điểm tiêm</th>
-                        <th>Ngày hẹn tiêm</th>
-                        <th>Tổng tiền</th>
-                        <th>Trạng thái</th>
-                        <th style="text-align: center;">Hành động</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Chi nhánh</th><th>Khung giờ</th><th>Tổng tiền</th><th>Lịch hẹn</th><th>Thanh toán</th><th></th></tr></thead>
                 <tbody>
-                    @foreach($registrations as $reg)
+                    @foreach($registrations as $registration)
                         <tr>
-                            <td style="font-weight: 700; color: var(--primary-color);">{{ $reg->registration_code }}</td>
-                            <td style="font-weight: 600;">{{ $reg->patient_name }}</td>
-                            <td>{{ $reg->patient_phone }}</td>
-                            <td>{{ $reg->center_name }}</td>
-                            <td>{{ date('d/m/Y', strtotime($reg->injection_date)) }}</td>
-                            <td style="font-weight: 600;">{{ number_format($reg->total_price, 0, ',', '.') }} đ</td>
-                            <td>
-                                <span class="badge-modern 
-                                    @if($reg->status === 'Đã thanh toán') badge-modern-success
-                                    @elseif($reg->status === 'Đã tiêm') badge-modern-info
-                                    @elseif($reg->status === 'Đã hủy') badge-modern-danger
-                                    @elseif($reg->status === 'Đã tư vấn') badge-modern-success
-                                    @elseif($reg->status === 'Chờ tư vấn') badge-modern-warning
-                                    @else badge-modern-warning @endif">
-                                    {{ $reg->status }}
-                                </span>
-                            </td>
-                            <td style="text-align: center;">
-                                <a href="{{ route('admin.registrations.show', $reg->id) }}" class="btn-action-sm">
-                                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i> Chi tiết
-                                </a>
-                            </td>
+                            <td style="font-weight:700; color:var(--primary-color);">{{ $registration->registration_code }}</td>
+                            <td><strong>{{ $registration->patient_name }}</strong><small style="display:block; color:var(--text-muted);">{{ \Modules\VaccineRegistration\Support\PhoneNormalizer::display($registration->patient_phone) }}</small></td>
+                            <td>{{ $registration->center_name }}</td>
+                            <td>{{ $registration->injection_date?->format('d/m/Y') }}</td>
+                            <td>{{ number_format($registration->total_price) }} đ</td>
+                            <td>{{ $registration->bookingStatusLabel() }}</td>
+                            <td>{{ $registration->paymentStatusLabel() }}</td>
+                            <td><a class="btn-action-sm" href="{{ route('admin.registrations.show', $registration) }}">Chi tiết</a></td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
-
-        <!-- Custom Pagination Links -->
-        <div style="display: flex; justify-content: center; margin-top: 24px;">
-            {{ $registrations->links() }}
-        </div>
+        <div style="display:flex; justify-content:center; margin-top:24px;">{{ $registrations->links() }}</div>
     @endif
 </div>
 @endsection

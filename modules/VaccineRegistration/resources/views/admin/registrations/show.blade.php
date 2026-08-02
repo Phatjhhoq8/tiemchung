@@ -1,166 +1,85 @@
 @extends('vaccine::layouts.admin')
 
-@section('title', 'Chi tiết đơn đăng ký ' . $registration->registration_code . ' - Medicare Cờ Đỏ')
-@section('page_title', 'Chi Tiết Đơn Đăng Ký Tiêm Chủng')
+@section('title', 'Đơn ' . $registration->registration_code)
+@section('page_title', 'Chi Tiết Đơn Đặt Lịch')
 
 @section('admin_content')
-<style>
-    .btn-modern-back:hover {
-        background: var(--primary-color, #c8102e) !important;
-        color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(200, 16, 46, 0.15);
-    }
-    .btn-modern-back:hover .back-arrow-icon {
-        transform: translateX(-4px);
-    }
-</style>
-<div style="max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 30px;">
-    
-    <!-- Header Back Button & Status Form -->
-    <div class="card-modern" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-        <a href="{{ route('admin.registrations.index') }}" class="btn-modern-back" style="color: var(--primary-color, #c8102e); text-decoration: none; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-display); padding: 8px 16px; border: 2px solid var(--primary-color, #c8102e); border-radius: 8px; background: #ffffff; transition: all 0.2s ease;">
-            <i data-lucide="arrow-left" class="back-arrow-icon" style="width: 16px; height: 16px; transition: transform 0.2s ease;"></i> Quay lại danh sách
-        </a>
-
-        <!-- Form cập nhật trạng thái đơn -->
-        <form action="{{ route('admin.registrations.status', $registration->id) }}" method="POST" onsubmit="return confirm('Bạn có thực sự muốn cập nhật trạng thái đơn này không?')" style="display: flex; gap: 10px; align-items: center;">
-            @csrf
-            @method('PATCH')
-            <label for="status" class="form-label-modern" style="font-weight: 600; font-size: 14px; margin-bottom: 0;">Trạng thái đơn:</label>
-            <select name="status" id="status" class="form-control-modern" style="padding: 8px 12px; font-weight: 500; font-size: 14px; width: 180px; background-image: none;">
-                @foreach($statuses as $status)
-                    <option value="{{ $status }}" {{ $registration->status === $status ? 'selected' : '' }}>{{ $status }}</option>
-                @endforeach
-            </select>
-            <button type="submit" class="btn-modern btn-modern-primary" style="padding: 8px 16px; border-radius: 8px;">Cập nhật</button>
-        </form>
+<div style="max-width:1000px; margin:0 auto; display:grid; gap:24px;">
+    <div class="card-modern" style="display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items:center;">
+        <a href="{{ route('admin.registrations.index') }}" class="btn-action-sm">Quay lại danh sách</a>
+        <div style="font-weight:800; color:var(--primary-color);">{{ $registration->registration_code }}</div>
     </div>
 
-    <!-- Main Content Details Split -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
-        
-        <!-- Cột 1: Thông tin người tiêm & người giám hộ -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px;">
         <div class="card-modern">
-            <h3 style="font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="user" style="color: var(--accent-color);"></i> Thông tin người tiêm
-            </h3>
-            <table style="width: 100%; border-collapse: collapse; font-size: 14px; line-height: 2;">
-                <tr>
-                    <td style="color: var(--text-muted); font-weight: 500; width: 140px;">Mã đơn:</td>
-                    <td style="font-weight: 700; color: var(--primary-color);">{{ $registration->registration_code }}</td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted); font-weight: 500;">Họ tên:</td>
-                    <td style="font-weight: 600; color: var(--text-primary);">{{ $registration->patient_name }}</td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted); font-weight: 500;">Ngày sinh:</td>
-                    <td style="color: var(--text-primary);">{{ date('d/m/Y', strtotime($registration->patient_dob)) }}</td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted); font-weight: 500;">Giới tính:</td>
-                    <td style="color: var(--text-primary);">{{ $registration->patient_gender }}</td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted); font-weight: 500;">Số điện thoại:</td>
-                    <td style="color: var(--text-primary);">{{ $registration->patient_phone }}</td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted); font-weight: 500;">Địa chỉ:</td>
-                    <td style="color: var(--text-primary);">{{ $registration->patient_address }}</td>
-                </tr>
-            </table>
-
-            @if($registration->guardian_name)
-                <h3 style="font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text-primary); margin-top: 30px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                    <i data-lucide="users" style="color: var(--accent-color);"></i> Thông tin người giám hộ
-                </h3>
-                <table style="width: 100%; border-collapse: collapse; font-size: 14px; line-height: 2;">
-                    <tr>
-                        <td style="color: var(--text-muted); font-weight: 500; width: 140px;">Người giám hộ:</td>
-                        <td style="font-weight: 600; color: var(--text-primary);">{{ $registration->guardian_name }}</td>
-                    </tr>
-                    <tr>
-                        <td style="color: var(--text-muted); font-weight: 500;">Số điện thoại:</td>
-                        <td style="color: var(--text-primary);">{{ $registration->guardian_phone }}</td>
-                    </tr>
-                </table>
+            <h3 style="margin-top:0;">Khách hàng</h3>
+            <p style="margin:0 0 8px;"><strong>{{ $registration->patient_name }}</strong></p>
+            <p style="margin:0 0 12px;">{{ \Modules\VaccineRegistration\Support\PhoneNormalizer::display($registration->patient_phone) }}</p>
+            @if($registration->customer)
+                <a class="btn-action-sm" href="{{ route('admin.customers.show', $registration->customer) }}">Xem lịch sử mua và điểm</a>
             @endif
         </div>
 
-        <!-- Cột 2: Thông tin lịch tiêm & thanh toán -->
         <div class="card-modern">
-            <h3 style="font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="calendar" style="color: var(--accent-color);"></i> Lịch tiêm & Thanh toán
-            </h3>
-            <table style="width: 100%; border-collapse: collapse; font-size: 14px; line-height: 2;">
-                <tr>
-                    <td style="color: var(--text-muted); font-weight: 500; width: 150px;">Trung tâm tiêm:</td>
-                    <td style="font-weight: 600; color: var(--text-primary);">{{ $registration->center_name }}</td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted); font-weight: 500;">Ngày hẹn tiêm:</td>
-                    <td style="font-weight: 700; color: var(--primary-color); font-size: 15px;">{{ date('d/m/Y', strtotime($registration->injection_date)) }}</td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted); font-weight: 500;">Phương thức TT:</td>
-                    <td style="color: var(--text-primary);">{{ $registration->payment_method }}</td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted); font-weight: 500;">Trạng thái đơn:</td>
-                    <td>
-                        <span class="badge-modern 
-                            @if($registration->status === 'Đã thanh toán') badge-modern-success
-                            @elseif($registration->status === 'Đã tiêm') badge-modern-info
-                            @elseif($registration->status === 'Đã hủy') badge-modern-danger
-                            @elseif($registration->status === 'Đã tư vấn') badge-modern-success
-                            @elseif($registration->status === 'Chờ tư vấn') badge-modern-warning
-                            @else badge-modern-warning @endif">
-                            {{ $registration->status }}
-                        </span>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted); font-weight: 500;">Thời gian đăng ký:</td>
-                    <td style="color: var(--text-primary);">{{ $registration->created_at->format('d/m/Y H:i:s') }}</td>
-                </tr>
-                <tr style="border-top: 1px solid var(--border-color); margin-top: 10px;">
-                    <td style="color: var(--text-primary); font-weight: 700; font-size: 15px; padding-top: 10px;">Tổng chi phí:</td>
-                    <td style="font-weight: 800; color: var(--primary-color); font-size: 20px; padding-top: 10px;">{{ number_format($registration->total_price, 0, ',', '.') }} đ</td>
-                </tr>
-            </table>
+            <h3 style="margin-top:0;">Lịch hẹn</h3>
+            <p><strong>Chi nhánh:</strong> {{ $registration->center_name }}</p>
+            <p><strong>Ngày:</strong> {{ $registration->injection_date?->format('d/m/Y') }}</p>
+            <p><strong>Khung giờ:</strong> {{ $registration->slot ? $registration->slot->start_at . ' - ' . $registration->slot->end_at : 'Chưa chọn' }}</p>
+            <form action="{{ route('admin.registrations.status', $registration) }}" method="POST" style="display:flex; gap:10px; flex-wrap:wrap; align-items:end;">
+                @csrf
+                @method('PATCH')
+                <div style="flex:1; min-width:180px;">
+                    <label class="form-label-modern" for="booking_status">Trạng thái lịch hẹn</label>
+                    <select id="booking_status" name="booking_status" class="form-control-modern">
+                        @foreach(['pending' => 'Chờ xác nhận', 'confirmed' => 'Đã xác nhận', 'completed' => 'Đã hoàn tất', 'no_show' => 'Không đến', 'cancelled' => 'Đã hủy'] as $value => $label)
+                            <option value="{{ $value }}" {{ $registration->booking_status === $value ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="submit" class="btn-modern btn-modern-secondary">Cập nhật</button>
+            </form>
         </div>
     </div>
 
-    <!-- Danh sách Vắc xin đã đăng ký tiêm -->
     <div class="card-modern">
-        <h3 style="font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-            <i data-lucide="syringe" style="color: var(--accent-color);"></i> Danh sách vắc xin chọn tiêm ({{ $registration->vaccines->count() }})
-        </h3>
-        
+        <h3 style="margin-top:0;">Thanh toán tại quầy và điểm</h3>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:16px; margin-bottom:20px;">
+            <div><span style="color:var(--text-muted); display:block;">Trạng thái thanh toán</span><strong>{{ $registration->paymentStatusLabel() }}</strong></div>
+            <div><span style="color:var(--text-muted); display:block;">Tổng đơn</span><strong>{{ number_format($registration->total_price) }} đ</strong></div>
+            <div><span style="color:var(--text-muted); display:block;">Giảm bằng điểm</span><strong>{{ number_format($registration->points_discount_amount) }} đ</strong></div>
+            <div><span style="color:var(--text-muted); display:block;">Thực thu</span><strong style="color:var(--primary-color);">{{ number_format($registration->netPaidAmount()) }} đ</strong></div>
+        </div>
+
+        @if($registration->payment_status === \Modules\VaccineRegistration\Models\Registration::PAYMENT_UNPAID && $registration->booking_status !== \Modules\VaccineRegistration\Models\Registration::BOOKING_CANCELLED)
+            <form action="{{ route('admin.registrations.settle', $registration) }}" method="POST" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+                @csrf
+                <div style="flex:1 1 230px;">
+                    <label class="form-label-modern" for="redeem_points">Điểm khách muốn dùng</label>
+                    <input class="form-control-modern" id="redeem_points" type="number" name="redeem_points" min="0" max="{{ $pointQuote['available_points'] ?? 0 }}" value="{{ old('redeem_points', 0) }}">
+                    <small style="display:block; margin-top:5px; color:var(--text-muted);">Số dư: {{ number_format($pointQuote['balance'] ?? 0) }} điểm. Có thể dùng tối đa {{ number_format($pointQuote['available_points'] ?? 0) }} điểm (50% đơn).</small>
+                </div>
+                <button type="submit" class="btn-modern btn-modern-primary" onclick="return confirm('Xác nhận đã thu tiền tại quầy?')">Xác nhận thanh toán</button>
+            </form>
+        @elseif($registration->payment_status === \Modules\VaccineRegistration\Models\Registration::PAYMENT_PAID)
+            <form action="{{ route('admin.registrations.refund', $registration) }}" method="POST">
+                @csrf
+                <button type="submit" class="btn-modern btn-modern-secondary" onclick="return confirm('Hoàn toàn bộ đơn này? Điểm sẽ được đảo lại.')">Hoàn tiền toàn bộ</button>
+            </form>
+        @endif
+    </div>
+
+    <div class="card-modern">
+        <h3 style="margin-top:0;">Sản phẩm đã chọn</h3>
         <div class="table-responsive-modern">
             <table class="table-modern">
-                <thead>
-                    <tr>
-                        <th>Phân loại</th>
-                        <th>Tên vắc xin</th>
-                        <th>Nguồn gốc</th>
-                        <th style="text-align: center;">Mũi tiêm</th>
-                        <th style="text-align: right;">Giá tại thời điểm đăng ký</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Tên vắc xin</th><th style="text-align:center;">Số lượng</th><th style="text-align:right;">Giá chốt</th><th style="text-align:right;">Thành tiền</th></tr></thead>
                 <tbody>
-                    @foreach($registration->vaccines as $vac)
+                    @foreach($registration->vaccines as $vaccine)
                         <tr>
-                            <td>
-                                <span class="badge-modern {{ $vac->type === 'package' ? 'badge-modern-warning' : 'badge-modern-info' }}">
-                                    {{ $vac->type === 'package' ? 'Gói' : 'Lẻ' }}
-                                </span>
-                            </td>
-                            <td style="font-weight: 600; color: var(--text-primary);">{{ $vac->name }}</td>
-                            <td>{{ $vac->origin }}</td>
-                            <td style="text-align: center;">{{ $vac->doses }}</td>
-                            <td style="text-align: right; font-weight: 600; color: var(--primary-color);">{{ number_format($vac->pivot->price, 0, ',', '.') }} đ</td>
+                            <td><strong>{{ $vaccine->name }}</strong><small style="display:block; color:var(--text-muted);">{{ $vaccine->origin }}</small></td>
+                            <td style="text-align:center;">{{ $vaccine->pivot->quantity }}</td>
+                            <td style="text-align:right;">{{ number_format($vaccine->pivot->price) }} đ</td>
+                            <td style="text-align:right; font-weight:700; color:var(--primary-color);">{{ number_format($vaccine->pivot->price * $vaccine->pivot->quantity) }} đ</td>
                         </tr>
                     @endforeach
                 </tbody>

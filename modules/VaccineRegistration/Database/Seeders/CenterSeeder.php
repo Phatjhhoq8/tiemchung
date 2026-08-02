@@ -6,6 +6,7 @@
 
 namespace Modules\VaccineRegistration\Database\Seeders;
 
+use Database\Seeders\Concerns\PreventsProductionSeeding;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use Modules\VaccineRegistration\Models\Center;
@@ -14,11 +15,15 @@ use Modules\VaccineRegistration\Models\Vaccine;
 
 class CenterSeeder extends Seeder
 {
+    use PreventsProductionSeeding;
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
+        $this->assertSafeSeedingTarget();
+
         $centers = [
             [
                 'name' => 'Medicare Cờ Đỏ',
@@ -66,6 +71,17 @@ class CenterSeeder extends Seeder
                 'sort_order' => 4,
                 'is_active' => true,
             ],
+            [
+                'name' => 'Medicare Vị Thanh',
+                'slug' => 'medicare-vi-thanh',
+                'address' => 'TP. Vị Thanh, Hậu Giang',
+                'phone' => '0923331233',
+                'zalo_phone' => '0923331233',
+                'map_url' => 'https://www.google.com/maps?q=V%C4%8B+Thanh,+H%E1%BA%ADu+Giang&output=embed',
+                'working_hours' => '7:00 – 17:00 (Tất cả các ngày trong tuần kể cả Thứ 7, Chủ Nhật & Ngày Lễ)',
+                'sort_order' => 5,
+                'is_active' => true,
+            ],
         ];
 
         foreach ($centers as $center) {
@@ -85,11 +101,17 @@ class CenterSeeder extends Seeder
             }
 
             Vaccine::query()->get()->each(function (Vaccine $vaccine) use ($savedCenter) {
+                $multiplier = 1 + (max(0, (int) $savedCenter->sort_order - 1) * 0.01);
+                $branchPrice = (int) (round(($vaccine->price * $multiplier) / 1000) * 1000);
+                $branchSalePrice = $vaccine->sale_price
+                    ? (int) (round(($vaccine->sale_price * $multiplier) / 1000) * 1000)
+                    : null;
+
                 CenterVaccine::firstOrCreate(
                     ['center_id' => $savedCenter->id, 'vaccine_id' => $vaccine->id],
                     [
-                        'price' => $vaccine->price,
-                        'sale_price' => $vaccine->sale_price,
+                        'price' => $branchPrice,
+                        'sale_price' => $branchSalePrice,
                         'stock_quantity' => 0,
                         'stock_status' => $vaccine->stock_status ?? 'available',
                         'is_active' => true,

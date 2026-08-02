@@ -487,9 +487,8 @@ class M3EmpiricalChallengerTest extends TestCase
             'content' => 'Test content',
         ])->assertStatus(403);
 
-        // 4.4 Additional super-admin protected endpoints (AdminUserController, AdminSettingController, AdminLiveEditorController)
+        // 4.4 Additional super-admin protected endpoints (AdminUserController, AdminSettingController)
         $this->actingAsAdmin($this->branchAdminA)->get(route('admin.users.index'))->assertStatus(403);
         $this->actingAsAdmin($this->branchAdminA)->get(route('admin.settings.index'))->assertStatus(403);
-        $this->actingAsAdmin($this->branchAdminA)->get(route('admin.live-editor'))->assertStatus(403);
     }
 }

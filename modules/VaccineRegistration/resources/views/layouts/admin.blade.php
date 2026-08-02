@@ -1,3 +1,11 @@
+@php
+    $adminUser = $adminUser ?? \Modules\VaccineRegistration\Support\AdminContext::user();
+    $isSuperAdmin = $isSuperAdmin ?? ($adminUser?->isSuperAdmin() ?? false);
+    $adminCenters = $adminCenters ?? ($isSuperAdmin
+        ? \Modules\VaccineRegistration\Models\Center::active()->orderBy('sort_order')->orderBy('id')->get(['id', 'name'])
+        : collect());
+    $adminSelectedCenterId = $adminSelectedCenterId ?? \Modules\VaccineRegistration\Support\AdminContext::selectedCenterId();
+@endphp
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -721,13 +729,6 @@
                         <i data-lucide="layout-dashboard"></i> Dashboard
                     </a>
                 </li>
-                @if($isSuperAdmin ?? false)
-                <li class="{{ Route::currentRouteName() === 'admin.live-editor' ? 'active' : '' }}">
-                    <a href="{{ route('admin.live-editor') }}">
-                        <i data-lucide="layout-template"></i> Chỉnh Sửa Trực Quan (Live)
-                    </a>
-                </li>
-                @endif
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.vaccines') ? 'active' : '' }}">
                     <a href="{{ route('admin.vaccines.index') }}">
                         <i data-lucide="syringe"></i> Quản lý Vắc Xin
@@ -738,9 +739,19 @@
                         <i data-lucide="clipboard-list"></i> Đơn Đăng Ký
                     </a>
                 </li>
+                <li class="{{ str_contains(Route::currentRouteName(), 'admin.customers') ? 'active' : '' }}">
+                    <a href="{{ route('admin.customers.index') }}">
+                        Khách Hàng & Điểm
+                    </a>
+                </li>
                 <li class="{{ Route::currentRouteName() === 'admin.schedule' ? 'active' : '' }}">
                     <a href="{{ route('admin.schedule') }}">
                         <i data-lucide="calendar"></i> Lịch Hẹn Tuần
+                    </a>
+                </li>
+                <li class="{{ str_contains(Route::currentRouteName(), 'admin.schedules') ? 'active' : '' }}">
+                    <a href="{{ route('admin.schedules.index') }}">
+                        Khung Giờ Tiêm
                     </a>
                 </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.stock') ? 'active' : '' }}">
@@ -811,7 +822,17 @@
                         <i data-lucide="moon" class="moon-icon" style="width: 16px; height: 16px;"></i>
                     </button>
                     <i data-lucide="circle-user"></i>
-                    <span>Xin chào, {{ $adminUser?->name ?? 'Admin' }}</span>
+                    <span>Xin chào, {{ $adminUser?->name ?? 'Admin' }}{{ $adminUser?->isBranchAdmin() && $adminUser?->center ? ' · ' . $adminUser->center->name : '' }}</span>
+                    @if($isSuperAdmin ?? false)
+                        <form method="POST" action="{{ route('admin.context.center') }}" style="margin:0;">
+                            @csrf
+                            <select name="center_id" onchange="this.form.submit()" aria-label="Ngữ cảnh chi nhánh" style="max-width:180px; padding:6px 8px; border-radius:6px; border:1px solid var(--border-color);">
+                                @foreach($adminCenters as $center)
+                                    <option value="{{ $center->id }}" {{ (int) $adminSelectedCenterId === (int) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
+                                @endforeach
+                            </select>
+                        </form>
+                    @endif
                 </div>
             </header>
             

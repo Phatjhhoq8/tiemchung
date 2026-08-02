@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
-use Modules\VaccineRegistration\Support\CenterContext;
 use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminVaccineController extends Controller
@@ -27,7 +26,7 @@ class AdminVaccineController extends Controller
         }
 
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) $request->input('center_id', CenterContext::current()?->id));
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) $request->input('center_id'));
         $query = Vaccine::forCenter($selectedCenterId);
 
         // Tìm kiếm theo tên hoặc bệnh phòng ngừa
@@ -87,7 +86,7 @@ class AdminVaccineController extends Controller
 
         $vaccine = new Vaccine(); // Khởi tạo đối tượng rỗng phục vụ form partial
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) request('center_id', CenterContext::current()?->id));
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) request('center_id'));
         $isSuperAdmin = AdminContext::isSuperAdmin();
         $adminUser = AdminContext::user();
         $categories = Vaccine::whereNotNull('category')
@@ -125,10 +124,21 @@ class AdminVaccineController extends Controller
         // Xử lý checkbox is_featured
         $validated['is_featured'] = $request->has('is_featured');
 
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) ($validated['center_id'] ?? CenterContext::current()?->id));
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) ($validated['center_id'] ?? 0));
         unset($validated['center_id']);
 
         $vaccine = Vaccine::create($validated);
+        Center::active()->each(function (Center $center) use ($vaccine, $validated, $selectedCenterId) {
+            CenterVaccine::firstOrCreate(
+                ['center_id' => $center->id, 'vaccine_id' => $vaccine->id],
+                [
+                    'price' => (int) $validated['price'],
+                    'sale_price' => $validated['sale_price'] ?? null,
+                    'stock_status' => $validated['stock_status'] ?? 'available',
+                    'is_active' => $center->id === $selectedCenterId,
+                ]
+            );
+        });
         $this->syncCenterVaccine($vaccine, $selectedCenterId, $validated);
 
         return redirect()->route('admin.vaccines.index', ['center_id' => $selectedCenterId])->with('success', 'Thêm mới vắc xin thành công.');
@@ -147,7 +157,7 @@ class AdminVaccineController extends Controller
 
         $vaccine = Vaccine::findOrFail($id);
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) request('center_id', CenterContext::current()?->id));
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) request('center_id'));
         $isSuperAdmin = AdminContext::isSuperAdmin();
         $adminUser = AdminContext::user();
         $centerVaccine = CenterVaccine::where('center_id', $selectedCenterId)->where('vaccine_id', $vaccine->id)->first();
@@ -207,7 +217,7 @@ class AdminVaccineController extends Controller
         }
 
         $validated = $this->validateVaccine($request);
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) ($validated['center_id'] ?? CenterContext::current()?->id));
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) ($validated['center_id'] ?? 0));
         unset($validated['center_id']);
 
         // Xử lý tải lên hình ảnh từ file (chỉ cho phép super_admin thay đổi ảnh)
@@ -233,17 +243,9 @@ class AdminVaccineController extends Controller
         $validated['is_featured'] = $request->has('is_featured');
 
         if (AdminContext::isSuperAdmin()) {
-            $oldMasterPrice = $vaccine->price;
-            $oldMasterSalePrice = $vaccine->sale_price;
-            $vaccine->update($validated);
-            if ($oldMasterPrice !== $vaccine->price || $oldMasterSalePrice !== $vaccine->sale_price) {
-                \App\Services\AuditLogger::logPriceUpdate(
-                    resourceId: $vaccine->id,
-                    oldValues: ['price' => $oldMasterPrice, 'sale_price' => $oldMasterSalePrice],
-                    newValues: ['price' => $vaccine->price, 'sale_price' => $vaccine->sale_price],
-                    centerId: $selectedCenterId
-                );
-            }
+            $masterData = $validated;
+            unset($masterData['price'], $masterData['sale_price'], $masterData['stock_status'], $masterData['is_featured'], $masterData['sort_order']);
+            $vaccine->update($masterData);
         }
         $this->syncCenterVaccine($vaccine, $selectedCenterId, $validated);
 
@@ -262,7 +264,7 @@ class AdminVaccineController extends Controller
         }
 
         $vaccine = Vaccine::findOrFail($id);
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) request('center_id', CenterContext::current()?->id));
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) request('center_id'));
         $centerVaccine = CenterVaccine::firstOrCreate(
             ['center_id' => $selectedCenterId, 'vaccine_id' => $vaccine->id],
             ['price' => $vaccine->price, 'sale_price' => $vaccine->sale_price, 'stock_status' => $vaccine->stock_status ?? 'available']
@@ -298,7 +300,7 @@ class AdminVaccineController extends Controller
             'name' => 'required|string|max:255',
             'center_id' => 'required|exists:centers,id',
             'price' => 'required|integer|min:0',
-            'sale_price' => 'nullable|integer|min:0',
+            'sale_price' => 'nullable|integer|min:0|lt:price',
             'type' => 'required|string|in:single,package',
             'doses' => 'required|integer|min:1',
             'stock_status' => 'required|string|in:available,limited,out_of_stock',
@@ -353,7 +355,7 @@ class AdminVaccineController extends Controller
             ]
         );
 
-        if ($existing && ($oldPrice !== $newPrice || $oldSalePrice !== $newSalePrice)) {
+        if (!$existing || $oldPrice !== $newPrice || $oldSalePrice !== $newSalePrice) {
             \App\Services\AuditLogger::logPriceUpdate(
                 resourceId: $vaccine->id,
                 oldValues: ['price' => $oldPrice, 'sale_price' => $oldSalePrice],

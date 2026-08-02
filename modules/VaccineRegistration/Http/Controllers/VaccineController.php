@@ -1,7 +1,7 @@
 <?php
 /**
  * Chức năng: VaccineController xử lý danh mục vắc xin, giỏ hàng và quy trình đăng ký tiêm chủng của khách hàng.
- * Lý do chỉnh sửa: Khôi phục đầy đủ các hàm xử lý giỏ hàng (addToCart, removeFromCart, clearCart) và quy trình đăng ký tiêm.
+ * Lý do chỉnh sửa: Xử lý danh mục, giỏ hàng và quy trình đặt lịch một người theo chi nhánh.
  */
 
 namespace Modules\VaccineRegistration\Http\Controllers;
@@ -14,10 +14,10 @@ use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
 use Modules\VaccineRegistration\Models\Schedule;
 use Modules\VaccineRegistration\Models\Slot;
+use Modules\VaccineRegistration\Models\Customer;
 use Modules\VaccineRegistration\Support\CenterContext;
+use Modules\VaccineRegistration\Support\PhoneNormalizer;
 use Modules\VaccineRegistration\Models\ConsultationLead;
-use App\Services\FefoInventoryService;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -199,8 +199,8 @@ class VaccineController extends Controller
                 'vaccine' => [
                     'id' => $vaccine->id,
                     'name' => $vaccine->name,
-                    'price' => $vaccine->price,
-                    'formatted_price' => number_format($vaccine->price, 0, ',', '.') . ' đ',
+                    'price' => $vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price,
+                    'formatted_price' => number_format($vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price, 0, ',', '.') . ' đ',
                     'type' => $vaccine->type,
                     'type_label' => $vaccine->type === 'package' ? 'Gói vắc xin' : 'Vắc xin lẻ',
                     'doses' => $vaccine->doses,
@@ -241,10 +241,23 @@ class VaccineController extends Controller
      */
     public function addToCart(Request $request)
     {
-        $vaccineId = $request->input('vaccine_id');
-        $quantity = (int) $request->input('quantity', 1);
+        $vaccineId = $request->integer('vaccine_id');
+        $vaccine = Vaccine::active()->findOrFail($vaccineId);
+        $currentCenter = CenterContext::current();
+        $isAvailable = $currentCenter && CenterVaccine::where('center_id', $currentCenter->id)
+            ->where('vaccine_id', $vaccine->id)
+            ->where('is_active', true)
+            ->where('stock_status', '!=', 'out_of_stock')
+            ->exists();
 
-        $vaccine = Vaccine::findOrFail($vaccineId);
+        if (!$isAvailable) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Sản phẩm không được bán tại chi nhánh đang chọn.'], 422);
+            }
+
+            return back()->with('error', 'Sản phẩm không được bán tại chi nhánh đang chọn.');
+        }
+
         $cart = session()->get('cart', []);
 
         if (isset($cart[$vaccineId])) {
@@ -332,17 +345,23 @@ class VaccineController extends Controller
     }
 
     /**
-     * Hiển thị trang đăng ký tiêm chủng (hoặc JSON cho SPA Modal).
+     * Render the single-person booking form for the currently selected branch.
      */
     public function showRegister(Request $request)
     {
         $currentCenter = CenterContext::current();
-        $cart = session()->get('cart', []);
+        abort_unless($currentCenter, 404, 'Không tìm thấy chi nhánh đang hoạt động.');
 
-        if ($request->has('add_vaccine_id')) {
-            $vaccineId = $request->input('add_vaccine_id');
-            $vaccine = Vaccine::find($vaccineId);
-            if ($vaccine) {
+        if ($request->filled('add_vaccine_id')) {
+            $vaccine = Vaccine::active()->find($request->integer('add_vaccine_id'));
+            $isAvailable = $vaccine && CenterVaccine::where('center_id', $currentCenter->id)
+                ->where('vaccine_id', $vaccine->id)
+                ->where('is_active', true)
+                ->where('stock_status', '!=', 'out_of_stock')
+                ->exists();
+
+            if ($isAvailable) {
+                $cart = session()->get('cart', []);
                 $cart[$vaccine->id] = [
                     'name' => $vaccine->name,
                     'price' => 0,
@@ -355,265 +374,167 @@ class VaccineController extends Controller
             }
         }
 
-        $cartState = CenterContext::resolveCart($currentCenter?->id);
-        $cart = $cartState['cart'];
-
-        if (empty($cart) && ($request->ajax() || $request->wantsJson())) {
-            $centers = Center::active()->get();
-            return response()->json([
-                'success' => false,
-                'message' => 'Vui lòng chọn ít nhất một loại vắc xin để đăng ký tiêm.',
-                'centers' => $centers
-            ], 400);
+        $cartState = CenterContext::resolveCart($currentCenter->id);
+        if (empty($cartState['cart'])) {
+            return redirect()->route('vaccine.index')->with('warning', 'Vui lòng chọn ít nhất một loại vắc xin để đặt lịch.');
         }
 
-        if (empty($cart)) {
-            return redirect()->route('vaccine.index')->with('warning', 'Vui lòng chọn ít nhất một loại vắc xin để đăng ký.');
-        }
+        $schedules = Schedule::query()
+            ->where('center_id', $currentCenter->id)
+            ->where('is_active', true)
+            ->whereDate('date', '>=', today())
+            ->with(['slots' => function ($query) {
+                $query->where('is_active', true)
+                    ->whereColumn('reserved_count', '<', 'capacity')
+                    ->orderBy('start_at');
+            }])
+            ->orderBy('date')
+            ->get()
+            ->filter(fn (Schedule $schedule) => $schedule->slots->isNotEmpty())
+            ->values();
 
-        $totalPrice = $cartState['total_price'];
-        $unavailableCount = $cartState['unavailable_count'];
-        $centers = Center::active()->get();
-
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'cart' => $cart,
-                'total_price' => $totalPrice,
-                'formatted_total_price' => number_format($totalPrice, 0, ',', '.') . ' đ',
-                'centers' => $centers,
-                'selected_center_id' => $currentCenter?->id,
-                'unavailable_count' => $unavailableCount,
-            ]);
-        }
-
-        return view('vaccine::register', compact('cart', 'totalPrice', 'centers', 'unavailableCount'));
+        return view('vaccine::register', [
+            'cart' => $cartState['cart'],
+            'totalPrice' => $cartState['total_price'],
+            'unavailableCount' => $cartState['unavailable_count'],
+            'schedules' => $schedules,
+            'currentCenter' => $currentCenter,
+            'activeCenters' => CenterContext::activeCenters(),
+        ]);
     }
 
     /**
-     * Xử lý đăng ký tiêm chủng.
-     */
-    /**
-     * Xử lý đăng ký tiêm chủng.
+     * Create one booking. Prices and branch membership are always resolved server-side.
      */
     public function postRegister(Request $request)
     {
-        $idempotencyKey = $request->header('Idempotency-Key')
-            ?? $request->header('X-Idempotency-Key')
-            ?? $request->header('idempotency_key')
-            ?? $request->input('idempotency_key');
-
-        if ($idempotencyKey) {
-            $cacheKey = 'idempotency:' . md5((string)$idempotencyKey);
-            if (Cache::has($cacheKey)) {
-                $cached = Cache::get($cacheKey);
-                if (is_array($cached) && isset($cached['content'], $cached['status'])) {
-                    return response($cached['content'], $cached['status'])
-                        ->header('Content-Type', $cached['content_type'] ?? 'application/json')
-                        ->header('X-Idempotency-Hit', 'true');
-                }
-            }
-        }
-
-        $cart = session()->get('cart', []);
-
-        if (empty($cart) && !$request->has('patients')) {
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => 'Giỏ hàng của bạn đang trống.'], 400);
-            }
-            return redirect()->route('vaccine.index')->with('error', 'Giỏ hàng của bạn đang trống.');
-        }
-
-        // Validate dữ liệu
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'patients' => 'required|array|min:1',
-            'patients.*.name' => 'required|string|max:255',
-            'patients.*.dob' => 'required|date|before:today',
-            'patients.*.gender' => 'required|string|in:Nam,Nữ,Khác',
-            'patients.*.phone' => 'required|string|regex:/^[0-9]{9,11}$/',
-            'patients.*.address' => 'required|string|max:500',
-            'patients.*.vaccine_ids' => 'required|array|min:1',
-            'patients.*.vaccine_ids.*' => 'exists:vaccines,id',
-            'patients.*.quantity' => 'nullable|integer|min:1',
-            'guardian_name' => 'nullable|string|max:255',
-            'guardian_phone' => 'nullable|string|regex:/^[0-9]{9,11}$/',
-            'center_id' => 'required|exists:centers,id',
-            'injection_date' => 'required|date|after_or_equal:today',
-            'slot_id' => 'nullable|exists:slots,id',
-            'patients.*.slot_id' => 'nullable|exists:slots,id',
-            'payment_method' => 'required|string|in:Tại trung tâm,QR,Thẻ,Chuyển khoản,Thẻ ATM / QR Code',
+        $validated = $request->validate([
+            'patient_name' => 'required|string|max:255',
+            'patient_phone' => 'required|string|max:30',
+            'slot_id' => 'required|integer|exists:slots,id',
+            'vaccine_ids' => 'required|array|min:1',
+            'vaccine_ids.*' => 'required|integer|distinct|exists:vaccines,id',
+            'idempotency_key' => 'nullable|string|max:100',
         ], [
-            'patients.required' => 'Vui lòng cung cấp thông tin người đăng ký tiêm.',
-            'patients.array' => 'Dữ liệu người đăng ký tiêm không hợp lệ.',
-            'patients.*.name.required' => 'Họ tên người tiêm không được để trống.',
-            'patients.*.dob.required' => 'Ngày sinh người tiêm không được để trống.',
-            'patients.*.dob.before' => 'Ngày sinh người tiêm phải trước ngày hôm nay.',
-            'patients.*.gender.required' => 'Vui lòng chọn giới tính người tiêm.',
-            'patients.*.phone.required' => 'Số điện thoại liên hệ không được để trống.',
-            'patients.*.phone.regex' => 'Số điện thoại không hợp lệ (9 - 11 chữ số).',
-            'patients.*.address.required' => 'Địa chỉ người tiêm không được để trống.',
-            'patients.*.vaccine_ids.required' => 'Vui lòng chọn ít nhất một loại vắc xin cho mỗi người.',
-            'center_id.required' => 'Vui lòng chọn trung tâm tiêm chủng.',
-            'injection_date.required' => 'Vui lòng chọn ngày tiêm dự kiến.',
-            'injection_date.after_or_equal' => 'Ngày tiêm dự kiến không được ở quá khứ.',
-            'payment_method.required' => 'Vui lòng chọn phương thức thanh toán.',
+            'patient_name.required' => 'Vui lòng nhập họ tên khách hàng.',
+            'patient_phone.required' => 'Vui lòng nhập số điện thoại liên hệ.',
+            'slot_id.required' => 'Vui lòng chọn khung giờ tiêm.',
+            'vaccine_ids.required' => 'Vui lòng chọn ít nhất một loại vắc xin.',
         ]);
 
-        if ($validator->fails()) {
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-            return redirect()->back()->withErrors($validator)->withInput();
+        $phone = PhoneNormalizer::normalize($validated['patient_phone']);
+        if (!$phone) {
+            return back()->withErrors(['patient_phone' => 'Số điện thoại di động Việt Nam không hợp lệ.'])->withInput();
         }
 
-        $validated = $validator->validated();
-        $selectedCenter = Center::active()->findOrFail($validated['center_id']);
-        CenterContext::set($selectedCenter->id);
+        $currentCenter = CenterContext::current();
+        abort_unless($currentCenter, 404, 'Không tìm thấy chi nhánh đang hoạt động.');
 
-        if (!empty($cart)) {
-            $cartState = CenterContext::resolveCart($selectedCenter->id);
-            if ($cartState['unavailable_count'] > 0) {
-                $message = 'Có sản phẩm không có ở chi nhánh ' . $selectedCenter->name . '. Vui lòng xóa sản phẩm đó hoặc chọn chi nhánh khác.';
-                if ($request->ajax() || $request->wantsJson()) {
-                    return response()->json(['success' => false, 'message' => $message], 422);
-                }
-                return redirect()->back()->with('error', $message)->withInput();
-            }
+        $idempotencyKey = $validated['idempotency_key'] ?? null;
+        if ($idempotencyKey && ($existing = Registration::where('idempotency_key', $idempotencyKey)->first())) {
+            return $this->completePublicBooking($existing);
         }
 
-        $patientsData = $validated['patients'];
-        $successCodes = [];
-
-        DB::beginTransaction();
         try {
-            foreach ($patientsData as $index => $patient) {
-                // Check & reserve time slot with row lock
-                $slotId = $patient['slot_id'] ?? $validated['slot_id'] ?? $request->input('slot_id');
-                if ($slotId) {
-                    $slot = Slot::where('id', $slotId)->lockForUpdate()->first();
-                    if (!$slot || !$slot->is_active || $slot->reserved_count >= $slot->capacity) {
-                        throw new \Exception("Khung giờ đã đầy công suất");
-                    }
-                    $slot->increment('reserved_count');
-                } else {
-                    $slotId = null;
-                }
-
-                // Generate unique registration code
-                $registrationCode = 'MCD-' . strtoupper(\Illuminate\Support\Str::random(8)) . '-' . ($index + 1);
-
-                // Load vaccine models to calculate the subtotal price for this patient
-                $vaccines = Vaccine::whereIn('id', $patient['vaccine_ids'])->get()->keyBy('id');
-                $centerVaccines = CenterVaccine::where('center_id', $selectedCenter->id)
-                    ->whereIn('vaccine_id', $patient['vaccine_ids'])
-                    ->where('is_active', true)
-                    ->get()
-                    ->keyBy('vaccine_id');
-
-                $subtotalPrice = 0;
-                foreach ($patient['vaccine_ids'] as $vId) {
-                    $cv = $centerVaccines->get($vId);
-                    $price = $cv ? ($cv->hasSalePrice() ? $cv->sale_price : $cv->price) : ($vaccines->get($vId)?->price ?? 0);
-                    $subtotalPrice += $price * ($patient['quantity'] ?? 1);
-                }
-
-                // Create patient registration
-                $registration = Registration::create([
-                    'registration_code' => $registrationCode,
-                    'patient_name' => $patient['name'],
-                    'patient_dob' => $patient['dob'],
-                    'patient_gender' => $patient['gender'],
-                    'patient_phone' => $patient['phone'],
-                    'patient_address' => $patient['address'],
-                    'guardian_name' => $validated['guardian_name'] ?? null,
-                    'guardian_phone' => $validated['guardian_phone'] ?? null,
-                    'center_id' => $selectedCenter->id,
-                    'center_name' => $selectedCenter->name,
-                    'injection_date' => $validated['injection_date'],
-                    'slot_id' => $slotId,
-                    'status' => 'Chờ thanh toán',
-                    'payment_method' => $validated['payment_method'],
-                    'total_price' => $subtotalPrice,
-                ]);
-
-                // Attach vaccines with quantity, price, and sale_price in registration_vaccines pivot
-                foreach ($vaccines as $v) {
-                    $centerVaccine = $centerVaccines->get($v->id);
-                    $price = $centerVaccine ? $centerVaccine->price : $v->price;
-                    $salePrice = ($centerVaccine && $centerVaccine->hasSalePrice()) ? $centerVaccine->sale_price : ($v->hasSalePrice() ? $v->sale_price : null);
-                    $qty = isset($patient['quantity']) ? (int)$patient['quantity'] : 1;
-                    $registration->vaccines()->attach($v->id, [
-                        'price' => $price,
-                        'sale_price' => $salePrice,
-                        'quantity' => $qty,
+            $registration = DB::transaction(function () use ($validated, $phone, $currentCenter, $idempotencyKey) {
+                $slot = Slot::with('schedule')->whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
+                if (!$slot->is_active || !$slot->schedule || !$slot->schedule->is_active
+                    || (int) $slot->schedule->center_id !== (int) $currentCenter->id
+                    || $slot->schedule->date->isBefore(today())
+                    || $slot->reserved_count >= $slot->capacity) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'slot_id' => 'Khung giờ đã đầy hoặc không thuộc chi nhánh đang chọn.',
                     ]);
                 }
 
-                // Trigger FEFO Inventory Allocation & Reservation
-                app(FefoInventoryService::class)->allocateAndReserve($registration);
+                $vaccineIds = array_map('intval', $validated['vaccine_ids']);
+                $centerVaccines = CenterVaccine::with('vaccine')
+                    ->where('center_id', $currentCenter->id)
+                    ->whereIn('vaccine_id', $vaccineIds)
+                    ->where('is_active', true)
+                    ->where('stock_status', '!=', 'out_of_stock')
+                    ->get()
+                    ->keyBy('vaccine_id');
 
-                // Dispatch background Queue Jobs for Email and SMS notifications
-                \App\Jobs\SendRegistrationEmailJob::dispatch($registration, 'created');
-                \App\Jobs\SendNotificationSmsJob::dispatch($registration, 'created');
-
-                $successCodes[] = $registrationCode;
-            }
-
-            DB::commit();
-
-            // Clear session cart
-            session()->forget('cart');
-            session()->put('success_codes', $successCodes);
-            if (!empty($successCodes)) {
-                session()->put('success_code', $successCodes[0]);
-            }
-
-            $responsePayload = [
-                'success' => true,
-                'message' => 'Đăng ký tiêm chủng thành công!',
-                'registration_codes' => $successCodes,
-                'redirect' => route('register.success')
-            ];
-
-            if ($idempotencyKey) {
-                $cacheKey = 'idempotency:' . md5((string)$idempotencyKey);
-                Cache::put($cacheKey, [
-                    'status' => 200,
-                    'content' => json_encode($responsePayload),
-                    'content_type' => 'application/json',
-                ], now()->addHours(24));
-            }
-
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json($responsePayload);
-            }
-
-            return redirect()->route('register.success');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Illuminate\Support\Facades\Log::error('Multi-patient registration error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-            if ($e->getMessage() === 'Khung giờ đã đầy công suất') {
-                if ($request->ajax() || $request->wantsJson()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Khung giờ đã đầy công suất',
-                        'errors' => ['slot_id' => ['Khung giờ đã đầy công suất']]
-                    ], 422);
+                if ($centerVaccines->count() !== count($vaccineIds)
+                    || $centerVaccines->contains(fn (CenterVaccine $centerVaccine) => !$centerVaccine->vaccine || !$centerVaccine->vaccine->is_active)) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'vaccine_ids' => 'Một hoặc nhiều vắc xin không được bán tại chi nhánh đang chọn.',
+                    ]);
                 }
-                return redirect()->back()->with('error', 'Khung giờ đã đầy công suất')->withInput();
+
+                $customer = Customer::where('phone', $phone)->lockForUpdate()->first();
+                if (!$customer) {
+                    DB::table('customers')->insertOrIgnore([
+                        'name' => trim($validated['patient_name']),
+                        'phone' => $phone,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    $customer = Customer::where('phone', $phone)->lockForUpdate()->firstOrFail();
+                }
+
+                $items = [];
+                $total = 0;
+                foreach ($vaccineIds as $vaccineId) {
+                    $centerVaccine = $centerVaccines->get($vaccineId);
+                    $price = $centerVaccine->hasSalePrice() ? $centerVaccine->sale_price : $centerVaccine->price;
+                    $total += $price;
+                    $items[$vaccineId] = [
+                        'price' => $price,
+                        'sale_price' => null,
+                        'quantity' => 1,
+                    ];
+                }
+
+                $registration = Registration::create([
+                    'registration_code' => $this->newRegistrationCode(),
+                    'customer_id' => $customer->id,
+                    'patient_name' => trim($validated['patient_name']),
+                    'patient_phone' => $phone,
+                    'center_id' => $currentCenter->id,
+                    'center_name' => $currentCenter->name,
+                    'injection_date' => $slot->schedule->date->toDateString(),
+                    'slot_id' => $slot->id,
+                    'status' => Registration::BOOKING_PENDING,
+                    'booking_status' => Registration::BOOKING_PENDING,
+                    'payment_status' => Registration::PAYMENT_UNPAID,
+                    'payment_method' => 'Tại trung tâm',
+                    'idempotency_key' => $idempotencyKey,
+                    'total_price' => $total,
+                ]);
+
+                $registration->vaccines()->attach($items);
+                $slot->increment('reserved_count');
+
+                return $registration;
+            });
+        } catch (\Illuminate\Database\QueryException $exception) {
+            if ($idempotencyKey && ($existing = Registration::where('idempotency_key', $idempotencyKey)->first())) {
+                return $this->completePublicBooking($existing);
             }
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Có lỗi xảy ra khi lưu đăng ký. Vui lòng thử lại.'
-                ], 500);
-            }
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi lưu đăng ký. Vui lòng thử lại.')->withInput();
+
+            throw $exception;
         }
+
+        return $this->completePublicBooking($registration);
+    }
+
+    private function completePublicBooking(Registration $registration)
+    {
+        session()->forget('cart');
+        session()->put('success_code', $registration->registration_code);
+
+        return redirect()->route('register.success');
+    }
+
+    private function newRegistrationCode(): string
+    {
+        do {
+            $code = 'MCD-' . strtoupper(Str::random(8));
+        } while (Registration::where('registration_code', $code)->exists());
+
+        return $code;
     }
 
     /**
@@ -632,7 +553,7 @@ class VaccineController extends Controller
             return redirect()->route('vaccine.index');
         }
 
-        $registrations = Registration::with('vaccines')->whereIn('registration_code', $codes)->get();
+        $registrations = Registration::with(['vaccines', 'slot'])->whereIn('registration_code', $codes)->get();
         $grandTotal = $registrations->sum('total_price');
 
         return view('vaccine::success', compact('registrations', 'grandTotal'));
@@ -772,58 +693,4 @@ class VaccineController extends Controller
         }
     }
 
-    /**
-     * Hủy đơn đăng ký tiêm chủng và giải phóng tồn kho FEFO.
-     */
-    public function cancelRegistration(Request $request, $id)
-    {
-        $registration = Registration::findOrFail($id);
-        if ($registration->status === 'Đã hủy') {
-            return response()->json(['success' => true, 'message' => 'Đơn đăng ký đã bị hủy trước đó.']);
-        }
-
-        DB::beginTransaction();
-        try {
-            $registration->update(['status' => 'Đã hủy']);
-            app(FefoInventoryService::class)->releaseStock($registration);
-            DB::commit();
-
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json(['success' => true, 'message' => 'Hủy đơn đăng ký thành công và đã giải phóng tồn kho.']);
-            }
-            return redirect()->back()->with('success', 'Hủy đơn đăng ký thành công.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-            }
-            return redirect()->back()->with('error', $e->getMessage());
-        }
-    }
-
-    /**
-     * Xác nhận thanh toán đơn đăng ký tiêm chủng và khấu trừ tồn kho FEFO.
-     */
-    public function payRegistration(Request $request, $id)
-    {
-        $registration = Registration::findOrFail($id);
-
-        DB::beginTransaction();
-        try {
-            $registration->update(['status' => 'Đã thanh toán']);
-            app(FefoInventoryService::class)->commitDeduction($registration);
-            DB::commit();
-
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json(['success' => true, 'message' => 'Thanh toán đơn đăng ký thành công và đã khấu trừ tồn kho.']);
-            }
-            return redirect()->back()->with('success', 'Thanh toán đơn đăng ký thành công.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-            }
-            return redirect()->back()->with('error', $e->getMessage());
-        }
-    }
 }

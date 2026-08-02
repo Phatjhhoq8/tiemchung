@@ -5,6 +5,7 @@
  */
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Http\Controllers\HomeController;
 use Modules\VaccineRegistration\Http\Controllers\VaccineController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminAuthController;
@@ -14,7 +15,6 @@ use Modules\VaccineRegistration\Http\Controllers\Admin\AdminRegistrationControll
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminCenterController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSettingController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminBannerController;
-use Modules\VaccineRegistration\Http\Controllers\Admin\AdminLiveEditorController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminUserController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminStockController;
 use Modules\VaccineRegistration\Http\Controllers\ConsultationLeadController;
@@ -26,6 +26,7 @@ use Modules\VaccineRegistration\Http\Controllers\ArticleController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminInventoryLotController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminPatientController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\VaccinationWorkflowController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminCustomerController;
 
 Route::middleware('web')->group(function () {
     // --- Giao diện Khách hàng (Client Multi-Page SPA) ---
@@ -41,7 +42,7 @@ Route::middleware('web')->group(function () {
     // Danh mục vắc xin & chi tiết
     Route::get('/vaccines', [VaccineController::class, 'index'])->name('vaccine.index');
     Route::get('/vaccines/disease/{disease}', [VaccineController::class, 'diseaseDetail'])->name('vaccine.disease');
-    Route::post('/vaccines/disease/{disease}/consult', [VaccineController::class, 'postDiseaseConsult'])->name('vaccine.disease.consult');
+    Route::post('/vaccines/disease/{disease}/consult', [VaccineController::class, 'postDiseaseConsult'])->middleware('throttle:10,1')->name('vaccine.disease.consult');
     Route::get('/vaccines/{id}', [VaccineController::class, 'show'])->name('vaccine.show');
     
     // Giỏ hàng
@@ -50,15 +51,13 @@ Route::middleware('web')->group(function () {
     Route::post('/cart/clear', [VaccineController::class, 'clearCart'])->name('cart.clear');
     
     // Yêu cầu tư vấn (CRM Leads)
-    Route::post('/consultations', [ConsultationLeadController::class, 'store'])->name('consultations.store');
-    Route::post('/leads', [ConsultationLeadController::class, 'store'])->name('leads.store');
+    Route::post('/consultations', [ConsultationLeadController::class, 'store'])->middleware('throttle:10,1')->name('consultations.store');
+    Route::post('/leads', [ConsultationLeadController::class, 'store'])->middleware('throttle:10,1')->name('leads.store');
     
     // Quy trình đăng ký tiêm
     Route::get('/register', [VaccineController::class, 'showRegister'])->name('register.show');
     Route::post('/register', [VaccineController::class, 'postRegister'])->name('register.post');
     Route::get('/success', [VaccineController::class, 'showSuccess'])->name('register.success');
-    Route::match(['get', 'post'], '/payment/return', [\App\Http\Controllers\PaymentWebhookController::class, 'handleBrowserReturn'])->name('payment.return');
-    Route::match(['get', 'post'], '/payment/callback', [\App\Http\Controllers\PaymentWebhookController::class, 'handleBrowserReturn'])->name('payment.callback');
 
     // --- Quản trị viên (Admin Auth) ---
     Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login.show');
@@ -74,6 +73,13 @@ Route::middleware('web')->group(function () {
 
     // --- Trang Quản trị (Bảo mật qua admin.auth) ---
     Route::middleware('admin.auth')->prefix('admin')->name('admin.')->group(function () {
+        Route::post('/context/center', function (Request $request) {
+            $validated = $request->validate(['center_id' => 'required|exists:centers,id']);
+            \Modules\VaccineRegistration\Support\AdminContext::setSelectedCenter((int) $validated['center_id']);
+
+            return back()->with('success', 'Đã đổi ngữ cảnh chi nhánh quản trị.');
+        })->name('context.center');
+
         // Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
@@ -93,19 +99,18 @@ Route::middleware('web')->group(function () {
         Route::get('/registrations/export/csv', [AdminRegistrationController::class, 'exportCsv'])->name('registrations.export.csv');
         Route::get('/registrations/{id}', [AdminRegistrationController::class, 'show'])->name('registrations.show');
         Route::patch('/registrations/{id}/status', [AdminRegistrationController::class, 'updateStatus'])->name('registrations.status');
+        Route::post('/registrations/{id}/settle', [AdminRegistrationController::class, 'settle'])->name('registrations.settle');
+        Route::post('/registrations/{id}/refund', [AdminRegistrationController::class, 'refund'])->name('registrations.refund');
 
-        // Quản lý Hồ sơ bệnh nhân tập trung (Centralized Patients)
-        Route::resource('patients', AdminPatientController::class);
-
-        // Quy trình 3 bước Tiêm chủng (3-Step Vaccination Workflow)
-        Route::post('/registrations/{id}/check-in', [VaccinationWorkflowController::class, 'checkIn'])->name('registrations.check-in');
-        Route::post('/registrations/{id}/screening', [VaccinationWorkflowController::class, 'screening'])->name('registrations.screening');
-        Route::post('/registrations/{id}/administer', [VaccinationWorkflowController::class, 'administer'])->name('registrations.administer');
+        // Khách hàng household và lịch sử điểm.
+        Route::get('/customers', [AdminCustomerController::class, 'index'])->name('customers.index');
+        Route::get('/customers/{id}', [AdminCustomerController::class, 'show'])->name('customers.show');
+        Route::post('/customers/{id}/points/adjust', [AdminCustomerController::class, 'adjustPoints'])->name('customers.points.adjust');
 
         // Quản lý Lịch & Khung giờ (Schedules & Slots)
-        Route::resource('schedules', AdminScheduleController::class);
+        Route::resource('schedules', AdminScheduleController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::post('/schedules/{schedule}/slots', [AdminScheduleController::class, 'storeSlot'])->name('schedules.slots.store');
-        Route::resource('slots', AdminSlotController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('slots', AdminSlotController::class)->only(['store', 'update', 'destroy']);
 
         // Nhập/xuất/tồn kho theo chi nhánh
         Route::get('/stock', [AdminStockController::class, 'index'])->name('stock.index');
@@ -129,15 +134,6 @@ Route::middleware('web')->group(function () {
             // Quản lý Bài viết / Tin tức y tế (Mục 10)
             Route::post('/articles/upload-image', [AdminArticleController::class, 'uploadEditorImage'])->name('articles.upload-image');
             Route::resource('articles', AdminArticleController::class)->except(['show']);
-
-            // Trình Chỉnh Sửa Trực Quan Xem Trước (Visual Live Page Customizer)
-            Route::get('/live-editor', [AdminLiveEditorController::class, 'index'])->name('live-editor');
-            Route::post('/live-editor/banner', [AdminLiveEditorController::class, 'updateBanner'])->name('live-editor.banner');
-            Route::post('/live-editor/vaccine', [AdminLiveEditorController::class, 'updateVaccine'])->name('live-editor.vaccine');
-            Route::post('/live-editor/settings', [AdminLiveEditorController::class, 'updateSettings'])->name('live-editor.settings');
-            Route::post('/live-editor/layout/save', [AdminLiveEditorController::class, 'saveLayoutConfig'])->name('live-editor.layout.save');
-            Route::post('/live-editor/layout/publish', [AdminLiveEditorController::class, 'publishLayoutConfig'])->name('live-editor.layout.publish');
-            Route::post('/live-editor/layout/reset', [AdminLiveEditorController::class, 'resetLayoutConfig'])->name('live-editor.layout.reset');
 
             // Quản lý Cấu hình động (Settings)
             Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');

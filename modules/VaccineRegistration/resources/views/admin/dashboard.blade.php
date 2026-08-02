@@ -50,7 +50,7 @@
     <!-- Widget 2: Doanh thu -->
     <div class="stat-card-modern">
         <div>
-            <span class="stat-card-title">Doanh Thu (Dự Kiến)</span>
+            <span class="stat-card-title">Doanh Thu Đã Thanh Toán</span>
             <strong class="stat-card-number" style="color: #10b981; font-size: 24px;">{{ number_format($totalRevenue, 0, ',', '.') }} đ</strong>
         </div>
         <div class="stat-card-icon-wrapper" style="background-color: #ecfdf5; color: #10b981;">
@@ -80,39 +80,11 @@
         </div>
     </div>
 
-    <div class="stat-card-modern">
-        <div>
-            <span class="stat-card-title">Yêu Cầu Tư Vấn</span>
-            <strong class="stat-card-number">{{ $consultCount }}</strong>
-        </div>
-        <div class="stat-card-icon-wrapper" style="background-color: #eff6ff; color: #0284c7;">
-            <i data-lucide="headphones"></i>
-        </div>
-    </div>
-
-    <div class="stat-card-modern">
-        <div>
-            <span class="stat-card-title">Sản Phẩm Bán Ra</span>
-            <strong class="stat-card-number">{{ $soldQuantity }}</strong>
-        </div>
-        <div class="stat-card-icon-wrapper" style="background-color: #ecfdf5; color: #16a34a;">
-            <i data-lucide="shopping-bag"></i>
-        </div>
-    </div>
-
-    <div class="stat-card-modern">
-        <div>
-            <span class="stat-card-title">Sản Phẩm Nhập Vào</span>
-            <strong class="stat-card-number">{{ $importedQuantity }}</strong>
-        </div>
-        <div class="stat-card-icon-wrapper" style="background-color: #fff7ed; color: #ea580c;">
-            <i data-lucide="package-plus"></i>
-        </div>
-    </div>
 </div>
 
 <!-- Khung phụ thống kê nhanh & Quản trị nhanh -->
 <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px;">
+    @if($isSuperAdmin ?? false)
     <div class="stat-card-modern">
         <div style="display: flex; align-items: center; gap: 16px;">
             <div style="background-color: #fff1f2; color: #e11d48; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
@@ -142,6 +114,7 @@
             <i data-lucide="image" style="width: 14px; height: 14px;"></i> Banner
         </a>
     </div>
+    @endif
 </div>
 
 <!-- Danh sách đăng ký gần đây -->
@@ -182,15 +155,7 @@
                             <td>{{ $reg->center_name }}</td>
                             <td>{{ date('d/m/Y', strtotime($reg->injection_date)) }}</td>
                             <td style="font-weight: 600;">{{ number_format($reg->total_price, 0, ',', '.') }} đ</td>
-                            <td>
-                                <span class="badge-modern 
-                                    @if($reg->status === 'Đã thanh toán') badge-modern-success
-                                    @elseif($reg->status === 'Đã tiêm') badge-modern-info
-                                    @elseif($reg->status === 'Đã hủy') badge-modern-danger
-                                    @else badge-modern-warning @endif">
-                                    {{ $reg->status }}
-                                </span>
-                            </td>
+                            <td>{{ $reg->bookingStatusLabel() }} · {{ $reg->paymentStatusLabel() }}</td>
                             <td>
                                 <a href="{{ route('admin.registrations.show', $reg->id) }}" class="btn-action-sm">
                                     <i data-lucide="eye" style="width: 14px; height: 14px;"></i> Chi tiết

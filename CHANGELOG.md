@@ -1,5 +1,17 @@
 # Release Notes
 
+## [Unreleased] - 2026-08-02
+
+### Bug Fixes
+
+* **Fix registration page**: Passed `activeCenters` variable to `vaccine::register` view to resolve `Undefined variable $activeCenters` error.
+
+### Branch booking and manual payment
+
+* Reworked public booking around one patient, a branch-owned time slot, server-side branch pricing, normalized household phone customers, and immutable loyalty point transactions.
+* Added customer, schedule, registration payment/refund, and branch price management screens; removed online payment/webhook, FEFO reservation, patient workflow, queue notification, and visual editor paths.
+* Removed obsolete SPA booking code and Live Editor artifacts. Public pages now render only the published homepage layout; catalog filtering, cart, quick view, and disease consultation remain available.
+
 ## [v6.0.0] - 2026-08-01
 
 ### M11: E2E Integration, Migration & Seeding Verification (Ponytail Style)

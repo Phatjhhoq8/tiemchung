@@ -12,7 +12,7 @@
                 </div>
             </a>
 
-            <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="flex items-center gap-4 p-4 rounded-xl bg-slate-50/50 border border-slate-100/50 hover:border-[#c8102e]/30 hover:bg-[#c8102e]/5 transition-all duration-200 group">
+            <a href="{{ route('register.show') }}" class="flex items-center gap-4 p-4 rounded-xl bg-slate-50/50 border border-slate-100/50 hover:border-[#c8102e]/30 hover:bg-[#c8102e]/5 transition-all duration-200 group">
                 <div class="w-12 h-12 rounded-xl bg-[#c8102e]/10 text-[#c8102e] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <i data-lucide="calendar-check-2" class="w-6 h-6"></i>
                 </div>
@@ -39,7 +39,7 @@
                 <div>
                     <div class="font-bold text-slate-900 text-sm group-hover:text-[#c8102e] transition-colors">Tìm Chi Nhánh Gần Bạn</div>
                     @php
-                        $centerNames = \Modules\VaccineRegistration\Support\CenterContext::activeCenters()
+                        $centerNames = $activeCenters
                             ->pluck('name')
                             ->map(fn($name) => str_replace('Medicare ', '', $name))
                             ->implode(', ');

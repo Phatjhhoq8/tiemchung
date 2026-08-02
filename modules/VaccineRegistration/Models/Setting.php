@@ -27,6 +27,13 @@ class Setting extends Model
         return $setting ? $setting->value : $default;
     }
 
+    public static function values(array $defaults): array
+    {
+        $values = self::whereIn('key', array_keys($defaults))->pluck('value', 'key')->all();
+
+        return array_replace($defaults, $values);
+    }
+
     /**
      * Helper tĩnh để cập nhật hoặc tạo cấu hình nhanh
      */

@@ -90,9 +90,12 @@
                             </button>
                         </form>
                     @endif
-                    <a href="{{ route('register.show') }}" class="btn-primary" style="flex: 1; min-width: 160px; text-align: center; justify-content: center; padding: 12px; text-decoration: none;">
-                        <i data-lucide="calendar"></i> Hẹn tiêm tại đây
-                    </a>
+                    <form method="POST" action="{{ route('centers.select') }}" style="flex: 1; min-width: 160px; margin: 0;">
+                        @csrf
+                        <input type="hidden" name="center_id" value="{{ $center->id }}">
+                        <input type="hidden" name="redirect_to" value="register">
+                        <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;">Hẹn tiêm tại đây</button>
+                    </form>
                 </div>
             </div>
         @endforeach

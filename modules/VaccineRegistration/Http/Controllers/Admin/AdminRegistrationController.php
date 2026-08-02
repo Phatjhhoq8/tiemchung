@@ -1,253 +1,252 @@
 <?php
-/**
- * Chức năng: AdminRegistrationController quản lý danh sách đăng ký tiêm chủng của khách hàng.
- * Lý do tạo: Cho phép Quản trị viên duyệt hồ sơ đăng ký tiêm, kiểm tra thông tin bệnh nhân và thay đổi trạng thái đơn tiêm.
- */
 
 namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
+use App\Services\RegistrationPaymentService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\Registration;
-use Modules\VaccineRegistration\Models\CenterVaccine;
-use Modules\VaccineRegistration\Models\VaccineStockMovement;
 use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminRegistrationController extends Controller
 {
-    /**
-     * Danh sách đăng ký tiêm chủng.
-     */
     public function index(Request $request)
     {
-        if (AdminContext::isBranchAdmin() && $request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
+        $this->assertRequestedCenter($request);
+
+        $query = $this->registrationQuery($request)
+            ->with('customer:id,name,phone');
+
+        if ($request->filled('booking_status')) {
+            $query->where('booking_status', $request->input('booking_status'));
         }
 
-        $query = AdminContext::applyCenterScope(Registration::query());
-
-        // Lọc theo trạng thái
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
+        if ($request->filled('payment_status')) {
+            $query->where('payment_status', $request->input('payment_status'));
         }
 
-        // Tìm kiếm theo mã đăng ký, họ tên hoặc số điện thoại
         if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function($q) use ($search) {
-                $q->where('registration_code', 'like', '%' . $search . '%')
-                  ->orWhere('patient_name', 'like', '%' . $search . '%')
-                  ->orWhere('patient_phone', 'like', '%' . $search . '%');
+            $search = trim((string) $request->input('search'));
+            $query->where(function ($builder) use ($search) {
+                $builder->where('registration_code', 'like', $search . '%')
+                    ->orWhere('patient_phone', 'like', '%' . $search . '%')
+                    ->orWhere('patient_name', 'like', '%' . $search . '%');
             });
         }
 
-        $registrations = $query->latest()->paginate(10);
-        return view('vaccine::admin.registrations.index', compact('registrations'));
+        $registrations = $query->latest('id')->paginate(20)->withQueryString();
+        $centers = AdminContext::isSuperAdmin()
+            ? Center::active()->orderBy('sort_order')->orderBy('id')->get(['id', 'name'])
+            : collect();
+
+        return view('vaccine::admin.registrations.index', compact('registrations', 'centers'));
     }
 
-    /**
-     * Chi tiết một đơn đăng ký tiêm chủng.
-     */
-    public function show($id)
+    public function show(int $id, RegistrationPaymentService $paymentService)
     {
-        $registration = Registration::with('vaccines')->findOrFail($id);
-        if (AdminContext::isBranchAdmin() && (int) $registration->center_id !== (int) AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
-        
-        $statuses = [
-            'Chờ thanh toán',
-            'Đã thanh toán',
-            'Đã tiêm',
-            'Đã hủy',
-            'Chờ tư vấn',
-            'Đã tư vấn'
-        ];
+        $registration = $this->visibleRegistration($id, ['vaccines', 'customer', 'slot.schedule']);
+        $pointQuote = $registration->customer ? $paymentService->quote($registration->customer, $registration) : null;
 
-        return view('vaccine::admin.registrations.show', compact('registration', 'statuses'));
+        return view('vaccine::admin.registrations.show', compact('registration', 'pointQuote'));
     }
 
-    /**
-     * Cập nhật trạng thái đơn đăng ký tiêm.
-     */
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, int $id, RegistrationPaymentService $paymentService)
     {
-        $registration = Registration::with('vaccines')->findOrFail($id);
-        if (AdminContext::isBranchAdmin() && (int) $registration->center_id !== (int) AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
-        $oldStatus = $registration->status;
-
+        $registration = $this->visibleRegistration($id);
         $validated = $request->validate([
-            'status' => 'required|string|in:Chờ thanh toán,Đã thanh toán,Đã tiêm,Đã hủy,Chờ tư vấn,Đã tư vấn',
-        ], [
-            'status.required' => 'Vui lòng chọn trạng thái.',
-            'status.in' => 'Trạng thái không hợp lệ.'
+            'booking_status' => 'required|in:pending,confirmed,completed,cancelled,no_show',
+        ]);
+
+        if ($validated['booking_status'] === Registration::BOOKING_CANCELLED) {
+            try {
+                $paymentService->cancelUnpaid($registration->id, AdminContext::user());
+            } catch (ValidationException $exception) {
+                return back()->withErrors($exception->errors());
+            }
+
+            return back()->with('success', 'Đã hủy lịch hẹn và giải phóng khung giờ.');
+        }
+
+        try {
+            DB::transaction(function () use ($registration, $validated) {
+                $locked = Registration::lockForUpdate()->findOrFail($registration->id);
+                $this->assertRegistrationVisible($locked);
+
+                if ($locked->booking_status === Registration::BOOKING_CANCELLED) {
+                    throw ValidationException::withMessages([
+                        'booking_status' => 'Lịch hẹn đã hủy và không thể cập nhật tiếp.',
+                    ]);
+                }
+
+                if ($validated['booking_status'] === Registration::BOOKING_COMPLETED
+                    && $locked->payment_status !== Registration::PAYMENT_PAID) {
+                    throw ValidationException::withMessages([
+                        'booking_status' => 'Chỉ có thể hoàn tất lịch hẹn sau khi đã xác nhận thanh toán.',
+                    ]);
+                }
+
+                $oldStatus = $locked->booking_status;
+                $locked->update([
+                    'booking_status' => $validated['booking_status'],
+                    'status' => $validated['booking_status'],
+                ]);
+
+                if ($oldStatus !== $validated['booking_status']) {
+                    AuditLogger::logOrderStatusUpdate(
+                        resourceId: $locked->id,
+                        oldValues: ['booking_status' => $oldStatus],
+                        newValues: ['booking_status' => $validated['booking_status']],
+                        centerId: $locked->center_id,
+                    );
+                }
+            });
+        } catch (ValidationException $exception) {
+            return back()->withErrors($exception->errors());
+        }
+
+        return back()->with('success', 'Đã cập nhật trạng thái lịch hẹn.');
+    }
+
+    public function settle(Request $request, int $id, RegistrationPaymentService $paymentService)
+    {
+        $registration = $this->visibleRegistration($id);
+        $validated = $request->validate([
+            'redeem_points' => 'nullable|integer|min:0',
         ]);
 
         try {
-            \Illuminate\Support\Facades\DB::transaction(function () use ($registration, $validated, $oldStatus) {
-                $registration->update([
-                    'status' => $validated['status']
-                ]);
-
-                if ($oldStatus !== $validated['status']) {
-                    \App\Services\AuditLogger::logOrderStatusUpdate(
-                        resourceId: $registration->id,
-                        oldValues: ['status' => $oldStatus],
-                        newValues: ['status' => $validated['status']],
-                        centerId: $registration->center_id
-                    );
-                }
-
-                $wasPaidOrInjected = in_array($oldStatus, ['Đã thanh toán', 'Đã tiêm'], true);
-                $isPaidOrInjected = in_array($validated['status'], ['Đã thanh toán', 'Đã tiêm'], true);
-
-                if ($wasPaidOrInjected && !$isPaidOrInjected) {
-                    \App\Services\AuditLogger::logRefund(
-                        resourceId: $registration->id,
-                        oldValues: ['status' => $oldStatus, 'total_price' => $registration->total_price],
-                        newValues: ['status' => $validated['status']],
-                        centerId: $registration->center_id
-                    );
-                }
-
-                if ($validated['status'] === 'Đã hủy' && $oldStatus !== 'Đã hủy') {
-                    app(\App\Services\FefoInventoryService::class)->releaseStock($registration);
-                }
-
-                if (!$wasPaidOrInjected && $isPaidOrInjected) {
-                    app(\App\Services\FefoInventoryService::class)->commitDeduction($registration);
-
-                    // Trừ tồn kho
-                    foreach ($registration->vaccines as $vaccine) {
-                        $centerVaccine = CenterVaccine::where('center_id', $registration->center_id)
-                            ->where('vaccine_id', $vaccine->id)
-                            ->lockForUpdate()
-                            ->first();
-
-                        if ($centerVaccine) {
-                            if ($centerVaccine->stock_quantity < 1) {
-                                throw \Illuminate\Validation\ValidationException::withMessages([
-                                    'status' => "Vắc xin '{$vaccine->name}' tại chi nhánh hiện tại đã hết hàng."
-                                ]);
-                            }
-
-                            $oldStock = (int) $centerVaccine->stock_quantity;
-                            $centerVaccine->stock_quantity = (int) $centerVaccine->stock_quantity - 1;
-                            $centerVaccine->stock_status = $centerVaccine->stock_quantity <= 0 ? 'out_of_stock' : ($centerVaccine->stock_quantity <= 5 ? 'limited' : 'available');
-                            $centerVaccine->save();
-
-                            \App\Services\AuditLogger::logStockUpdate(
-                                resourceId: $centerVaccine->id,
-                                oldValues: ['stock_quantity' => $oldStock],
-                                newValues: ['stock_quantity' => $centerVaccine->stock_quantity, 'stock_status' => $centerVaccine->stock_status],
-                                centerId: $registration->center_id
-                            );
-
-                            VaccineStockMovement::create([
-                                'center_id' => $registration->center_id,
-                                'vaccine_id' => $vaccine->id,
-                                'type' => 'sale',
-                                'quantity' => 1,
-                                'unit_price' => (int) ($vaccine->pivot->price ?? 0),
-                                'note' => 'Ghi nhận bán từ đơn ' . $registration->registration_code,
-                                'created_by' => AdminContext::user()?->id,
-                            ]);
-                        }
-                    }
-                } elseif ($wasPaidOrInjected && !$isPaidOrInjected) {
-                    // Hoàn lại tồn kho
-                    foreach ($registration->vaccines as $vaccine) {
-                        $centerVaccine = CenterVaccine::where('center_id', $registration->center_id)
-                            ->where('vaccine_id', $vaccine->id)
-                            ->lockForUpdate()
-                            ->first();
-
-                        if ($centerVaccine) {
-                            $oldStock = (int) $centerVaccine->stock_quantity;
-                            $centerVaccine->stock_quantity = (int) $centerVaccine->stock_quantity + 1;
-                            $centerVaccine->stock_status = $centerVaccine->stock_quantity <= 0 ? 'out_of_stock' : ($centerVaccine->stock_quantity <= 5 ? 'limited' : 'available');
-                            $centerVaccine->save();
-
-                            \App\Services\AuditLogger::logStockUpdate(
-                                resourceId: $centerVaccine->id,
-                                oldValues: ['stock_quantity' => $oldStock],
-                                newValues: ['stock_quantity' => $centerVaccine->stock_quantity, 'stock_status' => $centerVaccine->stock_status],
-                                centerId: $registration->center_id
-                            );
-
-                            VaccineStockMovement::create([
-                                'center_id' => $registration->center_id,
-                                'vaccine_id' => $vaccine->id,
-                                'type' => 'import',
-                                'quantity' => 1,
-                                'unit_price' => (int) ($vaccine->pivot->price ?? 0),
-                                'note' => 'Hoàn tồn do thay đổi trạng thái từ đơn ' . $registration->registration_code,
-                                'created_by' => AdminContext::user()?->id,
-                            ]);
-                        }
-                    }
-                }
-            });
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            throw $e;
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to update registration status: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật trạng thái đơn đăng ký.');
+            $paymentService->settle($registration->id, (int) ($validated['redeem_points'] ?? 0), AdminContext::user());
+        } catch (ValidationException $exception) {
+            return back()->withErrors($exception->errors())->withInput();
         }
 
-        return redirect()->route('admin.registrations.show', $id)
-            ->with('success', 'Cập nhật trạng thái đơn đăng ký thành công.');
+        return back()->with('success', 'Đã xác nhận thanh toán và cập nhật điểm khách hàng.');
     }
 
-    /**
-     * Quản lý lịch hẹn theo ngày trong tuần.
-     */
+    public function refund(int $id, RegistrationPaymentService $paymentService)
+    {
+        $registration = $this->visibleRegistration($id);
+
+        try {
+            $paymentService->refund($registration->id, AdminContext::user());
+        } catch (ValidationException $exception) {
+            return back()->withErrors($exception->errors());
+        }
+
+        return back()->with('success', 'Đã hoàn tiền, đảo điểm và hủy lịch hẹn.');
+    }
+
     public function schedule(Request $request)
     {
-        if (AdminContext::isBranchAdmin() && $request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
-
-        $weekParam = $request->input('week');
-        
-        try {
-            $startOfWeek = $weekParam 
-                ? \Carbon\Carbon::parse($weekParam)->startOfWeek()
-                : \Carbon\Carbon::now()->startOfWeek();
-        } catch (\Exception $e) {
-            $startOfWeek = \Carbon\Carbon::now()->startOfWeek();
-        }
-
+        $this->assertRequestedCenter($request);
+        $validated = $request->validate([
+            'week' => 'nullable|date_format:Y-m-d',
+        ]);
+        $startOfWeek = !empty($validated['week'])
+            ? \Carbon\Carbon::createFromFormat('Y-m-d', $validated['week'])->startOfWeek()
+            : now()->startOfWeek();
         $endOfWeek = $startOfWeek->copy()->endOfWeek();
 
-        // Lấy toàn bộ đơn đăng ký trong tuần này
-        $registrations = AdminContext::applyCenterScope(Registration::with('vaccines'))
+        $registrations = $this->registrationQuery($request)
+            ->with(['vaccines', 'slot'])
             ->whereBetween('injection_date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
             ->get();
 
-        // Nhóm theo ngày trong tuần
-        $daysOfWeek = [];
-        $currentDay = $startOfWeek->copy();
-        for ($i = 0; $i < 7; $i++) {
-            $dateString = $currentDay->toDateString();
-            $daysOfWeek[$dateString] = [
-                'day_name' => $this->getVietnameseDayName($currentDay),
-                'date' => $currentDay->format('d/m/Y'),
-                'carbon' => $currentDay->copy(),
-                'items' => $registrations->filter(fn($reg) => $reg->injection_date == $dateString)->values()
-            ];
-            $currentDay->addDay();
-        }
+        $daysOfWeek = collect(range(0, 6))->mapWithKeys(function (int $offset) use ($startOfWeek, $registrations) {
+            $date = $startOfWeek->copy()->addDays($offset);
+
+            return [$date->toDateString() => [
+                'day_name' => $this->vietnameseDayName($date),
+                'date' => $date->format('d/m/Y'),
+                'carbon' => $date,
+                'items' => $registrations
+                    ->filter(fn (Registration $registration) => $registration->injection_date?->toDateString() === $date->toDateString())
+                    ->values(),
+            ]];
+        })->all();
 
         return view('vaccine::admin.schedule', compact('daysOfWeek', 'startOfWeek'));
     }
 
-    /**
-     * Dịch thứ sang Tiếng Việt.
-     */
-    private function getVietnameseDayName(\Carbon\Carbon $date)
+    public function exportCsv(Request $request)
+    {
+        $this->assertRequestedCenter($request);
+        $filename = 'don_dang_ky_tiem_' . now()->format('Y-m-d_His') . '.csv';
+        $query = $this->registrationQuery($request)->with('vaccines:id,name')->orderBy('id');
+
+        return response()->stream(function () use ($query) {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($file, [
+                'Mã đơn', 'Họ tên', 'Số điện thoại', 'Trung tâm', 'Ngày tiêm',
+                'Tổng tiền', 'Trạng thái lịch hẹn', 'Trạng thái thanh toán', 'Vắc xin', 'Ngày đăng ký',
+            ]);
+
+            $query->lazyById(500)->each(function (Registration $registration) use ($file) {
+                fputcsv($file, [
+                    $this->safeCsvCell($registration->registration_code),
+                    $this->safeCsvCell($registration->patient_name),
+                    $this->safeCsvCell($registration->patient_phone),
+                    $this->safeCsvCell($registration->center_name),
+                    $this->safeCsvCell($registration->injection_date?->format('Y-m-d')),
+                    $registration->total_price,
+                    $this->safeCsvCell($registration->bookingStatusLabel()),
+                    $this->safeCsvCell($registration->paymentStatusLabel()),
+                    $this->safeCsvCell($registration->vaccines->pluck('name')->implode(', ')),
+                    $registration->created_at->format('d/m/Y H:i'),
+                ]);
+            });
+
+            fclose($file);
+        }, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    private function registrationQuery(Request $request)
+    {
+        $query = Registration::query();
+
+        if (AdminContext::isBranchAdmin()) {
+            return $query->where('center_id', AdminContext::centerId());
+        }
+
+        if ($request->filled('center_id')) {
+            $query->where('center_id', $request->integer('center_id'));
+        }
+
+        return $query;
+    }
+
+    private function visibleRegistration(int $id, array $with = []): Registration
+    {
+        $registration = Registration::with($with)->findOrFail($id);
+        $this->assertRegistrationVisible($registration);
+
+        return $registration;
+    }
+
+    private function assertRegistrationVisible(Registration $registration): void
+    {
+        if (AdminContext::isBranchAdmin() && (int) $registration->center_id !== (int) AdminContext::centerId()) {
+            abort(403, 'Cross-branch access forbidden.');
+        }
+    }
+
+    private function assertRequestedCenter(Request $request): void
+    {
+        if (AdminContext::isBranchAdmin() && $request->filled('center_id')
+            && $request->integer('center_id') !== (int) AdminContext::centerId()) {
+            abort(403, 'Cross-branch access forbidden.');
+        }
+    }
+
+    private function vietnameseDayName(\Carbon\Carbon $date): string
     {
         return match ($date->dayOfWeek) {
             \Carbon\Carbon::MONDAY => 'Thứ Hai',
@@ -258,62 +257,6 @@ class AdminRegistrationController extends Controller
             \Carbon\Carbon::SATURDAY => 'Thứ Bảy',
             \Carbon\Carbon::SUNDAY => 'Chủ Nhật',
         };
-    }
-
-    /**
-     * Xuất danh sách đăng ký ra file CSV.
-     */
-    public function exportCsv(Request $request)
-    {
-        if (AdminContext::isBranchAdmin() && $request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
-
-        $registrations = AdminContext::applyCenterScope(Registration::with('vaccines'))->latest()->get();
-
-        $filename = 'don_dang_ky_tiem_' . date('Y-m-d_His') . '.csv';
-
-        $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ];
-
-        $callback = function() use ($registrations) {
-            $file = fopen('php://output', 'w');
-            // BOM for UTF-8 Excel compatibility
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-
-            // Header row
-            fputcsv($file, [
-                'Mã đơn', 'Họ tên', 'Số điện thoại', 'Email',
-                'Năm sinh', 'Giới tính', 'Địa chỉ',
-                'Trung tâm tiêm', 'Ngày tiêm', 'Tổng tiền',
-                'Trạng thái', 'Vắc xin đã chọn', 'Ngày đăng ký'
-            ]);
-
-            foreach ($registrations as $reg) {
-                $vaccineNames = $reg->vaccines->pluck('name')->implode(', ');
-                fputcsv($file, [
-                    $this->safeCsvCell($reg->registration_code),
-                    $this->safeCsvCell($reg->patient_name),
-                    $this->safeCsvCell($reg->patient_phone),
-                    $this->safeCsvCell($reg->patient_email ?? ''),
-                    $this->safeCsvCell($reg->patient_birth_year ?? ''),
-                    $this->safeCsvCell($reg->patient_gender ?? ''),
-                    $this->safeCsvCell($reg->patient_address ?? ''),
-                    $this->safeCsvCell($reg->center_name),
-                    $this->safeCsvCell($reg->injection_date),
-                    $this->safeCsvCell((string) $reg->total_price),
-                    $this->safeCsvCell($reg->status),
-                    $this->safeCsvCell($vaccineNames),
-                    $this->safeCsvCell($reg->created_at->format('d/m/Y H:i')),
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
     }
 
     private function safeCsvCell(?string $value): string

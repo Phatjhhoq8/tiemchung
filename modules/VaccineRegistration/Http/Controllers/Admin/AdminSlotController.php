@@ -17,6 +17,10 @@ class AdminSlotController extends Controller
     {
         $query = Slot::with('schedule.center');
 
+        if (AdminContext::isBranchAdmin()) {
+            $query->whereHas('schedule', fn ($schedule) => $schedule->where('center_id', AdminContext::centerId()));
+        }
+
         if ($request->filled('schedule_id')) {
             $query->where('schedule_id', $request->input('schedule_id'));
         }
@@ -89,6 +93,10 @@ class AdminSlotController extends Controller
             'reserved_count' => 'sometimes|integer|min:0',
             'is_active' => 'nullable|boolean',
         ]);
+
+        if (isset($validated['capacity']) && $validated['capacity'] < $slot->reserved_count) {
+            return back()->withErrors(['capacity' => 'Công suất không được thấp hơn số chỗ đã đặt.']);
+        }
 
         $slot->update($validated);
 

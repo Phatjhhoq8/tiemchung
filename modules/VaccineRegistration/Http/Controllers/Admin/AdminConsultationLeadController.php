@@ -57,6 +57,7 @@ class AdminConsultationLeadController extends Controller
     public function show(Request $request, $id)
     {
         $lead = ConsultationLead::with('center')->findOrFail($id);
+        $this->assertLeadVisible($lead);
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -74,6 +75,7 @@ class AdminConsultationLeadController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $lead = ConsultationLead::findOrFail($id);
+        $this->assertLeadVisible($lead);
 
         $validated = $request->validate([
             'status' => 'required|string|max:50',
@@ -95,5 +97,12 @@ class AdminConsultationLeadController extends Controller
         }
 
         return redirect()->back()->with('success', 'Cập nhật trạng thái tư vấn thành công!');
+    }
+
+    private function assertLeadVisible(ConsultationLead $lead): void
+    {
+        if (AdminContext::isBranchAdmin() && (int) $lead->center_id !== (int) AdminContext::centerId()) {
+            abort(403, 'Cross-branch access forbidden.');
+        }
     }
 }

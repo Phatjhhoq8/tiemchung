@@ -55,15 +55,16 @@ class VaccineServiceProvider extends ServiceProvider
             ]);
         }
 
-        View::composer('vaccine::*', function ($view) {
-            if (app()->runningInConsole()) {
-                return;
-            }
-
+        View::composer('vaccine::layouts.app', function ($view) {
             $view->with('currentCenter', CenterContext::current());
             $view->with('activeCenters', CenterContext::activeCenters());
+        });
+
+        View::composer(['vaccine::layouts.admin', 'vaccine::admin.*'], function ($view) {
             $view->with('adminUser', AdminContext::user());
             $view->with('isSuperAdmin', AdminContext::isSuperAdmin());
+            $view->with('adminCenters', CenterContext::activeCenters());
+            $view->with('adminSelectedCenterId', AdminContext::selectedCenterId());
         });
     }
 }

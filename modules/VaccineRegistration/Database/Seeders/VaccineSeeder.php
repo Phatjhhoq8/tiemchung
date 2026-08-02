@@ -6,16 +6,21 @@
 
 namespace Modules\VaccineRegistration\Database\Seeders;
 
+use Database\Seeders\Concerns\PreventsProductionSeeding;
 use Illuminate\Database\Seeder;
 use Modules\VaccineRegistration\Models\Vaccine;
 
 class VaccineSeeder extends Seeder
 {
+    use PreventsProductionSeeding;
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
+        $this->assertSafeSeedingTarget();
+
         $vaccines = [
             // --- ĐÚNG 40 VẮC XIN LẺ THẬT TỪ PDF MEDICARE CỜ ĐỎ ---
             [
