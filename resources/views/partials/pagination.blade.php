@@ -1,9 +1,4 @@
 @if ($paginator->hasPages())
-    @php
-        $currentPage = $paginator->currentPage();
-        $lastPage = $paginator->lastPage();
-    @endphp
-
     <div class="news-pagination-custom">
         {{-- Previous Page Link --}}
         @if ($paginator->onFirstPage())
@@ -16,54 +11,24 @@
             </a>
         @endif
 
-        {{-- Always show Page 1 and Page 2 --}}
-        @if ($currentPage == 1)
-            <span class="pagination-btn active">1</span>
-            @if ($lastPage >= 2)
-                <a href="{{ $paginator->url(2) }}" class="pagination-btn">2</a>
-            @endif
-        @elseif ($currentPage == 2)
-            <a href="{{ $paginator->url(1) }}" class="pagination-btn">1</a>
-            <span class="pagination-btn active">2</span>
-        @else
-            <a href="{{ $paginator->url(1) }}" class="pagination-btn">1</a>
-            @if ($lastPage >= 2)
-                <a href="{{ $paginator->url(2) }}" class="pagination-btn">2</a>
-            @endif
-        @endif
-
-        {{-- Dots / Middle active page --}}
-        @if ($currentPage > 2 && $currentPage < $lastPage - 1)
-            @if ($currentPage > 3)
-                <span class="pagination-dots">...</span>
-            @endif
-            <span class="pagination-btn active">{{ $currentPage }}</span>
-            @if ($currentPage < $lastPage - 2)
-                <span class="pagination-dots">...</span>
-            @endif
-        @else
-            @if ($lastPage > 4)
-                <span class="pagination-dots">...</span>
-            @endif
-        @endif
-
-        {{-- Always show Penultimate Page (End-1) and Last Page (End) --}}
-        @if ($lastPage >= 3)
-            @php $penultimate = $lastPage - 1; @endphp
-            @if ($penultimate > 2)
-                @if ($currentPage == $penultimate)
-                    <span class="pagination-btn active">{{ $penultimate }}</span>
-                @else
-                    <a href="{{ $paginator->url($penultimate) }}" class="pagination-btn">{{ $penultimate }}</a>
-                @endif
+        {{-- Pagination Elements --}}
+        @foreach ($elements as $element)
+            {{-- "Three Dots" Separator --}}
+            @if (is_string($element))
+                <span class="pagination-dots">{{ $element }}</span>
             @endif
 
-            @if ($currentPage == $lastPage)
-                <span class="pagination-btn active">{{ $lastPage }}</span>
-            @else
-                <a href="{{ $paginator->url($lastPage) }}" class="pagination-btn">{{ $lastPage }}</a>
+            {{-- Array Of Links --}}
+            @if (is_array($element))
+                @foreach ($element as $page => $url)
+                    @if ($page == $paginator->currentPage())
+                        <span class="pagination-btn active">{{ $page }}</span>
+                    @else
+                        <a href="{{ $url }}" class="pagination-btn">{{ $page }}</a>
+                    @endif
+                @endforeach
             @endif
-        @endif
+        @endforeach
 
         {{-- Next Page Link --}}
         @if ($paginator->hasMorePages())

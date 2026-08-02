@@ -120,6 +120,62 @@
 * **File Upload and URL Restrictions**: Blocked SVG upload formats in [AdminVaccineController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminVaccineController.php), [AdminArticleController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/AdminArticleController.php), and [AdminBannerController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminBannerController.php). Validated map iframe domains in [AdminCenterController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminCenterController.php) and link URLs in [AdminBannerController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminBannerController.php).
 * **Missing Column Migration**: Added [2026_07_31_000006_add_quantity_to_registration_vaccines_table.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Database/Migrations/2026_07_31_000006_add_quantity_to_registration_vaccines_table.php) migration to define the missing `quantity` column on the intermediate table, updating both `Registration` and `Vaccine` models to include the pivot attribute.
 
+## [v3.5.28] - 2026-08-02
+
+### Header Action Pill Buttons Standardization
+
+* **Unified 3 Header Action Buttons**: Standardized all 3 header action items (Branch Selector `📍 Medicare Trà Nóc ▾`, Hotline Direct Call `📞 092 1331233`, and Cart Pill `🛒 Giỏ hàng (0)`) into a single, identical `.header-action-pill` component system in [app.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php). All 3 buttons now share identical height (40px), 50px pill radius, font styling (13.5px font-weight 700), white background, subtle Medicare Red border (`#fecaca`), and active hover transition to solid Medicare Red (`#c8102e`).
+
+## [v3.5.27] - 2026-08-02
+
+### Sidebar Sticky Layout Fix & Related Articles Card Enclosure
+
+* **Sidebar Sticky Height Fix**: Fixed `.article-sidebar` alignment from `align-self: flex-start` to `align-self: stretch` in [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css). The sidebar container now stretches to match 100% of the main article content height, enabling `.sticky-sidebar-container` (TOC widget) to remain permanently sticky along the entire length of long articles.
+* **Enclosed Related Articles Section**: Enclosed the bottom related articles section in a clean white rounded card container (`.related-card-container`) with `1px solid #e2e8f0` border, 20px radius, and subtle shadow in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php), matching the exact design language of the site.
+
+## [v3.5.26] - 2026-08-02
+
+### Option A: Related Articles Grid & Independent Sticky TOC Sidebar Redesign
+
+* **Independent Sticky TOC Sidebar**: Simplified the right sidebar in [articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php) by setting `.sticky-sidebar-container` to `position: sticky; top: 95px`. The Table of Contents (TOC) widget now remains permanently fixed in view at the top of the reader's viewport, 100% immune to being scrolled away.
+* **Bottom Related Articles Grid Layout (Option A)**: Relocated the 5 related articles from the sidebar down to the bottom section above multi-topic recommendations. Designed a 5-card responsive horizontal grid (`.related-carousel-grid`) with `Medicare Navy` badges (`Cùng Chuyên Mục`), hover zoom animations, and clear typography separation in [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css).
+
+## [v3.5.25] - 2026-08-02
+
+### CSS Refactoring & Legacy Pagination Rule Cleanup
+
+* **Clean CSS Optimization**: Removed over 120 lines of redundant, heavy Tailwind pagination overrides (`nav[role="navigation"]`, `.shadow-sm`, `.catalog-pagination a:hover`, `span[aria-disabled="true"] > span`) from [style.css](file:///d:/Projects/tiemchung/public/css/style.css). Streamlined the entire site-wide pagination stylesheet into a single, clean `.news-pagination-custom` system for optimal CSS payload size and rendering performance.
+
+## [v3.5.24] - 2026-08-02
+
+### Global Pagination System Standardization
+
+* **Unified Dynamic Red-Pill Pagination Across All Views**: Standardized the approved dynamic red-pill pagination template (`partials.pagination`) across all site components: Product Catalog ([grid.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/partials/grid.blade.php)), News Catalog ([articles/index.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/index.blade.php)), Article Detail recommendations ([articles/show.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/articles/show.blade.php)), and Product Detail pages. Synchronized global `.news-pagination-custom` and `.pagination-btn` CSS rules into [style.css](file:///d:/Projects/tiemchung/public/css/style.css), ensuring 100% visual consistency and dynamic page handling site-wide.
+
+## [v3.5.23] - 2026-08-02
+
+### Dynamic Laravel Pagination Template Engine & Global Default View
+
+* **Dynamic Pagination Template Engine**: Refactored the custom pagination template in [pagination.blade.php](file:///d:/Projects/tiemchung/resources/views/partials/pagination.blade.php) and [modules/VaccineRegistration/resources/views/partials/pagination.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/partials/pagination.blade.php). Replaced the rigid 4-button hardcoded logic with Laravel's dynamic `$elements` array. Neighboring page links around the active page now expand dynamically across any total number of pages. Configured `Paginator::defaultView('partials.pagination')` in [AppServiceProvider.php](file:///d:/Projects/tiemchung/app/Providers/AppServiceProvider.php) so this clean red-highlighted pill-shaped pagination is used globally as the base design.
+
+## [v3.5.22] - 2026-08-02
+
+### Article & Product Detail Table of Contents (TOC) Dynamic Scroll Spy & Outline Elimination
+
+* **Dynamic Scroll Position Tracking & Zero Layout Shift**: Refactored `initDynamicTOC()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) to replace brittle `IntersectionObserver` thresholds with a high-performance scroll-position tracking algorithm. The Table of Contents (TOC) links on both Article Detail and Vaccine Product Detail pages now continuously and smoothly follow the reader's active section as they scroll. Removed browser default black focus ring outlines (`:focus`, `:focus-visible`) and heavy yellow callout box backgrounds from [articles.css](file:///d:/Projects/tiemchung/public/css/articles.css) and [vaccines.css](file:///d:/Projects/tiemchung/public/css/vaccines.css), eliminating text wrapping jumps and layout shifts.
+
+## [v3.5.21] - 2026-08-02
+
+### Header UX Redesign: Compact Branch Selector & Dedicated Call Action Button
+
+* **Header Branch Selector & Hotline Action Split**: Refactored the header action items in [app.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/layouts/app.blade.php). Separated the combined long button into two distinct components: a compact, clean branch picker badge (`📍 Medicare Cờ Đỏ ▾`) for switching active centers, and a prominent Medicare Red call button (`📞 0938 60 38 39`) for direct telephone dialing (`tel:`). Centered the branch selection dropdown (`#branchDropdown`) directly under the branch picker badge using `left: 50%; transform: translateX(-50%)`. Integrated a direct contact/map link inside the branch dropdown view for seamless navigation to the contact page, and removed the duplicate 'Liên Hệ' text link from the main navigation menu to ensure a streamlined 4-item nav bar (`Trang Chủ | Giới Thiệu | Danh Mục Sản Phẩm | Tin Tức`).
+
+## [v3.5.20] - 2026-08-02
+
+### Pagination CSS Centering & Ellipsis Border Elimination
+
+* **Strict Pagination Centering & Ellipsis Border Removal**: Updated pagination styles in [style.css](file:///d:/Projects/tiemchung/public/css/style.css). Completely stripped borders, backgrounds, and box-shadows from `...` (ellipsis) disabled spans, rendering them as clean text dots. Applied `justify-content: center` and hidden summary text overrides across all pagination containers (`.catalog-pagination`, `.news-pagination`, `nav[role="navigation"]`) to ensure the entire pagination bar is perfectly centered on all pages.
+
 ## [v3.5.19] - 2026-07-31
 
 ### Dynamic Branches, Register Center Selection, Admin Imports & Responsive Header Fix

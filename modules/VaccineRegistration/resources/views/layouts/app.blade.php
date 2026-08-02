@@ -89,50 +89,110 @@
                 <a href="{{ route('about') }}" class="nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}">Giới Thiệu</a>
                 <a href="{{ route('vaccine.index') }}" class="nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}">Danh Mục Sản Phẩm</a>
                 <a href="{{ route('news.index') }}" class="nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}">Tin Tức</a>
-                <a href="{{ route('contact') }}" class="nav-link {{ Route::currentRouteName() === 'contact' ? 'active' : '' }}">Liên Hệ</a>
             </nav>
             
-            <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
-                <!-- 1. Nút Điện Thoại (Chỉ còn icon và số điện thoại, bỏ chữ 'Tư vấn:') -->
+            <div class="header-actions" style="display: flex; align-items: center; gap: 10px;">
+                <style>
+                    /* Unified Header Action Pill System (100% Identical Size, Style & Color Scheme) */
+                    .header-action-pill {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                        height: 40px;
+                        padding: 0 16px;
+                        border-radius: 50px;
+                        background-color: #ffffff;
+                        color: #0f172a !important;
+                        border: 1px solid #fecaca;
+                        font-size: 13.5px;
+                        font-weight: 700;
+                        cursor: pointer;
+                        white-space: nowrap;
+                        text-decoration: none !important;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+                        transition: all 0.25s ease;
+                        box-sizing: border-box;
+                    }
+                    .header-action-pill i,
+                    .header-action-pill svg {
+                        width: 16px;
+                        height: 16px;
+                        color: var(--primary-color, #c8102e);
+                        flex-shrink: 0;
+                        transition: color 0.2s ease;
+                    }
+                    .header-action-pill .header-cart-badge-inline {
+                        background-color: var(--primary-color, #c8102e);
+                        color: #ffffff;
+                        font-size: 11.5px;
+                        font-weight: 800;
+                        width: 20px;
+                        height: 20px;
+                        border-radius: 50%;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-left: 2px;
+                        transition: all 0.2s ease;
+                    }
+                    .header-action-pill:hover {
+                        background-color: var(--primary-color, #c8102e);
+                        border-color: var(--primary-color, #c8102e);
+                        color: #ffffff !important;
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 16px rgba(200, 16, 46, 0.3);
+                    }
+                    .header-action-pill:hover i,
+                    .header-action-pill:hover svg {
+                        color: #ffffff !important;
+                    }
+                    .header-action-pill:hover .header-cart-badge-inline {
+                        background-color: #ffffff;
+                        color: var(--primary-color, #c8102e);
+                    }
+                    .branch-item-btn {
+                        width: 100%;
+                        border: 0;
+                        background: #ffffff;
+                        text-align: left;
+                        padding: 10px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        display: flex;
+                        gap: 8px;
+                        align-items: flex-start;
+                        color: #334155;
+                        transition: all 0.2s ease;
+                    }
+                    .branch-item-btn:hover {
+                        background-color: rgba(200, 16, 46, 0.05);
+                        color: var(--primary-color, #c8102e);
+                    }
+                    .branch-item-btn:hover strong {
+                        color: var(--primary-color, #c8102e) !important;
+                    }
+                    .branch-item-btn.active {
+                        background-color: rgba(200, 16, 46, 0.08);
+                        color: var(--primary-color, #c8102e);
+                    }
+                    .branch-item-btn.active:hover {
+                        background-color: rgba(200, 16, 46, 0.12);
+                    }
+                    .branch-item-btn.active strong {
+                        color: var(--primary-color, #c8102e) !important;
+                    }
+                </style>
+
+                <!-- 1. Nút Chọn Chi Nhánh (Pill Standard) -->
                 <div class="header-branch-wrapper" style="position: relative;">
-                    <button type="button" class="hotline-btn hotline-btn-desktop" id="headerBranchButton" onclick="toggleBranchDropdown(event)" title="Đổi chi nhánh hiện tại">
+                    <button type="button" class="header-action-pill" id="headerBranchButton" onclick="toggleBranchDropdown(event)" title="Đổi chi nhánh tiêm chủng">
                         <i data-lucide="map-pin"></i>
-                        <span id="headerBranchText">{{ $currentCenter?->name ?? 'Chi nhánh' }}<span class="hotline-phone-suffix"> - {{ $hotline }}</span></span>
+                        <span id="headerBranchText">{{ $currentCenter?->name ?? 'Chi nhánh' }}</span>
+                        <i data-lucide="chevron-down" style="width: 14px; height: 14px; margin-left: 2px;"></i>
                     </button>
-                    <style>
-                        .branch-item-btn {
-                            width: 100%;
-                            border: 0;
-                            background: #ffffff;
-                            text-align: left;
-                            padding: 10px;
-                            border-radius: 10px;
-                            cursor: pointer;
-                            display: flex;
-                            gap: 8px;
-                            align-items: flex-start;
-                            color: #334155;
-                            transition: all 0.2s ease;
-                        }
-                        .branch-item-btn:hover {
-                            background-color: rgba(200, 16, 46, 0.05);
-                            color: var(--primary-color, #c8102e);
-                        }
-                        .branch-item-btn:hover strong {
-                            color: var(--primary-color, #c8102e) !important;
-                        }
-                        .branch-item-btn.active {
-                            background-color: rgba(200, 16, 46, 0.08);
-                            color: var(--primary-color, #c8102e);
-                        }
-                        .branch-item-btn.active:hover {
-                            background-color: rgba(200, 16, 46, 0.12);
-                        }
-                        .branch-item-btn.active strong {
-                            color: var(--primary-color, #c8102e) !important;
-                        }
-                    </style>
-                    <div id="branchDropdown" class="hidden" style="position: absolute; right: 0; top: calc(100% + 10px); width: min(360px, 90vw); background: #fff; border: 1px solid #fecaca; box-shadow: 0 18px 45px rgba(127,29,29,.18); border-radius: 14px; padding: 10px; z-index: 9999;">
+
+                    <div id="branchDropdown" class="hidden" style="position: absolute; left: 50%; transform: translateX(-50%); top: calc(100% + 10px); width: min(360px, 90vw); background: #fff; border: 1px solid #fecaca; box-shadow: 0 18px 45px rgba(127,29,29,.18); border-radius: 14px; padding: 10px; z-index: 9999;">
                         <div style="font-size: 13px; font-weight: 800; color: #0f172a; padding: 8px 10px 10px;">Chọn chi nhánh Medicare</div>
                         @foreach($activeCenters as $center)
                             <form method="POST" action="{{ route('centers.select') }}" style="margin: 0;">
@@ -147,10 +207,22 @@
                                 </button>
                             </form>
                         @endforeach
+                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e2e8f0; text-align: center;">
+                            <a href="{{ route('contact') }}" style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--primary-color, #c8102e); text-decoration: none; padding: 8px 10px; border-radius: 8px; background: rgba(200,16,46,0.04); transition: all 0.2s ease;">
+                                <i data-lucide="map-pin" style="width: 15px; height: 15px;"></i>
+                                <span>Xem địa chỉ & bản đồ tất cả chi nhánh</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 2. Nút Giỏ Hàng (Thiết kế Pill giống hệt & cùng màu nút Điện Thoại) -->
+                <!-- 2. Nút Hotline Gọi Điện Trực Tiếp (Pill Standard) -->
+                <a href="tel:{{ preg_replace('/[^0-9]/', '', $hotline) }}" class="header-action-pill" title="Gọi tư vấn tiêm chủng">
+                    <i data-lucide="phone-call"></i>
+                    <span>{{ $hotline }}</span>
+                </a>
+
+                <!-- 3. Nút Giỏ Hàng (Pill Standard) -->
                 @php
                     $layoutCartState = \Modules\VaccineRegistration\Support\CenterContext::resolveCart($currentCenter?->id);
                     $layoutCart = $layoutCartState['cart'];
@@ -158,7 +230,7 @@
                     $layoutTotalPrice = $layoutCartState['total_price'];
                 @endphp
                 <div class="header-cart-wrapper" id="headerCartWrapper">
-                    <button type="button" class="hotline-btn header-cart-btn-pill" id="headerCartBtn" onclick="toggleHeaderCartDropdown(event)" title="Danh sách vắc xin đã chọn tiêm">
+                    <button type="button" class="header-action-pill" id="headerCartBtn" onclick="toggleHeaderCartDropdown(event)" title="Danh sách vắc xin đã chọn tiêm">
                         <i data-lucide="shopping-cart"></i>
                         <span>Giỏ hàng</span>
                         <span class="header-cart-badge-inline" id="cartCount">{{ $layoutCartCount }}</span>
