@@ -91,6 +91,17 @@ class CustomerLoyaltyAndManualPaymentTest extends TestCase
         $this->assertSame($customer->id, $second->customer_id);
     }
 
+    public function test_customer_can_lookup_bookings_by_registered_phone(): void
+    {
+        $registration = $this->book($this->centerA, 'Nguyễn Văn A', $this->householdPhone, $this->keyPrefix . 'public-lookup');
+
+        $this->post(route('booking.lookup.submit'), ['phone' => '+84' . substr($this->householdPhone, 1)])
+            ->assertOk()
+            ->assertSee($registration->registration_code)
+            ->assertSee('Nguyễn Văn A')
+            ->assertSee($this->vaccine->name);
+    }
+
     public function test_manual_settlement_redeems_up_to_balance_and_earns_points_once(): void
     {
         $first = $this->book($this->centerA, 'Nguyễn Văn A', $this->householdPhone, $this->keyPrefix . 'settle-one');

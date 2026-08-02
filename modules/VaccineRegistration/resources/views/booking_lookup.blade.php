@@ -1,0 +1,58 @@
+@extends('vaccine::layouts.app')
+
+@section('title', 'Tra Cứu Lịch Hẹn')
+
+@section('content')
+<div style="max-width: 980px; margin: 0 auto; padding: 0 1rem 3rem;">
+    <section style="background: linear-gradient(135deg, #fff1f2, #ffffff); border: 1px solid #fecdd3; border-radius: 20px; padding: clamp(1.5rem, 4vw, 2.5rem);">
+        <span style="display: inline-flex; align-items: center; gap: 6px; color: var(--primary-color); font-size: .82rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;"><i data-lucide="calendar-search" style="width: 16px; height: 16px;"></i> Dành cho khách hàng</span>
+        <h1 style="margin: .65rem 0 .5rem; color: #0f172a; font-size: clamp(1.7rem, 4vw, 2.35rem);">Tra cứu lịch hẹn</h1>
+        <p style="max-width: 620px; margin: 0; color: #475569; line-height: 1.6;">Nhập số điện thoại đã dùng khi đặt lịch để xem lịch hẹn, trạng thái thanh toán và các vắc xin đã đăng ký.</p>
+
+        <form action="{{ route('booking.lookup.submit') }}" method="POST" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1.5rem;">
+            @csrf
+            <label for="phone" class="sr-only">Số điện thoại</label>
+            <input id="phone" name="phone" type="tel" value="{{ old('phone', $phone ? \Modules\VaccineRegistration\Support\PhoneNormalizer::display($phone) : '') }}" inputmode="tel" autocomplete="tel" placeholder="Ví dụ: 0912345678" required style="flex: 1 1 260px; min-height: 46px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0 14px; font-size: 1rem;">
+            <button type="submit" class="btn-primary-header" style="min-height: 46px; border: 0; cursor: pointer;"><i data-lucide="search" style="width: 17px; height: 17px;"></i> Tra cứu</button>
+        </form>
+
+        @error('phone')
+            <p style="margin: .75rem 0 0; color: #b91c1c; font-weight: 600;">{{ $message }}</p>
+        @enderror
+    </section>
+
+    @if($lookedUp && $registrations->isEmpty())
+        <div style="margin-top: 1.5rem; padding: 1.25rem; border: 1px solid #fde68a; border-radius: 12px; background: #fffbeb; color: #92400e;">
+            Chưa tìm thấy lịch hẹn với số điện thoại này. Vui lòng kiểm tra lại số đã dùng khi đặt lịch hoặc liên hệ chi nhánh để được hỗ trợ.
+        </div>
+    @endif
+
+    @if($registrations->isNotEmpty())
+        <section style="margin-top: 1.75rem;">
+            <h2 style="margin: 0 0 1rem; color: #0f172a; font-size: 1.3rem;">Lịch hẹn và lịch sử đăng ký ({{ $registrations->count() }})</h2>
+            <div style="display: grid; gap: 1rem;">
+                @foreach($registrations as $registration)
+                    <article style="border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; background: #ffffff; box-shadow: 0 4px 16px rgba(15, 23, 42, .04);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+                            <div>
+                                <strong style="color: #0f172a; font-size: 1.05rem;">{{ $registration->patient_name }}</strong>
+                                <div style="margin-top: 4px; color: #64748b; font-size: .9rem;">Mã phiếu: {{ $registration->registration_code }}</div>
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <span style="padding: 5px 10px; border-radius: 999px; background: #fef2f2; color: #b91c1c; font-size: .82rem; font-weight: 700;">{{ $registration->bookingStatusLabel() }}</span>
+                                <span style="padding: 5px 10px; border-radius: 999px; background: #eff6ff; color: #1d4ed8; font-size: .82rem; font-weight: 700;">{{ $registration->paymentStatusLabel() }}</span>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .75rem 1.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f1f5f9; color: #475569; font-size: .93rem;">
+                            <div><strong style="display: block; color: #64748b; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em;">Chi nhánh</strong>{{ $registration->center_name }}</div>
+                            <div><strong style="display: block; color: #64748b; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em;">Lịch tiêm</strong>{{ $registration->injection_date?->format('d/m/Y') ?? 'Đang cập nhật' }}@if($registration->slot) · {{ $registration->slot->start_at }} - {{ $registration->slot->end_at }}@endif</div>
+                            <div><strong style="display: block; color: #64748b; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em;">Tổng dự kiến</strong><span style="color: var(--primary-color); font-weight: 800;">{{ number_format($registration->netPaidAmount(), 0, ',', '.') }} đ</span></div>
+                        </div>
+                        <div style="margin-top: 1rem; color: #334155; line-height: 1.6;"><strong>Vắc xin:</strong> {{ $registration->vaccines->map(fn ($vaccine) => $vaccine->name . (($vaccine->pivot->quantity ?? 1) > 1 ? ' x' . $vaccine->pivot->quantity : ''))->implode(', ') }}</div>
+                    </article>
+                @endforeach
+            </div>
+        </section>
+    @endif
+</div>
+@endsection

@@ -89,6 +89,7 @@
                 <a href="{{ route('about') }}" class="nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}">Giới Thiệu</a>
                 <a href="{{ route('vaccine.index') }}" class="nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}">Danh Mục Sản Phẩm</a>
                 <a href="{{ route('news.index') }}" class="nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}">Tin Tức</a>
+                <a href="{{ route('booking.lookup') }}" class="nav-link {{ Route::currentRouteName() === 'booking.lookup' ? 'active' : '' }}">Tra Cứu Lịch Hẹn</a>
             </nav>
             
             <div class="header-actions" style="display: flex; align-items: center; gap: 10px;">
@@ -315,6 +316,7 @@
             <a href="{{ route('about') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}"><i data-lucide="info" class="w-5 h-5"></i> Giới Thiệu</a>
             <a href="{{ route('vaccine.index') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}"><i data-lucide="syringe" class="w-5 h-5"></i> Danh Mục Sản Phẩm</a>
             <a href="{{ route('news.index') }}" class="mobile-nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}"><i data-lucide="newspaper" class="w-5 h-5"></i> Tin Tức</a>
+            <a href="{{ route('booking.lookup') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'booking.lookup' ? 'active' : '' }}"><i data-lucide="search" class="w-5 h-5"></i> Tra Cứu Lịch Hẹn</a>
             <a href="{{ route('contact') }}" class="mobile-nav-link {{ Route::currentRouteName() === 'contact' ? 'active' : '' }}"><i data-lucide="map-pin" class="w-5 h-5"></i> Liên Hệ</a>
         </div>
         <form method="POST" action="{{ route('centers.select') }}" style="padding: 16px 20px; border-top: 1px solid var(--border-color);">
@@ -528,6 +530,8 @@
                             <a href="{{ route('about') }}">Chính sách bảo mật</a>
                             <span>•</span>
                             <a href="{{ route('vaccine.index') }}">Chính sách thanh toán</a>
+                            <span>•</span>
+                            <a href="{{ route('booking.lookup') }}">Tra cứu lịch hẹn</a>
                             <span>•</span>
                             <a href="{{ route('contact') }}">Điều khoản sử dụng</a>
                         </div>

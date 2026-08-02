@@ -5,6 +5,9 @@
 
 @section('admin_content')
 <div class="card-modern">
+    <div style="display:flex; justify-content:flex-end; margin-bottom:18px;">
+        <a href="{{ route('admin.registrations.create', request()->only('center_id')) }}" class="btn-modern btn-modern-primary">Đăng ký nhanh tại quầy</a>
+    </div>
     <form action="{{ route('admin.registrations.index') }}" method="GET" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end; margin-bottom:24px;">
         @if($isSuperAdmin ?? false)
             <div style="flex:1 1 180px;">

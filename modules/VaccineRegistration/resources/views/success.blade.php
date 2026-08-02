@@ -53,6 +53,7 @@
             </ol>
             <div class="action-buttons">
                 <a href="{{ route('home') }}" class="btn-primary">Về trang chủ</a>
+                <a href="{{ route('booking.lookup') }}" class="btn-secondary">Tra cứu lịch hẹn</a>
                 <button type="button" onclick="window.print()" class="btn-secondary">In phiếu</button>
             </div>
         </aside>

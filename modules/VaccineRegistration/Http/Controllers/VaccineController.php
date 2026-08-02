@@ -403,6 +403,45 @@ class VaccineController extends Controller
         ]);
     }
 
+    public function showBookingLookup()
+    {
+        return view('vaccine::booking_lookup', [
+            'lookedUp' => false,
+            'registrations' => collect(),
+            'phone' => null,
+        ]);
+    }
+
+    public function lookupBookingsByPhone(Request $request)
+    {
+        $validated = $request->validate([
+            'phone' => 'required|string|max:30',
+        ], [
+            'phone.required' => 'Vui lòng nhập số điện thoại đã dùng để đặt lịch.',
+        ]);
+
+        $phone = PhoneNormalizer::normalize($validated['phone']);
+        if (!$phone) {
+            return back()->withErrors(['phone' => 'Số điện thoại di động Việt Nam không hợp lệ.'])->withInput();
+        }
+
+        $registrations = Registration::query()
+            ->with(['vaccines:id,name', 'slot.schedule'])
+            ->where(function ($query) use ($phone) {
+                $query->where('patient_phone', $phone)
+                    ->orWhereHas('customer', fn ($customerQuery) => $customerQuery->where('phone', $phone));
+            })
+            ->orderByDesc('injection_date')
+            ->orderByDesc('id')
+            ->get();
+
+        return view('vaccine::booking_lookup', [
+            'lookedUp' => true,
+            'registrations' => $registrations,
+            'phone' => $phone,
+        ]);
+    }
+
     /**
      * Create one booking. Prices and branch membership are always resolved server-side.
      */

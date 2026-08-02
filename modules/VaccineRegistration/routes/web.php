@@ -58,6 +58,10 @@ Route::middleware('web')->group(function () {
     Route::get('/register', [VaccineController::class, 'showRegister'])->name('register.show');
     Route::post('/register', [VaccineController::class, 'postRegister'])->name('register.post');
     Route::get('/success', [VaccineController::class, 'showSuccess'])->name('register.success');
+    Route::get('/tra-cuu-lich-hen', [VaccineController::class, 'showBookingLookup'])->name('booking.lookup');
+    Route::post('/tra-cuu-lich-hen', [VaccineController::class, 'lookupBookingsByPhone'])
+        ->middleware('throttle:10,1')
+        ->name('booking.lookup.submit');
 
     // --- Quản trị viên (Admin Auth) ---
     Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login.show');
@@ -97,6 +101,8 @@ Route::middleware('web')->group(function () {
         Route::get('/schedule', [AdminRegistrationController::class, 'schedule'])->name('schedule');
         Route::get('/registrations', [AdminRegistrationController::class, 'index'])->name('registrations.index');
         Route::get('/registrations/export/csv', [AdminRegistrationController::class, 'exportCsv'])->name('registrations.export.csv');
+        Route::get('/registrations/create', [AdminRegistrationController::class, 'create'])->name('registrations.create');
+        Route::post('/registrations', [AdminRegistrationController::class, 'store'])->name('registrations.store');
         Route::get('/registrations/{id}', [AdminRegistrationController::class, 'show'])->name('registrations.show');
         Route::patch('/registrations/{id}/status', [AdminRegistrationController::class, 'updateStatus'])->name('registrations.status');
         Route::post('/registrations/{id}/settle', [AdminRegistrationController::class, 'settle'])->name('registrations.settle');
