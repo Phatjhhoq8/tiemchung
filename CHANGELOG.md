@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v3.5.20] - 2026-08-02
+
+### Pagination CSS Centering & Ellipsis Border Elimination
+
+* **Strict Pagination Centering & Ellipsis Border Removal**: Updated pagination styles in [style.css](file:///d:/Projects/tiemchung/public/css/style.css). Completely stripped borders, backgrounds, and box-shadows from `...` (ellipsis) disabled spans, rendering them as clean text dots. Applied `justify-content: center` and hidden summary text overrides across all pagination containers (`.catalog-pagination`, `.news-pagination`, `nav[role="navigation"]`) to ensure the entire pagination bar is perfectly centered on all pages.
+
 ## [v3.5.19] - 2026-07-31
 
 ### Dynamic Branches, Register Center Selection, Admin Imports & Responsive Header Fix

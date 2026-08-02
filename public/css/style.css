@@ -1024,19 +1024,133 @@ button, select, input {
     margin-bottom: 0.9rem;
 }
 
-.catalog-pagination {
-    margin-top: 1.4rem;
+.catalog-pagination,
+.news-pagination {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
 }
 
-.catalog-pagination nav {
-    display: flex;
-    justify-content: center;
+.catalog-pagination nav,
+.news-pagination nav,
+nav[role="navigation"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    text-align: center !important;
 }
 
-.catalog-pagination .relative.inline-flex,
+/* Force flex center on inner wrapper divs in Laravel default pagination */
+nav[role="navigation"] > div {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+/* Hide left summary text "Showing X to Y..." to keep buttons strictly centered */
+nav[role="navigation"] p.text-sm,
+nav[role="navigation"] p.leading-5 {
+    display: none !important;
+}
+
+/* Reset outer wrapper spans in Laravel default Tailwind pagination */
+.catalog-pagination span[aria-disabled="true"],
+.catalog-pagination span[aria-current="page"],
+.news-pagination span[aria-disabled="true"],
+.news-pagination span[aria-current="page"],
+nav[role="navigation"] span[aria-disabled="true"],
+nav[role="navigation"] span[aria-current="page"] {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    display: inline-flex !important;
+}
+
+/* Fix inner container flex gap and force centering */
+nav[role="navigation"] .shadow-sm,
+.catalog-pagination .shadow-sm,
+.news-pagination .shadow-sm {
+    box-shadow: none !important;
+    gap: 6px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    margin: 0 auto !important;
+}
+
+/* Clean styling for clickable page links and active page numbers ONLY */
 .catalog-pagination a,
-.catalog-pagination span {
+.catalog-pagination span[aria-current="page"] > span,
+.news-pagination a,
+.news-pagination span[aria-current="page"] > span,
+nav[role="navigation"] a,
+nav[role="navigation"] span[aria-current="page"] > span {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    padding: 0 10px !important;
+    margin: 0 2px !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
     border-radius: 10px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+    transition: all 0.2s ease-in-out !important;
+    text-decoration: none !important;
+}
+
+/* Hover state */
+.catalog-pagination a:hover,
+.news-pagination a:hover,
+nav[role="navigation"] a:hover {
+    color: var(--primary-color, #c8102e) !important;
+    border-color: var(--primary-color, #c8102e) !important;
+    background-color: #fef2f2 !important;
+    transform: translateY(-1px);
+}
+
+/* Active page state (Medicare Red) */
+.catalog-pagination span[aria-current="page"] > span,
+.news-pagination span[aria-current="page"] > span,
+nav[role="navigation"] span[aria-current="page"] > span {
+    color: #ffffff !important;
+    background-color: var(--primary-color, #c8102e) !important;
+    border-color: var(--primary-color, #c8102e) !important;
+    box-shadow: 0 4px 12px rgba(200, 16, 46, 0.25) !important;
+}
+
+/* Ellipsis (...) and Disabled items - STRICTLY NO BORDER, NO BACKGROUND */
+.catalog-pagination span[aria-disabled="true"],
+.catalog-pagination span[aria-disabled="true"] > span,
+.news-pagination span[aria-disabled="true"],
+.news-pagination span[aria-disabled="true"] > span,
+nav[role="navigation"] span[aria-disabled="true"],
+nav[role="navigation"] span[aria-disabled="true"] > span {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    color: #64748b !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    cursor: default !important;
+    padding: 0 4px !important;
+    min-width: auto !important;
 }
 
 .catalog-product-card {
