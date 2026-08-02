@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v3.5.23] - 2026-08-02
+
+### Dynamic Laravel Pagination Template Engine & Global Default View
+
+* **Dynamic Pagination Template Engine**: Refactored the custom pagination template in [pagination.blade.php](file:///d:/Projects/tiemchung/resources/views/partials/pagination.blade.php) and [modules/VaccineRegistration/resources/views/partials/pagination.blade.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/resources/views/partials/pagination.blade.php). Replaced the rigid 4-button hardcoded logic with Laravel's dynamic `$elements` array. Neighboring page links around the active page now expand dynamically across any total number of pages. Configured `Paginator::defaultView('partials.pagination')` in [AppServiceProvider.php](file:///d:/Projects/tiemchung/app/Providers/AppServiceProvider.php) so this clean red-highlighted pill-shaped pagination is used globally as the base design.
+
 ## [v3.5.22] - 2026-08-02
 
 ### Article & Product Detail Table of Contents (TOC) Dynamic Scroll Spy & Outline Elimination
