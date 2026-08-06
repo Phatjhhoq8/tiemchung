@@ -164,7 +164,7 @@
                         <th style="width: 90px; text-align: center;">Mũi tiêm</th>
                         <th style="width: 120px;">Giá bán lẻ</th>
                         <th style="width: 120px;">Giá ưu đãi</th>
-                        <th style="width: 110px; text-align: center;">Tình trạng</th>
+                        <th style="width: 110px; text-align: center;">Tồn kho</th>
                         <th style="width: 280px; text-align: center;">Hành động</th>
                     </tr>
                 </thead>
@@ -232,14 +232,9 @@
                                 @endif
                             </td>
 
-                            {{-- Tình trạng kho --}}
-                            <td style="text-align: center;">
-                                <span class="badge-modern 
-                                    @if($vac->stock_status === 'available') badge-modern-success
-                                    @elseif($vac->stock_status === 'limited') badge-modern-warning
-                                    @else badge-modern-danger @endif">
-                                    {{ $vac->getStockLabel() }}
-                                </span>
+                            {{-- Tồn kho --}}
+                            <td style="text-align: center; font-weight: 700; color: {{ $vac->stock_quantity <= 5 ? '#b91c1c' : '#15803d' }}; font-size: 14.5px;">
+                                {{ $vac->stock_quantity }}
                             </td>
 
                             {{-- Hành động --}}

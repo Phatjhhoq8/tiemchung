@@ -75,7 +75,7 @@ class AdminRegistrationController extends Controller
             ->orderBy('id')
             ->get();
         $vaccines = CenterVaccine::query()
-            ->with('vaccine:id,name,origin,is_active')
+            ->with('vaccine:id,name,origin,is_active,type,category,age_group')
             ->where('center_id', $center->id)
             ->where('is_active', true)
             ->where('stock_status', '!=', 'out_of_stock')
@@ -109,7 +109,7 @@ class AdminRegistrationController extends Controller
         }
 
         $center = Center::active()->findOrFail($validated['center_id']);
-        $registration = DB::transaction(function () use ($validated, $phone, $center) {
+        $registration = DB::transaction(function () use ($validated, $phone, $center, $request) {
             $slot = Slot::with('schedule')->whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
             if (!$slot->is_active || !$slot->schedule || !$slot->schedule->is_active
                 || (int) $slot->schedule->center_id !== (int) $center->id
@@ -142,11 +142,21 @@ class AdminRegistrationController extends Controller
 
             $items = [];
             $total = 0;
+            $quantities = $request->input('quantities', []);
             foreach ($vaccineIds as $vaccineId) {
                 $centerVaccine = $centerVaccines->get($vaccineId);
+                $qty = (int) ($quantities[$vaccineId] ?? 1);
+                if ($qty < 1) {
+                    $qty = 1;
+                }
+                if ($qty > $centerVaccine->stock_quantity) {
+                    throw ValidationException::withMessages([
+                        'vaccine_ids' => "Số lượng đăng ký vắc xin {$centerVaccine->vaccine->name} vượt quá tồn kho hiện tại ({$centerVaccine->stock_quantity})."
+                    ]);
+                }
                 $price = $centerVaccine->hasSalePrice() ? $centerVaccine->sale_price : $centerVaccine->price;
-                $total += $price;
-                $items[$vaccineId] = ['price' => $price, 'sale_price' => null, 'quantity' => 1];
+                $total += $price * $qty;
+                $items[$vaccineId] = ['price' => $price, 'sale_price' => null, 'quantity' => $qty];
             }
 
             $registration = Registration::create([

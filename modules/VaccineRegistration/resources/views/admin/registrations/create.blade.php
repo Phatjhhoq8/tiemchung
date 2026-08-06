@@ -66,15 +66,74 @@
             @if($slots->isEmpty())<small style="display:block; margin-top:6px; color:#b91c1c;">Chi nhánh chưa có khung giờ còn chỗ.</small>@endif
         </div>
 
+        @php
+            $origins = $vaccines->map(fn($cv) => $cv->vaccine->origin)->filter()->unique()->sort();
+            $ageGroups = $vaccines->map(fn($cv) => $cv->vaccine->age_group)->filter()->unique()->sort();
+            $categories = $vaccines->map(fn($cv) => $cv->vaccine->category)->filter()->unique()->sort();
+        @endphp
         <div>
-            <label class="form-label-modern">Vắc xin đăng ký</label>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px; margin-top:8px; max-height:420px; overflow:auto; padding:4px;">
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;">
+                <label class="form-label-modern" style="margin:0;">Vắc xin đăng ký <span class="required">*</span></label>
+                
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; background:#f1f5f9; padding:10px; border-radius:10px;">
+                    <input type="text" id="vaccine_search" placeholder="Tìm tên vắc xin..." style="flex:1 1 200px; padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; box-sizing: border-box; height: 36px;">
+                    
+                    <select id="filter_type" style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; height: 36px; background:#fff; min-width:120px;">
+                        <option value="all">Tất cả loại</option>
+                        <option value="single">Vắc xin lẻ</option>
+                        <option value="package">Gói vắc xin</option>
+                    </select>
+
+                    <select id="filter_category" style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; height: 36px; background:#fff; min-width:120px;">
+                        <option value="all">Mọi nhóm bệnh</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat }}">{{ $cat }}</option>
+                        @endforeach
+                    </select>
+
+                    <select id="filter_origin" style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; height: 36px; background:#fff; min-width:120px;">
+                        <option value="all">Mọi xuất xứ</option>
+                        @foreach($origins as $origin)
+                            <option value="{{ $origin }}">{{ $origin }}</option>
+                        @endforeach
+                    </select>
+
+                    <select id="filter_age_group" style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; height: 36px; background:#fff; min-width:120px;">
+                        <option value="all">Mọi độ tuổi</option>
+                        @foreach($ageGroups as $ageGroup)
+                            <option value="{{ $ageGroup }}">{{ $ageGroup }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div id="vaccine_list_container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px; max-height:420px; overflow:auto; padding:4px;">
                 @foreach($vaccines as $centerVaccine)
                     @php($price = $centerVaccine->hasSalePrice() ? $centerVaccine->sale_price : $centerVaccine->price)
-                    <label style="display:flex; gap:10px; align-items:flex-start; border:1px solid #e2e8f0; border-radius:10px; padding:12px; cursor:pointer;">
-                        <input type="checkbox" name="vaccine_ids[]" value="{{ $centerVaccine->vaccine_id }}" {{ in_array($centerVaccine->vaccine_id, old('vaccine_ids', [])) ? 'checked' : '' }}>
-                        <span style="flex:1;"><strong>{{ $centerVaccine->vaccine->name }}</strong><small style="display:block; color:var(--text-muted); margin-top:3px;">{{ $centerVaccine->vaccine->origin }}</small></span>
-                        <strong style="color:var(--primary-color); white-space:nowrap;">{{ number_format($price) }} đ</strong>
+                    <label class="vaccine-search-item" 
+                           data-name="{{ strtolower($centerVaccine->vaccine->name) }} {{ strtolower($centerVaccine->vaccine->origin) }}"
+                           data-type="{{ $centerVaccine->vaccine->type }}"
+                           data-category="{{ $centerVaccine->vaccine->category }}"
+                           data-origin="{{ $centerVaccine->vaccine->origin }}"
+                           data-age-group="{{ $centerVaccine->vaccine->age_group }}"
+                           style="display:flex; gap:10px; align-items:center; border:1px solid #e2e8f0; border-radius:10px; padding:12px; cursor:pointer; background:#fff; transition:all 0.2s;">
+                        <input type="checkbox" name="vaccine_ids[]" value="{{ $centerVaccine->vaccine_id }}" {{ in_array($centerVaccine->vaccine_id, old('vaccine_ids', [])) ? 'checked' : '' }} onchange="toggleQtyInput(this, {{ $centerVaccine->vaccine_id }})">
+                        <span style="flex:1;">
+                            <strong>{{ $centerVaccine->vaccine->name }}</strong>
+                            <span style="display:flex; gap:8px; align-items:center; margin-top:3px; font-size:12px;">
+                                <small style="color:var(--text-muted);">{{ $centerVaccine->vaccine->origin }}</small>
+                                <span style="width:3px; height:3px; border-radius:50%; background:#94a3b8;"></span>
+                                <small style="font-weight:700; color:{{ $centerVaccine->stock_quantity <= 5 ? '#b91c1c' : '#15803d' }};">Tồn: {{ $centerVaccine->stock_quantity }}</small>
+                            </span>
+                        </span>
+                        <div style="display:flex; align-items:center; gap:4px;" onclick="event.stopPropagation();">
+                            <span style="font-size:12px; color:var(--text-muted);">SL:</span>
+                            <input type="number" id="qty_{{ $centerVaccine->vaccine_id }}" name="quantities[{{ $centerVaccine->vaccine_id }}]" 
+                                   value="{{ old('quantities.'.$centerVaccine->vaccine_id, 1) }}" 
+                                   min="1" max="{{ $centerVaccine->stock_quantity }}" 
+                                   style="width: 55px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; text-align: center; height:28px;"
+                                   {{ in_array($centerVaccine->vaccine_id, old('vaccine_ids', [])) ? '' : 'disabled' }}>
+                        </div>
+                        <strong style="color:var(--primary-color); white-space:nowrap; margin-left:8px;">{{ number_format($price) }} đ</strong>
                     </label>
                 @endforeach
             </div>
@@ -87,4 +146,63 @@
         </div>
     </form>
 </div>
+
+<script>
+    function toggleQtyInput(checkbox, id) {
+        const input = document.getElementById('qty_' + id);
+        if (input) {
+            input.disabled = !checkbox.checked;
+            if (checkbox.checked) {
+                input.focus();
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('vaccine_search');
+        const typeSelect = document.getElementById('filter_type');
+        const categorySelect = document.getElementById('filter_category');
+        const originSelect = document.getElementById('filter_origin');
+        const ageGroupSelect = document.getElementById('filter_age_group');
+        const items = document.querySelectorAll('.vaccine-search-item');
+
+        function filterVaccines() {
+            const query = searchInput ? searchInput.value.toLowerCase().trim()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd') : '';
+            
+            const selectedType = typeSelect ? typeSelect.value : 'all';
+            const selectedCategory = categorySelect ? categorySelect.value : 'all';
+            const selectedOrigin = originSelect ? originSelect.value : 'all';
+            const selectedAgeGroup = ageGroupSelect ? ageGroupSelect.value : 'all';
+
+            items.forEach(item => {
+                const name = item.getAttribute('data-name')
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+                const type = item.getAttribute('data-type');
+                const category = item.getAttribute('data-category');
+                const origin = item.getAttribute('data-origin');
+                const ageGroup = item.getAttribute('data-age-group');
+
+                const matchesSearch = !query || name.includes(query);
+                const matchesType = selectedType === 'all' || type === selectedType;
+                const matchesCategory = selectedCategory === 'all' || category === selectedCategory;
+                const matchesOrigin = selectedOrigin === 'all' || origin === selectedOrigin;
+                const matchesAgeGroup = selectedAgeGroup === 'all' || ageGroup === selectedAgeGroup;
+
+                if (matchesSearch && matchesType && matchesCategory && matchesOrigin && matchesAgeGroup) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        [searchInput, typeSelect, categorySelect, originSelect, ageGroupSelect].forEach(el => {
+            if (el) {
+                el.addEventListener('input', filterVaccines);
+                el.addEventListener('change', filterVaccines);
+            }
+        });
+    });
+</script>
 @endsection

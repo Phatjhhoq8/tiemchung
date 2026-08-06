@@ -49,6 +49,22 @@
                             <div><strong style="display: block; color: #64748b; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em;">Tổng dự kiến</strong><span style="color: var(--primary-color); font-weight: 800;">{{ number_format($registration->netPaidAmount(), 0, ',', '.') }} đ</span></div>
                         </div>
                         <div style="margin-top: 1rem; color: #334155; line-height: 1.6;"><strong>Vắc xin:</strong> {{ $registration->vaccines->map(fn ($vaccine) => $vaccine->name . (($vaccine->pivot->quantity ?? 1) > 1 ? ' x' . $vaccine->pivot->quantity : ''))->implode(', ') }}</div>
+                        
+                        @if($registration->payment_status === \Modules\VaccineRegistration\Models\Registration::PAYMENT_UNPAID && $registration->booking_status !== \Modules\VaccineRegistration\Models\Registration::BOOKING_CANCELLED)
+                            <div style="margin-top: 1.25rem; padding: 12px 16px; border: 1.5px dashed #cbd5e1; border-radius: 10px; background: #f8fafc; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="3"></rect><rect x="14" y="7" width="3" height="3"></rect><rect x="7" y="14" width="3" height="3"></rect><rect x="14" y="14" width="3" height="3"></rect></svg>
+                                    <div style="text-align: left;">
+                                        <strong style="display: block; font-size: .88rem; color: #475569;">Thanh toán trực tuyến (Mã QR)</strong>
+                                        <span style="font-size: .8rem; color: #64748b;">Quét mã QR thanh toán nhanh qua Mobile Banking</span>
+                                    </div>
+                                </div>
+                                <button type="button" disabled style="background: #e2e8f0; color: #94a3b8; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: .82rem; cursor: not-allowed; display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                    Thanh toán QR (Tạm khóa)
+                                </button>
+                            </div>
+                        @endif
                     </article>
                 @endforeach
             </div>

@@ -4131,6 +4131,14 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
 .section-style-red .text-slate-400 {
     color: rgba(255, 255, 255, 0.9) !important;
 }
+.section-style-red button.bg-slate-100,
+.section-style-dark button.bg-slate-100 {
+    color: #334155 !important;
+}
+.section-style-red button.bg-slate-100:hover,
+.section-style-dark button.bg-slate-100:hover {
+    color: #0f172a !important;
+}
 
 .section-style-dark {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);

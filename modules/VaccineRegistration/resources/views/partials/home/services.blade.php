@@ -16,7 +16,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <a href="{{ route('vaccine.index', ['age_group' => 'Trẻ']) }}" class="service-card-large bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-200 flex items-start gap-6 group" data-aos="fade-up" data-aos-delay="100">
                 <div class="w-16 h-16 bg-gradient-to-br from-[#c8102e] to-red-700 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                    <i data-lucide="baby" class="w-8 h-8"></i>
+                    <i data-lucide="baby" class="w-8 h-8 text-white" style="color: #ffffff !important;"></i>
                 </div>
                 <div class="space-y-2 flex-1">
                     <h3 class="font-bold text-slate-900 text-xl group-hover:text-[#c8102e] transition-colors">Tiêm Chủng Trẻ Em</h3>
@@ -29,7 +29,7 @@
 
             <a href="{{ route('vaccine.index', ['age_group' => 'người lớn']) }}" class="service-card-large bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-200 flex items-start gap-6 group" data-aos="fade-up" data-aos-delay="200">
                 <div class="w-16 h-16 bg-gradient-to-br from-[#c8102e] to-red-700 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                    <i data-lucide="user-check" class="w-8 h-8"></i>
+                    <i data-lucide="user-check" class="w-8 h-8 text-white" style="color: #ffffff !important;"></i>
                 </div>
                 <div class="space-y-2 flex-1">
                     <h3 class="font-bold text-slate-900 text-xl group-hover:text-[#c8102e] transition-colors">Tiêm Chủng Người Lớn</h3>
@@ -42,7 +42,7 @@
 
             <a href="{{ route('vaccine.index', ['type' => 'package']) }}" class="service-card-large bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-200 flex items-start gap-6 group" data-aos="fade-up" data-aos-delay="300">
                 <div class="w-16 h-16 bg-gradient-to-br from-[#eaaa00] to-amber-600 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                    <i data-lucide="package-check" class="w-8 h-8"></i>
+                    <i data-lucide="package-check" class="w-8 h-8 text-white" style="color: #ffffff !important;"></i>
                 </div>
                 <div class="space-y-2 flex-1">
                     <h3 class="font-bold text-slate-900 text-xl group-hover:text-[#c8102e] transition-colors">Gói Tiêm Trọn Gói</h3>
@@ -53,9 +53,9 @@
                 </div>
             </a>
 
-            <a href="{{ route('register.show') }}" class="service-card-large bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-200 flex items-start gap-6 group" data-aos="fade-up" data-aos-delay="400">
+            <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="service-card-large bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-200 flex items-start gap-6 group" data-aos="fade-up" data-aos-delay="400">
                 <div class="w-16 h-16 bg-gradient-to-br from-[#c8102e] to-[#a00d24] text-white rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                    <i data-lucide="stethoscope" class="w-8 h-8"></i>
+                    <i data-lucide="stethoscope" class="w-8 h-8 text-white" style="color: #ffffff !important;"></i>
                 </div>
                 <div class="space-y-2 flex-1">
                     <h3 class="font-bold text-slate-900 text-xl group-hover:text-[#c8102e] transition-colors">Tư Vấn & Khám Sàng Lọc</h3>

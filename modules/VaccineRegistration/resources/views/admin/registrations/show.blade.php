@@ -36,7 +36,7 @@
                         @endforeach
                     </select>
                 </div>
-                <button type="submit" class="btn-modern btn-modern-secondary">Cập nhật</button>
+                <button type="submit" class="btn-modern" style="background: var(--accent-color, #004b8f); color: #fff; font-weight: 700; border: none; padding: 0 18px; border-radius: 8px; cursor: pointer; height: 42px; transition: all 0.2s;">Cập nhật</button>
             </form>
         </div>
     </div>

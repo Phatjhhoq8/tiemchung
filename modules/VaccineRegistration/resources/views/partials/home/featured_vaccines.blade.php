@@ -47,7 +47,7 @@
                                     </span>
                                     <span class="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white font-medium text-[11px] px-2 py-0.5 rounded-md flex items-center gap-1">
                                         <i data-lucide="eye" class="w-3 h-3 text-white"></i>
-                                        <span id="vaccine-views-count-{{ $vaccine->id }}">{{ number_format($vaccine->views ?? 0, 0, ',', '.') }}</span> lượt xem
+                                        <span id="vaccine-views-count-{{ $vaccine->id }}" class="text-white">{{ number_format($vaccine->views ?? 0, 0, ',', '.') }}</span> lượt xem
                                     </span>
                                 </div>
                                 <!-- Centered Red Title -->
@@ -83,7 +83,7 @@
                                         </span>
                                         <span class="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white font-medium text-[11px] px-2 py-0.5 rounded-md flex items-center gap-1">
                                             <i data-lucide="eye" class="w-3 h-3 text-white"></i>
-                                            <span id="vaccine-views-count-{{ $package->id }}">{{ number_format($package->views ?? 0, 0, ',', '.') }}</span> lượt xem
+                                            <span id="vaccine-views-count-{{ $package->id }}" class="text-white">{{ number_format($package->views ?? 0, 0, ',', '.') }}</span> lượt xem
                                         </span>
                                     </div>
                                     <h3 class="text-center font-bold text-slate-800 text-base uppercase leading-snug line-clamp-1 mb-1 group-hover:text-[#c8102e] transition-colors">

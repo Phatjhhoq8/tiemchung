@@ -375,9 +375,8 @@ class VaccineController extends Controller
         }
 
         $cartState = CenterContext::resolveCart($currentCenter->id);
-        if (empty($cartState['cart'])) {
-            return redirect()->route('vaccine.index')->with('warning', 'Vui lòng chọn ít nhất một loại vắc xin để đặt lịch.');
-        }
+        $isEmptyCart = empty($cartState['cart']);
+        $centers = CenterContext::activeCenters();
 
         $schedules = Schedule::query()
             ->where('center_id', $currentCenter->id)
@@ -393,6 +392,27 @@ class VaccineController extends Controller
             ->filter(fn (Schedule $schedule) => $schedule->slots->isNotEmpty())
             ->values();
 
+        if ($request->ajax() || $request->wantsJson()) {
+            if ($isEmptyCart) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn chưa chọn vắc xin nào',
+                    'centers' => $centers,
+                    'current_center' => $currentCenter
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'cart' => $cartState['cart'],
+                'total_price' => $cartState['total_price'],
+                'unavailable_count' => $cartState['unavailable_count'],
+                'schedules' => $schedules,
+                'centers' => $centers,
+                'current_center' => $currentCenter
+            ]);
+        }
+
         return view('vaccine::register', [
             'cart' => $cartState['cart'],
             'totalPrice' => $cartState['total_price'],
@@ -400,6 +420,7 @@ class VaccineController extends Controller
             'schedules' => $schedules,
             'currentCenter' => $currentCenter,
             'activeCenters' => CenterContext::activeCenters(),
+            'isEmptyCart' => $isEmptyCart,
         ]);
     }
 
@@ -447,24 +468,42 @@ class VaccineController extends Controller
      */
     public function postRegister(Request $request)
     {
+        // 1. Pack single patient fields into patients array if client sends legacy format
+        if (!$request->has('patients') && $request->filled('patient_name')) {
+            $request->merge([
+                'patients' => [
+                    [
+                        'name' => $request->input('patient_name'),
+                        'phone' => $request->input('patient_phone'),
+                        'dob' => $request->input('patient_dob', '2000-01-01'),
+                        'gender' => $request->input('patient_gender', 'Khác'),
+                        'address' => $request->input('patient_address', 'Tại trung tâm'),
+                        'vaccine_ids' => $request->input('vaccine_ids', []),
+                    ]
+                ]
+            ]);
+        }
+
         $validated = $request->validate([
-            'patient_name' => 'required|string|max:255',
-            'patient_phone' => 'required|string|max:30',
+            'patients' => 'required|array|min:1',
+            'patients.*.name' => 'required|string|max:255',
+            'patients.*.phone' => 'required|string|max:30',
+            'patients.*.dob' => 'nullable|date|before:today',
+            'patients.*.gender' => 'nullable|string|in:Nam,Nữ,Khác',
+            'patients.*.address' => 'nullable|string|max:500',
+            'patients.*.vaccine_ids' => 'required|array|min:1',
+            'patients.*.vaccine_ids.*' => 'required|integer|distinct|exists:vaccines,id',
             'slot_id' => 'required|integer|exists:slots,id',
-            'vaccine_ids' => 'required|array|min:1',
-            'vaccine_ids.*' => 'required|integer|distinct|exists:vaccines,id',
+            'guardian_name' => 'nullable|string|max:255',
+            'guardian_phone' => 'nullable|string|max:30',
             'idempotency_key' => 'nullable|string|max:100',
         ], [
-            'patient_name.required' => 'Vui lòng nhập họ tên khách hàng.',
-            'patient_phone.required' => 'Vui lòng nhập số điện thoại liên hệ.',
+            'patients.required' => 'Vui lòng cung cấp thông tin người đăng ký tiêm.',
+            'patients.*.name.required' => 'Họ tên người tiêm không được để trống.',
+            'patients.*.phone.required' => 'Số điện thoại liên hệ không được để trống.',
+            'patients.*.vaccine_ids.required' => 'Vui lòng chọn ít nhất một loại vắc xin cho mỗi người.',
             'slot_id.required' => 'Vui lòng chọn khung giờ tiêm.',
-            'vaccine_ids.required' => 'Vui lòng chọn ít nhất một loại vắc xin.',
         ]);
-
-        $phone = PhoneNormalizer::normalize($validated['patient_phone']);
-        if (!$phone) {
-            return back()->withErrors(['patient_phone' => 'Số điện thoại di động Việt Nam không hợp lệ.'])->withInput();
-        }
 
         $currentCenter = CenterContext::current();
         abort_unless($currentCenter, 404, 'Không tìm thấy chi nhánh đang hoạt động.');
@@ -474,95 +513,144 @@ class VaccineController extends Controller
             return $this->completePublicBooking($existing);
         }
 
+        $successCodes = [];
+
         try {
-            $registration = DB::transaction(function () use ($validated, $phone, $currentCenter, $idempotencyKey) {
+            DB::transaction(function () use ($validated, $currentCenter, &$successCodes, $idempotencyKey, $request) {
+                // Lock slot
                 $slot = Slot::with('schedule')->whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
                 if (!$slot->is_active || !$slot->schedule || !$slot->schedule->is_active
                     || (int) $slot->schedule->center_id !== (int) $currentCenter->id
-                    || $slot->schedule->date->isBefore(today())
-                    || $slot->reserved_count >= $slot->capacity) {
+                    || $slot->schedule->date->isBefore(today())) {
                     throw \Illuminate\Validation\ValidationException::withMessages([
-                        'slot_id' => 'Khung giờ đã đầy hoặc không thuộc chi nhánh đang chọn.',
+                        'slot_id' => 'Khung giờ không khả dụng hoặc không thuộc chi nhánh đang chọn.',
                     ]);
                 }
 
-                $vaccineIds = array_map('intval', $validated['vaccine_ids']);
+                $patientCount = count($validated['patients']);
+                if ($slot->reserved_count + $patientCount > $slot->capacity) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'slot_id' => 'Khung giờ này chỉ còn lại ' . ($slot->capacity - $slot->reserved_count) . ' chỗ trống.',
+                    ]);
+                }
+
+                // Check stock for all unique vaccines selected
+                $allVaccineIds = collect($validated['patients'])->flatMap(fn($p) => $p['vaccine_ids'])->unique()->toArray();
                 $centerVaccines = CenterVaccine::with('vaccine')
                     ->where('center_id', $currentCenter->id)
-                    ->whereIn('vaccine_id', $vaccineIds)
+                    ->whereIn('vaccine_id', $allVaccineIds)
                     ->where('is_active', true)
                     ->where('stock_status', '!=', 'out_of_stock')
                     ->get()
                     ->keyBy('vaccine_id');
 
-                if ($centerVaccines->count() !== count($vaccineIds)
-                    || $centerVaccines->contains(fn (CenterVaccine $centerVaccine) => !$centerVaccine->vaccine || !$centerVaccine->vaccine->is_active)) {
+                if ($centerVaccines->count() !== count($allVaccineIds)) {
                     throw \Illuminate\Validation\ValidationException::withMessages([
-                        'vaccine_ids' => 'Một hoặc nhiều vắc xin không được bán tại chi nhánh đang chọn.',
+                        'vaccine_ids' => 'Một hoặc nhiều vắc xin đã hết hàng hoặc không được bán tại chi nhánh này.',
                     ]);
                 }
 
-                $customer = Customer::where('phone', $phone)->lockForUpdate()->first();
-                if (!$customer) {
-                    DB::table('customers')->insertOrIgnore([
-                        'name' => trim($validated['patient_name']),
-                        'phone' => $phone,
-                        'created_at' => now(),
-                        'updated_at' => now(),
+                // Create registrations for each profile
+                foreach ($validated['patients'] as $index => $patient) {
+                    $phone = PhoneNormalizer::normalize($patient['phone']);
+                    if (!$phone) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            "patients.{$index}.phone" => "Số điện thoại của người tiêm #" . ($index + 1) . " không hợp lệ.",
+                        ]);
+                    }
+
+                    $customer = Customer::where('phone', $phone)->lockForUpdate()->first();
+                    if (!$customer) {
+                        DB::table('customers')->insertOrIgnore([
+                            'name' => trim($patient['name']),
+                            'phone' => $phone,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                        $customer = Customer::where('phone', $phone)->lockForUpdate()->firstOrFail();
+                    }
+
+                    $items = [];
+                    $total = 0;
+                    foreach ($patient['vaccine_ids'] as $vaccineId) {
+                        $centerVaccine = $centerVaccines->get($vaccineId);
+                        $price = $centerVaccine->hasSalePrice() ? $centerVaccine->sale_price : $centerVaccine->price;
+                        $total += $price;
+                        $items[$vaccineId] = [
+                            'price' => $price,
+                            'sale_price' => null,
+                            'quantity' => 1,
+                        ];
+                    }
+
+                    $regCode = 'MCD-' . strtoupper(\Illuminate\Support\Str::random(8)) . '-' . ($index + 1);
+                    $registration = Registration::create([
+                        'registration_code' => $regCode,
+                        'customer_id' => $customer->id,
+                        'patient_name' => trim($patient['name']),
+                        'patient_phone' => $phone,
+                        'patient_dob' => $patient['dob'] ?? '2000-01-01',
+                        'patient_gender' => $patient['gender'] ?? 'Khác',
+                        'patient_address' => $patient['address'] ?? 'Tại trung tâm',
+                        'guardian_name' => $validated['guardian_name'] ?? null,
+                        'guardian_phone' => $validated['guardian_phone'] ?? null,
+                        'center_id' => $currentCenter->id,
+                        'center_name' => $currentCenter->name,
+                        'injection_date' => $slot->schedule->date->toDateString(),
+                        'slot_id' => $slot->id,
+                        'status' => Registration::BOOKING_PENDING,
+                        'booking_status' => Registration::BOOKING_PENDING,
+                        'payment_status' => Registration::PAYMENT_UNPAID,
+                        'payment_method' => $request->input('payment_method', 'Tại trung tâm'),
+                        'idempotency_key' => $idempotencyKey ? ($idempotencyKey . '_' . $index) : null,
+                        'total_price' => $total,
                     ]);
-                    $customer = Customer::where('phone', $phone)->lockForUpdate()->firstOrFail();
+
+                    $registration->vaccines()->attach($items);
+                    $slot->increment('reserved_count');
+                    $successCodes[] = $regCode;
                 }
-
-                $items = [];
-                $total = 0;
-                foreach ($vaccineIds as $vaccineId) {
-                    $centerVaccine = $centerVaccines->get($vaccineId);
-                    $price = $centerVaccine->hasSalePrice() ? $centerVaccine->sale_price : $centerVaccine->price;
-                    $total += $price;
-                    $items[$vaccineId] = [
-                        'price' => $price,
-                        'sale_price' => null,
-                        'quantity' => 1,
-                    ];
-                }
-
-                $registration = Registration::create([
-                    'registration_code' => $this->newRegistrationCode(),
-                    'customer_id' => $customer->id,
-                    'patient_name' => trim($validated['patient_name']),
-                    'patient_phone' => $phone,
-                    'center_id' => $currentCenter->id,
-                    'center_name' => $currentCenter->name,
-                    'injection_date' => $slot->schedule->date->toDateString(),
-                    'slot_id' => $slot->id,
-                    'status' => Registration::BOOKING_PENDING,
-                    'booking_status' => Registration::BOOKING_PENDING,
-                    'payment_status' => Registration::PAYMENT_UNPAID,
-                    'payment_method' => 'Tại trung tâm',
-                    'idempotency_key' => $idempotencyKey,
-                    'total_price' => $total,
-                ]);
-
-                $registration->vaccines()->attach($items);
-                $slot->increment('reserved_count');
-
-                return $registration;
             });
         } catch (\Illuminate\Database\QueryException $exception) {
             if ($idempotencyKey && ($existing = Registration::where('idempotency_key', $idempotencyKey)->first())) {
                 return $this->completePublicBooking($existing);
             }
-
             throw $exception;
         }
 
-        return $this->completePublicBooking($registration);
+        // Store result registration codes in session
+        session()->forget('cart');
+        session()->put('success_codes', $successCodes);
+        if (!empty($successCodes)) {
+            session()->put('success_code', $successCodes[0]);
+        }
+
+        $redirectUrl = route('register.success');
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đăng ký tiêm chủng thành công!',
+                'registration_codes' => $successCodes,
+                'redirect_url' => $redirectUrl,
+            ]);
+        }
+
+        return redirect()->to($redirectUrl);
     }
 
     private function completePublicBooking(Registration $registration)
     {
         session()->forget('cart');
         session()->put('success_code', $registration->registration_code);
+
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đặt lịch tiêm chủng thành công!',
+                'redirect_url' => route('register.success')
+            ]);
+        }
 
         return redirect()->route('register.success');
     }

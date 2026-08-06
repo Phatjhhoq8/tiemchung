@@ -333,7 +333,7 @@
                                 <span style="font-size: 13px; color: #64748b;">Tổng tiền niêm yết:</span>
                                 <strong id="drawerTotalPrice" style="font-size: 17px; color: var(--primary-color, #c8102e); font-weight: 800;">{{ number_format($layoutTotalPrice, 0, ',', '.') }} đ</strong>
                             </div>
-                            <a href="{{ route('register.show') }}" class="btn-checkout-drawer">
+                            <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-checkout-drawer">
                                 <i data-lucide="calendar-check" style="width: 16px; height: 16px;"></i>
                                 <span>Đặt lịch ngay</span>
                             </a>
@@ -342,7 +342,7 @@
                 </div>
 
                 <!-- 3. Nút Đặt Lịch (Màu đỏ Medicare Red) -->
-                <a href="{{ route('register.show') }}" class="btn-primary-header">
+                <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="btn-primary-header">
                     <i data-lucide="calendar-plus" style="width: 16px; height: 16px;"></i>
                     <span>Đặt lịch</span>
                 </a>
@@ -392,7 +392,7 @@
             </button>
         </div>
         <div class="mobile-drawer-footer">
-            <a href="{{ route('register.show') }}" onclick="toggleMobileMenu()" class="mobile-cta-btn">
+            <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event); toggleMobileMenu();" class="mobile-cta-btn">
                 <i data-lucide="calendar-plus" class="w-5 h-5"></i> Đăng ký tiêm chủng
             </a>
             <a href="tel:{{ str_replace(' ', '', $hotline) }}" class="mobile-hotline-btn">
@@ -669,6 +669,7 @@
 
     <!-- SPA Modals & Toast Container -->
     @include('vaccine::partials.modal-detail')
+    @include('vaccine::partials.modal-register')
     <div id="toast-container" style="position: fixed; top: 24px; right: 24px; z-index: 9999999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
 
     <!-- JS Custom -->

@@ -46,6 +46,91 @@ function showToast(message, type = 'success') {
     }, 4000);
 }
 
+function showConfirmDialog({ title, message, confirmText = 'Đồng ý', cancelText = 'Hủy bỏ', onConfirm, onCancel }) {
+    const localEscapeHtml = (str) => String(str ?? '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    }[c]));
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 9999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    `;
+
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        padding: 24px;
+        width: 90%;
+        max-width: 420px;
+        transform: scale(0.9);
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    `;
+
+    dialog.innerHTML = `
+        <div style="width: 56px; height: 56px; background: #fee2e2; color: var(--primary-color, #c8102e); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <div>
+            <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 800; color: #1e293b; text-align: center;">${localEscapeHtml(title)}</h3>
+            <p style="margin: 0; font-size: 14.5px; color: #64748b; line-height: 1.5; text-align: center;">${localEscapeHtml(message)}</p>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
+            <button type="button" class="dialog-cancel-btn" style="background: #f1f5f9; color: #475569; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s;">
+                ${localEscapeHtml(cancelText)}
+            </button>
+            <button type="button" class="dialog-confirm-btn" style="background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s;">
+                ${localEscapeHtml(confirmText)}
+            </button>
+        </div>
+    `;
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    setTimeout(() => {
+        overlay.style.opacity = '1';
+        dialog.style.transform = 'scale(1)';
+    }, 10);
+
+    const closeDialog = () => {
+        overlay.style.opacity = '0';
+        dialog.style.transform = 'scale(0.9)';
+        setTimeout(() => overlay.remove(), 250);
+    };
+
+    overlay.querySelector('.dialog-cancel-btn').addEventListener('click', () => {
+        closeDialog();
+        if (onCancel) onCancel();
+    });
+
+    overlay.querySelector('.dialog-confirm-btn').addEventListener('click', () => {
+        closeDialog();
+        if (onConfirm) onConfirm();
+    });
+}
+
 function toggleCartDrawer() {
     document.getElementById('floatingCart')?.classList.toggle('expanded');
 }
@@ -506,8 +591,8 @@ function initDynamicTOC() {
         return;
     }
 
-    if (widget) widget.style.display = 'block';
-    if (mobileWidget) mobileWidget.style.display = 'block';
+    if (widget) widget.style.display = '';
+    if (mobileWidget) mobileWidget.style.display = '';
 
     if (desktopNav) desktopNav.replaceChildren();
     if (mobileNav) mobileNav.replaceChildren();
@@ -759,6 +844,18 @@ async function navigateSpa(url, pushState = true) {
 
         mainContainer.innerHTML = newMain.innerHTML;
 
+        // Sync new stylesheets from fetched document to current head
+        const newStylesheets = doc.querySelectorAll('link[rel="stylesheet"]');
+        newStylesheets.forEach((link) => {
+            const href = link.getAttribute('href');
+            if (href && !document.querySelector(`link[href="${href}"]`)) {
+                const newLink = document.createElement('link');
+                newLink.rel = 'stylesheet';
+                newLink.href = href;
+                document.head.appendChild(newLink);
+            }
+        });
+
         if (pushState) {
             window.history.pushState({ spa: true, url: targetUrl.href }, '', targetUrl.href);
         }
@@ -821,10 +918,863 @@ document.addEventListener('click', (event) => {
     }
 });
 
-// Handle Browser Back / Forward buttons
-window.addEventListener('popstate', () => {
-    navigateSpa(window.location.href, false);
-});
+// ==================== SPA REGISTER MODAL ====================
+async function openSpaRegisterModal(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    const modal = document.getElementById('spaRegisterModal');
+    const body = document.getElementById('spaRegisterBody');
+    if (!modal || !body) return;
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    body.innerHTML = `
+        <div style="text-align: center; padding: 40px;">
+            <i data-lucide="loader-2" style="width: 36px; height: 36px; color: var(--primary-color, #c8102e); animation: spin 1s linear infinite;"></i>
+            <p style="margin-top: 12px; color: #64748b;">Đang tải thông tin đặt lịch...</p>
+        </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+
+    try {
+        const response = await fetch(getAbsoluteUrl('/register'), {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        const data = await response.json();
+        
+        if (!response.ok || !data.success) {
+            window.lastFetchCenters = data.centers || [];
+            window.lastCurrentCenter = data.current_center || null;
+            body.innerHTML = `
+                <div style="text-align: center; padding: 40px;" data-aos="fade-up">
+                    <i data-lucide="help-circle" style="width: 56px; height: 56px; color: var(--secondary-color, #eaaa00); margin: 0 auto 16px auto;"></i>
+                    <h3 style="font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 10px; text-align: center; display: block;">Bạn chưa chọn vắc xin nào</h3>
+                    <p style="color: #64748b; margin-bottom: 24px; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.5; font-size: 14.5px; text-align: center;">Bạn có muốn tham khảo các gói vắc xin ưu đãi thiết kế sẵn hoặc gửi yêu cầu tư vấn để bác sĩ Medicare liên hệ ngay?</p>
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        <a href="${getAbsoluteUrl('/vaccines')}" class="btn-primary" onclick="closeSpaRegisterModal()" style="background: var(--secondary-color, #eaaa00); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; min-width: 160px;">Chọn vắc xin</a>
+                        <button onclick="renderSpaConsultForm()" class="btn-primary" style="background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; min-width: 160px;">Yêu cầu tư vấn</button>
+                    </div>
+                </div>
+            `;
+            if (window.lucide) window.lucide.createIcons();
+            return;
+        }
+
+        window.lastFetchCenters = data.centers || [];
+        window.lastCartData = data;
+        window.lastCurrentCenter = data.current_center || null;
+        renderSpaRegisterForm(data);
+    } catch (e) {
+        console.error(e);
+        body.innerHTML = `<div style="padding: 40px; text-align: center; color: #ef4444;">Đã có lỗi xảy ra. Vui lòng thử lại.</div>`;
+    }
+}
+
+function closeSpaRegisterModal() {
+    const modal = document.getElementById('spaRegisterModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function switchSpaModalTab(tab) {
+    if (tab === 'register') {
+        if (window.lastCartData) {
+            renderSpaRegisterForm(window.lastCartData);
+        }
+    } else {
+        renderSpaConsultForm();
+    }
+}
+
+function renderSpaConsultForm() {
+    const body = document.getElementById('spaRegisterBody');
+    if (!body) return;
+
+    const hasCart = window.lastCartData && window.lastCartData.success;
+    const tabHtml = hasCart ? `
+        <div style="display: flex; gap: 24px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px;">
+            <button type="button" onclick="switchSpaModalTab('register')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; margin-bottom: -2px;">
+                1. Đăng ký tiêm chủng (vắc xin đã chọn)
+            </button>
+            <button type="button" onclick="switchSpaModalTab('consult')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: var(--primary-color, #c8102e); border-bottom: 3px solid var(--primary-color, #c8102e); transition: all 0.2s; margin-bottom: -2px;">
+                2. Gửi yêu cầu tư vấn nhanh
+            </button>
+        </div>
+    ` : '';
+
+    let centerOptions = '<option value="">-- Chọn trung tâm Medicare --</option>';
+    const currentCenterId = window.lastCurrentCenter ? Number(window.lastCurrentCenter.id) : null;
+    (window.lastFetchCenters || []).forEach(c => {
+        const isSelected = currentCenterId && Number(c.id) === currentCenterId;
+        centerOptions += `<option value="${c.id}" ${isSelected ? 'selected' : ''}>${escapeHtml(c.name)}</option>`;
+    });
+
+    body.innerHTML = `
+        ${tabHtml}
+        <div style="background: #ffffff; padding: 24px; max-width: 500px; margin: 0 auto;">
+            <h3 style="font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 8px; text-align: justify;">Yêu cầu tư vấn <span style="color: var(--primary-color, #c8102e);">miễn phí</span></h3>
+            <p style="font-size: 14px; color: #64748b; text-align: justify; margin-bottom: 24px; line-height: 1.5;">Medicare sẽ liên hệ lại ngay để tư vấn phác đồ tiêm chủng vắc xin thích hợp nhất cho bạn.</p>
+            
+            <form id="spaConsultForm" onsubmit="submitSpaConsult(event)" style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: justify;">Hình thức tư vấn <span style="color:#ef4444;">*</span></label>
+                    <div style="display: inline-flex; width: 100%; background: #f1f5f9; border-radius: 30px; padding: 4px; border: 1px solid #cbd5e1; box-sizing: border-box;">
+                        <button type="button" id="btnSpaConsultOnline" onclick="setSpaConsultType('online')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: var(--primary-color, #c8102e); color: #ffffff; text-align: center;">
+                            Tư vấn qua điện thoại (Online)
+                        </button>
+                        <button type="button" id="btnSpaConsultOffline" onclick="setSpaConsultType('offline')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: transparent; color: #475569; text-align: center;">
+                            Tư vấn tại trung tâm (Offline)
+                        </button>
+                        <input type="hidden" name="consultType" id="spaConsultTypeValue" value="online">
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="spa_consult_name" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: justify;">Họ tên người liên hệ <span class="text-red-500">*</span></label>
+                    <input type="text" id="spa_consult_name" name="customerName" placeholder="Nhập họ tên của bạn" required style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-size: 14px;">
+                    <span class="error-msg text-xs text-red-500 mt-1 hidden" id="err_spa_customerName" style="text-align: justify;"></span>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="spa_consult_phone" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: justify;">Số điện thoại liên hệ <span class="text-red-500">*</span></label>
+                    <input type="tel" id="spa_consult_phone" name="customerPhone" placeholder="Ví dụ: 0912345678" required style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-size: 14px;">
+                    <span class="error-msg text-xs text-red-500 mt-1 hidden" id="err_spa_customerPhone" style="text-align: justify;"></span>
+                </div>
+                
+                <div id="spaCenterSelectGroup" style="display: none; flex-direction: column; gap: 6px;">
+                    <label for="spa_consult_center" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: justify;">Chi nhánh tư vấn gần nhất <span class="text-red-500">*</span></label>
+                    <div style="position: relative; width: 100%;">
+                        <select id="spa_consult_center" name="center_id" style="width: 100%; padding: 10px 36px 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; background: #fff; height: 42px; font-size: 14px; -webkit-appearance: none; -moz-appearance: none; appearance: none; cursor: pointer;">
+                            ${centerOptions}
+                        </select>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <span class="error-msg text-xs text-red-500 mt-1 hidden" id="err_spa_center_id" style="text-align: justify;"></span>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="spa_consult_note" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: justify;">Ghi chú yêu cầu tư vấn</label>
+                    <textarea id="spa_consult_note" name="customerNote" rows="3" placeholder="Nhập vắc xin bạn muốn tiêm hoặc câu hỏi cần tư vấn..." style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-family: inherit; font-size: 14px;"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 8px;">
+                    <button type="button" onclick="${hasCart ? "switchSpaModalTab('register')" : "openSpaRegisterModal(null)"}" style="flex: 1; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; font-size: 14px;">Quay lại</button>
+                    <button type="submit" id="btnSubmitSpaConsult" style="flex: 2; background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;">
+                        <i data-lucide="send" style="width: 16px; height: 16px;"></i> Gửi yêu cầu
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+}
+
+function setSpaConsultType(type) {
+    const btnOnline = document.getElementById('btnSpaConsultOnline');
+    const btnOffline = document.getElementById('btnSpaConsultOffline');
+    const valInput = document.getElementById('spaConsultTypeValue');
+    const centerGroup = document.getElementById('spaCenterSelectGroup');
+    const centerSelect = document.getElementById('spa_consult_center');
+    if (!btnOnline || !btnOffline || !valInput || !centerGroup) return;
+
+    if (type === 'online') {
+        valInput.value = 'online';
+        btnOnline.style.background = 'var(--primary-color, #c8102e)';
+        btnOnline.style.color = '#ffffff';
+        btnOffline.style.background = 'transparent';
+        btnOffline.style.color = '#475569';
+        centerGroup.style.display = 'none';
+        if (centerSelect) centerSelect.required = false;
+    } else {
+        valInput.value = 'offline';
+        btnOffline.style.background = 'var(--primary-color, #c8102e)';
+        btnOffline.style.color = '#ffffff';
+        btnOnline.style.background = 'transparent';
+        btnOnline.style.color = '#475569';
+        centerGroup.style.display = 'flex';
+        if (centerSelect) centerSelect.required = true;
+    }
+}
+
+async function submitSpaConsult(event) {
+    if (event) event.preventDefault();
+    const form = document.getElementById('spaConsultForm');
+    const submitBtn = document.getElementById('btnSubmitSpaConsult');
+    if (!form || !submitBtn) return;
+
+    if (!confirm('Bạn có thực sự muốn gửi yêu cầu tư vấn tiêm chủng này không?')) {
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent"></i> Đang gửi...';
+
+    try {
+        const formData = new FormData(form);
+        const payload = {
+            customerName: formData.get('customerName'),
+            customerPhone: formData.get('customerPhone'),
+            customerNote: formData.get('customerNote'),
+            center_id: formData.get('center_id') || null,
+            source: 'SPA Modal Empty Cart Form (' + (formData.get('consultType') === 'online' ? 'Online' : 'Offline') + ')'
+        };
+
+        const response = await fetch(getAbsoluteUrl('/leads'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            if (response.status === 422 && data.errors) {
+                Object.keys(data.errors).forEach(key => {
+                    const errEl = document.getElementById(`err_spa_${key}`);
+                    if (errEl) {
+                        errEl.textContent = data.errors[key][0];
+                        errEl.classList.remove('hidden');
+                    }
+                });
+            }
+            throw new Error(data.message || 'Gửi yêu cầu thất bại.');
+        }
+
+        showToast(data.message || 'Yêu cầu tư vấn đã được gửi thành công!', 'success');
+        closeSpaRegisterModal();
+    } catch (err) {
+        console.error(err);
+        showToast(err.message || 'Có lỗi xảy ra khi gửi yêu cầu.', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="send" style="width:16px;height:16px;"></i> Gửi yêu cầu';
+        if (window.lucide) window.lucide.createIcons();
+    }
+}
+
+function renderSpaRegisterForm(data) {
+    const body = document.getElementById('spaRegisterBody');
+    if (!body) return;
+
+    window.lastSchedules = data.schedules || [];
+
+    const currentCenterId = data.current_center ? data.current_center.id : '';
+    let centerOptions = '';
+    data.centers.forEach(c => {
+        centerOptions += `<option value="${c.id}" ${Number(c.id) === Number(currentCenterId) ? 'selected' : ''}>${escapeHtml(c.name)} - ${escapeHtml(c.address)}</option>`;
+    });
+
+    let dateOptions = '<option value="">-- Chọn ngày tiêm --</option>';
+    (data.schedules || []).forEach(sch => {
+        const datePart = (sch.date || '').substring(0, 10);
+        const parts = datePart.split('-');
+        const formattedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : datePart;
+        dateOptions += `<option value="${datePart}">${formattedDate}</option>`;
+    });
+
+
+    let vaccineCheckboxes = '';
+    Object.entries(data.cart).forEach(([id, item]) => {
+        const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
+        const unavailable = Boolean(item.unavailable_for_center);
+        vaccineCheckboxes += `
+            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid ${unavailable ? '#fecaca' : '#e2e8f0'}; border-radius: 8px; cursor: ${unavailable ? 'not-allowed' : 'pointer'}; ${unavailable ? 'opacity: 0.55;' : ''}">
+                <input type="checkbox" name="vaccine_ids[]" value="${id}" ${unavailable ? 'disabled' : 'checked'} onchange="recalculateSpaRegisterPrices()">
+                <span style="flex: 1; text-align: left;">
+                    <strong>${escapeHtml(item.name)}</strong>
+                    <small style="display: block; color: #64748b; margin-top: 3px;">${escapeHtml(item.disease_prevention)}</small>
+                </span>
+                <strong style="color: var(--primary-color, #c8102e);">${formattedPrice}</strong>
+            </label>
+        `;
+    });
+
+    body.innerHTML = `
+        <div style="display: flex; gap: 24px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px;">
+            <button type="button" onclick="switchSpaModalTab('register')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: var(--primary-color, #c8102e); border-bottom: 3px solid var(--primary-color, #c8102e); transition: all 0.2s; margin-bottom: -2px;">
+                1. Đăng ký tiêm chủng (vắc xin đã chọn)
+            </button>
+            <button type="button" onclick="switchSpaModalTab('consult')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; margin-bottom: -2px;">
+                2. Gửi yêu cầu tư vấn nhanh
+            </button>
+        </div>
+
+        <div class="spa-register-grid">
+            <!-- Form Column -->
+            <div style="min-width: 0;">
+                <form id="spaFormRegisterSubmit" onsubmit="submitSpaRegistrationForm(event)" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div id="spaFormErrorAlert" style="display: none; background: #fef2f2; border: 1px solid #ef4444; color: #991b1b; padding: 12px 16px; border-radius: 8px; font-size: 13.5px; text-align: left;"></div>
+                    
+                    <!-- Patients List Container -->
+                    <div id="spaPatientsContainer" style="display: flex; flex-direction: column; gap: 20px;"></div>
+
+                    <!-- Add Patient Action Button -->
+                    <div style="display: flex; justify-content: flex-start; margin-top: 4px; margin-bottom: 8px;">
+                        <button type="button" onclick="addSpaPatientField()" style="background: none; border: 1.5px dashed var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13.5px; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Thêm người tiêm khác
+                        </button>
+                    </div>
+
+                    <!-- Guardian Section (trẻ em dưới 15 tuổi) -->
+                    <div id="spaGuardianSection" style="display: none; flex-direction: column; gap: 14px; padding: 16px; background: #fff8f8; border: 1px solid #fecaca; border-radius: 10px; margin-bottom: 8px;">
+                        <h4 style="margin: 0; font-size: 13.5px; font-weight: 700; color: #991b1b; display: flex; align-items: center; gap: 6px; text-align: left;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            Thông tin người giám hộ (Bắt buộc khi có người tiêm dưới 15 tuổi)
+                        </h4>
+                        <div class="spa-form-row">
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <label for="spa_guardian_name" style="font-size: 13px; font-weight: 600; color: #334155; text-align: left;">Họ tên người giám hộ <span class="text-red-500">*</span></label>
+                                <input type="text" id="spa_guardian_name" name="guardian_name" placeholder="Ví dụ: Nguyễn Văn A" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px;">
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <label for="spa_guardian_phone" style="font-size: 13px; font-weight: 600; color: #334155; text-align: left;">Số điện thoại người giám hộ <span class="text-red-500">*</span></label>
+                                <input type="tel" id="spa_guardian_phone" name="guardian_phone" placeholder="Ví dụ: 0912345678" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Center Selection -->
+                    <div style="display: flex; flex-direction: column; gap: 6px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;">
+                        <label for="spa_booking_center_id" style="font-size: 13.5px; font-weight: 700; color: #334155; text-align: left;">Chi nhánh đặt lịch</label>
+                        <div style="position: relative; width: 100%;">
+                            <select id="spa_booking_center_id" name="center_id" onchange="changeSpaRegisterCenter(this.value)" style="width: 100%; padding: 10px 36px 10px 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; background: #fff; -webkit-appearance: none; -moz-appearance: none; appearance: none; cursor: pointer;">
+                                ${centerOptions}
+                            </select>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                    </div>
+
+                    <!-- Date & Slot Hours Grid -->
+                    <div class="spa-form-row">
+                        <!-- Chọn Ngày -->
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label for="spa_date_select" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: left;">Ngày tiêm <span class="text-red-500">*</span></label>
+                            <div style="position: relative; width: 100%;">
+                                <select id="spa_date_select" onchange="changeSpaDateFilter(this.value)" required style="width: 100%; padding: 10px 36px 10px 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; background: #fff; -webkit-appearance: none; -moz-appearance: none; appearance: none; cursor: pointer;">
+                                    ${dateOptions}
+                                </select>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </div>
+                        </div>
+                        
+                        <!-- Chọn Khung Giờ -->
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label for="spa_slot_id" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: left;">Khung giờ tiêm <span class="text-red-500">*</span></label>
+                            <div style="position: relative; width: 100%;">
+                                <select id="spa_slot_id" name="slot_id" required disabled style="width: 100%; padding: 10px 36px 10px 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; background: #f8fafc; -webkit-appearance: none; -moz-appearance: none; appearance: none; cursor: not-allowed;">
+                                    <option value="">-- Vui lòng chọn ngày --</option>
+                                </select>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </div>
+                        </div>
+                    </div>
+                    ${data.schedules.length === 0 ? '<small style="color: #b91c1c; text-align: left; margin-top: 2px; display: block;">Chi nhánh hiện chưa mở lịch tiêm. Vui lòng chọn chi nhánh khác.</small>' : ''}
+
+                    <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
+                        <button type="submit" id="spaSubmitBtn" style="background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px;">
+                            Hoàn tất đặt lịch
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Summary Column -->
+            <aside style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px; height: fit-content; text-align: left; width: 280px; min-width: 280px; flex-shrink: 0; box-sizing: border-box;">
+                <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #1e293b; text-transform: uppercase;">Tóm tắt</h4>
+                <div id="spaSummaryItems" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- populated dynamically -->
+                </div>
+                <div style="height: 1px; background: #e2e8f0;"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 800;">
+                    <span style="font-size: 14px; color: #475569;">Tổng dự kiến:</span>
+                    <strong id="spaSummaryTotalPrice" style="font-size: 18px; color: var(--primary-color);">0 đ</strong>
+                </div>
+                <div style="font-size: 12px; color: #64748b; line-height: 1.5; text-align: justify;">
+                    Thanh toán và sử dụng điểm được nhân viên xác nhận tại quầy. Giá cuối cùng được hệ thống chốt khi tạo phiếu.
+                </div>
+            </aside>
+        </div>
+    `;
+
+    window.spaPatientCount = 0;
+    addSpaPatientField();
+}
+
+async function changeSpaRegisterCenter(centerId) {
+    const body = document.getElementById('spaRegisterBody');
+    if (!body) return;
+
+    // Preserve user inputs
+    const patientName = document.getElementById('spa_patient_name')?.value || '';
+    const patientPhone = document.getElementById('spa_patient_phone')?.value || '';
+
+    // Apply transient loading overlay style rather than wiping the screen
+    const grid = document.querySelector('.spa-register-grid');
+    if (grid) {
+        grid.style.opacity = '0.5';
+        grid.style.pointerEvents = 'none';
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('center_id', centerId);
+        formData.append('redirect_to', 'ajax');
+
+        // 1. Post selection to update session center
+        await fetch(getAbsoluteUrl('/centers/select'), {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            body: formData
+        });
+
+        // 2. Fetch new center specific schedules and cart states
+        const response = await fetch(getAbsoluteUrl('/register'), {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            window.lastFetchCenters = data.centers || [];
+            window.lastCartData = data;
+            window.lastCurrentCenter = data.current_center || null;
+
+            // Redraw form layout
+            renderSpaRegisterForm(data);
+
+            // Restore inputs back to the first patient block
+            const nameInput = document.querySelector('.spa-patient-name');
+            const phoneInput = document.querySelector('.spa-patient-phone');
+            if (nameInput) nameInput.value = patientName;
+            if (phoneInput) phoneInput.value = patientPhone;
+        } else {
+            throw new Error(data.message || 'Lọc chi nhánh thất bại.');
+        }
+    } catch (e) {
+        console.error(e);
+        showToast('Không thể chuyển chi nhánh. Vui lòng thử lại.', 'error');
+        if (grid) {
+            grid.style.opacity = '1';
+            grid.style.pointerEvents = 'auto';
+        }
+    }
+}
+
+function addSpaPatientField() {
+    const container = document.getElementById('spaPatientsContainer');
+    if (!container) return;
+
+    const index = window.spaPatientCount || 0;
+    const today = new Date().toISOString().split('T')[0];
+
+    // Build vaccine checkboxes list from current cart
+    let vaccineCheckboxes = '';
+    Object.entries(window.lastCartData.cart || {}).forEach(([id, item]) => {
+        const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
+        const unavailable = Boolean(item.unavailable_for_center);
+        vaccineCheckboxes += `
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid ${unavailable ? '#fecaca' : '#e2e8f0'}; border-radius: 8px; cursor: ${unavailable ? 'not-allowed' : 'pointer'}; font-size: 13.5px; background: #fff; ${unavailable ? 'opacity: 0.55;' : ''}">
+                <input type="checkbox" value="${id}" data-price="${item.price}" class="spa-patient-vaccine-checkbox" ${unavailable ? 'disabled' : 'checked'} onchange="recalculateSpaRegisterPrices()" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary-color);">
+                <span style="flex: 1; text-align: left;">
+                    <strong>${escapeHtml(item.name)}</strong>
+                    <small style="display: block; color: #64748b; margin-top: 3px;">${escapeHtml(item.disease_prevention)}</small>
+                </span>
+                <strong style="color: var(--primary-color);">${formattedPrice}</strong>
+            </label>
+        `;
+    });
+
+    const blockHtml = `
+        <div class="spa-patient-block" id="spaPatientBlock_${index}" style="padding: 18px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; display: flex; flex-direction: column; gap: 14px; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+                <h4 style="font-size: 14px; font-weight: 800; color: var(--accent-color, #004b8f); margin: 0;">Người tiêm #${index + 1}</h4>
+                ${index > 0 ? `
+                    <button type="button" onclick="removeSpaPatientField(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        Xóa người này
+                    </button>
+                ` : ''}
+            </div>
+
+            <div class="spa-form-row">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 13px; font-weight: 600; color: #334155; text-align: left;">Họ và tên người tiêm <span class="text-red-500">*</span></label>
+                    <input type="text" class="spa-patient-name" required placeholder="Ví dụ: Nguyễn Văn A" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 13px; font-weight: 600; color: #334155; text-align: left;">Số điện thoại liên hệ <span class="text-red-500">*</span></label>
+                    <input type="tel" class="spa-patient-phone" required placeholder="Ví dụ: 0912345678" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px;">
+                </div>
+            </div>
+
+            <div class="spa-form-row">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 13px; font-weight: 600; color: #334155; text-align: left;">Ngày sinh <span class="text-red-500">*</span></label>
+                    <input type="date" class="spa-patient-dob" required max="${today}" onchange="checkSpaPatientAge()" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 13px; font-weight: 600; color: #334155; text-align: left;">Giới tính <span class="text-red-500">*</span></label>
+                    <select class="spa-patient-gender" required style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; background: #fff; cursor: pointer;">
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 13px; font-weight: 600; color: #334155; text-align: left;">Địa chỉ thường trú <span class="text-red-500">*</span></label>
+                <input type="text" class="spa-patient-address" required placeholder="Số nhà, tên đường, phường/xã..." style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px;">
+            </div>
+
+            <div style="margin-top: 6px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; flex-direction: column; gap: 8px;">
+                <h5 style="margin: 0; font-size: 13px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 6px; text-align: left;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Chọn vắc xin cho người này:
+                </h5>
+                <div style="display: grid; gap: 8px;">
+                    ${vaccineCheckboxes}
+                </div>
+            </div>
+        </div>
+    `;
+
+    container.insertAdjacentHTML('beforeend', blockHtml);
+    window.spaPatientCount++;
+    recalculateSpaRegisterPrices();
+}
+
+function removeSpaPatientField(index) {
+    const block = document.getElementById(`spaPatientBlock_${index}`);
+    if (block) {
+        block.remove();
+        recalculateSpaRegisterPrices();
+        checkSpaPatientAge();
+    }
+}
+
+function checkSpaPatientAge() {
+    let hasMinor = false;
+    document.querySelectorAll('.spa-patient-dob').forEach(input => {
+        if (input.value) {
+            const dob = new Date(input.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            if (age < 15) {
+                hasMinor = true;
+            }
+        }
+    });
+
+    const guardianSec = document.getElementById('spaGuardianSection');
+    const gName = document.getElementById('spa_guardian_name');
+    const gPhone = document.getElementById('spa_guardian_phone');
+
+    if (guardianSec && gName && gPhone) {
+        if (hasMinor) {
+            guardianSec.style.display = 'flex';
+            gName.setAttribute('required', 'required');
+            gPhone.setAttribute('required', 'required');
+        } else {
+            guardianSec.style.display = 'none';
+            gName.removeAttribute('required');
+            gPhone.removeAttribute('required');
+        }
+    }
+}
+
+function changeSpaDateFilter(selectedDate) {
+    const slotSelect = document.getElementById('spa_slot_id');
+    if (!slotSelect) return;
+
+    if (!selectedDate) {
+        slotSelect.innerHTML = '<option value="">-- Vui lòng chọn ngày --</option>';
+        slotSelect.disabled = true;
+        slotSelect.style.background = '#f8fafc';
+        slotSelect.style.cursor = 'not-allowed';
+        return;
+    }
+
+    const schedules = window.lastSchedules || [];
+    const daySchedule = schedules.find(s => (s.date || '').substring(0, 10) === selectedDate);
+    
+    let options = '<option value="">-- Chọn khung giờ tiêm --</option>';
+    if (daySchedule && daySchedule.slots) {
+        daySchedule.slots.forEach(slot => {
+            const remaining = Math.max(0, slot.capacity - slot.reserved_count);
+            options += `<option value="${slot.id}">${slot.start_at} - ${slot.end_at} (còn ${remaining} chỗ)</option>`;
+        });
+    }
+
+    slotSelect.innerHTML = options;
+    slotSelect.disabled = false;
+    slotSelect.style.background = '#fff';
+    slotSelect.style.cursor = 'pointer';
+}
+
+function recalculateSpaRegisterPrices() {
+    const form = document.getElementById('spaFormRegisterSubmit');
+    const summaryContainer = document.getElementById('spaSummaryItems');
+    const totalPriceEl = document.getElementById('spaSummaryTotalPrice');
+    const submitBtn = document.getElementById('spaSubmitBtn');
+    if (!form || !summaryContainer || !totalPriceEl) return;
+
+    const checkedCheckboxes = form.querySelectorAll('.spa-patient-vaccine-checkbox:checked');
+    
+    let total = 0;
+    const itemsMap = {};
+
+    checkedCheckboxes.forEach(cb => {
+        const id = cb.value;
+        const cartItem = window.lastCartData.cart[id];
+        if (cartItem) {
+            total += Number(cartItem.price);
+            if (!itemsMap[id]) {
+                itemsMap[id] = {
+                    name: cartItem.name,
+                    price: cartItem.price,
+                    count: 0
+                };
+            }
+            itemsMap[id].count += 1;
+        }
+    });
+
+    let summaryHtml = '';
+    Object.values(itemsMap).forEach(item => {
+        summaryHtml += `
+            <div style="display: flex; justify-content: space-between; font-size: 13.5px;">
+                <span style="font-weight: 700; color: #334155; max-width: 180px;">${escapeHtml(item.name)} ${item.count > 1 ? `(x${item.count})` : ''}</span>
+                <span style="font-weight: 700; color: var(--primary-color);">${new Intl.NumberFormat('vi-VN').format(item.price * item.count)} đ</span>
+            </div>
+        `;
+    });
+
+    summaryContainer.innerHTML = summaryHtml || '<div style="color:#94a3b8;font-size:13px;">Chưa chọn vắc xin nào.</div>';
+    totalPriceEl.textContent = new Intl.NumberFormat('vi-VN').format(total) + ' đ';
+
+    if (submitBtn) {
+        submitBtn.disabled = checkedCheckboxes.length === 0;
+    }
+}
+
+async function submitSpaRegistrationForm(event) {
+    if (event) event.preventDefault();
+    const form = document.getElementById('spaFormRegisterSubmit');
+    const errEl = document.getElementById('spaFormErrorAlert');
+    const submitBtn = document.getElementById('spaSubmitBtn');
+    if (!form || !submitBtn || !errEl) return;
+
+    errEl.style.display = 'none';
+    errEl.textContent = '';
+
+    // Validate that each patient block has at least one vaccine checked
+    const blocks = form.querySelectorAll('.spa-patient-block');
+    if (blocks.length === 0) {
+        errEl.textContent = 'Vui lòng thêm ít nhất một người tiêm.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+        const checked = block.querySelectorAll('.spa-patient-vaccine-checkbox:checked');
+        if (checked.length === 0) {
+            errEl.textContent = `Vui lòng chọn ít nhất một loại vắc xin cho Người tiêm #${i + 1}.`;
+            errEl.style.display = 'block';
+            return;
+        }
+    }
+
+    showConfirmDialog({
+        title: 'Xác nhận đặt lịch',
+        message: 'Bạn có chắc chắn muốn hoàn tất đặt lịch tiêm chủng này không?',
+        confirmText: 'Xác nhận',
+        cancelText: 'Hủy',
+        onConfirm: async () => {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent"></i> Đang gửi...';
+            showToast('Đang gửi yêu cầu đặt lịch, vui lòng đợi trong giây lát...', 'info');
+
+            try {
+                const formData = new FormData(form);
+                const patients = [];
+
+                blocks.forEach((block, index) => {
+                    const name = block.querySelector('.spa-patient-name')?.value || '';
+                    const phone = block.querySelector('.spa-patient-phone')?.value || '';
+                    const dob = block.querySelector('.spa-patient-dob')?.value || '';
+                    const gender = block.querySelector('.spa-patient-gender')?.value || 'Khác';
+                    const address = block.querySelector('.spa-patient-address')?.value || '';
+                    const checkedVacIds = [];
+                    block.querySelectorAll('.spa-patient-vaccine-checkbox:checked').forEach(cb => {
+                        checkedVacIds.push(Number(cb.value));
+                    });
+                    
+                    patients.push({
+                        name,
+                        phone,
+                        dob,
+                        gender,
+                        address,
+                        vaccine_ids: checkedVacIds
+                    });
+                });
+
+                const payload = {
+                    patients: patients,
+                    slot_id: Number(formData.get('slot_id')),
+                    guardian_name: formData.get('guardian_name') || null,
+                    guardian_phone: formData.get('guardian_phone') || null,
+                    payment_method: 'Tại trung tâm',
+                    idempotency_key: 'spa_' + Math.random().toString(36).substring(2)
+                };
+
+                const response = await fetch(getAbsoluteUrl('/register'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    let errMsg = data.message || 'Lỗi đặt lịch tiêm chủng.';
+                    if (response.status === 422 && data.errors) {
+                        const firstErrKey = Object.keys(data.errors)[0];
+                        errMsg = data.errors[firstErrKey][0];
+                    }
+                    throw new Error(errMsg);
+                }
+
+                showToast(data.message || 'Đặt lịch tiêm chủng thành công!', 'success');
+                closeSpaRegisterModal();
+
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                }
+            } catch (err) {
+                console.error(err);
+                errEl.textContent = err.message || 'Có lỗi xảy ra khi gửi yêu cầu.';
+                errEl.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Hoàn tất đặt lịch';
+            }
+        }
+    });
+}
+
+async function openSpaConsultationModal(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    const modal = document.getElementById('spaRegisterModal');
+    const body = document.getElementById('spaRegisterBody');
+    if (!modal || !body) return;
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    if (!window.lastFetchCenters || window.lastFetchCenters.length === 0) {
+        body.innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+                <i data-lucide="loader-2" style="width: 36px; height: 36px; color: var(--primary-color, #c8102e); animation: spin 1s linear infinite;"></i>
+                <p style="margin-top: 12px; color: #64748b;">Đang chuẩn bị form tư vấn...</p>
+            </div>
+        `;
+        if (window.lucide) window.lucide.createIcons();
+
+        try {
+            const response = await fetch(getAbsoluteUrl('/register'), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            const data = await response.json();
+            window.lastFetchCenters = data.centers || [];
+            window.lastCurrentCenter = data.current_center || null;
+        } catch (e) {
+            console.error('Lỗi tải chi nhánh cho tư vấn:', e);
+        }
+    }
+
+    renderSpaConsultForm();
+}
+
+    window.addEventListener('popstate', () => {
+        navigateSpa(window.location.href, false);
+    });
+
+    // Expose functions globally to window so HTML onclick inline events can invoke them
+    window.toggleCart = toggleCart;
+    window.toggleCartDrawer = toggleCartDrawer;
+    window.toggleHeaderCartDropdown = toggleHeaderCartDropdown;
+    window.clearCartUI = clearCartUI;
+    window.openVaccineDetailModal = openVaccineDetailModal;
+    window.closeVaccineDetailModal = closeVaccineDetailModal;
+    window.setAgeGroupFilter = setAgeGroupFilter;
+    window.setDiseaseFilter = setDiseaseFilter;
+    window.setOriginFilter = setOriginFilter;
+    window.setDosesFilter = setDosesFilter;
+    window.setVaccineTypeFilter = setVaccineTypeFilter;
+    window.setSortFilter = setSortFilter;
+    window.resetVaccineFilters = resetVaccineFilters;
+    window.filterVaccinesSpa = filterVaccinesSpa;
+    window.toggleCatalogFilterGroup = toggleCatalogFilterGroup;
+    window.filterOriginOptions = filterOriginOptions;
+    window.filterDiseaseOptions = filterDiseaseOptions;
+    window.toggleMobileFilterBottomSheet = toggleMobileFilterBottomSheet;
+    window.openBranchModal = openBranchModal;
+    window.closeBranchModal = closeBranchModal;
+    window.toggleCustomDropdown = toggleCustomDropdown;
+    window.toggleMobileTocAccordion = toggleMobileTocAccordion;
+    window.initDynamicTOC = initDynamicTOC;
+    window.filterNewsCategorySpa = filterNewsCategorySpa;
+    window.openSpaRegisterModal = openSpaRegisterModal;
+    window.closeSpaRegisterModal = closeSpaRegisterModal;
+    window.switchSpaModalTab = switchSpaModalTab;
+    window.renderSpaConsultForm = renderSpaConsultForm;
+    window.submitSpaConsult = submitSpaConsult;
+    window.setSpaConsultType = setSpaConsultType;
+    window.renderSpaRegisterForm = renderSpaRegisterForm;
+    window.changeSpaRegisterCenter = changeSpaRegisterCenter;
+    window.recalculateSpaRegisterPrices = recalculateSpaRegisterPrices;
+    window.submitSpaRegistrationForm = submitSpaRegistrationForm;
+    window.openSpaConsultationModal = openSpaConsultationModal;
+    window.changeSpaDateFilter = changeSpaDateFilter;
+    window.addSpaPatientField = addSpaPatientField;
+    window.removeSpaPatientField = removeSpaPatientField;
+    window.checkSpaPatientAge = checkSpaPatientAge;
+    window.showConfirmDialog = showConfirmDialog;
 }
 
 // Initial Page Load: Run initDynamicTOC on DOMContentLoaded
