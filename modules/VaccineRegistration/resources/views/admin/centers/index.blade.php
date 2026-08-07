@@ -12,6 +12,25 @@
         </a>
     </div>
 
+    <form method="GET" action="{{ route('admin.centers.index') }}" class="vaccine-filter-form" style="display:flex; gap:12px; align-items:flex-end; margin-bottom:20px; flex-wrap:wrap;">
+        <div style="flex:2 1 260px;">
+            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Tìm kiếm</label>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Tên chi nhánh, địa chỉ, hotline..." class="form-control-modern">
+        </div>
+        <div style="flex:1 1 150px;">
+            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Trạng thái</label>
+            <select name="is_active" class="form-control-modern" style="background-image:none;">
+                <option value="">Tất cả</option>
+                <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Hoạt động</option>
+                <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Tạm dừng</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-modern btn-modern-primary" style="height: 42px;">Lọc</button>
+        @if(request()->hasAny(['search', 'is_active']))
+            <a href="{{ route('admin.centers.index') }}" class="btn-modern btn-modern-secondary" style="height: 42px; display: inline-flex; align-items: center; text-decoration: none;">Xóa lọc</a>
+        @endif
+    </form>
+
     @if($centers->isEmpty())
         <div style="text-align: center; padding: 40px; color: var(--text-muted);">
             <i data-lucide="inbox" style="width: 48px; height: 48px; margin-bottom: 12px; color: var(--text-light);"></i>

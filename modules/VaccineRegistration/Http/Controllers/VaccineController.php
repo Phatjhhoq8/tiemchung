@@ -437,6 +437,7 @@ class VaccineController extends Controller
     {
         $validated = $request->validate([
             'phone' => 'required|string|max:30',
+            'registration_code' => 'nullable|string|max:100',
         ], [
             'phone.required' => 'Vui lòng nhập số điện thoại đã dùng để đặt lịch.',
         ]);
@@ -445,6 +446,8 @@ class VaccineController extends Controller
         if (!$phone) {
             return back()->withErrors(['phone' => 'Số điện thoại di động Việt Nam không hợp lệ.'])->withInput();
         }
+
+        $code = trim((string)$request->input('registration_code'));
 
         $registrations = Registration::query()
             ->with(['vaccines:id,name', 'slot.schedule'])
@@ -456,11 +459,52 @@ class VaccineController extends Controller
             ->orderByDesc('id')
             ->get();
 
+        $registrations->each(function ($reg) use ($code) {
+            if (!empty($code) && strtolower($reg->registration_code) === strtolower($code)) {
+                $reg->is_masked = false;
+                $reg->display_name = $reg->patient_name;
+                $reg->display_code = $reg->registration_code;
+                $reg->display_price = number_format($reg->netPaidAmount(), 0, ',', '.') . ' đ';
+                $reg->display_vaccines = $reg->vaccines->map(fn ($vaccine) => $vaccine->name . (($vaccine->pivot->quantity ?? 1) > 1 ? ' x' . $vaccine->pivot->quantity : ''))->implode(', ');
+            } else {
+                $reg->is_masked = true;
+                $reg->display_name = self::maskName($reg->patient_name);
+                $reg->display_code = self::maskCode($reg->registration_code);
+                $reg->display_price = '*** đ';
+                $reg->display_vaccines = $reg->vaccines->count() . ' loại vắc xin (Nhập Mã đặt lịch để xem chi tiết)';
+            }
+        });
+
         return view('vaccine::booking_lookup', [
             'lookedUp' => true,
             'registrations' => $registrations,
             'phone' => $phone,
+            'registration_code' => $code,
         ]);
+    }
+
+    public static function maskName(string $name): string
+    {
+        $parts = explode(' ', trim($name));
+        if (count($parts) <= 1) {
+            $len = mb_strlen($name, 'UTF-8');
+            if ($len <= 2) {
+                return $name;
+            }
+            return mb_substr($name, 0, 1, 'UTF-8') . '*' . mb_substr($name, -1, 1, 'UTF-8');
+        }
+        $first = $parts[0];
+        $last = $parts[count($parts) - 1];
+        return $first . ' * ' . $last;
+    }
+
+    public static function maskCode(string $code): string
+    {
+        $parts = explode('-', $code);
+        if (count($parts) < 3) {
+            return substr($code, 0, 3) . '-***';
+        }
+        return $parts[0] . '-***-' . $parts[2];
     }
 
     /**
@@ -468,8 +512,10 @@ class VaccineController extends Controller
      */
     public function postRegister(Request $request)
     {
+        $hasPatientsArrayInRequest = $request->has('patients');
+
         // 1. Pack single patient fields into patients array if client sends legacy format
-        if (!$request->has('patients') && $request->filled('patient_name')) {
+        if (!$hasPatientsArrayInRequest && $request->filled('patient_name')) {
             $request->merge([
                 'patients' => [
                     [
@@ -485,7 +531,7 @@ class VaccineController extends Controller
         }
 
         $validated = $request->validate([
-            'patients' => 'required|array|min:1',
+            'patients' => 'required|array|min:1|max:5',
             'patients.*.name' => 'required|string|max:255',
             'patients.*.phone' => 'required|string|max:30',
             'patients.*.dob' => 'nullable|date|before:today',
@@ -499,6 +545,7 @@ class VaccineController extends Controller
             'idempotency_key' => 'nullable|string|max:100',
         ], [
             'patients.required' => 'Vui lòng cung cấp thông tin người đăng ký tiêm.',
+            'patients.max' => 'Mỗi lượt đăng ký chỉ được phép tối đa 5 người.',
             'patients.*.name.required' => 'Họ tên người tiêm không được để trống.',
             'patients.*.phone.required' => 'Số điện thoại liên hệ không được để trống.',
             'patients.*.vaccine_ids.required' => 'Vui lòng chọn ít nhất một loại vắc xin cho mỗi người.',
@@ -509,14 +556,19 @@ class VaccineController extends Controller
         abort_unless($currentCenter, 404, 'Không tìm thấy chi nhánh đang hoạt động.');
 
         $idempotencyKey = $validated['idempotency_key'] ?? null;
-        if ($idempotencyKey && ($existing = Registration::where('idempotency_key', $idempotencyKey)->first())) {
-            return $this->completePublicBooking($existing);
+        if ($idempotencyKey) {
+            $existing = Registration::where('idempotency_key', $idempotencyKey)
+                ->orWhere('idempotency_key', $idempotencyKey . '_0')
+                ->first();
+            if ($existing) {
+                return $this->completePublicBooking($existing);
+            }
         }
 
         $successCodes = [];
 
         try {
-            DB::transaction(function () use ($validated, $currentCenter, &$successCodes, $idempotencyKey, $request) {
+            DB::transaction(function () use ($validated, $currentCenter, &$successCodes, $idempotencyKey, $request, $hasPatientsArrayInRequest) {
                 // Lock slot
                 $slot = Slot::with('schedule')->whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
                 if (!$slot->is_active || !$slot->schedule || !$slot->schedule->is_active
@@ -602,7 +654,7 @@ class VaccineController extends Controller
                         'booking_status' => Registration::BOOKING_PENDING,
                         'payment_status' => Registration::PAYMENT_UNPAID,
                         'payment_method' => $request->input('payment_method', 'Tại trung tâm'),
-                        'idempotency_key' => $idempotencyKey ? ($idempotencyKey . '_' . $index) : null,
+                        'idempotency_key' => $idempotencyKey ? ($hasPatientsArrayInRequest ? ($idempotencyKey . '_' . $index) : $idempotencyKey) : null,
                         'total_price' => $total,
                     ]);
 
@@ -612,8 +664,13 @@ class VaccineController extends Controller
                 }
             });
         } catch (\Illuminate\Database\QueryException $exception) {
-            if ($idempotencyKey && ($existing = Registration::where('idempotency_key', $idempotencyKey)->first())) {
-                return $this->completePublicBooking($existing);
+            if ($idempotencyKey) {
+                $existing = Registration::where('idempotency_key', $idempotencyKey)
+                    ->orWhere('idempotency_key', $idempotencyKey . '_0')
+                    ->first();
+                if ($existing) {
+                    return $this->completePublicBooking($existing);
+                }
             }
             throw $exception;
         }

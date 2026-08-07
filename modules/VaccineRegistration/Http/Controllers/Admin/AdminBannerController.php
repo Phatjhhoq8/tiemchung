@@ -22,10 +22,25 @@ class AdminBannerController extends Controller
     /**
      * Danh sách banner.
      */
-    public function index()
+    public function index(Request $request)
     {
         abort_unless(AdminContext::isSuperAdmin(), 403);
-        $banners = Banner::ordered()->paginate(10);
+        
+        $query = Banner::query();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                  ->orWhere('subtitle', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->filled('is_active')) {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        $banners = $query->ordered()->paginate(10)->withQueryString();
         return view('vaccine::admin.banners.index', compact('banners'));
     }
 

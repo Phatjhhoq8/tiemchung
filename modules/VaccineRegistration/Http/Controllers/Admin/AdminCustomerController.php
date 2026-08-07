@@ -52,10 +52,12 @@ class AdminCustomerController extends Controller
         }
 
         $registrations = $registrations->paginate(20, ['*'], 'registrations_page');
-        $transactions = $customer->pointTransactions()
-            ->with('center:id,name')
-            ->latest('id')
-            ->paginate(20, ['*'], 'points_page');
+        
+        $transactionsQuery = $customer->pointTransactions()->with('center:id,name')->latest('id');
+        if (AdminContext::isBranchAdmin()) {
+            $transactionsQuery->where('center_id', AdminContext::centerId());
+        }
+        $transactions = $transactionsQuery->paginate(20, ['*'], 'points_page');
         $pointBalance = (int) $customer->pointTransactions()->sum('points');
 
         return view('vaccine::admin.customers.show', compact('customer', 'registrations', 'transactions', 'pointBalance'));

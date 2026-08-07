@@ -741,7 +741,7 @@
                 </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.customers') ? 'active' : '' }}">
                     <a href="{{ route('admin.customers.index') }}">
-                        Khách Hàng & Điểm
+                        <i data-lucide="users"></i> Khách Hàng & Điểm
                     </a>
                 </li>
                 <li class="{{ Route::currentRouteName() === 'admin.schedule' ? 'active' : '' }}">
@@ -751,7 +751,7 @@
                 </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.schedules') ? 'active' : '' }}">
                     <a href="{{ route('admin.schedules.index') }}">
-                        Khung Giờ Tiêm
+                        <i data-lucide="clock"></i> Khung Giờ Tiêm
                     </a>
                 </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.stock') ? 'active' : '' }}">

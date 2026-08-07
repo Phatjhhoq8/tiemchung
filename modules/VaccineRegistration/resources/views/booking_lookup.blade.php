@@ -11,9 +11,17 @@
 
         <form action="{{ route('booking.lookup.submit') }}" method="POST" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1.5rem;">
             @csrf
-            <label for="phone" class="sr-only">Số điện thoại</label>
-            <input id="phone" name="phone" type="tel" value="{{ old('phone', $phone ? \Modules\VaccineRegistration\Support\PhoneNormalizer::display($phone) : '') }}" inputmode="tel" autocomplete="tel" placeholder="Ví dụ: 0912345678" required style="flex: 1 1 260px; min-height: 46px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0 14px; font-size: 1rem;">
-            <button type="submit" class="btn-primary-header" style="min-height: 46px; border: 0; cursor: pointer;"><i data-lucide="search" style="width: 17px; height: 17px;"></i> Tra cứu</button>
+            <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 4px;">
+                <label for="phone" style="font-size: .85rem; font-weight: 700; color: #475569;">Số điện thoại (Bắt buộc)</label>
+                <input id="phone" name="phone" type="tel" value="{{ old('phone', $phone ? \Modules\VaccineRegistration\Support\PhoneNormalizer::display($phone) : '') }}" inputmode="tel" autocomplete="tel" placeholder="Ví dụ: 0912345678" required style="min-height: 46px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0 14px; font-size: 1rem; width: 100%;">
+            </div>
+            <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 4px;">
+                <label for="registration_code" style="font-size: .85rem; font-weight: 700; color: #475569;">Mã đặt lịch (Không bắt buộc)</label>
+                <input id="registration_code" name="registration_code" type="text" value="{{ old('registration_code', $registration_code ?? '') }}" placeholder="Nhập để xem đầy đủ thông tin" style="min-height: 46px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0 14px; font-size: 1rem; width: 100%;">
+            </div>
+            <div style="align-self: flex-end; width: clamp(100px, 100%, 150px); min-height: 46px;">
+                <button type="submit" class="btn-primary-header" style="min-height: 46px; border: 0; cursor: pointer; width: 100%;"><i data-lucide="search" style="width: 17px; height: 17px;"></i> Tra cứu</button>
+            </div>
         </form>
 
         @error('phone')
@@ -35,8 +43,8 @@
                     <article style="border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; background: #ffffff; box-shadow: 0 4px 16px rgba(15, 23, 42, .04);">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
                             <div>
-                                <strong style="color: #0f172a; font-size: 1.05rem;">{{ $registration->patient_name }}</strong>
-                                <div style="margin-top: 4px; color: #64748b; font-size: .9rem;">Mã phiếu: {{ $registration->registration_code }}</div>
+                                <strong style="color: #0f172a; font-size: 1.05rem;">{{ $registration->display_name }}</strong>
+                                <div style="margin-top: 4px; color: #64748b; font-size: .9rem;">Mã phiếu: {{ $registration->display_code }}</div>
                             </div>
                             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                                 <span style="padding: 5px 10px; border-radius: 999px; background: #fef2f2; color: #b91c1c; font-size: .82rem; font-weight: 700;">{{ $registration->bookingStatusLabel() }}</span>
@@ -46,11 +54,11 @@
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .75rem 1.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f1f5f9; color: #475569; font-size: .93rem;">
                             <div><strong style="display: block; color: #64748b; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em;">Chi nhánh</strong>{{ $registration->center_name }}</div>
                             <div><strong style="display: block; color: #64748b; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em;">Lịch tiêm</strong>{{ $registration->injection_date?->format('d/m/Y') ?? 'Đang cập nhật' }}@if($registration->slot) · {{ $registration->slot->start_at }} - {{ $registration->slot->end_at }}@endif</div>
-                            <div><strong style="display: block; color: #64748b; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em;">Tổng dự kiến</strong><span style="color: var(--primary-color); font-weight: 800;">{{ number_format($registration->netPaidAmount(), 0, ',', '.') }} đ</span></div>
+                            <div><strong style="display: block; color: #64748b; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em;">Tổng dự kiến</strong><span style="color: var(--primary-color); font-weight: 800;">{{ $registration->display_price }}</span></div>
                         </div>
-                        <div style="margin-top: 1rem; color: #334155; line-height: 1.6;"><strong>Vắc xin:</strong> {{ $registration->vaccines->map(fn ($vaccine) => $vaccine->name . (($vaccine->pivot->quantity ?? 1) > 1 ? ' x' . $vaccine->pivot->quantity : ''))->implode(', ') }}</div>
+                        <div style="margin-top: 1rem; color: #334155; line-height: 1.6;"><strong>Vắc xin:</strong> {{ $registration->display_vaccines }}</div>
                         
-                        @if($registration->payment_status === \Modules\VaccineRegistration\Models\Registration::PAYMENT_UNPAID && $registration->booking_status !== \Modules\VaccineRegistration\Models\Registration::BOOKING_CANCELLED)
+                        @if(!$registration->is_masked && $registration->payment_status === \Modules\VaccineRegistration\Models\Registration::PAYMENT_UNPAID && $registration->booking_status !== \Modules\VaccineRegistration\Models\Registration::BOOKING_CANCELLED)
                             <div style="margin-top: 1.25rem; padding: 12px 16px; border: 1.5px dashed #cbd5e1; border-radius: 10px; background: #f8fafc; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="3"></rect><rect x="14" y="7" width="3" height="3"></rect><rect x="7" y="14" width="3" height="3"></rect><rect x="14" y="14" width="3" height="3"></rect></svg>
@@ -63,6 +71,10 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                                     Thanh toán QR (Tạm khóa)
                                 </button>
+                            </div>
+                        @elseif($registration->is_masked && $registration->payment_status === \Modules\VaccineRegistration\Models\Registration::PAYMENT_UNPAID && $registration->booking_status !== \Modules\VaccineRegistration\Models\Registration::BOOKING_CANCELLED)
+                            <div style="margin-top: 1rem; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 10px; background: #f8fafc; color: #475569; font-size: .85rem;">
+                                💡 Nhập **Mã đặt lịch** trong form tra cứu phía trên để xem chi tiết đầy đủ và sử dụng mã QR thanh toán.
                             </div>
                         @endif
                     </article>

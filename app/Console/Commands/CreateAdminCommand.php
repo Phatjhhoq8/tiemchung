@@ -105,7 +105,7 @@ class CreateAdminCommand extends Command
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:191', Rule::unique('users', 'username')],
             'email' => ['required', 'string', 'email', 'max:191', Rule::unique('users', 'email')],
-            'password' => ['required', 'string', Password::min(8)],
+            'password' => ['required', 'string', Password::min(8)->letters()->mixedCase()->numbers()],
             'role' => ['required', 'string', Rule::in(['super_admin', 'branch_admin'])],
             'center_id' => [
                 Rule::requiredIf($role === 'branch_admin'),

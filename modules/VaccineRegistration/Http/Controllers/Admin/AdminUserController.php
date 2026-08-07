@@ -10,11 +10,30 @@ use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminUserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         abort_unless(AdminContext::isSuperAdmin(), 403);
 
-        $users = User::with('center')->orderBy('role')->orderBy('name')->paginate(15);
+        $query = User::with('center');
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('username', 'like', '%' . $search . '%')
+                  ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->input('role'));
+        }
+
+        if ($request->filled('is_active')) {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        $users = $query->orderBy('role')->orderBy('name')->paginate(15)->withQueryString();
         return view('vaccine::admin.users.index', compact('users'));
     }
 
@@ -92,10 +111,13 @@ class AdminUserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,' . $id,
             'email' => 'required|email|max:255|unique:users,email,' . $id,
-            'password' => ($user ? 'nullable' : 'required') . '|string|min:6',
+            'password' => ($user ? 'nullable' : 'required') . '|string|min:8|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/',
             'role' => 'required|in:super_admin,branch_admin',
             'center_id' => 'required_if:role,branch_admin|nullable|exists:centers,id',
             'is_active' => 'nullable|boolean',
+        ], [
+            'password.min' => 'Mật khẩu phải dài ít nhất 8 ký tự.',
+            'password.regex' => 'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường và 1 chữ số.',
         ]);
     }
 }

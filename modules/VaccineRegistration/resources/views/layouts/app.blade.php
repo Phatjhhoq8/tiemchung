@@ -53,6 +53,7 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}?v=1.0.0">
+    @yield('styles')
     
     <!-- Dark Mode Check -->
     <script>

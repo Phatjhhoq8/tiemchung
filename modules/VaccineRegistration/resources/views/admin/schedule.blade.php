@@ -91,11 +91,17 @@
                                             @if($item->vaccines->isEmpty())
                                                 <span style="font-size: 12px; color: #ef4444; font-style: italic;">Không có sản phẩm</span>
                                             @else
-                                                <ul style="margin: 0; padding-left: 14px; font-size: 12.5px; color: #334155; line-height: 1.4;">
-                                                    @foreach($item->vaccines as $vac)
-                                                        <li>{{ $vac->name }}</li>
+                                                <ul class="vaccine-list" data-registration-id="{{ $item->id }}" style="margin: 0; padding-left: 14px; font-size: 12.5px; color: #334155; line-height: 1.4;">
+                                                    @foreach($item->vaccines as $index => $vac)
+                                                        <li class="vaccine-item {{ $index >= 3 ? 'hidden-vaccine' : '' }}" style="{{ $index >= 3 ? 'display: none;' : '' }}">{{ $vac->name }}</li>
                                                     @endforeach
                                                 </ul>
+                                                @if($item->vaccines->count() > 3)
+                                                    <button type="button" class="btn-toggle-vaccines" data-registration-id="{{ $item->id }}" style="background: none; border: none; color: var(--primary-color, #c8102e); font-size: 12px; font-weight: 700; padding: 4px 0 0 0; cursor: pointer; display: flex; align-items: center; gap: 2px; margin-top: 4px; font-family: var(--font-display);">
+                                                        <span>Xem thêm {{ $item->vaccines->count() - 3 }} vắc xin</span>
+                                                        <i data-lucide="chevron-down" class="toggle-icon" style="width: 14px; height: 14px; transition: transform 0.2s;"></i>
+                                                    </button>
+                                                @endif
                                             @endif
                                         </div>
                                     </div>
@@ -120,4 +126,42 @@
         @endforeach
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleButtons = document.querySelectorAll('.btn-toggle-vaccines');
+        
+        toggleButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const regId = this.getAttribute('data-registration-id');
+                const list = document.querySelector(`.vaccine-list[data-registration-id="${regId}"]`);
+                if (!list) return;
+                
+                const hiddenItems = list.querySelectorAll('.hidden-vaccine');
+                const textSpan = this.querySelector('span');
+                const icon = this.querySelector('.toggle-icon');
+                
+                const isCurrentlyHidden = hiddenItems[0].style.display === 'none';
+                
+                hiddenItems.forEach(item => {
+                    item.style.display = isCurrentlyHidden ? 'list-item' : 'none';
+                });
+                
+                if (isCurrentlyHidden) {
+                    textSpan.textContent = 'Thu gọn';
+                    if (icon) icon.style.transform = 'rotate(180deg)';
+                } else {
+                    const count = hiddenItems.length;
+                    textSpan.textContent = `Xem thêm ${count} vắc xin`;
+                    if (icon) icon.style.transform = 'rotate(0deg)';
+                }
+            });
+        });
+    });
+</script>
 @endsection

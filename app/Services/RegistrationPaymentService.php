@@ -46,6 +46,12 @@ class RegistrationPaymentService
                 ]);
             }
 
+            if ($registration->booking_status === Registration::BOOKING_CANCELLED) {
+                throw ValidationException::withMessages([
+                    'payment' => 'Lịch hẹn đã bị hủy và không thể xác nhận thanh toán.',
+                ]);
+            }
+
             $customer = Customer::lockForUpdate()->find($registration->customer_id);
             if (!$customer) {
                 throw ValidationException::withMessages([

@@ -106,6 +106,13 @@
                     </select>
                 </div>
             </div>
+
+            <!-- Vùng hiển thị vắc xin đã chọn -->
+            <div id="selected_vaccines_summary" style="display:none; margin-bottom:14px; padding:12px; background:#fffbeb; border:1px solid #fde68a; border-radius:10px;">
+                <strong style="font-size:12.5px; color:#b45309; display:block; margin-bottom:8px;">Danh sách vắc xin đã chọn (<span id="selected_count">0</span>):</strong>
+                <div id="selected_vaccines_list" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+            </div>
+
             <div id="vaccine_list_container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px; max-height:420px; overflow:auto; padding:4px;">
                 @foreach($vaccines as $centerVaccine)
                     @php($price = $centerVaccine->hasSalePrice() ? $centerVaccine->sale_price : $centerVaccine->price)
@@ -116,7 +123,7 @@
                            data-origin="{{ $centerVaccine->vaccine->origin }}"
                            data-age-group="{{ $centerVaccine->vaccine->age_group }}"
                            style="display:flex; gap:10px; align-items:center; border:1px solid #e2e8f0; border-radius:10px; padding:12px; cursor:pointer; background:#fff; transition:all 0.2s;">
-                        <input type="checkbox" name="vaccine_ids[]" value="{{ $centerVaccine->vaccine_id }}" {{ in_array($centerVaccine->vaccine_id, old('vaccine_ids', [])) ? 'checked' : '' }} onchange="toggleQtyInput(this, {{ $centerVaccine->vaccine_id }})">
+                        <input type="checkbox" name="vaccine_ids[]" value="{{ $centerVaccine->vaccine_id }}" {{ in_array($centerVaccine->vaccine_id, old('vaccine_ids', [])) ? 'checked' : '' }} onchange="onVaccineCheckboxChange(this, {{ $centerVaccine->vaccine_id }})">
                         <span style="flex:1;">
                             <strong>{{ $centerVaccine->vaccine->name }}</strong>
                             <span style="display:flex; gap:8px; align-items:center; margin-top:3px; font-size:12px;">
@@ -148,6 +155,12 @@
 </div>
 
 <script>
+    function onVaccineCheckboxChange(checkbox, id) {
+        toggleQtyInput(checkbox, id);
+        updateItemHighlight(checkbox);
+        renderSelectedSummary();
+    }
+
     function toggleQtyInput(checkbox, id) {
         const input = document.getElementById('qty_' + id);
         if (input) {
@@ -155,6 +168,66 @@
             if (checkbox.checked) {
                 input.focus();
             }
+        }
+    }
+
+    function updateItemHighlight(checkbox) {
+        const item = checkbox.closest('.vaccine-search-item');
+        if (item) {
+            if (checkbox.checked) {
+                item.style.borderColor = 'var(--primary-color, #c8102e)';
+                item.style.backgroundColor = '#fef2f2';
+                item.style.boxShadow = '0 0 0 1px var(--primary-color, #c8102e)';
+            } else {
+                item.style.borderColor = '#e2e8f0';
+                item.style.backgroundColor = '#fff';
+                item.style.boxShadow = 'none';
+            }
+        }
+    }
+
+    function renderSelectedSummary() {
+        const summaryContainer = document.getElementById('selected_vaccines_summary');
+        const listContainer = document.getElementById('selected_vaccines_list');
+        const countSpan = document.getElementById('selected_count');
+        if (!summaryContainer || !listContainer || !countSpan) return;
+
+        const checkboxes = document.querySelectorAll('input[name="vaccine_ids[]"]:checked');
+        countSpan.textContent = checkboxes.length;
+
+        if (checkboxes.length === 0) {
+            summaryContainer.style.display = 'none';
+            listContainer.innerHTML = '';
+            return;
+        }
+
+        summaryContainer.style.display = 'block';
+        listContainer.innerHTML = '';
+
+        checkboxes.forEach(cb => {
+            const item = cb.closest('.vaccine-search-item');
+            if (item) {
+                const name = item.querySelector('strong').textContent;
+                const qtyInput = document.getElementById('qty_' + cb.value);
+                const qty = qtyInput ? qtyInput.value : 1;
+                
+                const pill = document.createElement('div');
+                pill.style.cssText = 'display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid #cbd5e1; padding:4px 10px; border-radius:20px; font-size:12.5px; font-weight:700; color:#334155;';
+                
+                pill.innerHTML = `
+                    <span>${name} (x${qty})</span>
+                    <button type="button" onclick="removeSelectedPill(${cb.value})" style="border:none; background:none; color:#dc2626; cursor:pointer; font-weight:800; display:inline-flex; align-items:center; justify-content:center; padding:0 2px; font-size:14px; line-height:1;">&times;</button>
+                `;
+                listContainer.appendChild(pill);
+            }
+        });
+    }
+
+    function removeSelectedPill(id) {
+        const cb = document.querySelector(`input[name="vaccine_ids[]"][value="${id}"]`);
+        if (cb) {
+            cb.checked = false;
+            onVaccineCheckboxChange(cb, id);
         }
     }
 
@@ -203,6 +276,16 @@
                 el.addEventListener('change', filterVaccines);
             }
         });
+
+        // Khởi tạo highlight & số lượng & summary khi load trang
+        document.querySelectorAll('input[name="vaccine_ids[]"]').forEach(cb => {
+            updateItemHighlight(cb);
+            const qtyInput = document.getElementById('qty_' + cb.value);
+            if (qtyInput) {
+                qtyInput.addEventListener('input', renderSelectedSummary);
+            }
+        });
+        renderSelectedSummary();
     });
 </script>
 @endsection

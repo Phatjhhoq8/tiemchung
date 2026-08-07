@@ -63,7 +63,7 @@
             Danh sách Vắc xin 
             <span style="font-size: 14px; font-weight: 400; color: var(--text-muted);">({{ $vaccines->total() }} sản phẩm)</span>
         </h2>
-        @if(!($isSuperAdmin ?? false))
+        @if($isSuperAdmin ?? false)
             <a href="{{ route('admin.vaccines.create', ['center_id' => $selectedCenterId]) }}" class="btn-modern btn-modern-primary">
                 <i data-lucide="plus-circle"></i> Thêm Vắc xin Mới
             </a>
@@ -103,21 +103,11 @@
             </select>
         </div>
 
-        {{-- Lọc tình trạng kho --}}
-        <div class="filter-group-select">
-            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Tình trạng</label>
-            <select name="stock_status" class="form-control-modern" style="background-image: none;">
-                <option value="">Tất cả</option>
-                <option value="available" {{ request('stock_status') === 'available' ? 'selected' : '' }}>Đầy đủ</option>
-                <option value="limited" {{ request('stock_status') === 'limited' ? 'selected' : '' }}>Còn ít</option>
-                <option value="out_of_stock" {{ request('stock_status') === 'out_of_stock' ? 'selected' : '' }}>Hết hàng</option>
-            </select>
-        </div>
 
         {{-- Lọc danh mục --}}
         @if(isset($categories) && $categories->count())
         <div class="filter-group-select">
-            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Danh mục</label>
+            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Nhóm bệnh</label>
             <select name="category" class="form-control-modern" style="background-image: none;">
                 <option value="">Tất cả</option>
                 @foreach($categories as $cat)
@@ -132,7 +122,7 @@
             <button type="submit" class="btn-modern btn-modern-primary" style="padding: 10px 18px; border-radius: 8px;">
                 <i data-lucide="filter" style="width: 14px; height: 14px;"></i> Lọc
             </button>
-            @if(request()->hasAny(['search', 'type', 'stock_status', 'category', 'featured', 'center_id']))
+            @if(request()->hasAny(['search', 'type', 'category', 'featured', 'center_id']))
             <a href="{{ route('admin.vaccines.index') }}" class="btn-modern btn-modern-secondary" style="padding: 10px 18px; border-radius: 8px;">
                 <i data-lucide="x" style="width: 14px; height: 14px;"></i> Xóa lọc
             </a>
@@ -159,7 +149,7 @@
                         <th style="width: 45px; text-align: center;">#</th>
                         <th style="width: 120px;">Phân loại</th>
                         <th>Tên Vắc Xin & Chi Tiết</th>
-                        <th>Danh mục</th>
+                        <th>Nhóm bệnh</th>
                         <th style="width: 120px;">Nguồn gốc</th>
                         <th style="width: 90px; text-align: center;">Mũi tiêm</th>
                         <th style="width: 120px;">Giá bán lẻ</th>

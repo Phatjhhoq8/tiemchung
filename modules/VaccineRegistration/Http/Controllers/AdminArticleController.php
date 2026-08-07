@@ -20,10 +20,29 @@ class AdminArticleController extends Controller
         // Protected by route middleware 'super.admin' and explicit abort_unless checks
     }
 
-    public function index()
+    public function index(Request $request)
     {
         abort_unless(AdminContext::isSuperAdmin(), 403);
-        $articles = Article::latest()->paginate(10);
+        
+        $query = Article::query();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                  ->orWhere('summary', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->filled('category')) {
+            $query->where('category', 'like', '%' . $request->input('category') . '%');
+        }
+
+        if ($request->filled('is_published')) {
+            $query->where('is_published', $request->boolean('is_published'));
+        }
+
+        $articles = $query->latest()->paginate(10)->withQueryString();
         return view('vaccine::admin.articles.index', compact('articles'));
     }
 

@@ -126,8 +126,23 @@ class AdminInventoryLotController extends Controller
             'available_quantity' => 'nullable|integer|min:0',
         ]);
 
-        $updateData = array_filter($validated, fn ($val) => !is_null($val));
-        $lot->update($updateData);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($lot, $validated) {
+            $oldQty = (int) $lot->available_quantity;
+            $newQty = isset($validated['available_quantity']) ? (int) $validated['available_quantity'] : $oldQty;
+
+            $updateData = array_filter($validated, fn ($val) => !is_null($val));
+            $lot->update($updateData);
+
+            if ($newQty !== $oldQty) {
+                StockMovement::create([
+                    'inventory_lot_id' => $lot->id,
+                    'user_id' => AdminContext::user()?->id,
+                    'type' => 'adjustment',
+                    'quantity' => $newQty - $oldQty,
+                    'note' => 'Điều chỉnh số lượng khả dụng từ ' . $oldQty . ' sang ' . $newQty,
+                ]);
+            }
+        });
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([

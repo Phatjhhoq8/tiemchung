@@ -12,6 +12,33 @@
         </a>
     </div>
 
+    <form method="GET" action="{{ route('admin.users.index') }}" class="vaccine-filter-form" style="display:flex; gap:12px; align-items:flex-end; margin-bottom:20px; flex-wrap:wrap;">
+        <div style="flex:2 1 260px;">
+            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Tìm kiếm</label>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Tên, tài khoản, email..." class="form-control-modern">
+        </div>
+        <div style="flex:1 1 150px;">
+            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Quyền hạn</label>
+            <select name="role" class="form-control-modern" style="background-image:none;">
+                <option value="">Tất cả</option>
+                <option value="super_admin" {{ request('role') === 'super_admin' ? 'selected' : '' }}>Admin gốc</option>
+                <option value="branch_admin" {{ request('role') === 'branch_admin' ? 'selected' : '' }}>Admin chi nhánh</option>
+            </select>
+        </div>
+        <div style="flex:1 1 150px;">
+            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Trạng thái</label>
+            <select name="is_active" class="form-control-modern" style="background-image:none;">
+                <option value="">Tất cả</option>
+                <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Hoạt động</option>
+                <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Đã khóa</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-modern btn-modern-primary" style="height: 42px;">Lọc</button>
+        @if(request()->hasAny(['search', 'role', 'is_active']))
+            <a href="{{ route('admin.users.index') }}" class="btn-modern btn-modern-secondary" style="height: 42px; display: inline-flex; align-items: center; text-decoration: none;">Xóa lọc</a>
+        @endif
+    </form>
+
     <div class="table-responsive-modern">
         <table class="table-modern">
             <thead>

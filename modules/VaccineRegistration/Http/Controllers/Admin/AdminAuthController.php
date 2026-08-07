@@ -88,7 +88,7 @@ class AdminAuthController extends Controller
             ]);
 
             return back()->withErrors([
-                'auth_failed' => 'Tài khoản đã bị vô hiệu hóa.',
+                'auth_failed' => 'Tên đăng nhập hoặc mật khẩu không chính xác.',
             ])->withInput();
         }
 
@@ -109,6 +109,7 @@ class AdminAuthController extends Controller
             session()->put('admin_user_id', $user->id);
             session()->put('admin_role', $user->role);
             session()->put('admin_center_id', $user->center_id);
+            session()->put('admin_password_hash', md5($user->password));
             
             // Chống Session Fixation bằng cách regenerate session id
             $request->session()->regenerate();

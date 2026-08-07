@@ -22,10 +22,26 @@ class AdminCenterController extends Controller
     /**
      * Danh sách trung tâm.
      */
-    public function index()
+    public function index(Request $request)
     {
         abort_unless(AdminContext::isSuperAdmin(), 403);
-        $centers = Center::orderBy('is_active', 'desc')->orderBy('name', 'asc')->paginate(10);
+        
+        $query = Center::query();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('address', 'like', '%' . $search . '%')
+                  ->orWhere('phone', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->filled('is_active')) {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        $centers = $query->orderBy('is_active', 'desc')->orderBy('name', 'asc')->paginate(10)->withQueryString();
         return view('vaccine::admin.centers.index', compact('centers'));
     }
 

@@ -129,12 +129,21 @@ class AdminVaccineController extends Controller
 
         $vaccine = Vaccine::create($validated);
         Center::active()->each(function (Center $center) use ($vaccine, $validated, $selectedCenterId) {
+            $qty = (int) ($validated['stock_quantity'] ?? 0);
+            $stockStatus = 'available';
+            if ($qty === 0) {
+                $stockStatus = 'out_of_stock';
+            } elseif ($qty <= 5) {
+                $stockStatus = 'limited';
+            }
+            
             CenterVaccine::firstOrCreate(
                 ['center_id' => $center->id, 'vaccine_id' => $vaccine->id],
                 [
                     'price' => (int) $validated['price'],
                     'sale_price' => $validated['sale_price'] ?? null,
-                    'stock_status' => $validated['stock_status'] ?? 'available',
+                    'stock_quantity' => $qty,
+                    'stock_status' => $stockStatus,
                     'is_active' => $center->id === $selectedCenterId,
                 ]
             );
@@ -164,6 +173,7 @@ class AdminVaccineController extends Controller
         if ($centerVaccine) {
             $vaccine->price = $centerVaccine->price;
             $vaccine->sale_price = $centerVaccine->sale_price;
+            $vaccine->stock_quantity = $centerVaccine->stock_quantity;
             $vaccine->stock_status = $centerVaccine->stock_status;
             $vaccine->is_featured = $centerVaccine->is_featured;
             $vaccine->sort_order = $centerVaccine->sort_order;
@@ -244,7 +254,7 @@ class AdminVaccineController extends Controller
 
         if (AdminContext::isSuperAdmin()) {
             $masterData = $validated;
-            unset($masterData['price'], $masterData['sale_price'], $masterData['stock_status'], $masterData['is_featured'], $masterData['sort_order']);
+            unset($masterData['price'], $masterData['sale_price'], $masterData['stock_quantity'], $masterData['is_featured'], $masterData['sort_order']);
             $vaccine->update($masterData);
         }
         $this->syncCenterVaccine($vaccine, $selectedCenterId, $validated);
@@ -296,6 +306,17 @@ class AdminVaccineController extends Controller
      */
     private function validateVaccine(Request $request): array
     {
+        if (!$request->has('stock_quantity') && $request->has('stock_status')) {
+            $status = $request->input('stock_status');
+            $qty = 10;
+            if ($status === 'out_of_stock') {
+                $qty = 0;
+            } elseif ($status === 'limited') {
+                $qty = 3;
+            }
+            $request->merge(['stock_quantity' => $qty]);
+        }
+
         return $request->validate([
             'name' => 'required|string|max:255',
             'center_id' => 'required|exists:centers,id',
@@ -303,7 +324,7 @@ class AdminVaccineController extends Controller
             'sale_price' => 'nullable|integer|min:0|lt:price',
             'type' => 'required|string|in:single,package',
             'doses' => 'required|integer|min:1',
-            'stock_status' => 'required|string|in:available,limited,out_of_stock',
+            'stock_quantity' => 'required|integer|min:0',
             'disease_prevention' => 'required|string|max:255',
             'category' => 'nullable|string|max:100',
             'age_group' => 'required|string|max:255',
@@ -326,8 +347,9 @@ class AdminVaccineController extends Controller
             'type.in' => 'Phân loại không hợp lệ.',
             'doses.required' => 'Số mũi tiêm không được để trống.',
             'doses.min' => 'Số mũi tiêm phải ít nhất là 1 mũi.',
-            'stock_status.required' => 'Vui lòng chọn tình trạng kho.',
-            'stock_status.in' => 'Tình trạng kho không hợp lệ.',
+            'stock_quantity.required' => 'Vui lòng nhập số lượng tồn kho.',
+            'stock_quantity.integer' => 'Số lượng tồn kho phải là số nguyên.',
+            'stock_quantity.min' => 'Số lượng tồn kho không được nhỏ hơn 0.',
             'disease_prevention.required' => 'Công dụng phòng bệnh không được để trống.',
             'age_group.required' => 'Độ tuổi chỉ định không được để trống.',
             'origin.required' => 'Nguồn gốc xuất xứ không được để trống.',
@@ -343,12 +365,21 @@ class AdminVaccineController extends Controller
         $newPrice = (int) $data['price'];
         $newSalePrice = isset($data['sale_price']) && $data['sale_price'] !== null && $data['sale_price'] !== '' ? (int) $data['sale_price'] : null;
 
+        $qty = (int) ($data['stock_quantity'] ?? 0);
+        $stockStatus = 'available';
+        if ($qty === 0) {
+            $stockStatus = 'out_of_stock';
+        } elseif ($qty <= 5) {
+            $stockStatus = 'limited';
+        }
+
         CenterVaccine::updateOrCreate(
             ['center_id' => $centerId, 'vaccine_id' => $vaccine->id],
             [
                 'price' => $newPrice,
                 'sale_price' => $newSalePrice,
-                'stock_status' => $data['stock_status'] ?? 'available',
+                'stock_quantity' => $qty,
+                'stock_status' => $stockStatus,
                 'is_active' => true,
                 'is_featured' => (bool) ($data['is_featured'] ?? false),
                 'sort_order' => (int) ($data['sort_order'] ?? 0),

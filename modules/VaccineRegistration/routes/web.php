@@ -56,7 +56,7 @@ Route::middleware('web')->group(function () {
     
     // Quy trình đăng ký tiêm
     Route::get('/register', [VaccineController::class, 'showRegister'])->name('register.show');
-    Route::post('/register', [VaccineController::class, 'postRegister'])->name('register.post');
+    Route::post('/register', [VaccineController::class, 'postRegister'])->middleware('throttle:15,1')->name('register.post');
     Route::get('/success', [VaccineController::class, 'showSuccess'])->name('register.success');
     Route::get('/tra-cuu-lich-hen', [VaccineController::class, 'showBookingLookup'])->name('booking.lookup');
     Route::post('/tra-cuu-lich-hen', [VaccineController::class, 'lookupBookingsByPhone'])
@@ -107,6 +107,14 @@ Route::middleware('web')->group(function () {
         Route::patch('/registrations/{id}/status', [AdminRegistrationController::class, 'updateStatus'])->name('registrations.status');
         Route::post('/registrations/{id}/settle', [AdminRegistrationController::class, 'settle'])->name('registrations.settle');
         Route::post('/registrations/{id}/refund', [AdminRegistrationController::class, 'refund'])->name('registrations.refund');
+        
+        // Quy trình tiêm chủng lâm sàng (3 bước)
+        Route::post('/registrations/{id}/check-in', [VaccinationWorkflowController::class, 'checkIn'])->name('registrations.check-in');
+        Route::post('/registrations/{id}/screening', [VaccinationWorkflowController::class, 'screening'])->name('registrations.screening');
+        Route::post('/registrations/{id}/administer', [VaccinationWorkflowController::class, 'administer'])->name('registrations.administer');
+
+        // Quản lý bệnh nhân
+        Route::resource('patients', AdminPatientController::class)->except(['create', 'edit']);
 
         // Khách hàng household và lịch sử điểm.
         Route::get('/customers', [AdminCustomerController::class, 'index'])->name('customers.index');

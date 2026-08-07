@@ -90,7 +90,6 @@ class AdminSlotController extends Controller
             'start_at' => 'sometimes|required|string',
             'end_at' => 'sometimes|required|string',
             'capacity' => 'sometimes|required|integer|min:0',
-            'reserved_count' => 'sometimes|integer|min:0',
             'is_active' => 'nullable|boolean',
         ]);
 

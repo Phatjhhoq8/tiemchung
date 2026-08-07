@@ -481,8 +481,13 @@ function toggleCatalogFilterGroup(button) {
     const group = button.closest('.lc-filter-group');
     if (!group) return;
     group.classList.toggle('open');
-    const icon = button.querySelector('i');
-    if (icon) icon.setAttribute('data-lucide', group.classList.contains('open') ? 'chevron-up' : 'chevron-down');
+    const icon = button.querySelector('i, svg');
+    if (icon) {
+        const isNewOpen = group.classList.contains('open');
+        const newIcon = document.createElement('i');
+        newIcon.setAttribute('data-lucide', isNewOpen ? 'chevron-up' : 'chevron-down');
+        icon.parentNode.replaceChild(newIcon, icon);
+    }
     renderIcons();
 }
 

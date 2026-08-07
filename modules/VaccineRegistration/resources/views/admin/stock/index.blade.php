@@ -12,10 +12,15 @@
         @endif
     </div>
 
-    @if($isSuperAdmin ?? false)
-    <form method="GET" action="{{ route('admin.stock.index') }}" style="display:flex; gap:12px; align-items:flex-end; margin-bottom:20px; flex-wrap:wrap;">
-        <div style="flex:1 1 260px;">
-            <label class="form-label-modern">Chi nhánh</label>
+    <form method="GET" action="{{ route('admin.stock.index') }}" class="vaccine-filter-form" style="display:flex; gap:12px; align-items:flex-end; margin-bottom:20px; flex-wrap:wrap;">
+        <div style="flex:2 1 260px;">
+            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Tìm kiếm</label>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Tên vắc xin, ghi chú..." class="form-control-modern">
+        </div>
+        
+        @if($isSuperAdmin ?? false)
+        <div style="flex:1 1 200px;">
+            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Chi nhánh</label>
             <select name="center_id" class="form-control-modern" style="background-image:none;">
                 <option value="">Tất cả chi nhánh</option>
                 @foreach($centers as $center)
@@ -23,9 +28,25 @@
                 @endforeach
             </select>
         </div>
-        <button type="submit" class="btn-modern btn-modern-primary">Lọc</button>
+        @else
+            <input type="hidden" name="center_id" value="{{ $selectedCenterId }}">
+        @endif
+
+        <div style="flex:1 1 150px;">
+            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Loại giao dịch</label>
+            <select name="type" class="form-control-modern" style="background-image:none;">
+                <option value="">Tất cả</option>
+                <option value="import" {{ request('type') === 'import' ? 'selected' : '' }}>Nhập vào</option>
+                <option value="sale" {{ request('type') === 'sale' ? 'selected' : '' }}>Bán ra</option>
+                <option value="adjustment" {{ request('type') === 'adjustment' ? 'selected' : '' }}>Điều chỉnh</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn-modern btn-modern-primary" style="height: 42px;">Lọc</button>
+        @if(request()->hasAny(['search', 'center_id', 'type']))
+            <a href="{{ route('admin.stock.index') }}" class="btn-modern btn-modern-secondary" style="height: 42px; display: inline-flex; align-items: center; text-decoration: none;">Xóa lọc</a>
+        @endif
     </form>
-    @endif
 
     <div class="table-responsive-modern">
         <table class="table-modern">

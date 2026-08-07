@@ -21,9 +21,22 @@ class AdminStockController extends Controller
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
         $selectedCenterId = AdminContext::selectedCenterId($request->filled('center_id') ? (int) $request->input('center_id') : null);
 
-        $movements = VaccineStockMovement::with(['center', 'vaccine', 'creator'])
-            ->when($selectedCenterId, fn ($q) => $q->where('center_id', $selectedCenterId))
-            ->latest()
+        $query = VaccineStockMovement::with(['center', 'vaccine', 'creator'])
+            ->when($selectedCenterId, fn ($q) => $q->where('center_id', $selectedCenterId));
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('note', 'like', '%' . $search . '%')
+                  ->orWhereHas('vaccine', fn($v) => $v->where('name', 'like', '%' . $search . '%'));
+            });
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->input('type'));
+        }
+
+        $movements = $query->latest()
             ->paginate(20)
             ->withQueryString();
 

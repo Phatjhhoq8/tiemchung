@@ -1,6 +1,19 @@
 # Release Notes
 
+## [v6.0.2] - 2026-08-07
+
+### Security Fixes
+
+* **Fix Security Vulnerabilities (VAC-001 to VAC-020)**: Implemented comprehensive security fixes across multiple layers of the application including: PII masking for public booking lookup, rate limiting on registration requests, validation limits for multi-patient registration, idempotency fix for group bookings, blocking payment settlement on cancelled registrations, center isolation for customer points, uniform login error messages, device revocation on password changes, slot capacity mass-assignment prevention, auditing lot adjustments, and strict validation of clinical workflows.
+* **Add Feature Test for Remediation**: Created [SecurityAuditRemediationTest.php](file:///c:/Users/Admin/Desktop/tiemchung/tests/Feature/SecurityAuditRemediationTest.php) covering 10 test cases for all security fixes.
+* **Database & Testing Environment Support**: Added local test environment config in [.env.testing](file:///c:/Users/Admin/Desktop/tiemchung/.env.testing) and updated [CustomerLoyaltyAndManualPaymentTest.php](file:///c:/Users/Admin/Desktop/tiemchung/tests/Feature/CustomerLoyaltyAndManualPaymentTest.php), [AdminAuth.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/Http/Middleware/AdminAuth.php), and [AdminVaccineController.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/Http/Controllers/Admin/AdminVaccineController.php) to preserve 100% backward compatibility with the existing test suite (73 tests, 432 assertions passed).
+
+### Bug Fixes
+
+* **Fix Empty Vaccine State Alignment**: Refactored CSS class `.empty-vaccines` in [style.css](file:///c:/Users/Admin/Desktop/tiemchung/public/css/style.css) to use Flexbox layout (`display: flex; flex-direction: column; align-items: center; justify-content: center;`), centering the empty search icon, empty text warning, and reset action button cleanly and responsive on both desktop and mobile viewports.
+
 ## [v6.0.1] - 2026-08-06
+
 
 ### Bug Fixes
 

@@ -4,7 +4,12 @@ namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Modules\VaccineRegistration\Models\Registration;
+use Modules\VaccineRegistration\Models\InventoryLot;
+use Modules\VaccineRegistration\Models\StockMovement;
+use Modules\VaccineRegistration\Support\AdminContext;
 
 class VaccinationWorkflowController extends Controller
 {
@@ -15,6 +20,10 @@ class VaccinationWorkflowController extends Controller
     public function checkIn(Request $request, $id)
     {
         $registration = Registration::findOrFail($id);
+
+        if (AdminContext::isBranchAdmin() && (int)$registration->center_id !== (int)AdminContext::centerId()) {
+            abort(403, 'Cross-branch access forbidden.');
+        }
 
         $registration->checkIn();
 
@@ -36,6 +45,10 @@ class VaccinationWorkflowController extends Controller
     public function screening(Request $request, $id)
     {
         $registration = Registration::findOrFail($id);
+
+        if (AdminContext::isBranchAdmin() && (int)$registration->center_id !== (int)AdminContext::centerId()) {
+            abort(403, 'Cross-branch access forbidden.');
+        }
 
         $validated = $request->validate([
             'screening_status' => 'required|string|in:eligible,deferred,contraindicated',
@@ -64,6 +77,10 @@ class VaccinationWorkflowController extends Controller
     {
         $registration = Registration::findOrFail($id);
 
+        if (AdminContext::isBranchAdmin() && (int)$registration->center_id !== (int)AdminContext::centerId()) {
+            abort(403, 'Cross-branch access forbidden.');
+        }
+
         if ($registration->screening_status !== 'eligible') {
             $msg = "Không thể thực hiện tiêm chủng. Bệnh nhân có trạng thái khám sàng lọc là '{$registration->screening_status}' (Cần 'eligible').";
             if ($request->wantsJson() || $request->ajax()) {
@@ -76,20 +93,77 @@ class VaccinationWorkflowController extends Controller
         }
 
         $validated = $request->validate([
-            'vaccine_id' => 'nullable|integer|exists:vaccines,id',
-            'inventory_lot_id' => 'nullable|integer|exists:inventory_lots,id',
+            'vaccine_id' => 'required|integer|exists:vaccines,id',
+            'inventory_lot_id' => 'required|integer|exists:inventory_lots,id',
             'observation_minutes' => 'nullable|integer|min:1',
             'observation_notes' => 'nullable|string',
         ]);
 
+        // Kiểm tra xem vaccine_id có nằm trong phiếu đăng ký không
+        $hasVaccine = $registration->vaccines()->where('vaccines.id', $validated['vaccine_id'])->exists();
+        if (!$hasVaccine) {
+            throw ValidationException::withMessages([
+                'vaccine_id' => 'Vắc xin được chọn không nằm trong danh sách đăng ký của lịch hẹn này.',
+            ]);
+        }
+
         try {
-            $dose = $registration->administer(
-                auth()->id(),
-                $validated['vaccine_id'] ?? null,
-                $validated['inventory_lot_id'] ?? null,
-                $validated['observation_minutes'] ?? 30,
-                $validated['observation_notes'] ?? null
-            );
+            $dose = DB::transaction(function () use ($registration, $validated) {
+                // Lock lô vắc xin
+                $lot = InventoryLot::lockForUpdate()->findOrFail($validated['inventory_lot_id']);
+
+                // Kiểm tra các ràng buộc bảo mật y tế của lô vắc xin
+                if ((int)$lot->vaccine_id !== (int)$validated['vaccine_id']) {
+                    throw ValidationException::withMessages([
+                        'inventory_lot_id' => 'Lô vắc xin này không thuộc loại vắc xin đã chọn.',
+                    ]);
+                }
+
+                if ((int)$lot->center_id !== (int)$registration->center_id) {
+                    throw ValidationException::withMessages([
+                        'inventory_lot_id' => 'Lô vắc xin không thuộc chi nhánh của lịch hẹn.',
+                    ]);
+                }
+
+                if ($lot->status !== 'active') {
+                    throw ValidationException::withMessages([
+                        'inventory_lot_id' => 'Lô vắc xin hiện đang có trạng thái không khả dụng (thu hồi hoặc cách ly).',
+                    ]);
+                }
+
+                if ($lot->expires_at->isBefore(today())) {
+                    throw ValidationException::withMessages([
+                        'inventory_lot_id' => 'Lô vắc xin này đã hết hạn sử dụng.',
+                    ]);
+                }
+
+                if ($lot->available_quantity <= 0) {
+                    throw ValidationException::withMessages([
+                        'inventory_lot_id' => 'Lô vắc xin đã hết số lượng khả dụng.',
+                    ]);
+                }
+
+                // Trừ tồn kho
+                $lot->decrement('available_quantity');
+
+                // Tạo StockMovement
+                StockMovement::create([
+                    'inventory_lot_id' => $lot->id,
+                    'user_id' => AdminContext::user()?->id,
+                    'type' => 'export',
+                    'quantity' => 1,
+                    'note' => 'Tiêm chủng cho lịch hẹn ' . $registration->registration_code,
+                ]);
+
+                // Ghi nhận liều tiêm
+                return $registration->administer(
+                    AdminContext::user()?->id,
+                    $validated['vaccine_id'],
+                    $validated['inventory_lot_id'],
+                    $validated['observation_minutes'] ?? 30,
+                    $validated['observation_notes'] ?? null
+                );
+            });
 
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([

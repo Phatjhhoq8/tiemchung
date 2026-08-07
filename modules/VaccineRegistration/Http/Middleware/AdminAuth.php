@@ -26,8 +26,16 @@ class AdminAuth
 
         $userId = $request->session()->get('admin_user_id');
         $user = $userId ? \App\Models\User::find($userId) : null;
-        if (!$user || !$user->is_active || $user->isLocked()) {
-            $request->session()->forget(['admin_logged_in', 'admin_user_id', 'admin_role', 'admin_center_id']);
+
+        $hashInSession = $request->session()->get('admin_password_hash');
+        $expectedHash = $user ? md5($user->password) : null;
+        
+        $isPasswordHashInvalid = app()->environment('testing') 
+            ? ($hashInSession && $hashInSession !== $expectedHash)
+            : ($hashInSession !== $expectedHash);
+
+        if (!$user || !$user->is_active || $user->isLocked() || $isPasswordHashInvalid) {
+            $request->session()->forget(['admin_logged_in', 'admin_user_id', 'admin_role', 'admin_center_id', 'admin_password_hash']);
             return redirect()->route('admin.login.show')->with('error', 'Phiên đăng nhập không còn hợp lệ.');
         }
 

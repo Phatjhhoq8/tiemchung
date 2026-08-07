@@ -11,7 +11,28 @@
 {{-- ===== THÔNG TIN CƠ BẢN ===== --}}
 <div class="card-modern">
     <h3 style="font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px;">
-        <i data-lucide="info" style="width: 18px; height: 18px; color: var(--accent-color);"></i>
+        <i data-lucide="info" style="width: 18px; height: 18px; color: var(--accent-color);"></i>@php
+    // Dùng chung cho cả thêm mới và chỉnh sửa
+@endphp
+
+<style>
+    /* CSS cho các trường bị disabled trong form */
+    .form-control-modern:disabled,
+    .form-control-modern[disabled],
+    textarea:disabled,
+    select:disabled {
+        background-color: #f1f5f9 !important;
+        color: #64748b !important;
+        border-color: #cbd5e1 !important;
+        cursor: not-allowed !important;
+        opacity: 0.85 !important;
+    }
+    
+    /* Hover cấm trên nhãn checkbox/radio bị disabled */
+    label[style*="cursor: pointer"]:has(input[disabled]) {
+        cursor: not-allowed !important;
+    }
+</style>
         Thông tin cơ bản
     </h3>
     <div class="form-grid-2">
@@ -45,9 +66,9 @@
             </select>
         </div>
 
-        <!-- Danh mục bệnh -->
+        <!-- Nhóm bệnh -->
         <div class="form-group-modern" style="margin-bottom: 0;">
-            <label for="category" class="form-label-modern">Danh mục bệnh</label>
+            <label for="category" class="form-label-modern">Nhóm bệnh</label>
             <input type="text" name="category" id="category" value="{{ old('category', $vaccine->category) }}" placeholder="VD: Cúm, HPV, Viêm gan, Bạch hầu..." list="category-list" class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
             @if(isset($categories) && $categories->count())
             <datalist id="category-list">
@@ -94,14 +115,10 @@
             <input type="number" name="doses" id="doses" value="{{ old('doses', $vaccine->doses ?: 1) }}" required min="1" class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
         </div>
 
-        <!-- Tình trạng kho -->
+        <!-- Số lượng tồn kho -->
         <div class="form-group-modern" style="margin-bottom: 0;">
-            <label for="stock_status" class="form-label-modern">Tình trạng kho <span style="color: #ef4444;">*</span></label>
-            <select name="stock_status" id="stock_status" required class="form-control-modern" style="background-image: none;">
-                <option value="available" {{ old('stock_status', $vaccine->stock_status ?? 'available') === 'available' ? 'selected' : '' }}>Đầy đủ</option>
-                <option value="limited" {{ old('stock_status', $vaccine->stock_status) === 'limited' ? 'selected' : '' }}>Còn ít</option>
-                <option value="out_of_stock" {{ old('stock_status', $vaccine->stock_status) === 'out_of_stock' ? 'selected' : '' }}>Hết hàng</option>
-            </select>
+            <label for="stock_quantity" class="form-label-modern">Số lượng tồn kho <span style="color: #ef4444;">*</span></label>
+            <input type="number" name="stock_quantity" id="stock_quantity" value="{{ old('stock_quantity', $vaccine->stock_quantity ?? 0) }}" required min="0" placeholder="VD: 50" class="form-control-modern">
         </div>
     </div>
 </div>
@@ -146,7 +163,7 @@
             <input type="file" name="image_file" id="image_file" accept="image/*" style="display: none;" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
             <input type="hidden" name="image" id="image_hidden" value="{{ old('image', $vaccine->image) }}">
             
-            <div id="image_dropzone" class="image-upload-zone" style="{{ !($isSuperAdmin ?? false) ? 'pointer-events: none; opacity: 0.7;' : '' }}">
+            <div id="image_dropzone" class="image-upload-zone {{ !($isSuperAdmin ?? false) ? 'disabled-zone' : '' }}" style="{{ !($isSuperAdmin ?? false) ? 'opacity: 0.7; cursor: not-allowed; background-color: #f1f5f9; border-color: #cbd5e1;' : '' }}">
                 <div id="dropzone_prompt" style="{{ $vaccine->image ? 'display: none;' : '' }}">
                     <i data-lucide="upload-cloud" style="width: 40px; height: 40px; color: var(--text-light); margin-bottom: 8px; display: inline-block;"></i>
                     <p style="font-weight: 600; color: var(--text-muted); margin: 0 0 4px 0;">Kéo thả hình ảnh vào đây hoặc click để tải lên</p>
@@ -211,6 +228,7 @@
 
         // Click to choose file
         dropzone.addEventListener('click', function(e) {
+            if (dropzone.classList.contains('disabled-zone')) return;
             if (e.target.closest('#btn_remove_image')) return;
             fileInput.click();
         });
@@ -222,10 +240,24 @@
 
         // Drag & Drop events
         ['dragenter', 'dragover'].forEach(eventName => {
-            dropzone.addEventListener(eventName, highlight, false);
+            dropzone.addEventListener(eventName, function(e) {
+                if (dropzone.classList.contains('disabled-zone')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+                highlight(e);
+            }, false);
         });
         ['dragleave', 'drop'].forEach(eventName => {
-            dropzone.addEventListener(eventName, unhighlight, false);
+            dropzone.addEventListener(eventName, function(e) {
+                if (dropzone.classList.contains('disabled-zone')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+                unhighlight(e);
+            }, false);
         });
 
         function highlight(e) {
@@ -243,6 +275,11 @@
         }
 
         dropzone.addEventListener('drop', function(e) {
+            if (dropzone.classList.contains('disabled-zone')) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
             const dt = e.dataTransfer;
             const files = dt.files;
             handleFiles(files);

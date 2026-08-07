@@ -5,6 +5,7 @@ namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Patient;
+use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminPatientController extends Controller
 {
@@ -22,6 +23,10 @@ class AdminPatientController extends Controller
                   ->orWhere('phone', 'like', "%{$search}%")
                   ->orWhere('identity_card', 'like', "%{$search}%");
             });
+        }
+
+        if (AdminContext::isBranchAdmin()) {
+            $query->whereHas('registrations', fn ($q) => $q->where('center_id', AdminContext::centerId()));
         }
 
         $patients = $query->withCount(['registrations', 'administeredDoses'])->latest()->paginate(15);
@@ -78,6 +83,13 @@ class AdminPatientController extends Controller
     {
         $patient = Patient::with(['registrations.vaccines', 'administeredDoses.vaccine', 'administeredDoses.inventoryLot', 'administeredDoses.administrator'])->findOrFail($id);
 
+        if (AdminContext::isBranchAdmin()) {
+            $hasRegistration = $patient->registrations()->where('center_id', AdminContext::centerId())->exists();
+            if (!$hasRegistration) {
+                abort(403, 'Cross-branch access forbidden.');
+            }
+        }
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -101,6 +113,13 @@ class AdminPatientController extends Controller
     public function update(Request $request, $id)
     {
         $patient = Patient::findOrFail($id);
+
+        if (AdminContext::isBranchAdmin()) {
+            $hasRegistration = $patient->registrations()->where('center_id', AdminContext::centerId())->exists();
+            if (!$hasRegistration) {
+                abort(403, 'Cross-branch access forbidden.');
+            }
+        }
 
         $validated = $request->validate([
             'full_name' => 'sometimes|required|string|max:255',

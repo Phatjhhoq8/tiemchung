@@ -95,7 +95,10 @@ class CustomerLoyaltyAndManualPaymentTest extends TestCase
     {
         $registration = $this->book($this->centerA, 'Nguyễn Văn A', $this->householdPhone, $this->keyPrefix . 'public-lookup');
 
-        $this->post(route('booking.lookup.submit'), ['phone' => '+84' . substr($this->householdPhone, 1)])
+        $this->post(route('booking.lookup.submit'), [
+            'phone' => '+84' . substr($this->householdPhone, 1),
+            'registration_code' => $registration->registration_code,
+        ])
             ->assertOk()
             ->assertSee($registration->registration_code)
             ->assertSee('Nguyễn Văn A')

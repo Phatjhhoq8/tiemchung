@@ -11,13 +11,36 @@
         <div>
             <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">
                 Danh sách bài viết tin tức
-                <span style="font-size: 14px; font-weight: 400; color: var(--text-muted);">({{ $articles->count() }} bài viết)</span>
+                <span style="font-size: 14px; font-weight: 400; color: var(--text-muted);">({{ $articles->total() }} bài viết)</span>
             </h2>
         </div>
         <a href="{{ route('admin.articles.create') }}" class="btn-modern btn-modern-primary">
             <i data-lucide="plus-circle"></i> Thêm bài viết mới
         </a>
     </div>
+
+    <form method="GET" action="{{ route('admin.articles.index') }}" class="vaccine-filter-form" style="display:flex; gap:12px; align-items:flex-end; margin-bottom:20px; flex-wrap:wrap;">
+        <div style="flex:2 1 260px;">
+            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Tìm kiếm</label>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Tiêu đề, tóm tắt..." class="form-control-modern">
+        </div>
+        <div style="flex:1 1 150px;">
+            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Chuyên mục</label>
+            <input type="text" name="category" value="{{ request('category') }}" placeholder="Chuyên mục..." class="form-control-modern">
+        </div>
+        <div style="flex:1 1 150px;">
+            <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Trạng thái</label>
+            <select name="is_published" class="form-control-modern" style="background-image:none;">
+                <option value="">Tất cả</option>
+                <option value="1" {{ request('is_published') === '1' ? 'selected' : '' }}>Hiển thị</option>
+                <option value="0" {{ request('is_published') === '0' ? 'selected' : '' }}>Ẩn</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-modern btn-modern-primary" style="height: 42px;">Lọc</button>
+        @if(request()->hasAny(['search', 'category', 'is_published']))
+            <a href="{{ route('admin.articles.index') }}" class="btn-modern btn-modern-secondary" style="height: 42px; display: inline-flex; align-items: center; text-decoration: none;">Xóa lọc</a>
+        @endif
+    </form>
 
     @if(session('success'))
         <div style="background-color: #dcfce7; color: #15803d; padding: 14px 20px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; font-weight: 600;">
