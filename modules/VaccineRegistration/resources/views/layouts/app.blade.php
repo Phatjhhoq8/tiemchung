@@ -52,7 +52,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v=1.0.0">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v=1.0.4">
     @yield('styles')
     
     <!-- Dark Mode Check -->
@@ -237,6 +237,154 @@
                     .mobile-drawer-branch-card.active {
                         border-color: var(--primary-color, #c8102e);
                         background-color: rgba(200, 16, 46, 0.06);
+                    }
+
+                    /* Mobile Branch Modal Styles - Inline for Safe Render & Cache Prevention */
+                    .mobile-branch-modal-overlay {
+                        position: fixed;
+                        inset: 0;
+                        background: rgba(15, 23, 42, 0.6);
+                        z-index: 99998;
+                        opacity: 0;
+                        visibility: hidden;
+                        transition: opacity 0.25s ease, visibility 0.25s ease;
+                    }
+                    .mobile-branch-modal-overlay.open {
+                        opacity: 1;
+                        visibility: visible;
+                    }
+                    .mobile-branch-modal {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -45%) scale(0.95);
+                        width: min(92vw, 420px);
+                        max-height: 85vh;
+                        background: #ffffff;
+                        border-radius: 20px;
+                        z-index: 99999;
+                        opacity: 0;
+                        visibility: hidden;
+                        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, visibility 0.25s ease;
+                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.22);
+                        display: flex;
+                        flex-direction: column;
+                        overflow: hidden;
+                    }
+                    .mobile-branch-modal.open {
+                        opacity: 1;
+                        visibility: visible;
+                        transform: translate(-50%, -50%) scale(1);
+                    }
+                    .mobile-branch-modal-header {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 16px 20px;
+                        border-bottom: 1px solid #e2e8f0;
+                        background: #f8fafc;
+                    }
+                    .mobile-branch-modal-header h3 {
+                        margin: 0;
+                        font-size: 15px;
+                        font-weight: 800;
+                        color: #0f172a;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    .mobile-branch-modal-header h3 i,
+                    .mobile-branch-modal-header h3 svg {
+                        width: 18px;
+                        height: 18px;
+                        color: var(--primary-color, #c8102e);
+                    }
+                    .mobile-branch-modal-header .modal-close-btn {
+                        border: none;
+                        background: #e2e8f0;
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                    }
+                    .mobile-branch-modal-body {
+                        padding: 16px;
+                        overflow-y: auto;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        max-height: 65vh;
+                    }
+                    .modal-branch-option {
+                        width: 100%;
+                        border: 1px solid #e2e8f0;
+                        background: #ffffff;
+                        border-radius: 14px;
+                        padding: 12px 14px;
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 12px;
+                        text-align: left;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        position: relative;
+                        box-sizing: border-box;
+                    }
+                    .modal-branch-option:hover {
+                        border-color: rgba(200, 16, 46, 0.4);
+                        background: #fff7f7;
+                    }
+                    .modal-branch-option.active {
+                        border-color: var(--primary-color, #c8102e);
+                        background: rgba(200, 16, 46, 0.05);
+                    }
+                    .modal-branch-option .branch-option-icon {
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 50%;
+                        background: #f1f5f9;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        flex-shrink: 0;
+                        color: #64748b;
+                        margin-top: 2px;
+                    }
+                    .modal-branch-option.active .branch-option-icon {
+                        background: rgba(200, 16, 46, 0.12);
+                        color: var(--primary-color, #c8102e);
+                    }
+                    .modal-branch-option .branch-option-content {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 2px;
+                        flex: 1;
+                    }
+                    .modal-branch-option .branch-option-content strong {
+                        font-size: 13px;
+                        font-weight: 700;
+                        color: #0f172a;
+                    }
+                    .modal-branch-option.active .branch-option-content strong {
+                        color: var(--primary-color, #c8102e);
+                    }
+                    .modal-branch-option .branch-option-content small {
+                        font-size: 11.5px;
+                        color: #64748b;
+                        line-height: 1.35;
+                    }
+                    .modal-branch-option .active-badge {
+                        font-size: 10px;
+                        font-weight: 800;
+                        color: var(--primary-color, #c8102e);
+                        background: rgba(200, 16, 46, 0.1);
+                        padding: 3px 8px;
+                        border-radius: 12px;
+                        white-space: nowrap;
+                        align-self: flex-start;
                     }
                 </style>
 
