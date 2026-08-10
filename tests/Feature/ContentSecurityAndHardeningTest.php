@@ -348,10 +348,10 @@ class ContentSecurityAndHardeningTest extends TestCase
         $cleanedBypass = HtmlSanitizer::clean($bypassInput);
         $this->assertStringNotContainsString('javascript:', $cleanedBypass);
 
-        // Document <<script> double-tag residual text escaping
+        // Document <<script> double-tag residual text escaping.
         $doubleTagInput = '<<script>script>alert(1)</script>';
         $cleanedDoubleTag = HtmlSanitizer::clean($doubleTagInput);
-        $this->assertEquals('script&gt;alert(1)', $cleanedDoubleTag);
+        $this->assertSame('script&gt;alert(1)', $cleanedDoubleTag);
     }
 
     /**

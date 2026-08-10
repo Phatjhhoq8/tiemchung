@@ -4,6 +4,8 @@ namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
 use Modules\VaccineRegistration\Models\Vaccine;
@@ -14,12 +16,8 @@ class AdminStockController extends Controller
 {
     public function index(Request $request)
     {
-        if (AdminContext::isBranchAdmin() && $request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
-
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
-        $selectedCenterId = AdminContext::selectedCenterId($request->filled('center_id') ? (int) $request->input('center_id') : null);
+        $selectedCenterId = AdminContext::resolveListCenterId($request);
 
         $query = VaccineStockMovement::with(['center', 'vaccine', 'creator'])
             ->when($selectedCenterId, fn ($q) => $q->where('center_id', $selectedCenterId));
@@ -45,22 +43,26 @@ class AdminStockController extends Controller
 
     public function create(Request $request)
     {
-        abort_unless(AdminContext::isBranchAdmin(), 403);
+        abort_unless(AdminContext::isBranchAdmin() || AdminContext::isSuperAdmin(), 403);
 
-        if (AdminContext::isBranchAdmin() && $request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
+        if ($request->filled('center_id')) {
+            AdminContext::assertCanManageCenter($request->integer('center_id'));
         }
 
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
-        $selectedCenterId = AdminContext::selectedCenterId($request->filled('center_id') ? (int) $request->input('center_id') : null);
-        $vaccines = Vaccine::forCenter($selectedCenterId)->orderBy('vaccines.name')->get();
+        $selectedCenterId = $request->filled('center_id')
+            ? AdminContext::selectedCenterId($request->integer('center_id'))
+            : AdminContext::selectedCenterId();
+        $vaccines = $selectedCenterId
+            ? Vaccine::forCenter($selectedCenterId)->orderBy('vaccines.name')->get()
+            : collect();
 
         return view('vaccine::admin.stock.create', compact('centers', 'selectedCenterId', 'vaccines'));
     }
 
     public function store(Request $request)
     {
-        abort_unless(AdminContext::isBranchAdmin(), 403);
+        abort_unless(AdminContext::isBranchAdmin() || AdminContext::isSuperAdmin(), 403);
 
         $validated = $request->validate([
             'center_id' => 'required|exists:centers,id',
@@ -71,37 +73,46 @@ class AdminStockController extends Controller
             'note' => 'nullable|string|max:1000',
         ]);
 
-        $centerId = AdminContext::selectedCenterId((int) $validated['center_id']);
-        if ((int) $validated['center_id'] !== (int) $centerId) {
-            abort(403);
-        }
+        $centerId = (int) Center::active()->findOrFail($validated['center_id'])->id;
+        AdminContext::assertCanManageCenter($centerId);
 
-        $movement = VaccineStockMovement::create([
-            'center_id' => $centerId,
-            'vaccine_id' => $validated['vaccine_id'],
-            'type' => $validated['type'],
-            'quantity' => $validated['quantity'],
-            'unit_price' => $validated['unit_price'] ?? 0,
-            'note' => $validated['note'] ?? null,
-            'created_by' => AdminContext::user()?->id,
-        ]);
+        DB::transaction(function () use ($centerId, $validated) {
+            $centerVaccine = CenterVaccine::query()
+                ->where('center_id', $centerId)
+                ->where('vaccine_id', $validated['vaccine_id'])
+                ->where('is_active', true)
+                ->whereHas('vaccine', fn ($query) => $query->where('is_active', true))
+                ->lockForUpdate()
+                ->first();
 
-        $centerVaccine = CenterVaccine::firstOrCreate(
-            ['center_id' => $centerId, 'vaccine_id' => $validated['vaccine_id']],
-            ['price' => Vaccine::findOrFail($validated['vaccine_id'])->price, 'stock_status' => 'available']
-        );
+            if (!$centerVaccine) {
+                throw ValidationException::withMessages([
+                    'vaccine_id' => 'Vắc xin chưa được kích hoạt tại chi nhánh đã chọn.',
+                ]);
+            }
 
-        $oldQuantity = (int) $centerVaccine->stock_quantity;
-        $centerVaccine->stock_quantity = max(0, (int) $centerVaccine->stock_quantity + (int) $movement->quantity);
-        $centerVaccine->stock_status = $centerVaccine->stock_quantity <= 0 ? 'out_of_stock' : ($centerVaccine->stock_quantity <= 5 ? 'limited' : 'available');
-        $centerVaccine->save();
+            $movement = VaccineStockMovement::create([
+                'center_id' => $centerId,
+                'vaccine_id' => $validated['vaccine_id'],
+                'type' => $validated['type'],
+                'quantity' => $validated['quantity'],
+                'unit_price' => $validated['unit_price'] ?? 0,
+                'note' => $validated['note'] ?? null,
+                'created_by' => AdminContext::user()?->id,
+            ]);
 
-        \App\Services\AuditLogger::logStockUpdate(
-            resourceId: $centerVaccine->id,
-            oldValues: ['stock_quantity' => $oldQuantity],
-            newValues: ['stock_quantity' => $centerVaccine->stock_quantity, 'stock_status' => $centerVaccine->stock_status],
-            centerId: $centerId
-        );
+            $oldQuantity = (int) $centerVaccine->stock_quantity;
+            $centerVaccine->stock_quantity = max(0, $oldQuantity + (int) $movement->quantity);
+            $centerVaccine->stock_status = $centerVaccine->stock_quantity <= 0 ? 'out_of_stock' : ($centerVaccine->stock_quantity <= 5 ? 'limited' : 'available');
+            $centerVaccine->save();
+
+            \App\Services\AuditLogger::logStockUpdate(
+                resourceId: $centerVaccine->id,
+                oldValues: ['stock_quantity' => $oldQuantity],
+                newValues: ['stock_quantity' => $centerVaccine->stock_quantity, 'stock_status' => $centerVaccine->stock_status],
+                centerId: $centerId
+            );
+        });
 
         return redirect()->route('admin.stock.index', ['center_id' => $centerId])->with('success', 'Đã ghi nhận nhập/điều chỉnh kho.');
     }

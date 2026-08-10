@@ -18,6 +18,11 @@ class AdminCustomerController extends Controller
     {
         $query = Customer::query()->withSum('pointTransactions', 'points');
         $search = trim((string) $request->input('search'));
+        $selectedCenterId = AdminContext::resolveListCenterId($request);
+
+        if ($selectedCenterId) {
+            $query->whereHas('registrations', fn ($registrations) => $registrations->where('center_id', $selectedCenterId));
+        }
 
         if (AdminContext::isBranchAdmin()) {
             if ($search === '') {
@@ -36,31 +41,31 @@ class AdminCustomerController extends Controller
 
         $customers = $query->latest('id')->paginate(20)->withQueryString();
 
-        return view('vaccine::admin.customers.index', compact('customers', 'search'));
+        return view('vaccine::admin.customers.index', compact('customers', 'search', 'selectedCenterId'));
     }
 
     public function show(int $id)
     {
         $customer = Customer::findOrFail($id);
         $registrations = $customer->registrations()->with('vaccines')->latest('id');
+        $selectedCenterId = AdminContext::selectedCenterId();
 
-        if (AdminContext::isBranchAdmin()) {
-            $registrations->where('center_id', AdminContext::centerId());
+        if ($selectedCenterId) {
+            $registrations->where('center_id', $selectedCenterId);
             if (!(clone $registrations)->exists()) {
-                abort(403, 'Cross-branch access forbidden.');
+                abort(403, 'Khách hàng không thuộc phạm vi chi nhánh đang chọn.');
             }
         }
 
         $registrations = $registrations->paginate(20, ['*'], 'registrations_page');
-        
-        $transactionsQuery = $customer->pointTransactions()->with('center:id,name')->latest('id');
-        if (AdminContext::isBranchAdmin()) {
-            $transactionsQuery->where('center_id', AdminContext::centerId());
-        }
-        $transactions = $transactionsQuery->paginate(20, ['*'], 'points_page');
+        $transactions = $customer->pointTransactions()
+            ->with('center:id,name')
+            ->when($selectedCenterId, fn ($query) => $query->where('center_id', $selectedCenterId))
+            ->latest('id')
+            ->paginate(20, ['*'], 'points_page');
         $pointBalance = (int) $customer->pointTransactions()->sum('points');
 
-        return view('vaccine::admin.customers.show', compact('customer', 'registrations', 'transactions', 'pointBalance'));
+        return view('vaccine::admin.customers.show', compact('customer', 'registrations', 'transactions', 'pointBalance', 'selectedCenterId'));
     }
 
     public function adjustPoints(Request $request, int $id)

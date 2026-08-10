@@ -6,6 +6,17 @@
 @section('admin_content')
 <div class="card-modern">
     <form method="GET" action="{{ route('admin.customers.index') }}" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end; margin-bottom:24px;">
+        @if($isSuperAdmin ?? false)
+        <div style="flex:1 1 220px;">
+            <label class="form-label-modern" for="customer_center_id">Chi nhánh</label>
+            <select class="form-control-modern" id="customer_center_id" name="center_id">
+                <option value="" {{ $selectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
+                @foreach($adminCenters as $center)
+                    <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        @endif
         <div style="flex:1 1 280px;">
             <label class="form-label-modern" for="search">{{ ($isSuperAdmin ?? false) ? 'Tên hoặc số điện thoại' : 'Tra cứu chính xác số điện thoại' }}</label>
             <input class="form-control-modern" id="search" type="search" name="search" value="{{ $search }}" placeholder="Ví dụ: 0912345678">

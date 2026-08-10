@@ -749,7 +749,7 @@
                         <i data-lucide="calendar"></i> Lịch Hẹn Tuần
                     </a>
                 </li>
-                <li class="{{ str_contains(Route::currentRouteName(), 'admin.schedules') ? 'active' : '' }}">
+                <li class="{{ (str_contains(Route::currentRouteName(), 'admin.schedules') || str_contains(Route::currentRouteName(), 'admin.default-slots')) ? 'active' : '' }}">
                     <a href="{{ route('admin.schedules.index') }}">
                         <i data-lucide="clock"></i> Khung Giờ Tiêm
                     </a>
@@ -826,7 +826,8 @@
                     @if($isSuperAdmin ?? false)
                         <form method="POST" action="{{ route('admin.context.center') }}" style="margin:0;">
                             @csrf
-                            <select name="center_id" onchange="this.form.submit()" aria-label="Ngữ cảnh chi nhánh" style="max-width:180px; padding:6px 8px; border-radius:6px; border:1px solid var(--border-color);">
+                            <select name="center_id" onchange="this.form.submit()" aria-label="Ngữ cảnh chi nhánh" style="max-width:240px; padding:6px 8px; border-radius:6px; border:1px solid var(--border-color);">
+                                <option value="" {{ $adminSelectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
                                 @foreach($adminCenters as $center)
                                     <option value="{{ $center->id }}" {{ (int) $adminSelectedCenterId === (int) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
                                 @endforeach

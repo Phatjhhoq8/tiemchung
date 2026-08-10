@@ -5,6 +5,22 @@
 
 @section('admin_content')
 <div class="card-modern">
+    @if($isSuperAdmin ?? false)
+        <form method="GET" action="{{ route('admin.schedule') }}" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:24px;">
+            <input type="hidden" name="week" value="{{ $startOfWeek->toDateString() }}">
+            <div style="flex:1 1 260px;">
+                <label class="form-label-modern" for="schedule_center_id">Chi nhánh</label>
+                <select class="form-control-modern" id="schedule_center_id" name="center_id">
+                    <option value="" {{ $selectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
+                    @foreach($centers as $center)
+                        <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <button type="submit" class="btn-modern btn-modern-primary">Lọc</button>
+        </form>
+    @endif
+
     <!-- Điều hướng tuần -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
         <div style="display: flex; gap: 10px; align-items: center;">

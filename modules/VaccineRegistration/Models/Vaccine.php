@@ -131,6 +131,30 @@ class Vaccine extends Model
     }
 
     /**
+     * Lấy từng cấu hình vắc xin theo chi nhánh cho màn hình quản trị.
+     */
+    public function scopeForAdminCenters($query, ?int $centerId = null)
+    {
+        return $query->join('center_vaccines', 'vaccines.id', '=', 'center_vaccines.vaccine_id')
+            ->join('centers', 'centers.id', '=', 'center_vaccines.center_id')
+            ->where('centers.is_active', true)
+            ->where('vaccines.is_active', true)
+            ->when($centerId, fn ($builder) => $builder->where('center_vaccines.center_id', $centerId))
+            ->select(
+                'vaccines.*',
+                'center_vaccines.center_id as center_id',
+                'centers.name as center_name',
+                'center_vaccines.price as price',
+                'center_vaccines.sale_price as sale_price',
+                'center_vaccines.stock_quantity as stock_quantity',
+                'center_vaccines.stock_status as stock_status',
+                'center_vaccines.is_active as center_is_active',
+                'center_vaccines.is_featured as is_featured',
+                'center_vaccines.sort_order as sort_order'
+            );
+    }
+
+    /**
      * Scope lọc theo tình trạng kho
      */
     public function scopeInStock($query)

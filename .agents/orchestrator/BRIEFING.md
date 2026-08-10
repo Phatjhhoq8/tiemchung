@@ -1,116 +1,83 @@
-# BRIEFING — 2026-07-31T23:37:30+07:00
+# BRIEFING — 2026-08-10T12:35:00+07:00
 
 ## Mission
-Orchestrate full Medicare Vaccination System Refactoring (Phases 1-6, Ponytail Style) covering R1 (RBAC & Audit logs, Soft deletes/status), R2 (CRM Leads, Transaction standardization & Idempotency), R3 (Slots & Concurrency control), R4 (FEFO Lot Inventory & Stock Reservation), R5 (Patient History & 3-step vaccination workflow), R6 (Payment Webhook & Queue Jobs), plus Content Security (SVG blocking, HTML sanitization, CSV formula injection guard).
+Orchestrate the design and implementation of the Weekly Calendar Grid interface (Bảng Lịch Tuần 7 cột) for vaccination schedule management, supporting week navigation, slot CRUD, day open/close toggle, copy schedule to target days with reserved_count protection, branch isolation, SPA experience, automated tests in `tests/Feature/WeeklyCalendarDashboardTest.php`, and CHANGELOG updates.
 
 ## 🔒 My Identity
 - Archetype: Project Orchestrator
 - Roles: orchestrator, user_liaison, human_reporter, successor
 - Working directory: /home/hongphuoc/Desktop/thue/.agents/orchestrator
-- Original parent: top-level
-- Original parent conversation ID: 8a298255-7a8a-4fd9-bb42-4c361593aa6d
+- Original parent: top-level (Sentinel)
+- Original parent conversation ID: cc8945eb-c870-46d8-9633-99e776e59879
 
 ## 🔒 My Workflow
 - **Pattern**: Project Pattern (Orchestrator → Explorer → Worker → Reviewer → Challenger → Forensic Auditor)
-- **Scope document**: /home/hongphuoc/Desktop/thue/.agents/orchestrator/PROJECT.md
+- **Scope document**: /home/hongphuoc/Desktop/thue/.agents/orchestrator/SCOPE_WEEKLY_CALENDAR.md
 1. **Decompose**:
    - Milestone 1 (M1): Codebase Exploration & Target Mapping [DONE]
-   - Milestone 2 (M2): R1 Admin Account Normalization & Security [DONE]
-   - Milestone 3 (M3): R2 RBAC & Multi-branch Isolation [DONE]
-   - Milestone 4 (M4): Content Security, SVG Upload Blocking, XSS & CSV Guard [DONE]
-   - Milestone 5 (M5): Audit Logs & Resource Status Management (R1) [DONE]
-   - Milestone 6 (M6): CRM Consultation Leads, Registration Standardization & Idempotency (R2) [DONE]
-   - Milestone 7 (M7): Schedules, Slots & Concurrency Control (R3) [DONE]
-   - Milestone 8 (M8): FEFO Inventory Lots, Stock Movements & Reservation (R4) [DONE]
-   - Milestone 9 (M9): Centralized Patients & 3-Step Vaccination Workflow (R5) [DONE]
-   - Milestone 10 (M10): Payment Webhook Verification & Background Queue Jobs (R6) [DONE]
-   - Milestone 11 (M11): E2E Integration, Migration & Seeding Verification, Forensic Audit [DONE]
+   - Milestone 2 (M2): Backend API & Business Logic [DONE]
+   - Milestone 3 (M3): Frontend Weekly Calendar Grid UI & SPA Experience [DONE]
+   - Milestone 4 (M4): Automated Test Suite (`tests/Feature/WeeklyCalendarDashboardTest.php`) & CHANGELOG Update [DONE]
+   - Milestone 5 (M5): Code Review, Adversarial Testing & Forensic Audit Verification [DONE]
 2. **Dispatch & Execute**: Direct iteration loop with specialist subagents.
 3. **On failure**: Retry → Replace → Skip (non-auditor) → Redistribute → Redesign → Escalate.
 4. **Succession**: At spawn count >= 16, write handoff.md, spawn successor.
 - **Work items**:
   1. M1: Codebase Exploration [done]
-  2. M2: R1 Admin Account Normalization [done]
-  3. M3: R2 RBAC & Multi-branch Data Isolation [done]
-  4. M4: Content Security & Hardening [done]
-  5. M5: Audit Logs & Resource Status [done]
-  6. M6: CRM Leads & Transaction Standardization [done]
-  7. M7: Slots & Concurrency Control [done]
-  8. M8: FEFO Inventory & Reservation [done]
-  9. M9: Patients & 3-Step Vaccination Workflow [done]
-  10. M10: Payment Webhook & Queue Jobs [done]
-  11. M11: E2E Integration & Audit [done]
-- **Current phase**: 3 (Completion & Victory Audit)
-- **Current focus**: All Milestones M1-M11 100% COMPLETE & CLEAN — Victory Audit Initiated
+  2. M2: Backend API & Business Logic [done]
+  3. M3: Frontend Weekly Calendar Grid UI [done]
+  4. M4: Automated Test Suite & CHANGELOG [done]
+  5. M5: Review, Challenger & Forensic Audit [done]
+- **Current phase**: 4 (Victory & Handoff)
+- **Current focus**: All Milestones M1-M5 100% COMPLETE & CLEAN — Victory Declared
 
 ## 🔒 Key Constraints
 - NEVER write, modify, or create source code files directly.
 - NEVER run build/test commands directly — require subagents to do so.
 - MAY edit ONLY metadata/state files (.md) under `.agents/`.
-- Ponytail style: minimal, effective, no over-engineering.
-- Must satisfy all acceptance criteria and pass `/opt/lampp/bin/php artisan migrate:fresh --seed` cleanly.
+- Brand Theme Colors: Medicare Red (`#c8102e`), Medicare Gold (`#eaaa00`), Medicare Navy (`#004b8f`).
+- Single-Page Application (SPA) experience without unnecessary full-page reloads.
+- No unapproved emojis/icons added into UI components.
+- Automated tests in `tests/Feature/WeeklyCalendarDashboardTest.php` must pass 100%.
+- CHANGELOG.md top entry updated in English concisely.
 - Forensic audit veto is non-negotiable.
 
 ## Current Parent
-- Conversation ID: 8a298255-7a8a-4fd9-bb42-4c361593aa6d
-- Updated: 2026-07-31T23:37:30+07:00
+- Conversation ID: cc8945eb-c870-46d8-9633-99e776e59879
+- Updated: 2026-08-10T12:35:00+07:00
 
 ## Key Decisions Made
-- Expanded refactoring plan to cover all 6 phases (R1-R6) plus content security.
-- Structured work into 11 milestones M1-M11.
-- Ponytail design choices: native DB locking (`lockForUpdate`), clean Laravel Policies, Eloquent relationships, simple status fields for resource management, database-backed audit logs.
+- Milestone 1 completed cleanly by Codebase Explorer M1.
+- Milestones 2, 3, 4 implemented by Worker M2.
+- Milestone 5 verified: Reviewer M5 (APPROVE), Challenger M5 (PASS - 11/11 tests pass, 96/96 full suite pass), Forensic Auditor M5 (CLEAN).
 
 ## Team Roster
 | Agent | Type | Work Item | Status | Conv ID |
 |-------|------|-----------|--------|---------|
-| Codebase Explorer M1 | teamwork_preview_explorer | M1 Codebase Exploration | completed | 5e7a4e07-1223-4958-abc8-117fc8d1dfc3 |
-| Implementation Worker M2 | teamwork_preview_worker | M2 R1 Admin Account & Security | completed | b6869e3b-bb8c-4255-8705-0a5d468e647d |
-| Code Reviewer M2 | teamwork_preview_reviewer | M2 R1 Review & Test Verification | completed | 141a7674-73e5-4783-9f03-bb867cbedb85 |
-| Adversarial Challenger M2 | teamwork_preview_challenger | M2 R1 Stress Testing | completed | c234684d-4f7a-4abc-acc3-f06335567554 |
-| Forensic Auditor M2 | teamwork_preview_auditor | M2 R1 Integrity Audit | completed | 0f16e47d-ffc5-4e86-b0dc-1222d0649c93 |
-| Implementation Worker M3 | teamwork_preview_worker | M3 R2 RBAC & Multi-branch | completed | e838155d-6fe6-4ecf-b4a7-7c297953ac01 |
-| Code Reviewer M3 | teamwork_preview_reviewer | M3 R3 Review & Verification | completed | de5b8bfc-c3cc-4c6f-bb1b-5d6041a9f305 |
-| Adversarial Challenger M3 | teamwork_preview_challenger | M3 R3 Stress Testing | completed | 421f8599-4994-4b6c-b67e-a55d787c99d0 |
-| Forensic Auditor M3 | teamwork_preview_auditor | M3 R3 Integrity Audit | completed | 4b994602-b15e-41d8-9b42-6696c3c8b265 |
-| Implementation Worker M4 (Replacement) | teamwork_preview_worker | M4 Content Security | completed | bb205017-8f2f-4e56-9296-a4065d4b3c5f |
-| Code Reviewer M4 (Patch) | teamwork_preview_reviewer | M4 Patch Code Review | completed | cf87388f-4a55-4f93-a1a8-01a055aced5a |
-| Adversarial Challenger M4 (Patch) | teamwork_preview_challenger | M4 Patch Empirical Re-Test | completed | 9ebd5a01-9773-4bce-aa20-c4be73be8d15 |
-| Forensic Auditor M4 (Patch) | teamwork_preview_auditor | M4 Patch Forensic Audit | completed | c3daff90-f874-4933-a3c3-6771cf77df58 |
-| Implementation Worker M5 | teamwork_preview_worker | M5 Audit Logs & Resource Status | completed | c6dd46cd-94ad-4193-9d09-3c765dd54a1a |
-| Code Reviewer M5 | teamwork_preview_reviewer | M5 Verification & Review | completed (APPROVE) | 6c7b42f3-eaf4-4840-b96e-cc77a836e02a |
-| Forensic Auditor M5 | teamwork_preview_auditor | M5 Forensic Audit | completed (CLEAN) | 74a575a1-b8a9-47ee-916e-5165782054c1 |
-| Implementation Worker M6 | teamwork_preview_worker | M6 CRM Leads, Registration & Idempotency | completed | 73996393-6eb8-4313-a482-43fd23f4dabf |
-| Code Reviewer M6 | teamwork_preview_reviewer | M6 Review & Test Verification | completed (APPROVE) | 6857526c-9450-4b20-87a6-f4660409ddf8 |
-| Forensic Auditor M6 | teamwork_preview_auditor | M6 Forensic Audit | completed (CLEAN) | de884f84-0616-487b-9235-dec2a4062f7f |
-| Implementation Worker M7 | teamwork_preview_worker | M7 Schedules, Slots & Concurrency | completed | 62da09c5-8e6f-42a9-bc39-b3814aea207b |
-| Code Reviewer M7 | teamwork_preview_reviewer | M7 Code Review & Verification | completed (APPROVE) | 4dbafa80-fb9d-4165-98ca-67184017f3dc |
-| Forensic Auditor M7 | teamwork_preview_auditor | M7 Forensic Audit | completed (CLEAN) | 24ad73f2-f887-4aa0-a858-6a0723977144 |
-| Implementation Worker M8 | teamwork_preview_worker | M8 FEFO Inventory & Reservation | completed | 8a1b72f1-3326-411e-9fb0-2639ec4c380e |
-| Code Reviewer M8 | teamwork_preview_reviewer | M8 Code Review & Verification | completed (APPROVE) | dbdf94e0-6412-4e51-8e96-51a96e608091 |
-| Forensic Auditor M8 | teamwork_preview_auditor | M8 Forensic Audit | completed (CLEAN) | 0cdbea87-0212-4d1b-9b9b-3b4512489998 |
-| Implementation Worker M9 | teamwork_preview_worker | M9 Centralized Patients & 3-Step Workflow | completed | 8af13918-216b-4aa5-a4e1-e49018067754 |
-| Code Reviewer M9 | teamwork_preview_reviewer | M9 Code Review & Verification | completed (APPROVE) | 3abb7e08-afb9-4d97-bb11-d14a3ce37ac3 |
-| Forensic Auditor M9 | teamwork_preview_auditor | M9 Forensic Audit | completed (CLEAN) | 752e950d-981b-4f5a-a6eb-876c31d2ae1b |
-| Implementation Worker M10 | teamwork_preview_worker | M10 Payment Webhook & Queue Jobs | completed | 235e9405-d35a-4cff-a1d7-e306a696cc75 |
-| Code Reviewer M10 | teamwork_preview_reviewer | M10 Code Review & Verification | completed (APPROVE) | 49788471-734a-49c1-8f36-04b94dad8cd4 |
-| Forensic Auditor M10 | teamwork_preview_auditor | M10 Forensic Audit | completed (CLEAN) | 79d60f26-6a4f-462f-b831-19e4ad2dace5 |
-| E2E Integration Worker M11 | teamwork_preview_worker | M11 E2E Integration & Migration Verification | in-progress | a3329094-e2d4-4a47-a739-b9f042b499c3 |
+| Codebase Explorer M1 | teamwork_preview_explorer | M1 Codebase Exploration | completed | 55e33dd9-eb22-4735-acb3-0b81df56237d |
+| Implementation Worker M2 | teamwork_preview_worker | M2-M4 Backend, UI, Tests & CHANGELOG | completed | 869f40dd-2ad8-4f47-8575-d9c6c52276fc |
+| Code Reviewer M5 | teamwork_preview_reviewer | M5 Code Review & Test Verification | completed (APPROVE) | 8a831c91-6578-4b8e-bbf4-a8bc7b13dab1 |
+| Adversarial Challenger M5 | teamwork_preview_challenger | M5 Empirical Stress Testing | completed (PASS) | bc764667-0edf-4ae8-b8c9-f2d1fb140d2e |
+| Forensic Auditor M5 | teamwork_preview_auditor | M5 Forensic Integrity Audit | completed (CLEAN) | a10dd069-1707-45e1-8c5b-6700a95fd9cd |
 
 ## Succession Status
 - Succession required: no
-- Spawn count: 6 / 16
-- Pending subagents: 3abb7e08-afb9-4d97-bb11-d14a3ce37ac3, 752e950d-981b-4f5a-a6eb-876c31d2ae1b
-- Predecessor: top-level (conversation ID 8a298255-7a8a-4fd9-bb42-4c361593aa6d)
+- Spawn count: 5 / 16
+- Pending subagents: none
+- Predecessor: top-level (conversation ID cc8945eb-c870-46d8-9633-99e776e59879)
 - Successor spawned: not yet
 
-
 ## Active Timers
-- Heartbeat cron: task-25
+- Heartbeat cron: task-21
 - Safety timer: none
 
 ## Artifact Index
 - /home/hongphuoc/Desktop/thue/.agents/ORIGINAL_REQUEST.md — Verbatim requirements
 - /home/hongphuoc/Desktop/thue/.agents/orchestrator/BRIEFING.md — Working memory index
-- /home/hongphuoc/Desktop/thue/.agents/orchestrator/plan.md — Master project plan
 - /home/hongphuoc/Desktop/thue/.agents/orchestrator/progress.md — Liveness & status tracking
-- /home/hongphuoc/Desktop/thue/.agents/orchestrator/PROJECT.md — Master project architecture and contract
+- /home/hongphuoc/Desktop/thue/.agents/orchestrator/SCOPE_WEEKLY_CALENDAR.md — Milestone decomposition for Weekly Calendar Grid
+- /home/hongphuoc/Desktop/thue/.agents/explorer_m1/handoff.md — Explorer M1 Handoff Report
+- /home/hongphuoc/Desktop/thue/.agents/worker_m2/handoff.md — Worker M2 Handoff Report
+- /home/hongphuoc/Desktop/thue/.agents/reviewer_m5/handoff.md — Reviewer M5 Handoff Report
+- /home/hongphuoc/Desktop/thue/.agents/challenger_m5/handoff.md — Challenger M5 Handoff Report
+- /home/hongphuoc/Desktop/thue/.agents/auditor_m5/handoff.md — Forensic Auditor M5 Handoff Report

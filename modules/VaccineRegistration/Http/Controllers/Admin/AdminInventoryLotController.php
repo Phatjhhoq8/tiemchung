@@ -17,16 +17,11 @@ class AdminInventoryLotController extends Controller
      */
     public function index(Request $request)
     {
-        if (AdminContext::isBranchAdmin() && $request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
-
+        $selectedCenterId = AdminContext::resolveListCenterId($request);
         $query = InventoryLot::with(['vaccine', 'center']);
 
-        if (AdminContext::isBranchAdmin()) {
-            $query->where('center_id', AdminContext::centerId());
-        } elseif ($request->filled('center_id')) {
-            $query->where('center_id', $request->input('center_id'));
+        if ($selectedCenterId) {
+            $query->where('center_id', $selectedCenterId);
         }
 
         if ($request->filled('status')) {
@@ -54,7 +49,7 @@ class AdminInventoryLotController extends Controller
             ]);
         }
 
-        return view('vaccine::admin.inventory_lots.index', compact('lots', 'centers', 'vaccines'));
+        return view('vaccine::admin.inventory_lots.index', compact('lots', 'centers', 'vaccines', 'selectedCenterId'));
     }
 
     /**
@@ -62,10 +57,6 @@ class AdminInventoryLotController extends Controller
      */
     public function store(Request $request)
     {
-        if (AdminContext::isBranchAdmin() && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
-
         $validated = $request->validate([
             'vaccine_id' => 'required|exists:vaccines,id',
             'center_id' => 'required|exists:centers,id',
@@ -75,9 +66,7 @@ class AdminInventoryLotController extends Controller
             'status' => 'required|in:active,recalled,quarantined',
         ]);
 
-        if (AdminContext::isBranchAdmin()) {
-            $validated['center_id'] = AdminContext::centerId();
-        }
+        AdminContext::assertCanManageCenter((int) $validated['center_id']);
 
         $lot = InventoryLot::create([
             'vaccine_id' => $validated['vaccine_id'],
@@ -116,9 +105,7 @@ class AdminInventoryLotController extends Controller
     {
         $lot = InventoryLot::findOrFail($id);
 
-        if (AdminContext::isBranchAdmin() && (int)$lot->center_id !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
+        AdminContext::assertCanManageCenter((int) $lot->center_id);
 
         $validated = $request->validate([
             'expires_at' => 'nullable|date',
@@ -162,9 +149,7 @@ class AdminInventoryLotController extends Controller
     {
         $lot = InventoryLot::findOrFail($id);
 
-        if (AdminContext::isBranchAdmin() && (int)$lot->center_id !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
+        AdminContext::assertCanManageCenter((int) $lot->center_id);
 
         $validated = $request->validate([
             'status' => 'required|in:active,recalled,quarantined',

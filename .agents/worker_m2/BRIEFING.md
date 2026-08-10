@@ -1,62 +1,57 @@
-# BRIEFING — 2026-07-31T22:49:00+07:00
+# BRIEFING — 2026-08-10T12:29:00+07:00
 
 ## Mission
-Implement Milestone 2 (M2): R1 Admin Account Normalization & Security Hardening.
+Implement Weekly Calendar Grid interface (Backend M2, Frontend UI M3, Automated Test Suite & CHANGELOG M4).
 
 ## 🔒 My Identity
-- Archetype: teamwork_preview_worker
+- Archetype: implementer_worker
 - Roles: implementer, qa, specialist
 - Working directory: /home/hongphuoc/Desktop/thue/.agents/worker_m2
-- Original parent: 37403f7d-c39f-4c26-b17e-ffe89d0651e0
-- Milestone: M2 - R1 Admin Account Normalization & Security Hardening
+- Original parent: 07e284ef-ac01-43ab-8b8b-29b6746cb1ae
+- Milestone: M2 - Weekly Calendar Grid Interface Implementation
 
 ## 🔒 Key Constraints
 - CODE_ONLY network mode: NO external web access.
 - Commercial production quality standards: strict input validation, security, no hardcoded values.
 - `.agents/` directory only for metadata (plans, handoffs, logs). NO source code inside `.agents/`.
-- Single-page application experience, relative links, brand palette.
+- Single-page application experience, relative links, brand palette (Medicare Red #c8102e, Medicare Gold #eaaa00, Medicare Navy #004b8f). No unapproved icons/emojis.
 - English entries in CHANGELOG.md.
 
 ## Current Parent
-- Conversation ID: 37403f7d-c39f-4c26-b17e-ffe89d0651e0
-- Updated: 2026-07-31T22:49:00+07:00
+- Conversation ID: 07e284ef-ac01-43ab-8b8b-29b6746cb1ae
+- Updated: 2026-08-10T12:29:00+07:00
 
 ## Task Summary
 - **What to build**:
-  1. Artisan command `php artisan admin:create` with option flags & interactive prompts, validation, role checking, `center_id` checks.
-  2. Remove default super admin account (`admin/admin123`) auto-creation from `database/seeders/DatabaseSeeder.php`.
-  3. Schema & Model updates: add `status`, `must_change_password`, `password_changed_at`, `last_login_at`, `locked_until`, `failed_login_count` to users table and `User` model, along with `isLocked()`, `recordSuccessfulLogin()`, `recordFailedLogin()`.
-  4. Login Controller Audit & Hardening in `AdminAuthController.php`: rate limiting, lock check before login, failed login tracking & automatic locking at 5 failures, successful login record.
-  5. Verification via automated tests/artisan commands and updating CHANGELOG.md.
-- **Success criteria**: All 7 security tests pass (44 assertions), artisan command works interactively and via flags, login locking and rate limiting work properly, CHANGELOG updated.
+  1. Backend routes & controller methods:
+     - Add routes in `modules/VaccineRegistration/routes/web.php` for `POST /schedules/copy`, `POST /schedules/toggle-day`, `DELETE /schedules/day`.
+     - `AdminScheduleController`: Update `index` to resolve 7 dates of week, generate default schedules, query 7-day schedule & slots data.
+     - Implement `copySchedule`: validate center, source_date, target_dates. Check safety guard (`reserved_count > 0`). Return 422 if booked. DB transaction for target dates with 0 bookings.
+     - Implement `toggleDayStatus`: toggle `is_active` for date.
+     - Implement `destroyDay`: delete slots/schedule for date if `reserved_count == 0` (block if > 0).
+  2. Redesign `index.blade.php`:
+     - 7 Parallel Columns layout (Monday to Sunday).
+     - Top Week Navigation bar (Tuần trước, Tuần hiện tại, Tuần sau, Date Picker, Branch selector).
+     - Column Headers & Slot items with actions. Modals for Add Slot, Edit/Delete Slot, Copy Schedule.
+     - SPA AJAX Handling (Axios/Fetch).
+  3. Automated Tests & CHANGELOG:
+     - Create `tests/Feature/WeeklyCalendarDashboardTest.php`.
+     - Run test command `/opt/lampp/bin/php artisan test --filter=WeeklyCalendarDashboardTest` and `/opt/lampp/bin/php artisan test`.
+     - Update `CHANGELOG.md` in English.
+- **Success criteria**: 100% test pass, responsive 7-column calendar SPA experience, strict copy schedule guard.
 
 ## Key Decisions Made
-- Registered `CreateAdminCommand` in both `app/Console/Commands` and `Modules\VaccineRegistration\Providers\VaccineServiceProvider`.
-- Implemented dual schema migration protection (in existing `2026_07_31_000004` and new `2026_07_31_000007`) to ensure compatibility with both fresh installs and pre-existing databases.
-- Updated `AdminAuthController` order so `isLocked()` account check is executed prior to attempt increments.
-- Created `tests/Feature/AdminAccountSecurityTest.php` with 7 feature tests and 44 assertions.
+- Proceeding with Backend, Frontend UI, and Test Suite implementation as per exploration handoff.
 
 ## Change Tracker
-- **Files modified**:
-  - `app/Console/Commands/CreateAdminCommand.php`: Artisan command for creating admins.
-  - `modules/VaccineRegistration/Console/Commands/CreateAdminCommand.php`: Module Artisan command alias.
-  - `modules/VaccineRegistration/Providers/VaccineServiceProvider.php`: Registered command.
-  - `database/seeders/DatabaseSeeder.php`: Removed default admin/admin123 auto-creation.
-  - `modules/VaccineRegistration/Database/Migrations/2026_07_31_000004_add_admin_fields_to_users_table.php`: Added user account lifecycle fields.
-  - `modules/VaccineRegistration/Database/Migrations/2026_07_31_000007_add_account_security_fields_to_users_table.php`: Added account security migration for existing databases.
-  - `app/Models/User.php`: Added `$fillable`, `$casts`, `isLocked()`, `recordSuccessfulLogin()`, `recordFailedLogin()`.
-  - `modules/VaccineRegistration/Http/Controllers/Admin/AdminAuthController.php`: Hardened login logic with rate-limiting, lock check, and 5-failure lockout.
-  - `tests/Feature/AdminAccountSecurityTest.php`: Feature test suite for M2.
-  - `tests/Feature/ExampleTest.php`: Updated admin schedule test session parameters.
-  - `phpunit.xml`: Configured test database & log stack settings.
-  - `CHANGELOG.md`: Added release notes for v3.5.21 (M2).
-- **Build status**: PASS
+- **Files modified**: TBD
+- **Build status**: TBD
 - **Pending issues**: None
 
 ## Quality Status
-- **Build/test result**: PASS (7 tests, 44 assertions passed)
-- **Lint status**: OK
-- **Tests added/modified**: `tests/Feature/AdminAccountSecurityTest.php`
+- **Build/test result**: TBD
+- **Lint status**: TBD
+- **Tests added/modified**: TBD
 
 ## Loaded Skills
 - None requested.

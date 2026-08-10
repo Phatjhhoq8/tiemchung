@@ -21,6 +21,7 @@ use Modules\VaccineRegistration\Http\Controllers\ConsultationLeadController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminConsultationLeadController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminScheduleController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSlotController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminDefaultSlotController;
 use Modules\VaccineRegistration\Http\Controllers\AdminArticleController;
 use Modules\VaccineRegistration\Http\Controllers\ArticleController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminInventoryLotController;
@@ -78,10 +79,24 @@ Route::middleware('web')->group(function () {
     // --- Trang Quản trị (Bảo mật qua admin.auth) ---
     Route::middleware('admin.auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/context/center', function (Request $request) {
-            $validated = $request->validate(['center_id' => 'required|exists:centers,id']);
-            \Modules\VaccineRegistration\Support\AdminContext::setSelectedCenter((int) $validated['center_id']);
+            $validated = $request->validate(['center_id' => 'nullable|integer|exists:centers,id']);
+            $centerId = isset($validated['center_id']) ? (int) $validated['center_id'] : null;
+            $center = \Modules\VaccineRegistration\Support\AdminContext::setSelectedCenter($centerId);
 
-            return back()->with('success', 'Đã đổi ngữ cảnh chi nhánh quản trị.');
+            $previousUrl = url()->previous();
+            $path = parse_url($previousUrl, PHP_URL_PATH) ?: '/admin/dashboard';
+            if (!str_starts_with($path, '/admin')) {
+                $path = '/admin/dashboard';
+            }
+
+            parse_str((string) parse_url($previousUrl, PHP_URL_QUERY), $query);
+            unset($query['center_id']);
+            $target = $path . ($query ? '?' . http_build_query($query) : '');
+
+            return redirect($target)->with(
+                'success',
+                $center ? 'Đã chuyển sang chi nhánh ' . $center->name . '.' : 'Đang xem dữ liệu của tất cả chi nhánh.'
+            );
         })->name('context.center');
 
         // Dashboard
@@ -95,6 +110,7 @@ Route::middleware('web')->group(function () {
         // Quản lý Vắc xin
         Route::get('/vaccin', function() { return redirect()->route('admin.vaccines.index'); });
         Route::post('/vaccines/{id}/toggle-featured', [AdminVaccineController::class, 'toggleFeatured'])->name('vaccines.toggle-featured');
+        Route::get('/vaccines/{id}/branches-stock', [AdminVaccineController::class, 'branchesStock'])->name('vaccines.branches-stock');
         Route::resource('vaccines', AdminVaccineController::class)->except(['show']);
 
         // Quản lý Đăng ký tiêm chủng
@@ -122,6 +138,11 @@ Route::middleware('web')->group(function () {
         Route::post('/customers/{id}/points/adjust', [AdminCustomerController::class, 'adjustPoints'])->name('customers.points.adjust');
 
         // Quản lý Lịch & Khung giờ (Schedules & Slots)
+        Route::get('/default-slots', [AdminDefaultSlotController::class, 'index'])->name('default-slots.index');
+        Route::post('/default-slots/update', [AdminDefaultSlotController::class, 'update'])->name('default-slots.update');
+        Route::post('/schedules/copy', [AdminScheduleController::class, 'copySchedule'])->name('schedules.copy');
+        Route::post('/schedules/toggle-day', [AdminScheduleController::class, 'toggleDayStatus'])->name('schedules.toggle-day');
+        Route::delete('/schedules/day', [AdminScheduleController::class, 'destroyDay'])->name('schedules.destroy-day');
         Route::resource('schedules', AdminScheduleController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::post('/schedules/{schedule}/slots', [AdminScheduleController::class, 'storeSlot'])->name('schedules.slots.store');
         Route::resource('slots', AdminSlotController::class)->only(['store', 'update', 'destroy']);

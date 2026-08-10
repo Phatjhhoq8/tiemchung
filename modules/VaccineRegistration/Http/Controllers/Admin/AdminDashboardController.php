@@ -21,9 +21,7 @@ class AdminDashboardController extends Controller
     public function index(Request $request)
     {
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
-        $selectedCenterId = AdminContext::isBranchAdmin()
-            ? AdminContext::centerId()
-            : ($request->filled('center_id') ? (int) $request->input('center_id') : null);
+        $selectedCenterId = AdminContext::resolveListCenterId($request);
 
         $registrationQuery = Registration::query();
         $productQuery = CenterVaccine::query();

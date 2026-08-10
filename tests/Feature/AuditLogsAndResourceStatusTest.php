@@ -148,6 +148,14 @@ class AuditLogsAndResourceStatusTest extends TestCase
             'origin' => 'Mỹ',
             'is_active' => true,
         ]);
+        CenterVaccine::create([
+            'center_id' => $this->center->id,
+            'vaccine_id' => $vaccine->id,
+            'price' => $vaccine->price,
+            'stock_quantity' => 0,
+            'stock_status' => 'out_of_stock',
+            'is_active' => true,
+        ]);
 
         $response = $this->loginAs($this->branchAdmin)->post(route('admin.stock.store'), [
             'center_id' => $this->center->id,

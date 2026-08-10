@@ -1,41 +1,33 @@
-# Orchestrator Handoff Report (Soft Handoff to Successor Gen 1)
+# Handoff Report: Weekly Calendar Grid Implementation
 
 ## Milestone State
-| Milestone | Description | Status | Verification |
-|-----------|-------------|--------|--------------|
-| **M1** | Codebase Exploration & Target Mapping | DONE | Explorer M1 report (`.agents/explorer_m1/analysis.md`) |
-| **M2** | R1 Admin Account Normalization & Security | DONE | Passed Worker, Reviewer, Challenger (65 assertions), & Auditor (CLEAN) |
-| **M3** | R2 RBAC & Multi-branch Isolation | DONE | Passed Worker, Reviewer, Challenger (73 assertions), & Auditor (CLEAN) |
-| **M4** | Content Security, SVG Blocking & Hardening | DONE | Passed Worker, Reviewer, Challenger (140 assertions), & Auditor (CLEAN) |
-| **M5** | R1 Audit Logs & Resource Status Management | PLANNED | Ready for immediate execution by successor |
-| **M6** | R2 CRM Leads & Registration Standardization | PLANNED | Pending M5 completion |
-| **M7** | R3 Slots & Concurrency Control | PLANNED | Pending M6 completion |
-| **M8** | R4 FEFO Inventory Lots & Stock Reservation | PLANNED | Pending M7 completion |
-| **M9** | R5 Patient History & 3-Step Vaccination Workflow | PLANNED | Pending M8 completion |
-| **M10** | R6 Payment Webhook & Background Queue Jobs | PLANNED | Pending M9 completion |
-| **M11** | E2E Integration, Seeding & Forensic Audit | PLANNED | Pending M10 completion |
+- **M1: Codebase Exploration & Target Mapping**: Completed cleanly by Explorer M1.
+- **M2: Backend API & Business Logic**: Completed by Worker M2 (`copySchedule`, `toggleDayStatus`, `destroyDay`, safety guard `reserved_count > 0`).
+- **M3: Frontend Weekly Calendar Grid UI**: Completed by Worker M2 (7-column CSS grid, week navigation bar, add/edit/delete slot modals, copy schedule modal, brand colors, SPA AJAX).
+- **M4: Automated Test Suite & CHANGELOG**: Completed by Worker M2 and expanded by Challenger M5 (11 passed tests in `WeeklyCalendarDashboardTest`, 96 passed in full suite, CHANGELOG updated for v6.1.0).
+- **M5: Code Review, Challenger & Forensic Audit**: Verified CLEAN by Reviewer M5 (APPROVE), Challenger M5 (PASS), Forensic Auditor M5 (CLEAN).
 
 ## Active Subagents
-- All subagents for M1, M2, M3, M4 have completed their tasks and delivered their handoffs.
-- No subagents currently running. Spawn count reached 17 / 16 threshold.
+- None (All subagents completed successfully).
 
 ## Pending Decisions
-- None. System architecture follow Ponytail minimalist principles (Laravel native features, DB `lockForUpdate()`, database audit logs, simple status attributes).
+- None.
 
-## Remaining Work for Successor (Gen 1)
-1. **Initialize Successor**: Read `handoff.md`, `BRIEFING.md`, `PROJECT.md`, `plan.md`, `progress.md`, and `ORIGINAL_REQUEST.md`.
-2. **Start Heartbeat Cron**: Schedule recurring liveness check `schedule(CronExpression="*/10 * * * *", Prompt="Heartbeat check on subagents progress", IsDaemon=false)`.
-3. **Execute Milestone 5 (M5)**:
-   - **R1 Audit Logs**: Create `audit_logs` table (`id`, `actor_id`, `center_id`, `action`, `resource_type`, `resource_id`, `old_values`, `new_values`, `ip_address`, `user_agent`, `created_at`). Integrate automatic audit logging when vaccine prices change, stock moves, order status updates, or refunds are issued.
-   - **R1 Resource Deactivation / Status**: Implement soft deactivation / deactivation status (`is_active = false` or `status = 'inactive'`) on main resources (`vaccines`, `centers`, `users`, `banners`, `articles`) preventing hard deletes.
-   - Dispatch Worker M5 (`teamwork_preview_worker`), followed by Reviewer M5, Challenger M5, and Forensic Auditor M5.
-4. **Execute Subsequent Milestones (M6 to M11)** per `plan.md` and `PROJECT.md`.
+## Remaining Work
+- None. Task is 100% complete and verified.
 
 ## Key Artifacts
-- `/home/hongphuoc/Desktop/thue/.agents/ORIGINAL_REQUEST.md`
-- `/home/hongphuoc/Desktop/thue/.agents/orchestrator/PROJECT.md`
-- `/home/hongphuoc/Desktop/thue/.agents/orchestrator/plan.md`
 - `/home/hongphuoc/Desktop/thue/.agents/orchestrator/progress.md`
 - `/home/hongphuoc/Desktop/thue/.agents/orchestrator/BRIEFING.md`
-- `/home/hongphuoc/Desktop/thue/.agents/orchestrator/handoff.md`
-- `/home/hongphuoc/Desktop/thue/tests/Feature/ContentSecurityAndHardeningTest.php`
+- `/home/hongphuoc/Desktop/thue/.agents/orchestrator/SCOPE_WEEKLY_CALENDAR.md`
+- `/home/hongphuoc/Desktop/thue/.agents/explorer_m1/handoff.md`
+- `/home/hongphuoc/Desktop/thue/.agents/worker_m2/handoff.md`
+- `/home/hongphuoc/Desktop/thue/.agents/reviewer_m5/handoff.md`
+- `/home/hongphuoc/Desktop/thue/.agents/challenger_m5/handoff.md`
+- `/home/hongphuoc/Desktop/thue/.agents/auditor_m5/handoff.md`
+- Source files:
+  - `modules/VaccineRegistration/routes/web.php`
+  - `modules/VaccineRegistration/Http/Controllers/Admin/AdminScheduleController.php`
+  - `modules/VaccineRegistration/resources/views/admin/schedules/index.blade.php`
+  - `tests/Feature/WeeklyCalendarDashboardTest.php`
+  - `CHANGELOG.md`

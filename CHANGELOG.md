@@ -1,5 +1,24 @@
 # Release Notes
 
+## [v6.1.0] - 2026-08-10
+
+### Added
+
+* **7-Column Weekly Calendar Grid Interface**: Redesigned `schedules/index.blade.php` into a responsive 7-parallel-column calendar grid (Monday to Sunday) displaying schedule dates, open/closed active status badges, slot capacities, time slots with status dots, quick slot editing modals, and week navigation controls (Tuần trước, Tuần hiện tại, Tuần sau, Date Picker, Branch selector).
+* **Schedule Copy Feature & Safety Guard**: Implemented `POST /admin/schedules/copy` allowing administrators to clone a day schedule across target week dates. Added strict safety validation guard (`reserved_count > 0` or linked registrations) returning HTTP 422 error `"Không thể sao chép đè lịch ngày {date} vì đã có {count} lượt đặt tiêm!"` to atomically block overwriting booked schedules.
+* **Day Toggle Status & Day Schedule Deletion**: Added `POST /admin/schedules/toggle-day` and `DELETE /admin/schedules/day` API endpoints with safety check blocking deletion of days with active patient registrations.
+* **Feature Test Suite**: Created `WeeklyCalendarDashboardTest.php` with 7 feature tests validating 7-day grid resolution, navigation filtering, slot CRUD AJAX actions, day status toggles, day deletion, copy schedule success, copy schedule 422 safety guard, and cross-branch access authorization (403 Forbidden).
+
+## [v6.0.3] - 2026-08-10
+
+### Added
+
+* **Default Slots Configuration (Weekly Template)**: Added weekly default slot configuration template for centers. Created migration `2026_08_10_000001_create_default_slots_table.php`, model `DefaultSlot.php`, controller `AdminDefaultSlotController.php`, routes, and the management UI `default.blade.php`.
+* **Auto-Generating Schedules**: Implemented static method `generateFromDefaults` in `Schedule` model to dynamically auto-generate schedules for the next 30 days based on the weekly default slot templates. Integrated it into `VaccineController`, `AdminRegistrationController`, and `AdminScheduleController`.
+* **Schedule Deletion and Active Status Toggle**: Added features on the admin schedule list page to delete daily schedules and close/open them directly via inline buttons.
+* **Interactive Time Slot Editing Modal**: Added a modal popup to edit and delete individual time slots (capacity, times, activity toggle) directly by clicking the slot badges on the schedule listing dashboard.
+* **Testing suite**: Created feature test `AdminDefaultSlotsTest.php` covering default slots configuration, auto-generation, and deletion.
+
 ## [v6.0.2] - 2026-08-07
 
 ### Security Fixes
@@ -34,8 +53,15 @@
 * **Smooth TOC Section Jump Navigation**: Added `scroll-margin-top: 110px !important;` to section headers and updated `initDynamicTOC()` click handler to smoothly scroll and dock exactly 100px below the fixed site header when clicking any TOC item.
 * **Vite Asset Rebuild**: Recompiled production assets with `npm run build`.
 
+### Features
+
+* **Add branch stock quick view**: Added a quick view button and modal popup on the admin vaccines list [index.blade.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/vaccines/index.blade.php) allowing Admin root to query and view vaccine inventory status, stock quantity, and pricing across all active branches dynamically via an AJAX endpoint in [AdminVaccineController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminVaccineController.php).
+
 ### Bug Fixes
 
+* **Fix admin UTF-8 encoding in database**: Corrected the double-encoded UTF-8 name of the super_admin user (from `Quáº£n trá»‹ viÃªn` back to `Quản trị viên`) in the database.
+* **Fix admin layout header text clipping**: Increased the `max-width` of the branch selector dropdown in [admin.blade.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/layouts/admin.blade.php) from 180px to 240px to prevent long branch names (like `MEDICARE PHONG ĐIỀN`) from being truncated and causing text display issues.
+* **Fix admin permissions UI logic**: Fixed view logic in [index.blade.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/vaccines/index.blade.php) where `isSuperAdmin` condition was incorrectly reversed, hiding the "Add Vaccine" button and showing "Read Only" actions for Super Admin instead of Branch Admin. Now Super Admin can add, edit, and delete vaccines, while Branch Admin can only edit local prices/stocks and toggle featured status.
 * **Fix registration page**: Passed `activeCenters` variable to `vaccine::register` view to resolve `Undefined variable $activeCenters` error.
 
 ### Branch booking and manual payment

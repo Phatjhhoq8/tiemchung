@@ -334,7 +334,7 @@ class M3EmpiricalChallengerTest extends TestCase
             ->assertStatus(403);
 
         // 2.10 Attempt uploading image_file
-        $fakeFile = UploadedFile::fake()->image('hacked.jpg');
+        $fakeFile = UploadedFile::fake()->create('hacked.jpg', 10, 'image/jpeg');
         $this->actingAsAdmin($this->branchAdminA)
             ->put(route('admin.vaccines.update', $this->vaccine->id), array_merge($basePayload, ['image_file' => $fakeFile]))
             ->assertStatus(403);

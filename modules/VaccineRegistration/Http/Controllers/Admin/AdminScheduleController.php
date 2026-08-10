@@ -3,45 +3,114 @@
 namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Modules\VaccineRegistration\Models\Center;
+use Modules\VaccineRegistration\Models\Registration;
 use Modules\VaccineRegistration\Models\Schedule;
 use Modules\VaccineRegistration\Models\Slot;
-use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminScheduleController extends Controller
 {
     /**
-     * Display a listing of schedules.
+     * Display a 7-day weekly grid listing of schedules.
      */
     public function index(Request $request)
     {
-        $query = Schedule::with(['center', 'slots']);
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get(['id', 'name']);
-        $selectedCenterId = AdminContext::isBranchAdmin()
-            ? AdminContext::centerId()
-            : ($request->filled('center_id') ? $request->integer('center_id') : AdminContext::selectedCenterId());
+        $selectedCenterId = AdminContext::resolveListCenterId($request);
 
-        if (AdminContext::isBranchAdmin()) {
-            $query->where('center_id', AdminContext::centerId());
-        } elseif ($selectedCenterId) {
-            $query->where('center_id', $selectedCenterId);
+        $pivotDate = $request->filled('date')
+            ? Carbon::parse($request->input('date'))
+            : ($request->filled('week_start') ? Carbon::parse($request->input('week_start')) : now());
+
+        $weekStart = $pivotDate->copy()->startOfWeek();
+        $weekEnd = $pivotDate->copy()->endOfWeek();
+
+        $dates = [];
+        for ($i = 0; $i < 7; $i++) {
+            $dates[] = $weekStart->copy()->addDays($i)->toDateString();
         }
 
-        if ($request->filled('date')) {
-            $query->where('date', $request->input('date'));
+        $schedules = collect();
+        if ($selectedCenterId) {
+            Schedule::generateFromDefaults($selectedCenterId, $weekStart->toDateString(), $weekEnd->toDateString());
+
+            $schedules = Schedule::with(['center', 'slots' => fn ($q) => $q->orderBy('start_at')])
+                ->where('center_id', $selectedCenterId)
+                ->whereIn('date', $dates)
+                ->get()
+                ->keyBy(fn ($item) => $item->date->format('Y-m-d'));
         }
 
-        $schedules = $query->latest('date')->paginate(15);
+        $dayNames = [
+            1 => 'Thứ 2',
+            2 => 'Thứ 3',
+            3 => 'Thứ 4',
+            4 => 'Thứ 5',
+            5 => 'Thứ 6',
+            6 => 'Thứ 7',
+            0 => 'Chủ Nhật',
+        ];
+
+        $weekGrid = [];
+        foreach ($dates as $dateStr) {
+            $cDate = Carbon::parse($dateStr);
+            $schedule = $schedules->get($dateStr);
+            $slots = $schedule ? $schedule->slots : collect();
+
+            $totalCapacity = $slots->sum('capacity');
+            $totalReserved = $slots->sum('reserved_count');
+            $isActive = $schedule ? (bool) $schedule->is_active : true;
+
+            $weekGrid[] = [
+                'date' => $dateStr,
+                'formatted_date' => $cDate->format('d/m/Y'),
+                'day_name' => $dayNames[$cDate->dayOfWeek] ?? '',
+                'schedule' => $schedule,
+                'schedule_id' => $schedule?->id,
+                'is_active' => $isActive,
+                'total_capacity' => $totalCapacity,
+                'total_reserved' => $totalReserved,
+                'slots' => $slots,
+            ];
+        }
+
+        $prevWeekDate = $weekStart->copy()->subWeek()->toDateString();
+        $nextWeekDate = $weekStart->copy()->addWeek()->toDateString();
+        $currentWeekDate = now()->startOfWeek()->toDateString();
+        $headerRange = $weekStart->format('d/m/Y') . ' - ' . $weekEnd->format('d/m/Y');
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'data' => $schedules
+                'data' => [
+                    'week_start' => $weekStart->toDateString(),
+                    'week_end' => $weekEnd->toDateString(),
+                    'prev_week' => $prevWeekDate,
+                    'next_week' => $nextWeekDate,
+                    'current_week' => $currentWeekDate,
+                    'header_range' => $headerRange,
+                    'selected_center_id' => $selectedCenterId,
+                    'week_grid' => $weekGrid,
+                ],
             ]);
         }
 
-        return view('vaccine::admin.schedules.index', compact('schedules', 'centers', 'selectedCenterId'));
+        return view('vaccine::admin.schedules.index', compact(
+            'weekGrid',
+            'centers',
+            'selectedCenterId',
+            'weekStart',
+            'weekEnd',
+            'prevWeekDate',
+            'nextWeekDate',
+            'currentWeekDate',
+            'headerRange'
+        ));
     }
 
     /**
@@ -61,9 +130,7 @@ class AdminScheduleController extends Controller
             'slots.*.is_active' => 'nullable|boolean',
         ]);
 
-        if (AdminContext::isBranchAdmin() && (int)$validated['center_id'] !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
+        AdminContext::assertCanManageCenter((int) $validated['center_id']);
 
         foreach ($validated['slots'] ?? [] as $slot) {
             if ($slot['end_at'] <= $slot['start_at']) {
@@ -98,11 +165,174 @@ class AdminScheduleController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Tạo lịch làm việc thành công.',
-                'schedule' => $schedule
+                'schedule' => $schedule,
             ], 201);
         }
 
         return redirect()->route('admin.schedules.index')->with('success', 'Tạo lịch làm việc thành công.');
+    }
+
+    /**
+     * Copy schedule from source day to target days.
+     * Blocks copy if any target date has existing bookings (reserved_count > 0 or linked registrations).
+     */
+    public function copySchedule(Request $request)
+    {
+        $validated = $request->validate([
+            'center_id' => 'required|exists:centers,id',
+            'source_date' => 'required|date',
+            'target_dates' => 'required|array|min:1',
+            'target_dates.*' => 'required|date|different:source_date',
+        ]);
+
+        AdminContext::assertCanManageCenter((int) $validated['center_id']);
+
+        $sourceSchedule = Schedule::with('slots')
+            ->where('center_id', $validated['center_id'])
+            ->where('date', $validated['source_date'])
+            ->first();
+
+        if (!$sourceSchedule || $sourceSchedule->slots->isEmpty()) {
+            throw ValidationException::withMessages([
+                'source_date' => 'Lịch ngày nguồn không tồn tại hoặc không có khung giờ nào.'
+            ]);
+        }
+
+        // SAFETY GUARD: Check if any target date has slots with reserved_count > 0 or linked Registration records
+        $targetSchedules = Schedule::with('slots')
+            ->where('center_id', $validated['center_id'])
+            ->whereIn('date', $validated['target_dates'])
+            ->get()
+            ->keyBy(fn ($item) => $item->date->format('Y-m-d'));
+
+        foreach ($validated['target_dates'] as $targetDate) {
+            $targetSched = $targetSchedules->get($targetDate);
+            if ($targetSched) {
+                $reservedCount = $targetSched->slots->sum('reserved_count');
+                $slotIds = $targetSched->slots->pluck('id');
+                $registrationCount = Registration::whereIn('slot_id', $slotIds)->count();
+                $totalBookings = max($reservedCount, $registrationCount);
+
+                if ($totalBookings > 0) {
+                    $formattedDate = Carbon::parse($targetDate)->format('d/m/Y');
+                    throw ValidationException::withMessages([
+                        'target_dates' => "Không thể sao chép đè lịch ngày {$formattedDate} vì đã có {$totalBookings} lượt đặt tiêm!"
+                    ]);
+                }
+            }
+        }
+
+        DB::transaction(function () use ($validated, $sourceSchedule) {
+            foreach ($validated['target_dates'] as $targetDate) {
+                $targetSchedule = Schedule::updateOrCreate(
+                    [
+                        'center_id' => $validated['center_id'],
+                        'date' => $targetDate,
+                    ],
+                    [
+                        'is_active' => $sourceSchedule->is_active,
+                        'note' => $sourceSchedule->note,
+                    ]
+                );
+
+                $targetSchedule->slots()->delete();
+
+                foreach ($sourceSchedule->slots as $sourceSlot) {
+                    $targetSchedule->slots()->create([
+                        'start_at' => $sourceSlot->start_at,
+                        'end_at' => $sourceSlot->end_at,
+                        'capacity' => $sourceSlot->capacity,
+                        'reserved_count' => 0,
+                        'is_active' => $sourceSlot->is_active,
+                    ]);
+                }
+            }
+        });
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Sao chép lịch làm việc thành công.'
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Sao chép lịch làm việc thành công.');
+    }
+
+    /**
+     * Toggle active status for a specific schedule date.
+     */
+    public function toggleDayStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'center_id' => 'required|exists:centers,id',
+            'date' => 'required|date',
+            'is_active' => 'required|boolean',
+        ]);
+
+        AdminContext::assertCanManageCenter((int) $validated['center_id']);
+
+        $schedule = Schedule::firstOrCreate(
+            ['center_id' => $validated['center_id'], 'date' => $validated['date']],
+            ['is_active' => true]
+        );
+
+        $schedule->is_active = (bool) $validated['is_active'];
+        $schedule->save();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật trạng thái ngày làm việc thành công.',
+                'is_active' => $schedule->is_active,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Cập nhật trạng thái ngày làm việc thành công.');
+    }
+
+    /**
+     * Delete entire schedule and slots for a specific date if no bookings exist.
+     */
+    public function destroyDay(Request $request)
+    {
+        $validated = $request->validate([
+            'center_id' => 'required|exists:centers,id',
+            'date' => 'required|date',
+        ]);
+
+        AdminContext::assertCanManageCenter((int) $validated['center_id']);
+
+        $schedule = Schedule::with('slots')
+            ->where('center_id', $validated['center_id'])
+            ->where('date', $validated['date'])
+            ->first();
+
+        if ($schedule) {
+            $reservedCount = $schedule->slots->sum('reserved_count');
+            $slotIds = $schedule->slots->pluck('id');
+            $registrationCount = Registration::whereIn('slot_id', $slotIds)->count();
+            $totalBookings = max($reservedCount, $registrationCount);
+
+            if ($totalBookings > 0) {
+                $formattedDate = Carbon::parse($validated['date'])->format('d/m/Y');
+                throw ValidationException::withMessages([
+                    'date' => "Không thể xóa lịch ngày {$formattedDate} vì đã có {$totalBookings} lượt đặt tiêm!"
+                ]);
+            }
+
+            $schedule->slots()->delete();
+            $schedule->delete();
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Xóa lịch ngày thành công.'
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Xóa lịch ngày thành công.');
     }
 
     /**
@@ -112,9 +342,7 @@ class AdminScheduleController extends Controller
     {
         $schedule = Schedule::with(['center', 'slots'])->findOrFail($id);
 
-        if (AdminContext::isBranchAdmin() && (int)$schedule->center_id !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
+        AdminContext::assertCanManageCenter((int) $schedule->center_id);
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -133,9 +361,7 @@ class AdminScheduleController extends Controller
     {
         $schedule = Schedule::findOrFail($id);
 
-        if (AdminContext::isBranchAdmin() && (int)$schedule->center_id !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
+        AdminContext::assertCanManageCenter((int) $schedule->center_id);
 
         $validated = $request->validate([
             'date' => 'sometimes|required|date',
@@ -161,12 +387,23 @@ class AdminScheduleController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $schedule = Schedule::findOrFail($id);
+        $schedule = Schedule::with('slots')->findOrFail($id);
 
-        if (AdminContext::isBranchAdmin() && (int)$schedule->center_id !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
+        AdminContext::assertCanManageCenter((int) $schedule->center_id);
+
+        $reservedCount = $schedule->slots->sum('reserved_count');
+        $slotIds = $schedule->slots->pluck('id');
+        $registrationCount = Registration::whereIn('slot_id', $slotIds)->count();
+        $totalBookings = max($reservedCount, $registrationCount);
+
+        if ($totalBookings > 0) {
+            $formattedDate = $schedule->date->format('d/m/Y');
+            throw ValidationException::withMessages([
+                'schedule' => "Không thể xóa lịch ngày {$formattedDate} vì đã có {$totalBookings} lượt đặt tiêm!"
+            ]);
         }
 
+        $schedule->slots()->delete();
         $schedule->delete();
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -186,9 +423,7 @@ class AdminScheduleController extends Controller
     {
         $schedule = Schedule::findOrFail($scheduleId);
 
-        if (AdminContext::isBranchAdmin() && (int)$schedule->center_id !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
+        AdminContext::assertCanManageCenter((int) $schedule->center_id);
 
         $validated = $request->validate([
             'start_at' => 'required|string',

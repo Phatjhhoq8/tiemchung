@@ -18,18 +18,24 @@
             <div style="flex:1 1 260px;">
                 <label class="form-label-modern" for="center_switcher">Chi nhánh tạo phiếu</label>
                 <select id="center_switcher" name="center_id" class="form-control-modern" onchange="this.form.submit()">
+                    <option value="">-- Chọn chi nhánh --</option>
                     @foreach($centers as $item)
-                        <option value="{{ $item->id }}" {{ $center->id === $item->id ? 'selected' : '' }}>{{ $item->name }}</option>
+                        <option value="{{ $item->id }}" {{ $center?->id === $item->id ? 'selected' : '' }}>{{ $item->name }}</option>
                     @endforeach
                 </select>
             </div>
         </form>
     @endif
 
+    @if(!$center)
+        <div class="card-modern" style="color:var(--text-muted); font-weight:600;">Vui lòng chọn một chi nhánh cụ thể để tạo phiếu tại quầy.</div>
+    @endif
+
     @if($errors->any())
         <div class="alert alert-danger"><ul style="margin:0; padding-left:20px;">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
     @endif
 
+    @if($center)
     <form method="POST" action="{{ route('admin.registrations.store') }}" class="card-modern" style="display:grid; gap:22px;">
         @csrf
         <input type="hidden" name="center_id" value="{{ $center->id }}">
@@ -152,6 +158,7 @@
             <button type="submit" class="btn-modern btn-modern-primary" {{ $slots->isEmpty() || $vaccines->isEmpty() ? 'disabled' : '' }}>Tạo phiếu tại quầy</button>
         </div>
     </form>
+    @endif
 </div>
 
 <script>

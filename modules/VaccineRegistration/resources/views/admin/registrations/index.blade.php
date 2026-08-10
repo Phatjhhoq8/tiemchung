@@ -13,9 +13,9 @@
             <div style="flex:1 1 180px;">
                 <label class="form-label-modern" for="center_id">Chi nhánh</label>
                 <select class="form-control-modern" id="center_id" name="center_id">
-                    <option value="">Toàn hệ thống</option>
+                    <option value="" {{ $selectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
                     @foreach($centers as $center)
-                        <option value="{{ $center->id }}" {{ (string) request('center_id') === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
+                        <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
                     @endforeach
                 </select>
             </div>

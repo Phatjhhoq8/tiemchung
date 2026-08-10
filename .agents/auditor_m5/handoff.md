@@ -1,112 +1,119 @@
-# Forensic Audit Report — Milestone M5: Audit Logs & Resource Status Management (R1)
+# Forensic Audit Report: Milestone 5 - Weekly Calendar Grid Implementation
 
-**Work Product**: Milestone M5 Implementation in `/home/hongphuoc/Desktop/thue`  
-**Profile**: General Project  
-**Verdict**: **CLEAN**
+**Work Product**: Weekly Calendar Grid Implementation (`routes/web.php`, `AdminScheduleController.php`, `index.blade.php`, `WeeklyCalendarDashboardTest.php`)
+**Profile**: General Project
+**Verdict**: CLEAN
 
 ---
 
 ## 1. Observation
 
-### Source Code Inspection & Architecture Analysis
-1. **Audit Logs Table Migration (`modules/VaccineRegistration/Database/Migrations/2026_07_31_000008_create_audit_logs_table.php`)**:
-   - Creates `audit_logs` table with columns: `actor_id` (nullable), `center_id` (nullable), `action` (string 50), `resource_type` (string 50), `resource_id` (string 50), `old_values` (text nullable), `new_values` (text nullable), `ip_address` (string 45 nullable), `user_agent` (text nullable), and `timestamps`.
-   - Indexed on `['action', 'resource_type']`, `['resource_type', 'resource_id']`, `actor_id`, and `center_id`.
+Direct forensic inspection of codebase modifications and test execution:
 
-2. **AuditLog Model (`app/Models/AuditLog.php`)**:
-   - Eloquent model mapping to `audit_logs` table with `$casts` for `old_values` and `new_values` as `'array'`.
-   - Belongs-to relationships defined for `actor()` (`User::class`) and `center()` (`Center::class`).
+### A. Routes Configuration Analysis
+- **File**: `modules/VaccineRegistration/routes/web.php` (Lines 143-145)
+- Verified new routes are registered before resource routes:
+  ```php
+  Route::post('/schedules/copy', [AdminScheduleController::class, 'copySchedule'])->name('schedules.copy');
+  Route::post('/schedules/toggle-day', [AdminScheduleController::class, 'toggleDayStatus'])->name('schedules.toggle-day');
+  Route::delete('/schedules/day', [AdminScheduleController::class, 'destroyDay'])->name('schedules.destroy-day');
+  ```
+- No dummy/stub routing exists. Route parameters map directly to real controller actions.
 
-3. **AuditLogger Service (`app/Services/AuditLogger.php`)**:
-   - Provides runtime audit logging method `AuditLogger::log()` dynamically resolving `actor_id` (via `auth()->id()` / `AdminContext::user()`), `center_id` (via `AdminContext`), `ip_address` (`request()?->ip()`), and `user_agent` (`request()?->userAgent()`).
-   - Helper methods: `logPriceUpdate()`, `logStockUpdate()`, `logOrderStatusUpdate()`, `logRefund()`.
+### B. Controller Logic & Safety Guards Analysis
+- **File**: `modules/VaccineRegistration/Http/Controllers/Admin/AdminScheduleController.php`
+- **Week Date Resolution & Grid Construction** (`index`): Uses Carbon `startOfWeek()` and `endOfWeek()` to calculate Monday-to-Sunday ranges dynamically based on input date. Auto-generates default slots via `Schedule::generateFromDefaults(...)` and constructs `$weekGrid` containing `total_capacity`, `total_reserved`, and active status. Supports both Blade view rendering and AJAX JSON response formats.
+- **Copy Schedule Logic & Safety Guards** (`copySchedule`):
+  - Validates `center_id`, `source_date`, and `target_dates`. Enforces branch RBAC permission via `AdminContext::assertCanManageCenter($centerId)`.
+  - **SAFETY GUARD (`reserved_count > 0` & linked registrations)**: Queries target schedule slots and calculates `$reservedCount = $targetSched->slots->sum('reserved_count')` and `$registrationCount = Registration::whereIn('slot_id', $slotIds)->count()`.
+  - If `$totalBookings > 0`, blocks copy operation and throws `ValidationException` returning HTTP 422:
+    `"Không thể sao chép đè lịch ngày {formattedDate} vì đã có {totalBookings} lượt đặt tiêm!"`.
+  - **Database Atomicity**: Wraps slot deletion and cloning in `DB::transaction(...)` across all target dates. If any target date fails validation, transaction is never initiated.
+- **Day Status Toggle** (`toggleDayStatus`): Toggles `is_active` column in `schedules` table for a specific center and date.
+- **Day Deletion Safety Guard** (`destroyDay`): Deletes schedule and slots only if `$totalBookings == 0`; rejects deletion with HTTP 422 if `$totalBookings > 0`.
 
-4. **Runtime Controller Integration**:
-   - `AdminVaccineController.php` (lines 240-245, 357-362): Calls `AuditLogger::logPriceUpdate()` whenever master vaccine price or center-specific vaccine price changes.
-   - `AdminStockController.php` (lines 86-91): Calls `AuditLogger::logStockUpdate()` whenever stock movement is imported or adjusted.
-   - `AdminRegistrationController.php` (lines 95-100, 107-112, 135-140, 167-172): Calls `AuditLogger::logOrderStatusUpdate()`, `AuditLogger::logRefund()`, and `AuditLogger::logStockUpdate()` dynamically inside database transactions during order status updates.
+### C. Frontend Interface Inspection
+- **File**: `modules/VaccineRegistration/resources/views/admin/schedules/index.blade.php`
+- 7 Parallel CSS Grid Columns (`repeat(7, minmax(185px, 1fr))`) rendering Monday through Sunday.
+- Top week navigation bar with previous, current, next week controls, date picker, and center selector.
+- Modals for Quick Add Slot, Edit/Delete Slot, and Copy Schedule with target date selection checklist and warning banners.
+- Adheres to brand palette (Medicare Red `#c8102e`, Medicare Gold `#eaaa00`, Medicare Navy `#004b8f`) without unapproved icons/emojis.
 
-5. **Soft Deactivation Logic**:
-   - **`Vaccine.php`** (lines 49-56): Implements Eloquent `booted()` event listener on `static::deleting` setting `is_active = false`, updating associated `CenterVaccine` records, and returning `false` to cancel hard deletion.
-   - **`Center.php`** (lines 33-41): Implements Eloquent `booted()` event listener on `static::deleting` setting `is_active = false`, updating associated `CenterVaccine` records, and returning `false` to cancel hard deletion.
-   - **`User.php`** (lines 66-74): Implements Eloquent `booted()` event listener on `static::deleting` setting `is_active = false` and `status = 'inactive'`, returning `false` to cancel hard deletion.
-   - **`Banner.php`** (lines 25-32): Implements Eloquent `booted()` event listener on `static::deleting` setting `is_active = false`, returning `false` to cancel hard deletion.
-   - **`Article.php`** (lines 38-46): Implements Eloquent `booted()` event listener on `static::deleting` setting `is_active = false` and `is_published = false`, returning `false` to cancel hard deletion.
+### D. Automated Test Suite Execution
+- **File**: `tests/Feature/WeeklyCalendarDashboardTest.php`
+- **Execution Command**:
+  ```bash
+  /opt/lampp/bin/php artisan test --filter=WeeklyCalendarDashboardTest
+  ```
+- **Result**:
+  ```
+  PASS Tests\Feature\WeeklyCalendarDashboardTest
+  ✓ weekly schedule grid index returns 7 days of selected week           0.13s
+  ✓ week navigation filtering                                            0.02s
+  ✓ slot crud ajax endpoints                                             0.03s
+  ✓ day toggle status and day schedule deletion                          0.03s
+  ✓ copy schedule from source day to target days success when reserved…  0.03s
+  ✓ copy schedule blocked with 422 when target day has reserved count g… 0.02s
+  ✓ copy schedule multiple targets where one target has bookings blocks… 0.02s
+  ✓ copy schedule blocked when target has linked registration records    0.02s
+  ✓ cross month and cross year week navigation queries                   0.02s
+  ✓ branch admin scope checks returns 403 on cross branch access         0.02s
+  ✓ destroy day blocked with 422 when reserved count greater than zero   0.01s
 
-### Execution Validation Output
-Executed test command:
-```bash
-/opt/lampp/bin/php ./vendor/bin/phpunit tests/Feature/AuditLogsAndResourceStatusTest.php
-```
-
-Raw Command Output:
-```
-PHPUnit 11.5.56 by Sebastian Bergmann and contributors.
-
-Runtime:       PHP 8.2.12
-Configuration: /home/hongphuoc/Desktop/thue/phpunit.xml
-
-DDDDDDDDD                                                           9 / 9 (100%)
-
-Time: 00:02.701, Memory: 34.00 MB
-
-OK, but there were issues!
-Tests: 9, Assertions: 29, Deprecations: 2, PHPUnit Deprecations: 9.
-```
-
-All 9 test cases in `AuditLogsAndResourceStatusTest.php` executed cleanly and passed with 29 assertions.
+  Tests:    11 passed (44 assertions)
+  Duration: 0.39s
+  ```
+- **Full Suite Execution Result**:
+  ```
+  PASS Full Test Suite (96 passed, 532 assertions)
+  ```
 
 ---
 
 ## 2. Logic Chain
 
-1. **Verification of Genuine Audit Logging**:
-   - Observation: Controller endpoints (`AdminVaccineController`, `AdminStockController`, `AdminRegistrationController`) trigger `AuditLogger` helper methods during actual HTTP request handling.
-   - Logic: Audit entries are created dynamically in the MySQL database during execution with true contextual data (user ID, center ID, IP, user agent, old vs new values JSON).
-   - Inference: `audit_logs` records are genuinely generated by application code during runtime execution and are not hardcoded or fabricated.
-
-2. **Verification of Soft Deactivation**:
-   - Observation: Calling `$model->delete()` or destroying via admin HTTP routes (`DELETE` verbs) triggers model `deleting` events in Eloquent for `Vaccine`, `Center`, `User`, `Banner`, and `Article`.
-   - Logic: The `deleting` event handler modifies status fields (`is_active = false`, `status = 'inactive'`, etc.) and returns `false`, aborting SQL `DELETE` queries.
-   - Inference: Physical deletion is safely prevented at both controller and model levels across all 5 specified resources.
-
-3. **Check for Integrity Prohibitions**:
-   - Prohibited patterns checked: Hardcoded test results (None found), Facade implementations (None found), Fabricated verification outputs (None found), Self-certifying test bypasses (None found), Execution delegation (None found).
-   - Inference: The M5 work product satisfies all strict integrity criteria across Development, Demo, and Benchmark modes.
+1. **Empirical Code Analysis**:
+   - Code inspection confirmed that date calculation, slot cloning, day toggling, and safety validations execute genuine Laravel Eloquent and Database Transaction operations.
+   - Target date overwrite protection checks both `$targetSched->slots->sum('reserved_count')` AND `Registration::whereIn('slot_id', $slotIds)->count()` before making any database modifications, ensuring zero accidental overwrites of existing patient appointments.
+2. **Anti-Cheating & Integrity Verification**:
+   - Inspected `WeeklyCalendarDashboardTest.php`: No hardcoded return values, mocked controllers, or skipped assertions.
+   - Tests execute real HTTP requests (`getJson`, `postJson`, `putJson`, `deleteJson`) against MySQL database using `DatabaseTransactions`.
+   - Assertions test database state (`assertDatabaseHas`, `assertDatabaseMissing`), HTTP status codes (200, 201, 403, 422), and JSON response payloads.
+3. **Execution Validation**:
+   - Target test suite executed independently with 100% pass rate (11/11 passed, 44 assertions).
+   - Entire application test suite executed with 100% pass rate (96/96 passed, 532 assertions) confirming zero regressions.
 
 ---
 
 ## 3. Caveats
 
-- **Test Suite Warning**: PHPUnit output reported minor deprecation warnings regarding standard library deprecations in PHP 8.2/PHPUnit 11, but these do not affect functional behavior or test correctness.
-- **Database Engine**: Audit log creation and soft deactivation rely on database transaction support (MySQL InnoDB), which is active and verified in the environment.
+- **Timezone & Date Parsing**: Date ranges rely on standard ISO `YYYY-MM-DD` strings processed via Carbon using application timezone configuration.
+- No other caveats.
 
 ---
 
 ## 4. Conclusion
 
-- **Definitive Verdict**: **CLEAN**
-- **Summary**: Milestone M5 (Audit Logs & Resource Status Management R1) fully adheres to commercial production standards and forensic integrity requirements. Audit logs are genuinely generated at runtime, soft deactivations prevent hard deletion on all target resources (`vaccines`, `centers`, `users`, `banners`, `articles`), and all 9 feature tests execute and pass cleanly.
+**Verdict**: **CLEAN**
+
+The Milestone 5 Weekly Calendar Grid Implementation contains genuine, high-quality business logic with complete safety validation guards (`reserved_count > 0` & linked registrations), RBAC protection, and robust test coverage. No integrity violations or cheating patterns detected.
 
 ---
 
 ## 5. Verification Method
 
-To independently re-verify this audit report:
+To independently verify this audit:
 
-1. **Run PHPUnit Test Suite**:
+1. Run the target test suite:
    ```bash
-   /opt/lampp/bin/php ./vendor/bin/phpunit tests/Feature/AuditLogsAndResourceStatusTest.php
+   /opt/lampp/bin/php artisan test --filter=WeeklyCalendarDashboardTest
    ```
-   *Expected Result*: `OK (9 tests, 29 assertions)`.
-
-2. **Inspect Models for Soft Deactivation**:
-   Check `booted()` methods in:
-   - `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/Vaccine.php`
-   - `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/Center.php`
-   - `file:///home/hongphuoc/Desktop/thue/app/Models/User.php`
-   - `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/Banner.php`
-   - `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/Article.php`
-
-3. **Inspect Runtime Audit Logger Integration**:
-   Check `file:///home/hongphuoc/Desktop/thue/app/Services/AuditLogger.php` and controller hooks in `AdminVaccineController.php`, `AdminStockController.php`, and `AdminRegistrationController.php`.
+2. Run the full application test suite:
+   ```bash
+   /opt/lampp/bin/php artisan test
+   ```
+3. Inspect modified source files:
+   - `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/routes/web.php`
+   - `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminScheduleController.php`
+   - `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/schedules/index.blade.php`
+   - `file:///home/hongphuoc/Desktop/thue/tests/Feature/WeeklyCalendarDashboardTest.php`

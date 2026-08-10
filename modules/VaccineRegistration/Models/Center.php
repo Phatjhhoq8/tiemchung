@@ -52,4 +52,10 @@ class Center extends Model
     {
         return $this->hasMany(CenterVaccine::class);
     }
+
+    public function defaultSlots()
+    {
+        return $this->hasMany(DefaultSlot::class);
+    }
 }
+

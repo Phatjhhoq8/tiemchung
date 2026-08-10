@@ -15,9 +15,7 @@ class AdminConsultationLeadController extends Controller
      */
     public function index(Request $request)
     {
-        $selectedCenterId = AdminContext::isBranchAdmin()
-            ? AdminContext::centerId()
-            : ($request->filled('center_id') ? (int) $request->input('center_id') : null);
+        $selectedCenterId = AdminContext::resolveListCenterId($request);
 
         $query = ConsultationLead::with('center')->latest();
 
@@ -39,7 +37,9 @@ class AdminConsultationLeadController extends Controller
         }
 
         $leads = $query->paginate(20)->withQueryString();
-        $centers = Center::active()->get();
+        $centers = AdminContext::isSuperAdmin()
+            ? Center::active()->orderBy('sort_order')->orderBy('id')->get()
+            : collect();
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -101,8 +101,12 @@ class AdminConsultationLeadController extends Controller
 
     private function assertLeadVisible(ConsultationLead $lead): void
     {
-        if (AdminContext::isBranchAdmin() && (int) $lead->center_id !== (int) AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
+        if (!$lead->center_id) {
+            abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền xem yêu cầu tư vấn toàn hệ thống.');
+
+            return;
         }
+
+        AdminContext::assertCanManageCenter((int) $lead->center_id);
     }
 }

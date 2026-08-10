@@ -170,7 +170,7 @@ class AdminAccountSecurityTest extends TestCase
             'username' => 'loginfailadmin',
             'password' => 'WrongPassword!',
         ]);
-        $response5->assertSessionHasErrors(['auth_failed' => 'Tài khoản tạm thời bị khóa do đăng nhập sai quá nhiều lần.']);
+        $response5->assertSessionHasErrors(['auth_failed' => 'Tên đăng nhập hoặc mật khẩu không chính xác.']);
 
         $user->refresh();
         $this->assertTrue($user->isLocked());
@@ -182,7 +182,7 @@ class AdminAccountSecurityTest extends TestCase
             'username' => 'loginfailadmin',
             'password' => 'CorrectPassword123!',
         ]);
-        $responseLocked->assertSessionHasErrors(['auth_failed' => 'Tài khoản tạm thời bị khóa do đăng nhập sai quá nhiều lần.']);
+        $responseLocked->assertSessionHasErrors(['auth_failed' => 'Tên đăng nhập hoặc mật khẩu không chính xác.']);
     }
 
     public function test_admin_login_success_resets_failed_count_and_redirects(): void

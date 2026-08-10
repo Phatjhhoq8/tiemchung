@@ -7,9 +7,7 @@
 <div class="card-modern">
     <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
         <h2 style="font-family:var(--font-display); font-size:18px; font-weight:800; margin:0;">Lịch sử nhập/xuất kho</h2>
-        @if(!($isSuperAdmin ?? false))
-            <a href="{{ route('admin.stock.create', ['center_id' => $selectedCenterId]) }}" class="btn-modern btn-modern-primary" style="text-decoration:none;"><i data-lucide="package-plus"></i> Nhập hàng</a>
-        @endif
+        <a href="{{ route('admin.stock.create', $selectedCenterId ? ['center_id' => $selectedCenterId] : []) }}" class="btn-modern btn-modern-primary" style="text-decoration:none;"><i data-lucide="package-plus"></i> Nhập hàng</a>
     </div>
 
     <form method="GET" action="{{ route('admin.stock.index') }}" class="vaccine-filter-form" style="display:flex; gap:12px; align-items:flex-end; margin-bottom:20px; flex-wrap:wrap;">
@@ -22,7 +20,7 @@
         <div style="flex:1 1 200px;">
             <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Chi nhánh</label>
             <select name="center_id" class="form-control-modern" style="background-image:none;">
-                <option value="">Tất cả chi nhánh</option>
+                <option value="" {{ $selectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
                 @foreach($centers as $center)
                     <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
                 @endforeach

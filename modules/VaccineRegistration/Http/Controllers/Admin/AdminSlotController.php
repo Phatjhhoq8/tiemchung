@@ -51,9 +51,7 @@ class AdminSlotController extends Controller
         ]);
 
         $schedule = Schedule::findOrFail($validated['schedule_id']);
-        if (AdminContext::isBranchAdmin() && (int)$schedule->center_id !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
+        AdminContext::assertCanManageCenter((int) $schedule->center_id);
 
         $slot = Slot::create([
             'schedule_id' => $validated['schedule_id'],
@@ -82,9 +80,7 @@ class AdminSlotController extends Controller
     {
         $slot = Slot::with('schedule')->findOrFail($id);
 
-        if (AdminContext::isBranchAdmin() && (int)$slot->schedule->center_id !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
+        AdminContext::assertCanManageCenter((int) $slot->schedule->center_id);
 
         $validated = $request->validate([
             'start_at' => 'sometimes|required|string',
@@ -117,9 +113,7 @@ class AdminSlotController extends Controller
     {
         $slot = Slot::with('schedule')->findOrFail($id);
 
-        if (AdminContext::isBranchAdmin() && (int)$slot->schedule->center_id !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
+        AdminContext::assertCanManageCenter((int) $slot->schedule->center_id);
 
         $slot->delete();
 

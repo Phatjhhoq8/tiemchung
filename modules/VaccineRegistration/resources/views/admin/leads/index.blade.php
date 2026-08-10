@@ -8,6 +8,18 @@
     <!-- Bộ lọc & Tìm kiếm -->
     <div style="margin-bottom: 30px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
         <form action="{{ route('admin.leads.index') }}" method="GET" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
+            @if($isSuperAdmin ?? false)
+            <div style="width: 220px;">
+                <label for="center_id" class="form-label-modern">Chi nhánh</label>
+                <select name="center_id" id="center_id" class="form-control-modern" style="background-image: none;">
+                    <option value="" {{ $selectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
+                    @foreach($centers as $center)
+                        <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
+
             <!-- Tìm kiếm -->
             <div style="flex: 1 1 250px;">
                 <label for="search" class="form-label-modern">Tìm kiếm nhanh</label>
@@ -31,7 +43,7 @@
                 <i data-lucide="filter" style="width: 14px; height: 14px;"></i> Lọc
             </button>
             
-            @if(request()->anyFilled(['search', 'status']))
+            @if(request()->hasAny(['search', 'status', 'center_id']))
                 <a href="{{ route('admin.leads.index') }}" class="btn-modern btn-modern-secondary" style="padding: 10px 20px; border-radius: 8px;">Xóa bộ lọc</a>
             @endif
         </form>

@@ -13,6 +13,7 @@ use Modules\VaccineRegistration\Models\CenterVaccine;
 use Modules\VaccineRegistration\Models\Customer;
 use Modules\VaccineRegistration\Models\Registration;
 use Modules\VaccineRegistration\Models\Slot;
+use Modules\VaccineRegistration\Models\Schedule;
 use Modules\VaccineRegistration\Support\AdminContext;
 use Modules\VaccineRegistration\Support\PhoneNormalizer;
 use Illuminate\Support\Str;
@@ -21,9 +22,9 @@ class AdminRegistrationController extends Controller
 {
     public function index(Request $request)
     {
-        $this->assertRequestedCenter($request);
+        $selectedCenterId = AdminContext::resolveListCenterId($request);
 
-        $query = $this->registrationQuery($request)
+        $query = $this->registrationQuery($selectedCenterId)
             ->with('customer:id,name,phone');
 
         if ($request->filled('booking_status')) {
@@ -48,7 +49,7 @@ class AdminRegistrationController extends Controller
             ? Center::active()->orderBy('sort_order')->orderBy('id')->get(['id', 'name'])
             : collect();
 
-        return view('vaccine::admin.registrations.index', compact('registrations', 'centers'));
+        return view('vaccine::admin.registrations.index', compact('registrations', 'centers', 'selectedCenterId'));
     }
 
     public function show(int $id, RegistrationPaymentService $paymentService)
@@ -61,28 +62,42 @@ class AdminRegistrationController extends Controller
 
     public function create(Request $request)
     {
-        $selectedCenterId = AdminContext::selectedCenterId($request->integer('center_id'));
-        $center = Center::active()->findOrFail($selectedCenterId);
+        if ($request->filled('center_id')) {
+            AdminContext::assertCanManageCenter($request->integer('center_id'));
+        }
+
+        $selectedCenterId = $request->filled('center_id')
+            ? AdminContext::selectedCenterId($request->integer('center_id'))
+            : AdminContext::selectedCenterId();
+        $center = $selectedCenterId ? Center::active()->findOrFail($selectedCenterId) : null;
+
+        if ($center) {
+            Schedule::generateFromDefaults($center->id, today(), today()->addDays(30));
+        }
 
         $centers = AdminContext::isSuperAdmin()
             ? Center::active()->orderBy('sort_order')->orderBy('id')->get(['id', 'name'])
             : collect();
-        $slots = Slot::query()
-            ->with('schedule:id,center_id,date')
-            ->whereHas('schedule', fn ($query) => $query->where('center_id', $center->id)->whereDate('date', '>=', today()))
-            ->where('is_active', true)
-            ->whereColumn('reserved_count', '<', 'capacity')
-            ->orderBy('id')
-            ->get();
-        $vaccines = CenterVaccine::query()
-            ->with('vaccine:id,name,origin,is_active,type,category,age_group')
-            ->where('center_id', $center->id)
-            ->where('is_active', true)
-            ->where('stock_status', '!=', 'out_of_stock')
-            ->orderBy('sort_order')
-            ->get()
-            ->filter(fn (CenterVaccine $centerVaccine) => $centerVaccine->vaccine?->is_active)
-            ->values();
+        $slots = $center
+            ? Slot::query()
+                ->with('schedule:id,center_id,date')
+                ->whereHas('schedule', fn ($query) => $query->where('center_id', $center->id)->whereDate('date', '>=', today()))
+                ->where('is_active', true)
+                ->whereColumn('reserved_count', '<', 'capacity')
+                ->orderBy('id')
+                ->get()
+            : collect();
+        $vaccines = $center
+            ? CenterVaccine::query()
+                ->with('vaccine:id,name,origin,is_active,type,category,age_group')
+                ->where('center_id', $center->id)
+                ->where('is_active', true)
+                ->where('stock_status', '!=', 'out_of_stock')
+                ->orderBy('sort_order')
+                ->get()
+                ->filter(fn (CenterVaccine $centerVaccine) => $centerVaccine->vaccine?->is_active)
+                ->values()
+            : collect();
 
         return view('vaccine::admin.registrations.create', compact('center', 'centers', 'slots', 'vaccines'));
     }
@@ -99,9 +114,7 @@ class AdminRegistrationController extends Controller
             'booking_status' => 'required|in:pending,confirmed',
         ]);
 
-        if (AdminContext::isBranchAdmin() && $validated['center_id'] !== AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
+        AdminContext::assertCanManageCenter((int) $validated['center_id']);
 
         $phone = PhoneNormalizer::normalize($validated['patient_phone']);
         if (!$phone) {
@@ -279,16 +292,17 @@ class AdminRegistrationController extends Controller
 
     public function schedule(Request $request)
     {
-        $this->assertRequestedCenter($request);
+        $selectedCenterId = AdminContext::resolveListCenterId($request);
         $validated = $request->validate([
             'week' => 'nullable|date_format:Y-m-d',
+            'center_id' => 'nullable|integer|exists:centers,id',
         ]);
         $startOfWeek = !empty($validated['week'])
             ? \Carbon\Carbon::createFromFormat('Y-m-d', $validated['week'])->startOfWeek()
             : now()->startOfWeek();
         $endOfWeek = $startOfWeek->copy()->endOfWeek();
 
-        $registrations = $this->registrationQuery($request)
+        $registrations = $this->registrationQuery($selectedCenterId)
             ->with(['vaccines', 'slot'])
             ->whereBetween('injection_date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
             ->get();
@@ -306,14 +320,18 @@ class AdminRegistrationController extends Controller
             ]];
         })->all();
 
-        return view('vaccine::admin.schedule', compact('daysOfWeek', 'startOfWeek'));
+        $centers = AdminContext::isSuperAdmin()
+            ? Center::active()->orderBy('sort_order')->orderBy('id')->get(['id', 'name'])
+            : collect();
+
+        return view('vaccine::admin.schedule', compact('daysOfWeek', 'startOfWeek', 'centers', 'selectedCenterId'));
     }
 
     public function exportCsv(Request $request)
     {
-        $this->assertRequestedCenter($request);
+        $selectedCenterId = AdminContext::resolveListCenterId($request);
         $filename = 'don_dang_ky_tiem_' . now()->format('Y-m-d_His') . '.csv';
-        $query = $this->registrationQuery($request)->with('vaccines:id,name')->orderBy('id');
+        $query = $this->registrationQuery($selectedCenterId)->with('vaccines:id,name')->orderBy('id');
 
         return response()->stream(function () use ($query) {
             $file = fopen('php://output', 'w');
@@ -345,16 +363,12 @@ class AdminRegistrationController extends Controller
         ]);
     }
 
-    private function registrationQuery(Request $request)
+    private function registrationQuery(?int $selectedCenterId)
     {
         $query = Registration::query();
 
-        if (AdminContext::isBranchAdmin()) {
-            return $query->where('center_id', AdminContext::centerId());
-        }
-
-        if ($request->filled('center_id')) {
-            $query->where('center_id', $request->integer('center_id'));
+        if ($selectedCenterId) {
+            $query->where('center_id', $selectedCenterId);
         }
 
         return $query;
@@ -370,17 +384,7 @@ class AdminRegistrationController extends Controller
 
     private function assertRegistrationVisible(Registration $registration): void
     {
-        if (AdminContext::isBranchAdmin() && (int) $registration->center_id !== (int) AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
-    }
-
-    private function assertRequestedCenter(Request $request): void
-    {
-        if (AdminContext::isBranchAdmin() && $request->filled('center_id')
-            && $request->integer('center_id') !== (int) AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
+        AdminContext::assertCanManageCenter((int) $registration->center_id);
     }
 
     private function vietnameseDayName(\Carbon\Carbon $date): string

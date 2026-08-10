@@ -45,7 +45,8 @@
         @if(isset($centers) && ($isSuperAdmin ?? false))
         <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0;">
             <label for="center_id" class="form-label-modern">Chi nhánh áp dụng giá/tồn kho <span style="color: #ef4444;">*</span></label>
-            <select name="center_id" id="center_id" required class="form-control-modern" style="background-image: none;">
+            <select name="center_id" id="center_id" required class="form-control-modern" style="background-image: none;" @if($vaccine->exists) onchange="if (this.value) window.location.href = '{{ route('admin.vaccines.edit', $vaccine->id) }}?center_id=' + encodeURIComponent(this.value)" @endif>
+                <option value="">-- Chọn chi nhánh --</option>
                 @foreach($centers as $center)
                     <option value="{{ $center->id }}" {{ (string) old('center_id', $selectedCenterId ?? null) === (string) $center->id ? 'selected' : '' }}>{{ $center->name }} - {{ $center->phone }}</option>
                 @endforeach
@@ -119,6 +120,15 @@
         <div class="form-group-modern" style="margin-bottom: 0;">
             <label for="stock_quantity" class="form-label-modern">Số lượng tồn kho <span style="color: #ef4444;">*</span></label>
             <input type="number" name="stock_quantity" id="stock_quantity" value="{{ old('stock_quantity', $vaccine->stock_quantity ?? 0) }}" required min="0" placeholder="VD: 50" class="form-control-modern">
+        </div>
+
+        <div class="form-group-modern" style="margin-bottom: 0;">
+            <label for="center_is_active" class="form-label-modern">Kinh doanh tại chi nhánh <span style="color: #ef4444;">*</span></label>
+            <select name="center_is_active" id="center_is_active" required class="form-control-modern" style="background-image: none;">
+                <option value="1" {{ (int) old('center_is_active', $vaccine->center_is_active ?? 1) === 1 ? 'selected' : '' }}>Đang kinh doanh</option>
+                <option value="0" {{ (int) old('center_is_active', $vaccine->center_is_active ?? 1) === 0 ? 'selected' : '' }}>Tạm ngưng</option>
+            </select>
+            <small style="display:block; margin-top:6px; color:#64748b;">Tạm ngưng sẽ giữ nguyên dữ liệu nhưng không cho đặt lịch hoặc nhập kho tại chi nhánh này.</small>
         </div>
     </div>
 </div>
@@ -312,15 +322,17 @@
         }
 
         // Remove image action
-        removeBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            fileInput.value = '';
-            hiddenInput.value = '';
-            previewImg.src = '';
-            previewContainer.style.display = 'none';
-            promptBlock.style.display = 'block';
-        });
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fileInput.value = '';
+                hiddenInput.value = '';
+                previewImg.src = '';
+                previewContainer.style.display = 'none';
+                promptBlock.style.display = 'block';
+            });
+        }
     });
 </script>
 @endsection

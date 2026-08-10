@@ -378,6 +378,9 @@ class VaccineController extends Controller
         $isEmptyCart = empty($cartState['cart']);
         $centers = CenterContext::activeCenters();
 
+        // Tự động sinh lịch 30 ngày từ cấu hình mặc định
+        Schedule::generateFromDefaults($currentCenter->id, today(), today()->addDays(30));
+
         $schedules = Schedule::query()
             ->where('center_id', $currentCenter->id)
             ->where('is_active', true)

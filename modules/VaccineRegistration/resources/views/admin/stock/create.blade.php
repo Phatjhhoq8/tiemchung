@@ -16,7 +16,8 @@
             <div class="form-group-modern" style="margin-bottom:0;">
                 <label class="form-label-modern">Chi nhánh *</label>
                 @if($isSuperAdmin ?? false)
-                    <select name="center_id" class="form-control-modern" style="background-image:none;" required>
+                    <select name="center_id" class="form-control-modern" style="background-image:none;" required onchange="if (this.value) window.location.href = '{{ route('admin.stock.create') }}?center_id=' + encodeURIComponent(this.value)">
+                        <option value="">-- Chọn chi nhánh nhập kho --</option>
                         @foreach($centers as $center)
                             <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
                         @endforeach
@@ -26,6 +27,11 @@
                     <input class="form-control-modern" value="{{ $adminUser?->center?->name }}" disabled>
                 @endif
             </div>
+            @if(($isSuperAdmin ?? false) && !$selectedCenterId)
+                <div style="grid-column:span 2; padding:12px 14px; border-radius:8px; background:#fffbeb; color:#92400e; border:1px solid #fde68a;">
+                    Vui lòng chọn một chi nhánh để tải danh sách vắc xin đang được phép nhập kho.
+                </div>
+            @endif
             <div class="form-group-modern" style="margin-bottom:0; position:relative;">
                 <label class="form-label-modern" for="vaccine_search_input">Sản phẩm *</label>
                 <input type="text" id="vaccine_search_input" placeholder="Gõ tìm tên sản phẩm..." class="form-control-modern" required autocomplete="off">
@@ -64,8 +70,8 @@
         </div>
     </div>
     <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
-        <a href="{{ route('admin.stock.index', ['center_id' => $selectedCenterId]) }}" class="btn-modern btn-modern-secondary" style="text-decoration:none;">Hủy</a>
-        <button type="submit" class="btn-modern btn-modern-primary">Lưu nhập kho</button>
+        <a href="{{ route('admin.stock.index') }}" class="btn-modern btn-modern-secondary" style="text-decoration:none;">Hủy</a>
+        <button type="submit" class="btn-modern btn-modern-primary" {{ !$selectedCenterId ? 'disabled' : '' }}>Lưu nhập kho</button>
     </div>
 </form>
 @endsection
@@ -115,6 +121,8 @@
 
         // Lọc khi người dùng gõ
         input.addEventListener('input', () => {
+            hidden.value = '';
+            options.forEach(option => option.classList.remove('selected'));
             dropdown.style.display = 'block';
             filterOptions();
         });

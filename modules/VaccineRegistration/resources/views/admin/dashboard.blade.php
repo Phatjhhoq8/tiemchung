@@ -20,7 +20,7 @@
     <div style="flex:1 1 260px;">
         <label class="form-label-modern">Lọc thống kê theo chi nhánh</label>
         <select name="center_id" class="form-control-modern" style="background-image:none;">
-            <option value="">Toàn hệ thống</option>
+            <option value="" {{ $selectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
             @foreach($centers as $center)
                 <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
             @endforeach

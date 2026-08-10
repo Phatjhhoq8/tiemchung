@@ -9,6 +9,7 @@ namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
@@ -21,48 +22,75 @@ class AdminVaccineController extends Controller
      */
     public function index(Request $request)
     {
-        if (AdminContext::isBranchAdmin() && $request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
+        $filters = $request->validate([
+            'center_id' => 'nullable|integer|exists:centers,id',
+            'search' => 'nullable|string|max:255',
+            'type' => 'nullable|in:single,package',
+            'stock_status' => 'nullable|in:available,limited,out_of_stock',
+            'category' => 'nullable|string|max:100',
+            'featured' => 'nullable|boolean',
+            'min_quantity' => 'nullable|integer|min:0',
+            'max_quantity' => 'nullable|integer|min:0',
+        ], [
+            'min_quantity.integer' => 'Số lượng tối thiểu phải là số nguyên.',
+            'min_quantity.min' => 'Số lượng tối thiểu không được nhỏ hơn 0.',
+            'max_quantity.integer' => 'Số lượng tối đa phải là số nguyên.',
+            'max_quantity.min' => 'Số lượng tối đa không được nhỏ hơn 0.',
+        ]);
+        if (isset($filters['min_quantity'], $filters['max_quantity'])
+            && $filters['max_quantity'] < $filters['min_quantity']) {
+            throw ValidationException::withMessages([
+                'max_quantity' => 'Số lượng tối đa phải lớn hơn hoặc bằng số lượng tối thiểu.',
+            ]);
         }
 
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) $request->input('center_id'));
-        $query = Vaccine::forCenter($selectedCenterId);
+        $selectedCenterId = AdminContext::resolveListCenterId($request);
+        $query = Vaccine::forAdminCenters($selectedCenterId);
 
         // Tìm kiếm theo tên hoặc bệnh phòng ngừa
-        if ($request->filled('search')) {
-            $search = $request->input('search');
+        if (!empty($filters['search'])) {
+            $search = trim($filters['search']);
             $query->where(function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('disease_prevention', 'like', '%' . $search . '%')
-                  ->orWhere('category', 'like', '%' . $search . '%')
-                  ->orWhere('manufacturer', 'like', '%' . $search . '%');
+                $q->where('vaccines.name', 'like', '%' . $search . '%')
+                  ->orWhere('vaccines.disease_prevention', 'like', '%' . $search . '%')
+                  ->orWhere('vaccines.category', 'like', '%' . $search . '%')
+                  ->orWhere('vaccines.manufacturer', 'like', '%' . $search . '%')
+                  ->orWhere('centers.name', 'like', '%' . $search . '%');
             });
         }
 
         // Lọc theo phân loại (lẻ/gói)
-        if ($request->filled('type')) {
-            $query->where('type', $request->input('type'));
+        if (!empty($filters['type'])) {
+            $query->where('vaccines.type', $filters['type']);
         }
 
         // Lọc theo tình trạng kho
-        if ($request->filled('stock_status')) {
-            $query->where('center_vaccines.stock_status', $request->input('stock_status'));
+        if (!empty($filters['stock_status'])) {
+            $query->where('center_vaccines.stock_status', $filters['stock_status']);
         }
 
         // Lọc theo danh mục bệnh
-        if ($request->filled('category')) {
-            $query->where('category', $request->input('category'));
+        if (!empty($filters['category'])) {
+            $query->where('vaccines.category', $filters['category']);
         }
 
         // Lọc vắc xin nổi bật
-        if ($request->filled('featured')) {
-            $query->where('is_featured', true);
+        if (!empty($filters['featured'])) {
+            $query->where('center_vaccines.is_featured', true);
         }
 
-        $vaccines = $query->orderBy('vaccines.id', 'asc')
-                          ->orderBy('type', 'asc')
-                          ->orderBy('name', 'asc')
+        if (isset($filters['min_quantity']) && $filters['min_quantity'] !== null) {
+            $query->where('center_vaccines.stock_quantity', '>=', $filters['min_quantity']);
+        }
+
+        if (isset($filters['max_quantity']) && $filters['max_quantity'] !== null) {
+            $query->where('center_vaccines.stock_quantity', '<=', $filters['max_quantity']);
+        }
+
+        $vaccines = $query->orderBy('vaccines.id')
+                          ->orderBy('centers.sort_order')
+                          ->orderBy('centers.id')
                           ->paginate(15)
                           ->withQueryString();
 
@@ -86,7 +114,9 @@ class AdminVaccineController extends Controller
 
         $vaccine = new Vaccine(); // Khởi tạo đối tượng rỗng phục vụ form partial
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) request('center_id'));
+        $selectedCenterId = request()->filled('center_id')
+            ? AdminContext::selectedCenterId(request()->integer('center_id'))
+            : AdminContext::selectedCenterId();
         $isSuperAdmin = AdminContext::isSuperAdmin();
         $adminUser = AdminContext::user();
         $categories = Vaccine::whereNotNull('category')
@@ -124,7 +154,7 @@ class AdminVaccineController extends Controller
         // Xử lý checkbox is_featured
         $validated['is_featured'] = $request->has('is_featured');
 
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) ($validated['center_id'] ?? 0));
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) $validated['center_id']);
         unset($validated['center_id']);
 
         $vaccine = Vaccine::create($validated);
@@ -160,21 +190,26 @@ class AdminVaccineController extends Controller
     {
         abort_unless(AdminContext::isBranchAdmin() || AdminContext::isSuperAdmin(), 403);
 
-        if (AdminContext::isBranchAdmin() && request()->filled('center_id') && (int)request('center_id') !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
+        if (request()->filled('center_id')) {
+            AdminContext::assertCanManageCenter(request()->integer('center_id'));
         }
 
         $vaccine = Vaccine::findOrFail($id);
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) request('center_id'));
+        $selectedCenterId = request()->filled('center_id')
+            ? AdminContext::selectedCenterId(request()->integer('center_id'))
+            : AdminContext::selectedCenterId();
         $isSuperAdmin = AdminContext::isSuperAdmin();
         $adminUser = AdminContext::user();
-        $centerVaccine = CenterVaccine::where('center_id', $selectedCenterId)->where('vaccine_id', $vaccine->id)->first();
+        $centerVaccine = $selectedCenterId
+            ? CenterVaccine::where('center_id', $selectedCenterId)->where('vaccine_id', $vaccine->id)->first()
+            : null;
         if ($centerVaccine) {
             $vaccine->price = $centerVaccine->price;
             $vaccine->sale_price = $centerVaccine->sale_price;
             $vaccine->stock_quantity = $centerVaccine->stock_quantity;
             $vaccine->stock_status = $centerVaccine->stock_status;
+            $vaccine->center_is_active = $centerVaccine->is_active;
             $vaccine->is_featured = $centerVaccine->is_featured;
             $vaccine->sort_order = $centerVaccine->sort_order;
         }
@@ -199,17 +234,17 @@ class AdminVaccineController extends Controller
 
         if (!AdminContext::isSuperAdmin()) {
             if ($request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
-                abort(403, 'Cross-branch access forbidden.');
+                abort(403, 'Bạn không có quyền cập nhật vắc xin của chi nhánh khác.');
             }
 
             $masterFields = ['name', 'origin', 'category', 'description', 'disease_prevention', 'type', 'doses', 'age_group', 'manufacturer', 'dosage'];
             foreach ($masterFields as $field) {
                 if ($request->has($field) && (string)$request->input($field) !== (string)$vaccine->$field) {
-                    abort(403, 'Branch admin cannot modify master vaccine catalog fields.');
+                    abort(403, 'Admin chi nhánh không được thay đổi thông tin danh mục vắc xin dùng chung.');
                 }
             }
             if ($request->hasFile('image_file')) {
-                abort(403, 'Branch admin cannot modify master vaccine catalog fields.');
+                abort(403, 'Admin chi nhánh không được thay đổi hình ảnh vắc xin dùng chung.');
             }
 
             $request->merge([
@@ -227,7 +262,8 @@ class AdminVaccineController extends Controller
         }
 
         $validated = $this->validateVaccine($request);
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) ($validated['center_id'] ?? 0));
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) $validated['center_id']);
+        AdminContext::assertCanManageCenter($selectedCenterId);
         unset($validated['center_id']);
 
         // Xử lý tải lên hình ảnh từ file (chỉ cho phép super_admin thay đổi ảnh)
@@ -254,7 +290,7 @@ class AdminVaccineController extends Controller
 
         if (AdminContext::isSuperAdmin()) {
             $masterData = $validated;
-            unset($masterData['price'], $masterData['sale_price'], $masterData['stock_quantity'], $masterData['is_featured'], $masterData['sort_order']);
+            unset($masterData['price'], $masterData['sale_price'], $masterData['stock_quantity'], $masterData['stock_status'], $masterData['center_is_active'], $masterData['is_featured'], $masterData['sort_order']);
             $vaccine->update($masterData);
         }
         $this->syncCenterVaccine($vaccine, $selectedCenterId, $validated);
@@ -269,12 +305,11 @@ class AdminVaccineController extends Controller
     {
         abort_unless(AdminContext::isSuperAdmin() || AdminContext::isBranchAdmin(), 403);
 
-        if (AdminContext::isBranchAdmin() && request()->filled('center_id') && (int)request('center_id') !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
-        }
+        $validated = request()->validate(['center_id' => 'required|integer|exists:centers,id']);
+        AdminContext::assertCanManageCenter((int) $validated['center_id']);
 
         $vaccine = Vaccine::findOrFail($id);
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) request('center_id'));
+        $selectedCenterId = (int) AdminContext::selectedCenterId((int) $validated['center_id']);
         $centerVaccine = CenterVaccine::firstOrCreate(
             ['center_id' => $selectedCenterId, 'vaccine_id' => $vaccine->id],
             ['price' => $vaccine->price, 'sale_price' => $vaccine->sale_price, 'stock_status' => $vaccine->stock_status ?? 'available']
@@ -302,6 +337,40 @@ class AdminVaccineController extends Controller
     }
 
     /**
+     * Lấy trạng thái tồn kho vắc-xin tại tất cả các chi nhánh (JSON).
+     */
+    public function branchesStock($id)
+    {
+        abort_unless(AdminContext::isSuperAdmin(), 403);
+
+        $vaccine = Vaccine::findOrFail($id);
+
+        $branchesStock = Center::active()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->map(function ($center) use ($vaccine) {
+                $centerVaccine = CenterVaccine::where('center_id', $center->id)
+                    ->where('vaccine_id', $vaccine->id)
+                    ->first();
+
+                return [
+                    'center_name' => $center->name,
+                    'price' => $centerVaccine ? $centerVaccine->price : $vaccine->price,
+                    'sale_price' => $centerVaccine ? $centerVaccine->sale_price : $vaccine->sale_price,
+                    'stock_quantity' => $centerVaccine ? $centerVaccine->stock_quantity : 0,
+                    'stock_status' => $centerVaccine ? $centerVaccine->stock_status : 'out_of_stock',
+                    'is_active' => $centerVaccine ? (bool)$centerVaccine->is_active : false,
+                ];
+            });
+
+        return response()->json([
+            'vaccine_name' => $vaccine->name,
+            'branches' => $branchesStock,
+        ]);
+    }
+
+    /**
      * Validate dữ liệu vắc xin (dùng chung cho store & update).
      */
     private function validateVaccine(Request $request): array
@@ -325,6 +394,7 @@ class AdminVaccineController extends Controller
             'type' => 'required|string|in:single,package',
             'doses' => 'required|integer|min:1',
             'stock_quantity' => 'required|integer|min:0',
+            'center_is_active' => 'nullable|boolean',
             'disease_prevention' => 'required|string|max:255',
             'category' => 'nullable|string|max:100',
             'age_group' => 'required|string|max:255',
@@ -364,6 +434,9 @@ class AdminVaccineController extends Controller
 
         $newPrice = (int) $data['price'];
         $newSalePrice = isset($data['sale_price']) && $data['sale_price'] !== null && $data['sale_price'] !== '' ? (int) $data['sale_price'] : null;
+        $isActive = array_key_exists('center_is_active', $data)
+            ? (bool) $data['center_is_active']
+            : ($existing ? (bool) $existing->is_active : true);
 
         $qty = (int) ($data['stock_quantity'] ?? 0);
         $stockStatus = 'available';
@@ -380,7 +453,7 @@ class AdminVaccineController extends Controller
                 'sale_price' => $newSalePrice,
                 'stock_quantity' => $qty,
                 'stock_status' => $stockStatus,
-                'is_active' => true,
+                'is_active' => $isActive,
                 'is_featured' => (bool) ($data['is_featured'] ?? false),
                 'sort_order' => (int) ($data['sort_order'] ?? 0),
             ]
