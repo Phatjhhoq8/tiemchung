@@ -8,6 +8,7 @@
 namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Modules\VaccineRegistration\Models\Center;
@@ -130,6 +131,13 @@ class AdminCenterController extends Controller
                 ]
             );
         });
+        AuditLogger::log(
+            'center.created',
+            'center',
+            $center->id,
+            newValues: $center->only(['name', 'slug', 'address', 'phone', 'working_hours', 'sort_order', 'is_active']),
+            centerId: $center->id
+        );
 
         return redirect()->route('admin.centers.index')->with('success', 'Thêm mới trung tâm tiêm chủng thành công.');
     }
@@ -184,7 +192,16 @@ class AdminCenterController extends Controller
         $validated['slug'] = ($validated['slug'] ?? null) ?: Str::slug($validated['name']);
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
 
+        $oldValues = $center->only(['name', 'slug', 'address', 'phone', 'working_hours', 'sort_order', 'is_active']);
         $center->update($validated);
+        AuditLogger::log(
+            'center.updated',
+            'center',
+            $center->id,
+            $oldValues,
+            $center->fresh()->only(array_keys($oldValues)),
+            $center->id
+        );
 
         return redirect()->route('admin.centers.index')->with('success', 'Cập nhật trung tâm tiêm chủng thành công.');
     }
@@ -195,10 +212,19 @@ class AdminCenterController extends Controller
     public function destroy($id)
     {
         $center = Center::findOrFail($id);
+        $oldActive = $center->is_active;
         $center->is_active = false;
         $center->save();
 
         CenterVaccine::where('center_id', $center->id)->update(['is_active' => false]);
+        AuditLogger::log(
+            'center.deactivated',
+            'center',
+            $center->id,
+            ['is_active' => $oldActive],
+            ['is_active' => false],
+            $center->id
+        );
 
         return redirect()->route('admin.centers.index')->with('success', 'Vô hiệu hóa trung tâm tiêm chủng thành công.');
     }

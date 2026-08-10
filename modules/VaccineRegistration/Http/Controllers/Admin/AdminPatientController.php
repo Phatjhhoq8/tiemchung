@@ -3,6 +3,7 @@
 namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Patient;
 use Modules\VaccineRegistration\Support\AdminContext;
@@ -64,6 +65,14 @@ class AdminPatientController extends Controller
         ]);
 
         $patient = Patient::findOrCreateCentralized($validated);
+        if ($patient->wasRecentlyCreated) {
+            AuditLogger::log(
+                'patient.created',
+                'patient',
+                $patient->id,
+                newValues: $patient->only(['full_name', 'dob', 'gender', 'phone', 'identity_card', 'address', 'medical_history', 'is_active'])
+            );
+        }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -132,7 +141,12 @@ class AdminPatientController extends Controller
             'is_active' => 'sometimes|boolean',
         ]);
 
+        $oldValues = $patient->only(array_keys($validated));
         $patient->update($validated);
+        $newValues = $patient->fresh()->only(array_keys($validated));
+        if ($oldValues !== $newValues) {
+            AuditLogger::log('patient.updated', 'patient', $patient->id, $oldValues, $newValues);
+        }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([

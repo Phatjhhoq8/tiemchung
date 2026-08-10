@@ -3,6 +3,7 @@
 namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -26,7 +27,19 @@ class VaccinationWorkflowController extends Controller
             abort(403, 'Bạn không có quyền tiếp nhận bệnh nhân thuộc chi nhánh khác.');
         }
 
+        $oldStatus = $registration->status;
         $registration->checkIn();
+        $newStatus = $registration->fresh()->status;
+        if ($oldStatus !== $newStatus) {
+            AuditLogger::log(
+                'vaccination.checked_in',
+                'registration',
+                $registration->id,
+                ['status' => $oldStatus],
+                ['status' => $newStatus],
+                $registration->center_id
+            );
+        }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -55,8 +68,19 @@ class VaccinationWorkflowController extends Controller
             'screening_status' => 'required|string|in:eligible,deferred,contraindicated',
             'screening_notes' => 'nullable|string',
         ]);
-
+        $oldValues = $registration->only(['screening_status', 'screening_notes']);
         $registration->screening($validated['screening_status'], $validated['screening_notes'] ?? null);
+        $newValues = $registration->fresh()->only(['screening_status', 'screening_notes']);
+        if ($oldValues !== $newValues) {
+            AuditLogger::log(
+                'vaccination.screened',
+                'registration',
+                $registration->id,
+                $oldValues,
+                $newValues,
+                $registration->center_id
+            );
+        }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -105,6 +129,7 @@ class VaccinationWorkflowController extends Controller
             'observation_minutes' => 'nullable|integer|min:1',
             'observation_notes' => 'nullable|string',
         ]);
+        $oldRegistrationStatus = $registration->status;
 
         // Kiểm tra xem vaccine_id có nằm trong phiếu đăng ký không
         $hasVaccine = $registration->vaccines()->where('vaccines.id', $validated['vaccine_id'])->exists();
@@ -115,7 +140,7 @@ class VaccinationWorkflowController extends Controller
         }
 
         try {
-            $dose = DB::transaction(function () use ($registration, $validated) {
+            $dose = DB::transaction(function () use ($registration, $validated, $oldRegistrationStatus) {
                 // Lock lô vắc xin
                 $lot = InventoryLot::lockForUpdate()->findOrFail($validated['inventory_lot_id']);
 
@@ -163,13 +188,31 @@ class VaccinationWorkflowController extends Controller
                 ]);
 
                 // Ghi nhận liều tiêm
-                return $registration->administer(
+                $dose = $registration->administer(
                     AdminContext::user()?->id,
                     $validated['vaccine_id'],
                     $validated['inventory_lot_id'],
                     $validated['observation_minutes'] ?? 30,
                     $validated['observation_notes'] ?? null
                 );
+
+                AuditLogger::log(
+                    'vaccination.administered',
+                    'registration',
+                    $registration->id,
+                    ['status' => $oldRegistrationStatus, 'available_quantity' => $lot->available_quantity + 1],
+                    [
+                        'status' => $registration->fresh()->status,
+                        'administered_dose_id' => $dose->id,
+                        'vaccine_id' => (int) $validated['vaccine_id'],
+                        'inventory_lot_id' => $lot->id,
+                        'available_quantity' => $lot->fresh()->available_quantity,
+                        'observation_notes' => $validated['observation_notes'] ?? null,
+                    ],
+                    $registration->center_id
+                );
+
+                return $dose;
             });
 
             if ($request->wantsJson() || $request->ajax()) {

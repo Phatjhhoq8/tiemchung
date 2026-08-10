@@ -6,18 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Services\AuditLogger;
 use App\Services\BranchStockService;
 use App\Services\RegistrationPaymentService;
+use App\Services\Security\CsvSanitizer;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
 use Modules\VaccineRegistration\Models\Customer;
 use Modules\VaccineRegistration\Models\Registration;
-use Modules\VaccineRegistration\Models\Slot;
 use Modules\VaccineRegistration\Models\Schedule;
+use Modules\VaccineRegistration\Models\Slot;
 use Modules\VaccineRegistration\Support\AdminContext;
 use Modules\VaccineRegistration\Support\PhoneNormalizer;
-use Illuminate\Support\Str;
 
 class AdminRegistrationController extends Controller
 {
@@ -39,9 +41,9 @@ class AdminRegistrationController extends Controller
         if ($request->filled('search')) {
             $search = trim((string) $request->input('search'));
             $query->where(function ($builder) use ($search) {
-                $builder->where('registration_code', 'like', $search . '%')
-                    ->orWhere('patient_phone', 'like', '%' . $search . '%')
-                    ->orWhere('patient_name', 'like', '%' . $search . '%');
+                $builder->where('registration_code', 'like', $search.'%')
+                    ->orWhere('patient_phone', 'like', '%'.$search.'%')
+                    ->orWhere('patient_name', 'like', '%'.$search.'%');
             });
         }
 
@@ -152,23 +154,24 @@ class AdminRegistrationController extends Controller
         AdminContext::assertCanManageCenter((int) $validated['center_id']);
 
         $recipientPhone = PhoneNormalizer::normalize($validated['patient_phone']);
-        if (!$recipientPhone) {
+        if (! $recipientPhone) {
             return back()->withErrors(['patient_phone' => 'Số điện thoại di động Việt Nam không hợp lệ.'])->withInput();
         }
         $accountPhone = PhoneNormalizer::normalize($validated['account_phone'] ?? $validated['patient_phone']);
-        if (!$accountPhone) {
+        if (! $accountPhone) {
             return back()->withErrors(['account_phone' => 'Số điện thoại tài khoản tích điểm không hợp lệ.'])->withInput();
         }
         $idempotencyKey = $validated['idempotency_key'] ?? null;
         if ($idempotencyKey && ($existing = Registration::where('idempotency_key', $idempotencyKey)->first())) {
             $this->assertRegistrationVisible($existing);
+
             return redirect()->route('admin.registrations.show', $existing);
         }
 
         $center = Center::active()->findOrFail($validated['center_id']);
         $registration = DB::transaction(function () use ($validated, $recipientPhone, $accountPhone, $center, $stockService, $idempotencyKey) {
             $slot = Slot::with('schedule')->whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
-            if (!$slot->is_active || !$slot->schedule || !$slot->schedule->is_active
+            if (! $slot->is_active || ! $slot->schedule || ! $slot->schedule->is_active
                 || (int) $slot->schedule->center_id !== (int) $center->id
                 || $slot->schedule->date->isBefore(today()) || $slot->reserved_count >= $slot->capacity) {
                 throw ValidationException::withMessages(['slot_id' => 'Khung giờ không còn chỗ hoặc không thuộc chi nhánh đã chọn.']);
@@ -325,8 +328,8 @@ class AdminRegistrationController extends Controller
             'week' => 'nullable|date_format:Y-m-d',
             'center_id' => 'nullable|integer|exists:centers,id',
         ]);
-        $startOfWeek = !empty($validated['week'])
-            ? \Carbon\Carbon::createFromFormat('Y-m-d', $validated['week'])->startOfWeek()
+        $startOfWeek = ! empty($validated['week'])
+            ? Carbon::createFromFormat('Y-m-d', $validated['week'])->startOfWeek()
             : now()->startOfWeek();
         $endOfWeek = $startOfWeek->copy()->endOfWeek();
 
@@ -358,12 +361,23 @@ class AdminRegistrationController extends Controller
     public function exportCsv(Request $request)
     {
         $selectedCenterId = AdminContext::resolveListCenterId($request);
-        $filename = 'don_dang_ky_tiem_' . now()->format('Y-m-d_His') . '.csv';
+        $filename = 'don_dang_ky_tiem_'.now()->format('Y-m-d_His').'.csv';
         $query = $this->registrationQuery($selectedCenterId)->with('vaccines:id,name')->orderBy('id');
+        AuditLogger::log(
+            'registration.exported',
+            'registration_export',
+            $selectedCenterId ?? 'all',
+            newValues: [
+                'center_id' => $selectedCenterId,
+                'record_count' => (clone $query)->count(),
+            ],
+            centerId: $selectedCenterId,
+            resolveCenter: false
+        );
 
         return response()->stream(function () use ($query) {
             $file = fopen('php://output', 'w');
-            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
             fputcsv($file, [
                 'Mã đơn', 'Họ tên', 'Số điện thoại', 'Trung tâm', 'Ngày tiêm',
                 'Tổng tiền', 'Trạng thái lịch hẹn', 'Trạng thái thanh toán', 'Vắc xin', 'Ngày đăng ký',
@@ -387,7 +401,7 @@ class AdminRegistrationController extends Controller
             fclose($file);
         }, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 
@@ -415,28 +429,28 @@ class AdminRegistrationController extends Controller
         AdminContext::assertCanManageCenter((int) $registration->center_id);
     }
 
-    private function vietnameseDayName(\Carbon\Carbon $date): string
+    private function vietnameseDayName(Carbon $date): string
     {
         return match ($date->dayOfWeek) {
-            \Carbon\Carbon::MONDAY => 'Thứ Hai',
-            \Carbon\Carbon::TUESDAY => 'Thứ Ba',
-            \Carbon\Carbon::WEDNESDAY => 'Thứ Tư',
-            \Carbon\Carbon::THURSDAY => 'Thứ Năm',
-            \Carbon\Carbon::FRIDAY => 'Thứ Sáu',
-            \Carbon\Carbon::SATURDAY => 'Thứ Bảy',
-            \Carbon\Carbon::SUNDAY => 'Chủ Nhật',
+            Carbon::MONDAY => 'Thứ Hai',
+            Carbon::TUESDAY => 'Thứ Ba',
+            Carbon::WEDNESDAY => 'Thứ Tư',
+            Carbon::THURSDAY => 'Thứ Năm',
+            Carbon::FRIDAY => 'Thứ Sáu',
+            Carbon::SATURDAY => 'Thứ Bảy',
+            Carbon::SUNDAY => 'Chủ Nhật',
         };
     }
 
     private function safeCsvCell(?string $value): string
     {
-        return \App\Services\Security\CsvSanitizer::sanitizeCell($value);
+        return CsvSanitizer::sanitizeCell($value);
     }
 
     private function newRegistrationCode(): string
     {
         do {
-            $code = 'MCD-' . strtoupper(Str::random(8));
+            $code = 'MCD-'.strtoupper(Str::random(8));
         } while (Registration::where('registration_code', $code)->exists());
 
         return $code;

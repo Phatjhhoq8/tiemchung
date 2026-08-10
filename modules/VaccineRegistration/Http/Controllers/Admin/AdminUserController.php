@@ -4,6 +4,7 @@ namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AuditLogger;
 use App\Support\AdminPasswordPolicy;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Center;
@@ -61,7 +62,15 @@ class AdminUserController extends Controller
             $validated['center_id'] = null;
         }
 
-        User::create($validated);
+        $user = User::create($validated);
+        AuditLogger::log(
+            'admin_user.created',
+            'admin_user',
+            $user->id,
+            newValues: $user->only(['name', 'username', 'email', 'role', 'center_id', 'is_active', 'status']),
+            centerId: $user->center_id,
+            resolveCenter: false
+        );
 
         return redirect()->route('admin.users.index')->with('success', 'Tạo tài khoản chi nhánh thành công.');
     }
@@ -91,7 +100,17 @@ class AdminUserController extends Controller
             $validated['center_id'] = null;
         }
 
+        $oldValues = $user->only(['name', 'username', 'email', 'role', 'center_id', 'is_active', 'status']);
         $user->update($validated);
+        AuditLogger::log(
+            'admin_user.updated',
+            'admin_user',
+            $user->id,
+            $oldValues,
+            $user->fresh()->only(array_keys($oldValues)),
+            $user->center_id,
+            resolveCenter: false
+        );
 
         return redirect()->route('admin.users.index')->with('success', 'Cập nhật tài khoản thành công.');
     }
@@ -104,9 +123,19 @@ class AdminUserController extends Controller
             return back()->with('error', 'Không thể xóa tài khoản đang đăng nhập.');
         }
 
+        $oldValues = $user->only(['is_active', 'status']);
         $user->is_active = false;
         $user->status = 'inactive';
         $user->save();
+        AuditLogger::log(
+            'admin_user.deactivated',
+            'admin_user',
+            $user->id,
+            $oldValues,
+            $user->only(['is_active', 'status']),
+            $user->center_id,
+            resolveCenter: false
+        );
 
         return redirect()->route('admin.users.index')->with('success', 'Đã vô hiệu hóa tài khoản.');
     }

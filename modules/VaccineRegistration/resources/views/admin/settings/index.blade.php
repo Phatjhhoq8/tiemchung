@@ -51,12 +51,6 @@
 
         {{-- Cột dọc cho các thông tin dài (100% width) --}}
         <div style="display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 30px;">
-            <!-- Địa chỉ trụ sở chính -->
-            <div class="form-group-modern">
-                <label for="address" class="form-label-modern">Địa chỉ trụ sở chính *</label>
-                <input type="text" name="address" id="address" value="{{ old('address', $settings['address']) }}" required class="form-control-modern">
-            </div>
-
             <!-- Footer Text -->
             <div class="form-group-modern">
                 <label for="footer_text" class="form-label-modern">Thông tin chân trang (Footer Copyright) *</label>

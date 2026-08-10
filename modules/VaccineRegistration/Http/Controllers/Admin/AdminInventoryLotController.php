@@ -3,11 +3,13 @@
 namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Modules\VaccineRegistration\Models\Center;
-use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Models\InventoryLot;
 use Modules\VaccineRegistration\Models\StockMovement;
+use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminInventoryLotController extends Controller
@@ -31,10 +33,10 @@ class AdminInventoryLotController extends Controller
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
-                $q->where('lot_number', 'like', '%' . $search . '%')
-                  ->orWhereHas('vaccine', function ($vq) use ($search) {
-                      $vq->where('name', 'like', '%' . $search . '%');
-                  });
+                $q->where('lot_number', 'like', '%'.$search.'%')
+                    ->orWhereHas('vaccine', function ($vq) use ($search) {
+                        $vq->where('name', 'like', '%'.$search.'%');
+                    });
             });
         }
 
@@ -84,8 +86,15 @@ class AdminInventoryLotController extends Controller
             'user_id' => AdminContext::user()?->id,
             'type' => 'import',
             'quantity' => $validated['initial_quantity'],
-            'note' => 'Khởi tạo lô vắc xin mới ' . $validated['lot_number'],
+            'note' => 'Khởi tạo lô vắc xin mới '.$validated['lot_number'],
         ]);
+        AuditLogger::log(
+            'inventory_lot.created',
+            'inventory_lot',
+            $lot->id,
+            newValues: $lot->only(['vaccine_id', 'lot_number', 'initial_quantity', 'available_quantity', 'expires_at', 'status']),
+            centerId: $lot->center_id
+        );
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -113,11 +122,12 @@ class AdminInventoryLotController extends Controller
             'available_quantity' => 'nullable|integer|min:0',
         ]);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($lot, $validated) {
+        DB::transaction(function () use ($lot, $validated) {
             $oldQty = (int) $lot->available_quantity;
             $newQty = isset($validated['available_quantity']) ? (int) $validated['available_quantity'] : $oldQty;
 
-            $updateData = array_filter($validated, fn ($val) => !is_null($val));
+            $updateData = array_filter($validated, fn ($val) => ! is_null($val));
+            $oldValues = $lot->only(array_keys($updateData));
             $lot->update($updateData);
 
             if ($newQty !== $oldQty) {
@@ -126,8 +136,13 @@ class AdminInventoryLotController extends Controller
                     'user_id' => AdminContext::user()?->id,
                     'type' => 'adjustment',
                     'quantity' => $newQty - $oldQty,
-                    'note' => 'Điều chỉnh số lượng khả dụng từ ' . $oldQty . ' sang ' . $newQty,
+                    'note' => 'Điều chỉnh số lượng khả dụng từ '.$oldQty.' sang '.$newQty,
                 ]);
+            }
+
+            $newValues = $lot->fresh()->only(array_keys($updateData));
+            if ($oldValues !== $newValues) {
+                AuditLogger::log('inventory_lot.updated', 'inventory_lot', $lot->id, $oldValues, $newValues, $lot->center_id);
             }
         });
 
@@ -155,7 +170,18 @@ class AdminInventoryLotController extends Controller
             'status' => 'required|in:active,recalled,quarantined',
         ]);
 
+        $oldStatus = $lot->status;
         $lot->update(['status' => $validated['status']]);
+        if ($oldStatus !== $lot->status) {
+            AuditLogger::log(
+                'inventory_lot.status_changed',
+                'inventory_lot',
+                $lot->id,
+                ['status' => $oldStatus],
+                ['status' => $lot->status],
+                $lot->center_id
+            );
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([

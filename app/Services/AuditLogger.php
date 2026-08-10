@@ -7,6 +7,40 @@ use Modules\VaccineRegistration\Support\AdminContext;
 
 class AuditLogger
 {
+    private const EXCLUDED_KEYS = [
+        'password',
+        'password_confirmation',
+        'current_password',
+        'remember_token',
+        'token',
+        'access_token',
+        'refresh_token',
+        'session',
+        'session_id',
+        'cookie',
+        'admin_password_hash',
+    ];
+
+    private const PRIVATE_KEYS = [
+        'full_name',
+        'patient_name',
+        'dob',
+        'patient_dob',
+        'gender',
+        'patient_gender',
+        'phone',
+        'patient_phone',
+        'guardian_phone',
+        'email',
+        'address',
+        'patient_address',
+        'identity_card',
+        'medical_history',
+        'screening_notes',
+        'observation_notes',
+        'content',
+    ];
+
     /**
      * Log a general audit event.
      */
@@ -17,13 +51,17 @@ class AuditLogger
         ?array $oldValues = null,
         ?array $newValues = null,
         ?int $centerId = null,
-        ?int $actorId = null
+        ?int $actorId = null,
+        bool $resolveActor = true,
+        bool $resolveCenter = true
     ): AuditLog {
-        $resolvedActorId = $actorId ?? auth()->id() ?? AdminContext::user()?->id;
-        $resolvedCenterId = $centerId ?? AdminContext::centerId() ?? AdminContext::selectedCenterId();
+        $resolvedActorId = $actorId ?? ($resolveActor ? auth()->id() ?? AdminContext::user()?->id : null);
+        $resolvedCenterId = $centerId ?? ($resolveCenter ? AdminContext::centerId() ?? AdminContext::selectedCenterId() : null);
 
         $ipAddress = request()?->ip();
         $userAgent = request()?->userAgent();
+
+        [$safeOldValues, $safeNewValues] = static::prepareChanges($oldValues, $newValues);
 
         return AuditLog::create([
             'actor_id' => $resolvedActorId,
@@ -31,11 +69,55 @@ class AuditLogger
             'action' => $action,
             'resource_type' => $resourceType,
             'resource_id' => (string) $resourceId,
-            'old_values' => $oldValues,
-            'new_values' => $newValues,
+            'old_values' => $safeOldValues,
+            'new_values' => $safeNewValues,
             'ip_address' => $ipAddress,
             'user_agent' => $userAgent,
         ]);
+    }
+
+    /**
+     * Keep only useful changed fields and remove secrets or private values.
+     */
+    private static function prepareChanges(?array $oldValues, ?array $newValues): array
+    {
+        if ($oldValues !== null && $newValues !== null) {
+            $keys = array_unique(array_merge(array_keys($oldValues), array_keys($newValues)));
+            $changedKeys = array_filter($keys, fn ($key) => ($oldValues[$key] ?? null) !== ($newValues[$key] ?? null));
+            $oldValues = array_intersect_key($oldValues, array_flip($changedKeys));
+            $newValues = array_intersect_key($newValues, array_flip($changedKeys));
+        }
+
+        $oldValues = static::sanitize($oldValues);
+        $newValues = static::sanitize($newValues);
+
+        return [empty($oldValues) ? null : $oldValues, empty($newValues) ? null : $newValues];
+    }
+
+    private static function sanitize(?array $values): ?array
+    {
+        if ($values === null) {
+            return null;
+        }
+
+        $safe = [];
+        foreach ($values as $key => $value) {
+            $normalizedKey = strtolower((string) $key);
+
+            if (in_array($normalizedKey, self::EXCLUDED_KEYS, true)) {
+                continue;
+            }
+
+            if (in_array($normalizedKey, self::PRIVATE_KEYS, true)) {
+                $safe[$normalizedKey.'_changed'] = true;
+
+                continue;
+            }
+
+            $safe[$key] = is_array($value) ? static::sanitize($value) : $value;
+        }
+
+        return $safe;
     }
 
     /**

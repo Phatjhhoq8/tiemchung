@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\AuditLog;
 use App\Models\User;
 use App\Services\AuditLogger;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -21,7 +20,9 @@ class AuditLogsAndResourceStatusTest extends TestCase
     use DatabaseTransactions;
 
     protected User $superAdmin;
+
     protected User $branchAdmin;
+
     protected Center $center;
 
     protected function setUp(): void
@@ -30,7 +31,7 @@ class AuditLogsAndResourceStatusTest extends TestCase
 
         $this->center = Center::create([
             'name' => 'Medicare Chi Nhánh Test M5',
-            'slug' => 'medicare-chi-nhanh-test-m5-' . uniqid(),
+            'slug' => 'medicare-chi-nhanh-test-m5-'.uniqid(),
             'address' => '123 Đường Test, Quận 1',
             'phone' => '0901234567',
             'is_active' => true,
@@ -39,8 +40,8 @@ class AuditLogsAndResourceStatusTest extends TestCase
 
         $this->superAdmin = User::create([
             'name' => 'Super Admin M5',
-            'username' => 'superadmin_m5_' . uniqid(),
-            'email' => 'superadmin_m5_' . uniqid() . '@medicare.vn',
+            'username' => 'superadmin_m5_'.uniqid(),
+            'email' => 'superadmin_m5_'.uniqid().'@medicare.vn',
             'password' => bcrypt('password123'),
             'role' => 'super_admin',
             'is_active' => true,
@@ -49,8 +50,8 @@ class AuditLogsAndResourceStatusTest extends TestCase
 
         $this->branchAdmin = User::create([
             'name' => 'Branch Admin M5',
-            'username' => 'branchadmin_m5_' . uniqid(),
-            'email' => 'branchadmin_m5_' . uniqid() . '@medicare.vn',
+            'username' => 'branchadmin_m5_'.uniqid(),
+            'email' => 'branchadmin_m5_'.uniqid().'@medicare.vn',
             'password' => bcrypt('password123'),
             'role' => 'branch_admin',
             'center_id' => $this->center->id,
@@ -94,6 +95,75 @@ class AuditLogsAndResourceStatusTest extends TestCase
 
         $this->assertEquals(['price' => 500000], $log->fresh()->old_values);
         $this->assertEquals(['price' => 550000], $log->fresh()->new_values);
+    }
+
+    #[Test]
+    public function test_audit_logger_removes_secrets_and_private_values(): void
+    {
+        $this->loginAs($this->superAdmin);
+
+        $log = AuditLogger::log(
+            action: 'patient.updated',
+            resourceType: 'patient',
+            resourceId: 10,
+            oldValues: [
+                'status' => 'active',
+                'password' => 'old-secret',
+                'full_name' => 'Nguyen Van A',
+                'phone' => '0901234567',
+                'medical_history' => 'old history',
+            ],
+            newValues: [
+                'status' => 'inactive',
+                'password' => 'new-secret',
+                'full_name' => 'Nguyen Van B',
+                'phone' => '0987654321',
+                'medical_history' => 'new history',
+            ]
+        );
+
+        $serialized = json_encode([$log->old_values, $log->new_values]);
+        $this->assertStringNotContainsString('secret', $serialized);
+        $this->assertStringNotContainsString('0901234567', $serialized);
+        $this->assertStringNotContainsString('0987654321', $serialized);
+        $this->assertStringNotContainsString('Nguyen Van', $serialized);
+        $this->assertStringNotContainsString('old history', $serialized);
+        $this->assertStringNotContainsString('new history', $serialized);
+        $this->assertSame(['status' => 'active', 'full_name_changed' => true, 'phone_changed' => true, 'medical_history_changed' => true], $log->old_values);
+        $this->assertSame(['status' => 'inactive', 'full_name_changed' => true, 'phone_changed' => true, 'medical_history_changed' => true], $log->new_values);
+    }
+
+    #[Test]
+    public function test_audit_logger_omits_unchanged_fields(): void
+    {
+        $log = AuditLogger::log(
+            action: 'resource.updated',
+            resourceType: 'test',
+            resourceId: 11,
+            oldValues: ['name' => 'Same', 'status' => 'active'],
+            newValues: ['name' => 'Same', 'status' => 'inactive']
+        );
+
+        $this->assertSame(['status' => 'active'], $log->old_values);
+        $this->assertSame(['status' => 'inactive'], $log->new_values);
+    }
+
+    #[Test]
+    public function test_audit_logger_can_record_anonymous_global_event(): void
+    {
+        $this->loginAs($this->superAdmin);
+
+        $log = AuditLogger::log(
+            action: 'auth.login_failed',
+            resourceType: 'admin_user',
+            resourceId: 'unknown',
+            newValues: ['reason' => 'unknown_account'],
+            resolveActor: false,
+            resolveCenter: false
+        );
+
+        $this->assertNull($log->actor_id);
+        $this->assertNull($log->center_id);
     }
 
     #[Test]
@@ -157,10 +227,10 @@ class AuditLogsAndResourceStatusTest extends TestCase
 
         $customer = Customer::create([
             'name' => 'Nguyễn Văn Test',
-            'phone' => '+849' . str_pad((string) random_int(0, 99999999), 8, '0', STR_PAD_LEFT),
+            'phone' => '+849'.str_pad((string) random_int(0, 99999999), 8, '0', STR_PAD_LEFT),
         ]);
         $registration = Registration::create([
-            'registration_code' => 'TESTREG' . rand(1000, 9999),
+            'registration_code' => 'TESTREG'.rand(1000, 9999),
             'customer_id' => $customer->id,
             'patient_name' => 'Nguyễn Văn Test',
             'patient_dob' => '1995-05-15',
@@ -247,7 +317,7 @@ class AuditLogsAndResourceStatusTest extends TestCase
     {
         $center = Center::create([
             'name' => 'Chi Nhánh Delete Test M5',
-            'slug' => 'chi-nhanh-delete-test-' . uniqid(),
+            'slug' => 'chi-nhanh-delete-test-'.uniqid(),
             'address' => '456 Đường Test',
             'phone' => '0912345678',
             'is_active' => true,
@@ -267,8 +337,8 @@ class AuditLogsAndResourceStatusTest extends TestCase
     {
         $user = User::create([
             'name' => 'User Delete Test M5',
-            'username' => 'user_delete_test_' . uniqid(),
-            'email' => 'user_delete_test_' . uniqid() . '@medicare.vn',
+            'username' => 'user_delete_test_'.uniqid(),
+            'email' => 'user_delete_test_'.uniqid().'@medicare.vn',
             'password' => bcrypt('password123'),
             'role' => 'branch_admin',
             'center_id' => $this->center->id,
@@ -310,7 +380,7 @@ class AuditLogsAndResourceStatusTest extends TestCase
     {
         $article = Article::create([
             'title' => 'Bài viết Delete Test M5',
-            'slug' => 'bai-viet-delete-test-' . uniqid(),
+            'slug' => 'bai-viet-delete-test-'.uniqid(),
             'summary' => 'Tóm tắt bài viết',
             'content' => 'Nội dung bài viết',
             'category' => 'Khuyến cáo Y tế',

@@ -866,6 +866,11 @@
                         <i data-lucide="settings"></i> Cấu Hình Trang Web
                     </a>
                 </li>
+                <li class="{{ str_contains(Route::currentRouteName(), 'admin.audit-logs') ? 'active' : '' }}">
+                    <a href="{{ route('admin.audit-logs.index') }}">
+                        <i data-lucide="scroll-text"></i> Nhật Ký Hệ Thống
+                    </a>
+                </li>
                 @endif
                 <li style="margin-top: 30px; border-top: 1px dashed #1b2e4c; padding-top: 10px;">
                     <a href="{{ route('admin.password.edit') }}">

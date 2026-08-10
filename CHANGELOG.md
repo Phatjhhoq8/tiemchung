@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v6.3.2] - 2026-08-10
+
+### Removed
+
+* **Remove "Trụ sở chính" address field**: Removed the headquarters address field from the admin Settings form (`settings/index.blade.php`, `AdminSettingController`), and cleaned up the unused `$address` fallback variable in `layouts/app.blade.php`. The existing `address` value in the database is preserved untouched.
+
 ## [v6.3.1] - 2026-08-10
 
 ### Removed

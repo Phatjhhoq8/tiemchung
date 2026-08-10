@@ -83,7 +83,7 @@
                         <strong style="font-size: 28px; color: var(--primary-color, #c8102e); font-weight: 800;">{{ number_format($vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price, 0, ',', '.') }} đ</strong>
                     </div>
 
-                    <div class="vaccine-action-buttons" style="display: flex; gap: 10px; align-items: center;">
+                    <div class="vaccine-action-buttons" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                         <a href="{{ route('vaccine.index') }}" class="btn-secondary desktop-only-back-btn" style="padding: 10px 18px; border-radius: 30px; border: 1px solid #cbd5e1; color: #475569; font-weight: 700; font-size: 13.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: #ffffff; transition: all 0.2s ease;">
                             <i data-lucide="arrow-left" style="width: 15px; height: 15px;"></i>
                             <span>Quay lại danh mục</span>
@@ -92,6 +92,14 @@
                             <i data-lucide="{{ isset($cart[$vaccine->id]) ? 'check' : 'plus' }}" style="width: 18px; height: 18px;"></i>
                             <span>{{ $vaccine->stock_quantity <= 0 ? 'Hết hàng tại chi nhánh' : (isset($cart[$vaccine->id]) ? 'Đã chọn vắc xin' : 'Đăng ký tiêm chủng') }}</span>
                         </button>
+                        {{-- Nút đặt lịch ngay — xuất hiện sau khi đã chọn vaccine --}}
+                        <a href="{{ route('register.show') }}"
+                           id="btnProceedBooking_{{ $vaccine->id }}"
+                           onclick="openSpaRegisterModal(event)"
+                           style="padding: 12px 22px; border-radius: 30px; border: 2px solid var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); font-weight: 800; font-size: 14px; text-decoration: none; display: {{ isset($cart[$vaccine->id]) ? 'inline-flex' : 'none' }}; align-items: center; justify-content: center; gap: 7px; background: #fff1f2; transition: all 0.2s ease; white-space: nowrap;">
+                            <i data-lucide="calendar-check" style="width: 17px; height: 17px;"></i>
+                            <span>Đặt lịch tiêm ngay →</span>
+                        </a>
                     </div>
                 </div>
             </div>

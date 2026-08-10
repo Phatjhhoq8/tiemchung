@@ -3,19 +3,16 @@
         'site_name' => 'Medicare',
         'hotline' => '0938 60 38 39',
         'email' => 'cskh@medicare.vn',
-        'address' => 'Chi nhánh 1: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Bình, Xã Cờ Đỏ, TP. Cần Thơ',
         'footer_text' => '© 2026 Medicare - Hệ Thống Tiêm Chủng Vắc Xin Trẻ Em và Người Lớn.',
     ]);
     $site_name = $settings['site_name'];
     $hotline = $settings['hotline'];
     $email = $settings['email'];
-    $address = $settings['address'];
     $footer_text = $settings['footer_text'];
     $currentCenter = $currentCenter ?? \Modules\VaccineRegistration\Support\CenterContext::current();
     $activeCenters = $activeCenters ?? \Modules\VaccineRegistration\Support\CenterContext::activeCenters();
     if ($currentCenter) {
         $hotline = $currentCenter->phone ?: $hotline;
-        $address = $currentCenter->address ?: $address;
     }
     $currentCenterPhoneHref = \Modules\VaccineRegistration\Support\CenterContext::phoneHref($hotline);
     $currentCenterZalo = \Modules\VaccineRegistration\Support\CenterContext::phoneHref($currentCenter?->zalo_phone ?: $hotline);

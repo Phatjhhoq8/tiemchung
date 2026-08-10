@@ -1,32 +1,36 @@
 <?php
+
 /**
  * Chức năng: Định nghĩa các tuyến đường (routes) của module VaccineRegistration.
  * Lý do chỉnh sửa: Phân tách rõ ràng các route client và nhóm route admin (được bảo vệ bởi middleware admin.auth).
  */
 
-use Illuminate\Support\Facades\Route;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
-use Modules\VaccineRegistration\Http\Controllers\HomeController;
-use Modules\VaccineRegistration\Http\Controllers\VaccineController;
+use Illuminate\Support\Facades\Route;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminAuditLogController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminAuthController;
-use Modules\VaccineRegistration\Http\Controllers\Admin\AdminDashboardController;
-use Modules\VaccineRegistration\Http\Controllers\Admin\AdminVaccineController;
-use Modules\VaccineRegistration\Http\Controllers\Admin\AdminRegistrationController;
-use Modules\VaccineRegistration\Http\Controllers\Admin\AdminCenterController;
-use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSettingController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminBannerController;
-use Modules\VaccineRegistration\Http\Controllers\Admin\AdminUserController;
-use Modules\VaccineRegistration\Http\Controllers\ConsultationLeadController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminCenterController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminConsultationLeadController;
-use Modules\VaccineRegistration\Http\Controllers\Admin\AdminScheduleController;
-use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSlotController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminCustomerController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminDashboardController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminDefaultSlotController;
-use Modules\VaccineRegistration\Http\Controllers\AdminArticleController;
-use Modules\VaccineRegistration\Http\Controllers\ArticleController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminInventoryLotController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminPatientController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminRegistrationController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminScheduleController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSettingController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSlotController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminUserController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminVaccineController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\VaccinationWorkflowController;
-use Modules\VaccineRegistration\Http\Controllers\Admin\AdminCustomerController;
+use Modules\VaccineRegistration\Http\Controllers\AdminArticleController;
+use Modules\VaccineRegistration\Http\Controllers\ArticleController;
+use Modules\VaccineRegistration\Http\Controllers\ConsultationLeadController;
+use Modules\VaccineRegistration\Http\Controllers\HomeController;
+use Modules\VaccineRegistration\Http\Controllers\VaccineController;
+use Modules\VaccineRegistration\Support\AdminContext;
 
 Route::middleware('web')->group(function () {
     // --- Giao diện Khách hàng (Client Multi-Page SPA) ---
@@ -38,22 +42,22 @@ Route::middleware('web')->group(function () {
     // Tin tức & Kiến thức y khoa
     Route::get('/news', [ArticleController::class, 'index'])->name('news.index');
     Route::get('/news/{slug}', [ArticleController::class, 'show'])->name('news.show');
-    
+
     // Danh mục vắc xin & chi tiết
     Route::get('/vaccines', [VaccineController::class, 'index'])->name('vaccine.index');
     Route::get('/vaccines/disease/{disease}', [VaccineController::class, 'diseaseDetail'])->name('vaccine.disease');
     Route::post('/vaccines/disease/{disease}/consult', [VaccineController::class, 'postDiseaseConsult'])->middleware('throttle:10,1')->name('vaccine.disease.consult');
     Route::get('/vaccines/{id}', [VaccineController::class, 'show'])->name('vaccine.show');
-    
+
     // Giỏ hàng
     Route::post('/cart/add', [VaccineController::class, 'addToCart'])->name('cart.add');
     Route::post('/cart/remove', [VaccineController::class, 'removeFromCart'])->name('cart.remove');
     Route::post('/cart/clear', [VaccineController::class, 'clearCart'])->name('cart.clear');
-    
+
     // Yêu cầu tư vấn (CRM Leads)
     Route::post('/consultations', [ConsultationLeadController::class, 'store'])->middleware('throttle:10,1')->name('consultations.store');
     Route::post('/leads', [ConsultationLeadController::class, 'store'])->middleware('throttle:10,1')->name('leads.store');
-    
+
     // Quy trình đăng ký tiêm
     Route::get('/register', [VaccineController::class, 'showRegister'])->name('register.show');
     Route::post('/register', [VaccineController::class, 'postRegister'])->middleware('throttle:15,1')->name('register.post');
@@ -71,7 +75,7 @@ Route::middleware('web')->group(function () {
     Route::post('/admin/logout', [AdminAuthController::class, 'logout'])
         ->middleware('admin.auth')
         ->name('admin.logout');
-    
+
     // Redirect /admin sang /admin/dashboard
     Route::get('/admin', function () {
         return redirect()->route('admin.dashboard');
@@ -85,21 +89,29 @@ Route::middleware('web')->group(function () {
         Route::post('/context/center', function (Request $request) {
             $validated = $request->validate(['center_id' => 'nullable|integer|exists:centers,id']);
             $centerId = isset($validated['center_id']) ? (int) $validated['center_id'] : null;
-            $center = \Modules\VaccineRegistration\Support\AdminContext::setSelectedCenter($centerId);
+            $oldCenterId = AdminContext::selectedCenterId();
+            $center = AdminContext::setSelectedCenter($centerId);
+            AuditLogger::log(
+                'admin.center_context_changed',
+                'center_context',
+                'current',
+                ['center_id' => $oldCenterId],
+                ['center_id' => $center?->id]
+            );
 
             $previousUrl = url()->previous();
             $path = parse_url($previousUrl, PHP_URL_PATH) ?: '/admin/dashboard';
-            if (!str_starts_with($path, '/admin')) {
+            if (! str_starts_with($path, '/admin')) {
                 $path = '/admin/dashboard';
             }
 
             parse_str((string) parse_url($previousUrl, PHP_URL_QUERY), $query);
             unset($query['center_id']);
-            $target = $path . ($query ? '?' . http_build_query($query) : '');
+            $target = $path.($query ? '?'.http_build_query($query) : '');
 
             return redirect($target)->with(
                 'success',
-                $center ? 'Đã chuyển sang chi nhánh ' . $center->name . '.' : 'Đang xem dữ liệu của tất cả chi nhánh.'
+                $center ? 'Đã chuyển sang chi nhánh '.$center->name.'.' : 'Đang xem dữ liệu của tất cả chi nhánh.'
             );
         })->name('context.center');
 
@@ -112,7 +124,9 @@ Route::middleware('web')->group(function () {
         Route::patch('/leads/{id}/status', [AdminConsultationLeadController::class, 'updateStatus'])->name('leads.status');
 
         // Quản lý Vắc xin
-        Route::get('/vaccin', function() { return redirect()->route('admin.vaccines.index'); });
+        Route::get('/vaccin', function () {
+            return redirect()->route('admin.vaccines.index');
+        });
         Route::post('/vaccines/{id}/toggle-featured', [AdminVaccineController::class, 'toggleFeatured'])->name('vaccines.toggle-featured');
         Route::get('/vaccines/{id}/branches-stock', [AdminVaccineController::class, 'branchesStock'])->name('vaccines.branches-stock');
         Route::resource('vaccines', AdminVaccineController::class)->except(['show']);
@@ -127,7 +141,7 @@ Route::middleware('web')->group(function () {
         Route::patch('/registrations/{id}/status', [AdminRegistrationController::class, 'updateStatus'])->name('registrations.status');
         Route::post('/registrations/{id}/settle', [AdminRegistrationController::class, 'settle'])->name('registrations.settle');
         Route::post('/registrations/{id}/refund', [AdminRegistrationController::class, 'refund'])->name('registrations.refund');
-        
+
         // Quy trình tiêm chủng lâm sàng (3 bước)
         Route::post('/registrations/{id}/check-in', [VaccinationWorkflowController::class, 'checkIn'])->name('registrations.check-in');
         Route::post('/registrations/{id}/screening', [VaccinationWorkflowController::class, 'screening'])->name('registrations.screening');
@@ -156,6 +170,10 @@ Route::middleware('web')->group(function () {
         Route::resource('inventory-lots', AdminInventoryLotController::class)->except(['create', 'edit', 'show']);
 
         Route::middleware('super.admin')->group(function () {
+            // Tra cứu nhật ký hệ thống (chỉ đọc)
+            Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit-logs.index');
+            Route::get('/audit-logs/{auditLog}', [AdminAuditLogController::class, 'show'])->name('audit-logs.show');
+
             // Quản lý Trung tâm
             Route::resource('centers', AdminCenterController::class)->except(['show']);
 

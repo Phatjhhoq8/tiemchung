@@ -10,6 +10,7 @@ namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AuditLogger;
 use App\Support\AdminPasswordPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -67,6 +68,7 @@ class AdminAuthController extends Controller
                 'locked_until' => $user->locked_until?->toDateTimeString(),
                 'ip' => $request->ip(),
             ]);
+            $this->logLoginFailure($user, 'locked');
 
             return back()->withErrors([
                 'auth_failed' => 'Tên đăng nhập hoặc mật khẩu không chính xác.',
@@ -83,6 +85,7 @@ class AdminAuthController extends Controller
                 'ip' => $request->ip(),
                 'available_in' => $seconds,
             ]);
+            $this->logLoginFailure($user, 'rate_limited');
 
             return back()->withErrors([
                 'auth_failed' => "Bạn đã thử quá nhiều lần. Vui lòng thử lại sau {$seconds} giây.",
@@ -96,6 +99,7 @@ class AdminAuthController extends Controller
                 'username' => $user->username,
                 'ip' => $request->ip(),
             ]);
+            $this->logLoginFailure($user, 'inactive');
 
             return back()->withErrors([
                 'auth_failed' => 'Tên đăng nhập hoặc mật khẩu không chính xác.',
@@ -126,6 +130,15 @@ class AdminAuthController extends Controller
                 session()->put(AdminContext::SELECTED_CENTER_SESSION_KEY, $user->center_id);
             }
 
+            AuditLogger::log(
+                action: 'auth.login_succeeded',
+                resourceType: 'admin_user',
+                resourceId: $user->id,
+                newValues: ['role' => $user->role],
+                centerId: $user->center_id,
+                actorId: $user->id
+            );
+
             // Chống Session Fixation bằng cách regenerate session id
             $request->session()->regenerate();
 
@@ -149,6 +162,7 @@ class AdminAuthController extends Controller
                     'locked_until' => $user->locked_until?->toDateTimeString(),
                     'ip' => $request->ip(),
                 ]);
+                $this->logLoginFailure($user, 'account_locked');
 
                 return back()->withErrors([
                     'auth_failed' => 'Tên đăng nhập hoặc mật khẩu không chính xác.',
@@ -161,11 +175,13 @@ class AdminAuthController extends Controller
                 'failed_login_count' => $user->failed_login_count,
                 'ip' => $request->ip(),
             ]);
+            $this->logLoginFailure($user, 'invalid_credentials');
         } else {
             Log::warning('Security Event: Admin login failed (user not found)', [
                 'username' => $credentials['username'],
                 'ip' => $request->ip(),
             ]);
+            $this->logLoginFailure(null, 'unknown_account');
         }
 
         return back()->withErrors([
@@ -220,6 +236,15 @@ class AdminAuthController extends Controller
         $request->session()->put('admin_password_hash', md5($user->password));
         $request->session()->regenerate();
 
+        AuditLogger::log(
+            action: 'auth.password_changed',
+            resourceType: 'admin_user',
+            resourceId: $user->id,
+            newValues: ['password_changed' => true],
+            centerId: $user->center_id,
+            actorId: $user->id
+        );
+
         return redirect()->route('admin.dashboard')->with('success', 'Đổi mật khẩu thành công.');
     }
 
@@ -228,6 +253,17 @@ class AdminAuthController extends Controller
      */
     public function logout(Request $request)
     {
+        $user = AdminContext::user();
+        if ($user) {
+            AuditLogger::log(
+                action: 'auth.logout',
+                resourceType: 'admin_user',
+                resourceId: $user->id,
+                centerId: $user->center_id,
+                actorId: $user->id
+            );
+        }
+
         session()->forget(['admin_logged_in', 'admin_user_id', 'admin_role', 'admin_center_id']);
 
         // Hủy session hiện tại và khởi tạo lại token CSRF mới
@@ -235,5 +271,17 @@ class AdminAuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('admin.login.show')->with('success', 'Đã đăng xuất tài khoản quản trị thành công.');
+    }
+
+    private function logLoginFailure(?User $user, string $reason): void
+    {
+        AuditLogger::log(
+            action: 'auth.login_failed',
+            resourceType: 'admin_user',
+            resourceId: $user?->id ?? 'unknown',
+            newValues: ['reason' => $reason],
+            centerId: $user?->center_id,
+            resolveActor: false
+        );
     }
 }

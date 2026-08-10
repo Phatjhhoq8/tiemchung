@@ -86,13 +86,19 @@ function setCartSelection(vaccineId, inCart) {
 
     document.querySelectorAll(`.btn-select-detail[data-id="${id}"], #modalSelectBtn_${id}`).forEach((button) => {
         button.classList.toggle('btn-selected', inCart);
-        button.style.backgroundColor = inCart ? '#fff1f2' : 'var(--primary-color, #c8102e)';
-        button.style.borderColor = inCart ? '#fecdd3' : 'var(--primary-color, #c8102e)';
-        button.style.color = inCart ? 'var(--primary-color, #c8102e)' : '#ffffff';
+        button.style.backgroundColor = inCart ? '#fff8e1' : 'var(--primary-color, #c8102e)';
+        button.style.borderColor = inCart ? 'var(--secondary-color, #eaaa00)' : 'var(--primary-color, #c8102e)';
+        button.style.color = inCart ? 'var(--secondary-color, #eaaa00)' : '#ffffff';
         button.innerHTML = inCart
-            ? '<i data-lucide="x"></i><span>Hủy chọn</span>'
+            ? '<i data-lucide="check"></i><span>Đã chọn vắc xin</span>'
             : '<i data-lucide="plus"></i><span>Chọn vắc xin này</span>';
     });
+
+    // Hiện/ẩn nút "Đặt lịch tiêm ngay →" trên trang chi tiết vaccine
+    const proceedBtn = document.getElementById(`btnProceedBooking_${id}`);
+    if (proceedBtn) {
+        proceedBtn.style.display = inCart ? 'inline-flex' : 'none';
+    }
 }
 
 async function toggleCart(vaccineId, forceRemove = false) {

@@ -86,7 +86,6 @@ class AdminVaccineController extends Controller
             $query->where('center_vaccines.stock_quantity', '<=', $filters['max_quantity']);
         }
 
-
         $vaccines = $query->orderBy('vaccines.id')
             ->orderBy('centers.sort_order')
             ->orderBy('centers.id')
@@ -187,6 +186,13 @@ class AdminVaccineController extends Controller
             );
         });
         $this->syncCenterVaccine($vaccine, $selectedCenterId, $validated);
+        AuditLogger::log(
+            'vaccine.created',
+            'vaccine',
+            $vaccine->id,
+            newValues: $vaccine->only(['name', 'origin', 'category', 'doses', 'is_active']),
+            centerId: $selectedCenterId
+        );
 
         return redirect()->route('admin.vaccines.index', ['center_id' => $selectedCenterId])->with('success', 'Thêm mới vắc xin thành công.');
     }
@@ -283,6 +289,19 @@ class AdminVaccineController extends Controller
         $selectedCenterId = (int) AdminContext::selectedCenterId((int) $validated['center_id']);
         AdminContext::assertCanManageCenter($selectedCenterId);
         unset($validated['center_id']);
+        $oldCenterVaccine = CenterVaccine::where('center_id', $selectedCenterId)->where('vaccine_id', $vaccine->id)->first();
+        $oldAuditValues = [
+            'name' => $vaccine->name,
+            'origin' => $vaccine->origin,
+            'category' => $vaccine->category,
+            'doses' => $vaccine->doses,
+            'master_is_active' => $vaccine->is_active,
+            'stock_quantity' => $oldCenterVaccine?->stock_quantity,
+            'stock_status' => $oldCenterVaccine?->stock_status,
+            'center_is_active' => $oldCenterVaccine?->is_active,
+            'is_featured' => $oldCenterVaccine?->is_featured,
+            'sort_order' => $oldCenterVaccine?->sort_order,
+        ];
 
         // Xử lý tải lên hình ảnh từ file (chỉ cho phép super_admin thay đổi ảnh)
         if (AdminContext::isSuperAdmin() && $request->hasFile('image_file')) {
@@ -312,6 +331,23 @@ class AdminVaccineController extends Controller
             $vaccine->update($masterData);
         }
         $this->syncCenterVaccine($vaccine, $selectedCenterId, $validated);
+        $freshVaccine = $vaccine->fresh();
+        $freshCenterVaccine = CenterVaccine::where('center_id', $selectedCenterId)->where('vaccine_id', $vaccine->id)->first();
+        $newAuditValues = [
+            'name' => $freshVaccine->name,
+            'origin' => $freshVaccine->origin,
+            'category' => $freshVaccine->category,
+            'doses' => $freshVaccine->doses,
+            'master_is_active' => $freshVaccine->is_active,
+            'stock_quantity' => $freshCenterVaccine?->stock_quantity,
+            'stock_status' => $freshCenterVaccine?->stock_status,
+            'center_is_active' => $freshCenterVaccine?->is_active,
+            'is_featured' => $freshCenterVaccine?->is_featured,
+            'sort_order' => $freshCenterVaccine?->sort_order,
+        ];
+        if ($oldAuditValues !== $newAuditValues) {
+            AuditLogger::log('vaccine.updated', 'vaccine', $vaccine->id, $oldAuditValues, $newAuditValues, $selectedCenterId);
+        }
 
         return redirect()->route('admin.vaccines.index', ['center_id' => $selectedCenterId])->with('success', 'Cập nhật thông tin vắc xin thành công.');
     }
@@ -334,6 +370,14 @@ class AdminVaccineController extends Controller
         );
         $centerVaccine->is_featured = ! $centerVaccine->is_featured;
         $centerVaccine->save();
+        AuditLogger::log(
+            'vaccine.featured_changed',
+            'vaccine',
+            $vaccine->id,
+            ['is_featured' => ! $centerVaccine->is_featured],
+            ['is_featured' => $centerVaccine->is_featured],
+            $selectedCenterId
+        );
 
         $statusMessage = $centerVaccine->is_featured ? 'Đã bật hiển thị NỔI BẬT trên Trang chủ.' : 'Đã bỏ trạng thái NỔI BẬT.';
 
@@ -351,6 +395,14 @@ class AdminVaccineController extends Controller
         $vaccine->is_active = false;
         $vaccine->save();
         CenterVaccine::where('vaccine_id', $vaccine->id)->update(['is_active' => false]);
+        AuditLogger::log(
+            'vaccine.deactivated',
+            'vaccine',
+            $vaccine->id,
+            ['is_active' => true],
+            ['is_active' => false],
+            resolveCenter: false
+        );
 
         return redirect()->route('admin.vaccines.index')->with('success', 'Vô hiệu hóa vắc xin khỏi danh mục thành công.');
     }
