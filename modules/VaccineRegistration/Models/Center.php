@@ -30,6 +30,29 @@ class Center extends Model
         'sort_order' => 'integer',
     ];
 
+    protected $appends = [
+        'zalo_url',
+        'zalo_qr_url',
+    ];
+
+    public function getZaloUrlAttribute(): string
+    {
+        $rawPhone = $this->zalo_phone ?: $this->phone;
+        $cleanPhone = preg_replace('/\D+/', '', (string) $rawPhone);
+        return $cleanPhone ? "https://zalo.me/{$cleanPhone}" : 'https://zalo.me';
+    }
+
+    public function getZaloQrUrlAttribute(): string
+    {
+        $zaloUrl = $this->getZaloUrlAttribute();
+        return 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=' . urlencode($zaloUrl);
+    }
+
+    public function getZaloQrCodeUrlAttribute(): string
+    {
+        return $this->getZaloQrUrlAttribute();
+    }
+
     protected static function booted(): void
     {
         static::deleting(function (Center $center) {

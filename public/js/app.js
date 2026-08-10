@@ -1000,9 +1000,53 @@ function switchSpaModalTab(tab) {
     }
 }
 
-function renderSpaConsultForm() {
+async function renderSpaConsultForm() {
     const body = document.getElementById('spaRegisterBody');
     if (!body) return;
+
+    // Show loading state if active center data is not yet available
+    if (!window.lastCurrentCenter || !window.lastFetchCenters || window.lastFetchCenters.length === 0) {
+        body.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px;">
+                <div style="border: 3.5px solid #e2e8f0; border-top: 3.5px solid var(--primary-color, #c8102e); border-radius: 50%; width: 42px; height: 42px; animation: spin 0.8s linear infinite; margin: 0 auto 16px auto;"></div>
+                <p style="color: #475569; font-weight: 700; font-size: 14.5px; margin: 0;">Đang tải thông tin tư vấn Zalo chi nhánh...</p>
+            </div>
+        `;
+        try {
+            const response = await fetch(getAbsoluteUrl('/register'), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            const data = await response.json();
+            if (data.centers) window.lastFetchCenters = data.centers;
+            if (data.current_center) window.lastCurrentCenter = data.current_center;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    const centers = window.lastFetchCenters || [];
+    let currentCenter = window.lastCurrentCenter || null;
+
+    if (currentCenter && currentCenter.id && centers.length > 0) {
+        const found = centers.find(c => Number(c.id) === Number(currentCenter.id));
+        if (found) currentCenter = found;
+    }
+
+    if (!currentCenter && centers.length > 0) {
+        currentCenter = centers[0];
+    }
+
+    if (!currentCenter) {
+        body.innerHTML = `
+            <div style="padding: 40px; text-align: center; color: #ef4444; font-weight: 700;">
+                Không thể kết nối thông tin chi nhánh. Vui lòng thử lại sau.
+            </div>
+        `;
+        return;
+    }
 
     const hasCart = window.lastCartData && window.lastCartData.success;
     const tabHtml = hasCart ? `
@@ -1011,103 +1055,63 @@ function renderSpaConsultForm() {
                 1. Đăng ký tiêm chủng (vắc xin đã chọn)
             </button>
             <button type="button" onclick="switchSpaModalTab('consult')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: var(--primary-color, #c8102e); border-bottom: 3px solid var(--primary-color, #c8102e); transition: all 0.2s; margin-bottom: -2px;">
-                2. Gửi yêu cầu tư vấn nhanh
+                2. Tư vấn Y khoa qua Zalo Official
             </button>
         </div>
     ` : '';
 
-    let centerOptions = '<option value="">-- Chọn trung tâm Medicare --</option>';
-    const currentCenterId = window.lastCurrentCenter ? Number(window.lastCurrentCenter.id) : null;
-    (window.lastFetchCenters || []).forEach(c => {
-        const isSelected = currentCenterId && Number(c.id) === currentCenterId;
-        centerOptions += `<option value="${c.id}" ${isSelected ? 'selected' : ''}>${escapeHtml(c.name)}</option>`;
-    });
+    const rawPhone = currentCenter.zalo_phone || currentCenter.phone || '';
+    const cleanPhone = rawPhone.replace(/\D+/g, '');
+    const zaloUrl = currentCenter.zalo_url || (cleanPhone ? `https://zalo.me/${cleanPhone}` : 'https://zalo.me');
+    const qrUrl = currentCenter.zalo_qr_url || `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=10&data=${encodeURIComponent(zaloUrl)}`;
 
     body.innerHTML = `
         ${tabHtml}
-        <div style="background: #ffffff; padding: 24px; max-width: 500px; margin: 0 auto;">
-            <h3 style="font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 8px; text-align: justify;">Yêu cầu tư vấn <span style="color: var(--primary-color, #c8102e);">miễn phí</span></h3>
-            <p style="font-size: 14px; color: #64748b; text-align: justify; margin-bottom: 24px; line-height: 1.5;">Medicare sẽ liên hệ lại ngay để tư vấn phác đồ tiêm chủng vắc xin thích hợp nhất cho bạn.</p>
+        <div style="background: #ffffff; padding: 24px; max-width: 480px; margin: 0 auto; box-sizing: border-box;">
             
-            <form id="spaConsultForm" onsubmit="submitSpaConsult(event)" style="display: flex; flex-direction: column; gap: 16px;">
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <label style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: justify;">Hình thức tư vấn <span style="color:#ef4444;">*</span></label>
-                    <div style="display: inline-flex; width: 100%; background: #f1f5f9; border-radius: 30px; padding: 4px; border: 1px solid #cbd5e1; box-sizing: border-box;">
-                        <button type="button" id="btnSpaConsultOnline" onclick="setSpaConsultType('online')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: var(--primary-color, #c8102e); color: #ffffff; text-align: center;">
-                            Tư vấn qua điện thoại (Online)
-                        </button>
-                        <button type="button" id="btnSpaConsultOffline" onclick="setSpaConsultType('offline')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: transparent; color: #475569; text-align: center;">
-                            Tư vấn tại trung tâm (Offline)
-                        </button>
-                        <input type="hidden" name="consultType" id="spaConsultTypeValue" value="online">
-                    </div>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(200,16,46,0.08); color: var(--primary-color, #c8102e); padding: 5px 14px; border-radius: 20px; font-weight: 800; font-size: 13px; margin-bottom: 12px;">
+                    <i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--primary-color, #c8102e);"></i>
+                    <span>Chi nhánh ${escapeHtml(currentCenter.name)}</span>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <label for="spa_consult_name" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: justify;">Họ tên người liên hệ <span class="text-red-500">*</span></label>
-                    <input type="text" id="spa_consult_name" name="customerName" placeholder="Nhập họ tên của bạn" required style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-size: 14px;">
-                    <span class="error-msg text-xs text-red-500 mt-1 hidden" id="err_spa_customerName" style="text-align: justify;"></span>
-                </div>
+                <h3 style="font-size: 20px; font-weight: 800; color: #1e293b; margin: 0 0 8px 0; text-align: center; line-height: 1.35;">
+                    Tư Vấn Y Khoa <span style="color: var(--primary-color, #c8102e);">Qua Zalo</span>
+                </h3>
                 
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <label for="spa_consult_phone" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: justify;">Số điện thoại liên hệ <span class="text-red-500">*</span></label>
-                    <input type="tel" id="spa_consult_phone" name="customerPhone" placeholder="Ví dụ: 0912345678" required style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-size: 14px;">
-                    <span class="error-msg text-xs text-red-500 mt-1 hidden" id="err_spa_customerPhone" style="text-align: justify;"></span>
-                </div>
+                <p style="font-size: 13.5px; color: #475569; text-align: justify; margin: 0; line-height: 1.6;">
+                    Tư vấn phác đồ tiêm chủng 1:1 miễn phí cùng Bác sĩ Medicare.
+                </p>
+            </div>
+
+            <div style="background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #cbd5e1; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.03);">
                 
-                <div id="spaCenterSelectGroup" style="display: none; flex-direction: column; gap: 6px;">
-                    <label for="spa_consult_center" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: justify;">Chi nhánh tư vấn gần nhất <span class="text-red-500">*</span></label>
-                    <div style="position: relative; width: 100%;">
-                        <select id="spa_consult_center" name="center_id" style="width: 100%; padding: 10px 36px 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; background: #fff; height: 42px; font-size: 14px; -webkit-appearance: none; -moz-appearance: none; appearance: none; cursor: pointer;">
-                            ${centerOptions}
-                        </select>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none;"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </div>
-                    <span class="error-msg text-xs text-red-500 mt-1 hidden" id="err_spa_center_id" style="text-align: justify;"></span>
+                <div style="background: #ffffff; padding: 12px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; display: inline-block;">
+                    <img src="${qrUrl}" alt="Mã QR Zalo Bác sĩ ${escapeHtml(currentCenter.name)}" style="width: 190px; height: 190px; display: block; border-radius: 8px; margin: 0 auto;">
                 </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <label for="spa_consult_note" style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: justify;">Ghi chú yêu cầu tư vấn</label>
-                    <textarea id="spa_consult_note" name="customerNote" rows="3" placeholder="Nhập vắc xin bạn muốn tiêm hoặc câu hỏi cần tư vấn..." style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-family: inherit; font-size: 14px;"></textarea>
+
+                <div style="width: 100%; font-size: 14px; color: #0f172a; font-weight: 700; text-align: center;">
+                    Zalo / Hotline: <a href="${zaloUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-color, #c8102e); text-decoration: none; font-weight: 800; font-size: 15px;">${escapeHtml(rawPhone)}</a>
                 </div>
-                
-                <div style="display: flex; gap: 12px; margin-top: 8px;">
-                    <button type="button" onclick="${hasCart ? "switchSpaModalTab('register')" : "openSpaRegisterModal(null)"}" style="flex: 1; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; font-size: 14px;">Quay lại</button>
-                    <button type="submit" id="btnSubmitSpaConsult" style="flex: 2; background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;">
-                        <i data-lucide="send" style="width: 16px; height: 16px;"></i> Gửi yêu cầu
-                    </button>
+
+                ${currentCenter.address ? `
+                <div style="width: 100%; font-size: 12.5px; color: #64748b; text-align: center; line-height: 1.45; word-break: break-word;">
+                    <strong style="color: #475569;">Địa chỉ:</strong> ${escapeHtml(currentCenter.address)}
                 </div>
-            </form>
+                ` : ''}
+
+                <a href="${zaloUrl}" target="_blank" rel="noopener noreferrer" style="width: 100%; background: #0068ff; color: #ffffff; padding: 12px 18px; border-radius: 10px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14.5px; box-shadow: 0 4px 14px rgba(0, 104, 255, 0.3); margin-top: 4px; transition: all 0.2s;" onmouseover="this.style.background='#0056d6'" onmouseout="this.style.background='#0068ff'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    <span>Chat Zalo Ngay</span>
+                </a>
+            </div>
+
+            <div style="margin-top: 16px;">
+                <button type="button" onclick="${hasCart ? "switchSpaModalTab('register')" : "closeSpaRegisterModal()"}" style="width: 100%; padding: 11px; border-radius: 8px; font-weight: 700; cursor: pointer; background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; font-size: 13.5px; transition: background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">Quay lại</button>
+            </div>
         </div>
     `;
     if (window.lucide) window.lucide.createIcons();
-}
-
-function setSpaConsultType(type) {
-    const btnOnline = document.getElementById('btnSpaConsultOnline');
-    const btnOffline = document.getElementById('btnSpaConsultOffline');
-    const valInput = document.getElementById('spaConsultTypeValue');
-    const centerGroup = document.getElementById('spaCenterSelectGroup');
-    const centerSelect = document.getElementById('spa_consult_center');
-    if (!btnOnline || !btnOffline || !valInput || !centerGroup) return;
-
-    if (type === 'online') {
-        valInput.value = 'online';
-        btnOnline.style.background = 'var(--primary-color, #c8102e)';
-        btnOnline.style.color = '#ffffff';
-        btnOffline.style.background = 'transparent';
-        btnOffline.style.color = '#475569';
-        centerGroup.style.display = 'none';
-        if (centerSelect) centerSelect.required = false;
-    } else {
-        valInput.value = 'offline';
-        btnOffline.style.background = 'var(--primary-color, #c8102e)';
-        btnOffline.style.color = '#ffffff';
-        btnOnline.style.background = 'transparent';
-        btnOnline.style.color = '#475569';
-        centerGroup.style.display = 'flex';
-        if (centerSelect) centerSelect.required = true;
-    }
 }
 
 async function submitSpaConsult(event) {

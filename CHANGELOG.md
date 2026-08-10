@@ -11,8 +11,10 @@
 
 ## [v6.0.3] - 2026-08-10
 
-### Added
+### Added & Fixed
 
+* **Branch-specific Zalo QR Code Integration & Accessor Fix**: Added `$appends = ['zalo_url', 'zalo_qr_url']` and accessor `getZaloQrUrlAttribute()` (with alias `getZaloQrCodeUrlAttribute()`) to `Center.php` model ([Center.php](file:///d:/Projects/tiemchung/modules/VaccineRegistration/Models/Center.php)) to fix `BadMethodCallException` and construct clean Zalo chat deep links (`https://zalo.me/{zalo_phone}`) and dynamic high-resolution QR codes via QR API.
+* **Strict Loading Workflow (Zero Fallbacks)**: Refactored `renderSpaConsultForm()` in [app.js](file:///d:/Projects/tiemchung/public/js/app.js) into an async function with an explicit medical loading spinner (`Đang tải thông tin tư vấn Zalo chi nhánh...`). Completely removed all static fallback objects and guessing logic. Waits for 100% database response from `CenterContext::current()` before rendering the Zalo consultation card. Ensures exact branch details (name, hotline, actual address, QR code, and direct Zalo chat button) for whichever branch is selected (Medicare Cờ Đỏ, Medicare Thới Lai, Medicare Phong Điền, Medicare Trà Nóc, Medicare Vị Thanh).
 * **Default Slots Configuration (Weekly Template)**: Added weekly default slot configuration template for centers. Created migration `2026_08_10_000001_create_default_slots_table.php`, model `DefaultSlot.php`, controller `AdminDefaultSlotController.php`, routes, and the management UI `default.blade.php`.
 * **Auto-Generating Schedules**: Implemented static method `generateFromDefaults` in `Schedule` model to dynamically auto-generate schedules for the next 30 days based on the weekly default slot templates. Integrated it into `VaccineController`, `AdminRegistrationController`, and `AdminScheduleController`.
 * **Schedule Deletion and Active Status Toggle**: Added features on the admin schedule list page to delete daily schedules and close/open them directly via inline buttons.

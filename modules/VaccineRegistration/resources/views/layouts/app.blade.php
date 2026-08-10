@@ -55,9 +55,11 @@
     <link rel="stylesheet" href="{{ asset('css/style.css') }}?v=1.0.4">
     @yield('styles')
     
-    <!-- Dark Mode Check -->
+    <!-- Dark Mode Check & Initial Center Context Injection -->
     <script>
         document.documentElement.classList.remove('dark');
+        window.lastCurrentCenter = @json($currentCenter);
+        window.lastFetchCenters = @json($activeCenters);
     </script>
     @yield('styles')
 </head>

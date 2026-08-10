@@ -40,7 +40,7 @@
                 </div>
                 <div style="text-align: left;">
                     <h3 style="font-size: 18px; font-weight: 800; color: #1e293b; margin: 0; text-align: left;">Đăng Ký Tiêm Chủng Trực Tuyến</h3>
-                    <span style="font-size: 13px; color: #64748b; text-align: left;">Medicare Cờ Đỏ & Thới Lai — Xử lý tức thì</span>
+                    <span style="font-size: 13px; color: #64748b; text-align: left;" id="spaRegisterSubtitle">Hệ thống Trung tâm Tiêm chủng Medicare — Xử lý tức thì</span>
                 </div>
             </div>
             <button onclick="closeSpaRegisterModal()" style="width: 36px; height: 36px; border-radius: 50%; background: #ffffff; border: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
