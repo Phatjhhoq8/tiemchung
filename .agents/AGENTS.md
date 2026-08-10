@@ -59,8 +59,6 @@
 - **Sidebar Related Articles**: Display exactly 5 related articles of the same category in the sidebar.
 - **Bottom Multi-Topic Recommendation Feed**: Below the detail article, provide a multi-topic suggested articles feed with pill-shaped pagination links (`$suggestedArticles->links()`).
 
-
-
-
-
-
+## 11. Safe UI & Feature Removal Guidelines
+- **Đồng bộ hóa View & Controller**: Khi gỡ bỏ một bộ lọc hoặc một trường nhập liệu trên giao diện (UI), phải rà soát và gỡ bỏ đồng thời các logic xử lý tương ứng trong Controller (như Validation Rules, Query Filters, các biến truyền sang view) và cập nhật nút xóa bộ lọc (`request()->hasAny(...)` hoặc tương tự) để tránh lỗi runtime.
+- **An toàn dữ liệu (Data Integrity)**: Khi có yêu cầu loại bỏ một trường thông tin khỏi giao diện nhưng không yêu cầu xóa cột trong database, tuyệt đối không được xóa cột database hay thay đổi cấu trúc bảng (Migration) nhằm bảo đảm an toàn dữ liệu lịch sử và tính tương thích ngược. Chỉ ẩn/gỡ bỏ trường nhập liệu và logic xử lý lưu trữ/validate ở cấp độ PHP/Controller.
