@@ -1,7 +1,7 @@
 <?php
 /**
  * Chức năng: HomeController xử lý trang chủ của website Medicare Cờ Đỏ.
- * Lý do tạo: Tải động các banner quảng cáo, vắc xin nổi bật và gói vắc xin từ CSDL.
+ * Lý do tạo: Tải động các banner quảng cáo và vắc xin nổi bật từ CSDL.
  */
 
 namespace Modules\VaccineRegistration\Http\Controllers;
@@ -40,22 +40,19 @@ class HomeController extends Controller
         // Lấy danh sách banner đang hoạt động và sắp xếp thứ tự
         $banners = Banner::active()->ordered()->get();
 
-        // Lấy danh sách vắc xin lẻ nổi bật (is_featured = true) được cấu hình trong Admin, tự động điền thêm nếu thiếu
-        $featuredVaccines = Vaccine::forCenter($currentCenter?->id)->single()->featured()->orderBy('center_vaccines.sort_order', 'asc')->take(8)->get();
+        // Lấy danh sách vắc xin nổi bật được cấu hình trong Admin, tự động điền thêm nếu thiếu
+        $featuredVaccines = Vaccine::forCenter($currentCenter?->id)->featured()->orderBy('center_vaccines.sort_order', 'asc')->take(8)->get();
         if ($featuredVaccines->count() < 8) {
             $excludeIds = $featuredVaccines->pluck('id')->toArray();
-            $extraVaccines = Vaccine::forCenter($currentCenter?->id)->single()->whereNotIn('vaccines.id', $excludeIds)->orderBy('center_vaccines.sort_order', 'asc')->take(8 - $featuredVaccines->count())->get();
+            $extraVaccines = Vaccine::forCenter($currentCenter?->id)->whereNotIn('vaccines.id', $excludeIds)->orderBy('center_vaccines.sort_order', 'asc')->take(8 - $featuredVaccines->count())->get();
             $featuredVaccines = $featuredVaccines->merge($extraVaccines);
         }
 
-        // Lấy 3 gói vắc xin gia đình phổ biến
-        $vaccinePackages = Vaccine::forCenter($currentCenter?->id)->package()->take(3)->get();
-
-        // Lấy 4 vắc xin lẻ nổi bật chiến dịch (để hiển thị lưới 2x2 ở phần qdenga_promo cũ)
-        $campaignVaccines = Vaccine::forCenter($currentCenter?->id)->single()->featured()->orderBy('center_vaccines.sort_order', 'asc')->take(4)->get();
+        // Lấy 4 vắc xin nổi bật chiến dịch (để hiển thị lưới 2x2 ở phần qdenga_promo cũ)
+        $campaignVaccines = Vaccine::forCenter($currentCenter?->id)->featured()->orderBy('center_vaccines.sort_order', 'asc')->take(4)->get();
         if ($campaignVaccines->count() < 4) {
             $excludeIds = $campaignVaccines->pluck('id')->toArray();
-            $extraCampaign = Vaccine::forCenter($currentCenter?->id)->single()->whereNotIn('vaccines.id', $excludeIds)->orderBy('center_vaccines.sort_order', 'asc')->take(4 - $campaignVaccines->count())->get();
+            $extraCampaign = Vaccine::forCenter($currentCenter?->id)->whereNotIn('vaccines.id', $excludeIds)->orderBy('center_vaccines.sort_order', 'asc')->take(4 - $campaignVaccines->count())->get();
             $campaignVaccines = $campaignVaccines->merge($extraCampaign);
         }
 
@@ -64,7 +61,7 @@ class HomeController extends Controller
 
         $layoutConfig = $this->publishedLayoutConfig();
 
-        return view('vaccine::home', compact('banners', 'featuredVaccines', 'campaignVaccines', 'vaccinePackages', 'articles', 'layoutConfig', 'currentCenter', 'activeCenters'));
+        return view('vaccine::home', compact('banners', 'featuredVaccines', 'campaignVaccines', 'articles', 'layoutConfig', 'currentCenter', 'activeCenters'));
     }
 
     private function publishedLayoutConfig(): array

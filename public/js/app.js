@@ -1,5 +1,5 @@
 if (window.__MEDICARE_APP_INITIALIZED__) {
-    console.warn('Medicare App JS already initialized.');
+    console.warn('JavaScript của ứng dụng Medicare đã được khởi tạo trước đó.');
 } else {
     window.__MEDICARE_APP_INITIALIZED__ = true;
 
@@ -25,6 +25,10 @@ const formatCurrency = (value) => `${new Intl.NumberFormat('vi-VN').format(Numbe
 const renderIcons = () => window.lucide?.createIcons();
 
 function showToast(message, type = 'success') {
+    if (window.AppDialog) {
+        window.AppDialog.toast(message, type);
+        return;
+    }
     const container = document.getElementById('toast-container');
     if (!container) return;
 
@@ -46,89 +50,10 @@ function showToast(message, type = 'success') {
     }, 4000);
 }
 
-function showConfirmDialog({ title, message, confirmText = 'Đồng ý', cancelText = 'Hủy bỏ', onConfirm, onCancel }) {
-    const localEscapeHtml = (str) => String(str ?? '').replace(/[&<>"']/g, (c) => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    }[c]));
-
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(4px);
-        z-index: 9999999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.25s ease;
-    `;
-
-    const dialog = document.createElement('div');
-    dialog.style.cssText = `
-        background: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        padding: 24px;
-        width: 90%;
-        max-width: 420px;
-        transform: scale(0.9);
-        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    `;
-
-    dialog.innerHTML = `
-        <div style="width: 56px; height: 56px; background: #fee2e2; color: var(--primary-color, #c8102e); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-        </div>
-        <div>
-            <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 800; color: #1e293b; text-align: center;">${localEscapeHtml(title)}</h3>
-            <p style="margin: 0; font-size: 14.5px; color: #64748b; line-height: 1.5; text-align: center;">${localEscapeHtml(message)}</p>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
-            <button type="button" class="dialog-cancel-btn" style="background: #f1f5f9; color: #475569; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s;">
-                ${localEscapeHtml(cancelText)}
-            </button>
-            <button type="button" class="dialog-confirm-btn" style="background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s;">
-                ${localEscapeHtml(confirmText)}
-            </button>
-        </div>
-    `;
-
-    overlay.appendChild(dialog);
-    document.body.appendChild(overlay);
-
-    setTimeout(() => {
-        overlay.style.opacity = '1';
-        dialog.style.transform = 'scale(1)';
-    }, 10);
-
-    const closeDialog = () => {
-        overlay.style.opacity = '0';
-        dialog.style.transform = 'scale(0.9)';
-        setTimeout(() => overlay.remove(), 250);
-    };
-
-    overlay.querySelector('.dialog-cancel-btn').addEventListener('click', () => {
-        closeDialog();
-        if (onCancel) onCancel();
-    });
-
-    overlay.querySelector('.dialog-confirm-btn').addEventListener('click', () => {
-        closeDialog();
-        if (onConfirm) onConfirm();
-    });
+async function showConfirmDialog({ title, message, confirmText = 'Xác nhận', cancelText = 'Hủy bỏ', onConfirm, onCancel }) {
+    const confirmed = await window.AppDialog.confirm(message, { title, confirmText, cancelText });
+    if (confirmed && onConfirm) onConfirm();
+    if (!confirmed && onCancel) onCancel();
 }
 
 function toggleCartDrawer() {
@@ -286,7 +211,6 @@ async function openVaccineDetailModal(vaccineId, event) {
             <div style="display:flex;flex-wrap:wrap;overflow:hidden;border-radius:16px;">
                 <div style="flex:1 1 300px;background:#f8fafc;display:flex;align-items:center;justify-content:center;position:relative;min-height:280px;padding:20px;">
                     <img src="${escapeHtml(vaccine.image)}" alt="${escapeHtml(vaccine.name)}" style="max-width:100%;max-height:260px;object-fit:contain;border-radius:12px;">
-                    <span style="position:absolute;top:16px;left:16px;background:${vaccine.type === 'package' ? '#0284c7' : '#c8102e'};color:#fff;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase;">${escapeHtml(vaccine.type_label)}</span>
                 </div>
                 <div style="flex:1 1 400px;padding:32px;display:flex;flex-direction:column;justify-content:space-between;">
                     <div>
@@ -333,7 +257,6 @@ let currentDisease = vaccineFilterParams.get('disease') || '';
 let currentOrigin = vaccineFilterParams.get('origin') || '';
 let currentDoses = vaccineFilterParams.get('doses') || '';
 let currentSort = vaccineFilterParams.get('sort') || 'popular';
-let currentType = vaccineFilterParams.get('type') || '';
 let currentPage = vaccineFilterParams.get('page') || '1';
 
 function debouncedFilterVaccinesSpa() {
@@ -383,16 +306,6 @@ function setDosesFilter(doses, event) {
     filterVaccinesSpa();
 }
 
-function setVaccineTypeFilter(type, event) {
-    event?.preventDefault();
-    currentType = type;
-    currentPage = '1';
-    document.querySelectorAll('#tabBtnSingle, #tabBtnPackage').forEach((button) => {
-        button.classList.toggle('active', button.id === (type === 'single' ? 'tabBtnSingle' : 'tabBtnPackage'));
-    });
-    filterVaccinesSpa();
-}
-
 function setSortFilter(sort, event) {
     event?.preventDefault();
     currentSort = sort || 'popular';
@@ -411,7 +324,6 @@ function resetVaccineFilters(event) {
     currentOrigin = '';
     currentDoses = '';
     currentSort = 'popular';
-    currentType = '';
     currentPage = '1';
     const search = document.getElementById('spaSearchInput');
     if (search) search.value = '';
@@ -435,7 +347,6 @@ async function filterVaccinesSpa(event, page = null) {
     if (currentAgeGroup) params.set('age_group', currentAgeGroup);
     if (currentOrigin) params.set('origin', currentOrigin);
     if (currentDoses) params.set('doses', currentDoses);
-    if (currentType) params.set('type', currentType);
     if (currentSort !== 'popular') params.set('sort', currentSort);
     if (currentPage !== '1') params.set('page', currentPage);
 
@@ -461,7 +372,7 @@ async function filterVaccinesSpa(event, page = null) {
 
         container.innerHTML = data.html;
         document.getElementById('vaccineCountLabel')?.replaceChildren(document.createTextNode(data.count));
-        window.history.pushState({}, '', getAbsoluteUrl(path));
+        window.history.pushState({ catalogFilter: true }, '', getAbsoluteUrl(path));
         renderIcons();
     } catch (error) {
         if (error.name !== 'AbortError') console.error('Lỗi lọc vắc xin:', error);
@@ -669,260 +580,6 @@ function initDynamicTOC() {
     updateActiveTocOnScroll();
 }
 
-// ==================== NEWS PAGE SPA FILTERING ====================
-let newsFilterTimer;
-let newsFilterRequest;
-let currentNewsCategory = new URLSearchParams(window.location.search).get('category') || '';
-let currentNewsSearch = new URLSearchParams(window.location.search).get('search') || '';
-let currentNewsPage = new URLSearchParams(window.location.search).get('page') || '1';
-
-function debouncedFilterNewsSpa() {
-    window.clearTimeout(newsFilterTimer);
-    newsFilterTimer = window.setTimeout(() => {
-        currentNewsSearch = document.getElementById('newsSearchInput')?.value || '';
-        currentNewsPage = '1';
-        filterNewsSpa();
-    }, 300);
-}
-
-function filterNewsCategorySpa(category, event) {
-    event?.preventDefault();
-    currentNewsCategory = category || '';
-    currentNewsPage = '1';
-    
-    document.querySelectorAll('#newsNavTabs .news-nav-tab').forEach((tab) => {
-        tab.classList.toggle('active', (tab.dataset.cat || '') === currentNewsCategory);
-    });
-    document.querySelectorAll('.news-type-cloud .news-cloud-item').forEach((item) => {
-        const itemCat = new URL(item.href, window.location.origin).searchParams.get('category') || '';
-        item.classList.toggle('active', itemCat === currentNewsCategory);
-    });
-    
-    filterNewsSpa();
-}
-
-async function filterNewsSpa(event, page = null) {
-    event?.preventDefault();
-    if (page) currentNewsPage = page;
-    if (event?.type === 'submit') currentNewsPage = '1';
-
-    const container = document.querySelector('.app-main');
-    if (!container) return;
-    currentNewsSearch = document.getElementById('newsSearchInput')?.value || currentNewsSearch;
-
-    const params = new URLSearchParams();
-    if (currentNewsCategory) params.set('category', currentNewsCategory);
-    if (currentNewsSearch) params.set('search', currentNewsSearch);
-    if (currentNewsPage !== '1') params.set('page', currentNewsPage);
-
-    newsFilterRequest?.abort();
-    const request = new AbortController();
-    newsFilterRequest = request;
-    const path = params.toString() ? `/news?${params}` : '/news';
-
-    const catalogPage = document.getElementById('newsCatalogContainer');
-    if (catalogPage) {
-        catalogPage.style.opacity = '.4';
-        catalogPage.style.transition = 'opacity .2s ease';
-    }
-
-    try {
-        const response = await fetch(getAbsoluteUrl(path), {
-            signal: request.signal,
-            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-SPA-Request': 'true', 'Accept': 'application/json' }
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok || !data.success) throw new Error('Lọc tin tức thất bại.');
-        if (newsFilterRequest !== request) return;
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(data.html, 'text/html');
-        const newMain = doc.querySelector('.app-main');
-
-        if (newMain) {
-            container.innerHTML = newMain.innerHTML;
-            if (data.title) document.title = data.title;
-            window.history.pushState({ spa: true, url: path }, '', getAbsoluteUrl(path));
-            window.scrollTo({ top: 180, behavior: 'smooth' });
-            renderIcons();
-            if (typeof AOS !== 'undefined') AOS.init({ once: true, offset: 50 });
-            initDynamicTOC();
-        }
-    } catch (error) {
-        if (error.name !== 'AbortError') console.error('Lỗi lọc tin tức:', error);
-    } finally {
-        if (catalogPage) catalogPage.style.opacity = '1';
-    }
-}
-
-// News Pagination Click Interceptor
-document.addEventListener('click', (event) => {
-    const link = event.target.closest('.news-pagination a');
-    if (!link) return;
-    event.preventDefault();
-    const page = new URL(link.href).searchParams.get('page') || '1';
-    filterNewsSpa(event, page);
-});
-
-// ==================== GLOBAL SPA ROUTER ====================
-async function navigateSpa(url, pushState = true) {
-    try {
-        const targetUrl = new URL(url, window.location.origin);
-        const currentUrl = new URL(window.location.href);
-        
-        if (targetUrl.origin !== window.location.origin || 
-            targetUrl.pathname.startsWith('/admin') || 
-            targetUrl.pathname.match(/\.(pdf|zip|png|jpg|jpeg|csv|xlsx)$/i) ||
-            (targetUrl.hash && targetUrl.pathname === currentUrl.pathname && targetUrl.search === currentUrl.search)) {
-            return false;
-        }
-
-        const isSamePage = targetUrl.pathname === currentUrl.pathname;
-        
-        if (isSamePage) {
-            // SAME-PAGE TAB / FILTER SWITCH (Zero Flicker Strategy)
-            const targetSection = document.getElementById('newsArticlesFeed') || document.getElementById('newsCatalogContainer') || document.getElementById('vaccineGridContainer');
-            
-            if (targetSection) {
-                const targetCat = targetUrl.searchParams.get('category') || '';
-                document.querySelectorAll('#newsNavTabs .news-nav-tab').forEach((tab) => {
-                    const tabCat = new URL(tab.href, window.location.origin).searchParams.get('category') || '';
-                    tab.classList.toggle('active', tabCat === targetCat);
-                });
-                document.querySelectorAll('.news-type-cloud .news-cloud-item').forEach((item) => {
-                    const itemCat = new URL(item.href, window.location.origin).searchParams.get('category') || '';
-                    item.classList.toggle('active', itemCat === targetCat);
-                });
-
-                const response = await fetch(targetUrl.href, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-SPA-Request': 'true' }
-                });
-
-                if (!response.ok) return false;
-
-                const htmlText = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlText, 'text/html');
-
-                const newSection = doc.getElementById(targetSection.id);
-                if (newSection) {
-                    targetSection.innerHTML = newSection.innerHTML;
-                    
-                    const newTitle = doc.querySelector('title')?.innerText;
-                    if (newTitle) document.title = newTitle;
-
-                    if (pushState) {
-                        window.history.pushState({ spa: true, url: targetUrl.href }, '', targetUrl.href);
-                    }
-
-                    renderIcons();
-                    return true;
-                }
-            }
-        }
-
-        // CROSS-PAGE NAVIGATION
-        const mainContainer = document.querySelector('.app-main');
-        if (!mainContainer) return false;
-
-        mainContainer.style.opacity = '0.3';
-        mainContainer.style.transition = 'opacity 0.15s ease-out';
-
-        const response = await fetch(targetUrl.href, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-SPA-Request': 'true'
-            }
-        });
-
-        if (!response.ok) return false;
-
-        const htmlText = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlText, 'text/html');
-
-        const newMain = doc.querySelector('.app-main');
-        if (!newMain) return false;
-
-        const newTitle = doc.querySelector('title')?.innerText;
-        if (newTitle) document.title = newTitle;
-
-        mainContainer.innerHTML = newMain.innerHTML;
-
-        // Sync new stylesheets from fetched document to current head
-        const newStylesheets = doc.querySelectorAll('link[rel="stylesheet"]');
-        newStylesheets.forEach((link) => {
-            const href = link.getAttribute('href');
-            if (href && !document.querySelector(`link[href="${href}"]`)) {
-                const newLink = document.createElement('link');
-                newLink.rel = 'stylesheet';
-                newLink.href = href;
-                document.head.appendChild(newLink);
-            }
-        });
-
-        if (pushState) {
-            window.history.pushState({ spa: true, url: targetUrl.href }, '', targetUrl.href);
-        }
-
-        document.querySelectorAll('.nav-menu .nav-link, .mobile-nav-link').forEach((link) => {
-            const linkUrl = new URL(link.href, window.location.origin);
-            const isActive = linkUrl.pathname === targetUrl.pathname;
-            link.classList.toggle('active', isActive);
-        });
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        renderIcons();
-        if (typeof AOS !== 'undefined') {
-            try { AOS.init({ once: true, offset: 50 }); } catch (e) {}
-        }
-        initDynamicTOC();
-
-        return true;
-    } catch (error) {
-        console.error('SPA Navigation Error:', error);
-        return false;
-    } finally {
-        const mainContainer = document.querySelector('.app-main');
-        if (mainContainer) mainContainer.style.opacity = '1';
-    }
-}
-
-// Global SPA Link Interceptor
-document.addEventListener('click', (event) => {
-    if (event.target.closest('.catalog-pagination, .news-pagination')) return;
-
-    const link = event.target.closest('a[href]');
-    if (!link) return;
-
-    const href = link.getAttribute('href');
-    if (!href || 
-        href.startsWith('#') || 
-        href.startsWith('javascript:') || 
-        href.startsWith('tel:') || 
-        href.startsWith('mailto:') ||
-        link.target === '_blank' ||
-        link.dataset.noSpa === 'true') {
-        return;
-    }
-
-    try {
-        const targetUrl = new URL(link.href, window.location.origin);
-        
-        if (targetUrl.origin === window.location.origin && 
-            !targetUrl.pathname.startsWith('/admin') && 
-            !targetUrl.pathname.match(/\.(pdf|zip|png|jpg|jpeg|csv|xlsx)$/i) &&
-            !(targetUrl.hash && targetUrl.pathname === window.location.pathname)) {
-            
-            event.preventDefault();
-            navigateSpa(targetUrl.href);
-        }
-    } catch (err) {
-        console.error('Lỗi định tuyến SPA link:', err);
-    }
-});
-
 // ==================== SPA REGISTER MODAL ====================
 async function openSpaRegisterModal(event) {
     if (event) {
@@ -961,7 +618,7 @@ async function openSpaRegisterModal(event) {
                 <div style="text-align: center; padding: 40px;" data-aos="fade-up">
                     <i data-lucide="help-circle" style="width: 56px; height: 56px; color: var(--secondary-color, #eaaa00); margin: 0 auto 16px auto;"></i>
                     <h3 style="font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 10px; text-align: center; display: block;">Bạn chưa chọn vắc xin nào</h3>
-                    <p style="color: #64748b; margin-bottom: 24px; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.5; font-size: 14.5px; text-align: center;">Bạn có muốn tham khảo các gói vắc xin ưu đãi thiết kế sẵn hoặc gửi yêu cầu tư vấn để bác sĩ Medicare liên hệ ngay?</p>
+                    <p style="color: #64748b; margin-bottom: 24px; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.5; font-size: 14.5px; text-align: center;">Bạn có thể chọn vắc xin từ danh mục hoặc gửi yêu cầu để bác sĩ Medicare tư vấn phác đồ phù hợp.</p>
                     <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
                         <a href="${getAbsoluteUrl('/vaccines')}" class="btn-primary" onclick="closeSpaRegisterModal()" style="background: var(--secondary-color, #eaaa00); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; min-width: 160px;">Chọn vắc xin</a>
                         <button onclick="renderSpaConsultForm()" class="btn-primary" style="background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; min-width: 160px;">Yêu cầu tư vấn</button>
@@ -1120,7 +777,7 @@ async function submitSpaConsult(event) {
     const submitBtn = document.getElementById('btnSubmitSpaConsult');
     if (!form || !submitBtn) return;
 
-    if (!confirm('Bạn có thực sự muốn gửi yêu cầu tư vấn tiêm chủng này không?')) {
+    if (!await window.AppDialog.confirm('Bạn có thực sự muốn gửi yêu cầu tư vấn tiêm chủng này không?')) {
         return;
     }
 
@@ -1739,9 +1396,9 @@ async function openSpaConsultationModal(event) {
     renderSpaConsultForm();
 }
 
-    window.addEventListener('popstate', () => {
-        navigateSpa(window.location.href, false);
-    });
+    if (document.getElementById('vaccineGridContainer')) {
+        window.addEventListener('popstate', () => window.location.reload());
+    }
 
     // Expose functions globally to window so HTML onclick inline events can invoke them
     window.toggleCart = toggleCart;
@@ -1754,7 +1411,6 @@ async function openSpaConsultationModal(event) {
     window.setDiseaseFilter = setDiseaseFilter;
     window.setOriginFilter = setOriginFilter;
     window.setDosesFilter = setDosesFilter;
-    window.setVaccineTypeFilter = setVaccineTypeFilter;
     window.setSortFilter = setSortFilter;
     window.resetVaccineFilters = resetVaccineFilters;
     window.filterVaccinesSpa = filterVaccinesSpa;
@@ -1767,7 +1423,6 @@ async function openSpaConsultationModal(event) {
     window.toggleCustomDropdown = toggleCustomDropdown;
     window.toggleMobileTocAccordion = toggleMobileTocAccordion;
     window.initDynamicTOC = initDynamicTOC;
-    window.filterNewsCategorySpa = filterNewsCategorySpa;
     window.openSpaRegisterModal = openSpaRegisterModal;
     window.closeSpaRegisterModal = closeSpaRegisterModal;
     window.switchSpaModalTab = switchSpaModalTab;
@@ -1790,4 +1445,3 @@ async function openSpaConsultationModal(event) {
 document.addEventListener('DOMContentLoaded', () => {
     initDynamicTOC();
 });
-

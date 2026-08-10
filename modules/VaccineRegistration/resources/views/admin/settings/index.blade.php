@@ -1,7 +1,7 @@
 @extends('vaccine::layouts.admin')
 
-@section('title', 'Cấu hình Website - Medicare Cờ Đỏ')
-@section('page_title', 'Cấu Hinh Hệ Thống Website')
+@section('title', 'Cấu Hình Trang Web - Medicare')
+@section('page_title', 'Cấu Hình Hệ Thống Trang Web')
 
 @section('admin_content')
 <div class="card-modern">

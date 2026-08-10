@@ -4,6 +4,7 @@ namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AuditLogger;
+use App\Services\BranchStockService;
 use App\Services\RegistrationPaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,12 +45,42 @@ class AdminRegistrationController extends Controller
             });
         }
 
+        if ($request->filled('injection_date_from')) {
+            $query->whereDate('injection_date', '>=', $request->input('injection_date_from'));
+        }
+
+        if ($request->filled('injection_date_to')) {
+            $query->whereDate('injection_date', '<=', $request->input('injection_date_to'));
+        }
+
+        $day = $request->input('filter_day') ?? $request->input('day');
+        $month = $request->input('filter_month') ?? $request->input('month');
+        $year = $request->input('filter_year') ?? $request->input('year');
+
+        if ($day !== null && $day !== '') {
+            $query->whereDay('injection_date', (int) $day);
+        }
+        if ($month !== null && $month !== '') {
+            $query->whereMonth('injection_date', (int) $month);
+        }
+        if ($year !== null && $year !== '') {
+            $query->whereYear('injection_date', (int) $year);
+        }
+
         $registrations = $query->latest('id')->paginate(20)->withQueryString();
-        $centers = AdminContext::isSuperAdmin()
+        $isSuperAdmin = AdminContext::isSuperAdmin();
+        $centers = $isSuperAdmin
             ? Center::active()->orderBy('sort_order')->orderBy('id')->get(['id', 'name'])
             : collect();
 
-        return view('vaccine::admin.registrations.index', compact('registrations', 'centers', 'selectedCenterId'));
+        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'html' => view('vaccine::admin.registrations._table', compact('registrations', 'centers', 'selectedCenterId', 'isSuperAdmin'))->render(),
+            ]);
+        }
+
+        return view('vaccine::admin.registrations.index', compact('registrations', 'centers', 'selectedCenterId', 'isSuperAdmin'));
     }
 
     public function show(int $id, RegistrationPaymentService $paymentService)
@@ -89,10 +120,9 @@ class AdminRegistrationController extends Controller
             : collect();
         $vaccines = $center
             ? CenterVaccine::query()
-                ->with('vaccine:id,name,origin,is_active,type,category,age_group')
+                ->with('vaccine:id,name,origin,is_active,category,age_group')
                 ->where('center_id', $center->id)
                 ->where('is_active', true)
-                ->where('stock_status', '!=', 'out_of_stock')
                 ->orderBy('sort_order')
                 ->get()
                 ->filter(fn (CenterVaccine $centerVaccine) => $centerVaccine->vaccine?->is_active)
@@ -102,27 +132,41 @@ class AdminRegistrationController extends Controller
         return view('vaccine::admin.registrations.create', compact('center', 'centers', 'slots', 'vaccines'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, BranchStockService $stockService)
     {
         $validated = $request->validate([
             'center_id' => 'required|integer|exists:centers,id',
             'patient_name' => 'required|string|max:255',
             'patient_phone' => 'required|string|max:30',
+            'account_name' => 'nullable|string|max:255',
+            'account_phone' => 'nullable|string|max:30',
             'slot_id' => 'required|integer|exists:slots,id',
             'vaccine_ids' => 'required|array|min:1',
             'vaccine_ids.*' => 'required|integer|distinct|exists:vaccines,id',
             'booking_status' => 'required|in:pending,confirmed',
+            'quantities' => 'nullable|array',
+            'quantities.*' => 'nullable|integer|min:1',
+            'idempotency_key' => 'nullable|string|max:100',
         ]);
 
         AdminContext::assertCanManageCenter((int) $validated['center_id']);
 
-        $phone = PhoneNormalizer::normalize($validated['patient_phone']);
-        if (!$phone) {
+        $recipientPhone = PhoneNormalizer::normalize($validated['patient_phone']);
+        if (!$recipientPhone) {
             return back()->withErrors(['patient_phone' => 'Số điện thoại di động Việt Nam không hợp lệ.'])->withInput();
+        }
+        $accountPhone = PhoneNormalizer::normalize($validated['account_phone'] ?? $validated['patient_phone']);
+        if (!$accountPhone) {
+            return back()->withErrors(['account_phone' => 'Số điện thoại tài khoản tích điểm không hợp lệ.'])->withInput();
+        }
+        $idempotencyKey = $validated['idempotency_key'] ?? null;
+        if ($idempotencyKey && ($existing = Registration::where('idempotency_key', $idempotencyKey)->first())) {
+            $this->assertRegistrationVisible($existing);
+            return redirect()->route('admin.registrations.show', $existing);
         }
 
         $center = Center::active()->findOrFail($validated['center_id']);
-        $registration = DB::transaction(function () use ($validated, $phone, $center, $request) {
+        $registration = DB::transaction(function () use ($validated, $recipientPhone, $accountPhone, $center, $stockService, $idempotencyKey) {
             $slot = Slot::with('schedule')->whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
             if (!$slot->is_active || !$slot->schedule || !$slot->schedule->is_active
                 || (int) $slot->schedule->center_id !== (int) $center->id
@@ -131,52 +175,29 @@ class AdminRegistrationController extends Controller
             }
 
             $vaccineIds = array_map('intval', $validated['vaccine_ids']);
-            $centerVaccines = CenterVaccine::with('vaccine')
-                ->where('center_id', $center->id)
-                ->whereIn('vaccine_id', $vaccineIds)
-                ->where('is_active', true)
-                ->where('stock_status', '!=', 'out_of_stock')
-                ->lockForUpdate()
-                ->get()
-                ->keyBy('vaccine_id');
-
-            if ($centerVaccines->count() !== count($vaccineIds)
-                || $centerVaccines->contains(fn (CenterVaccine $centerVaccine) => !$centerVaccine->vaccine || !$centerVaccine->vaccine->is_active)) {
-                throw ValidationException::withMessages(['vaccine_ids' => 'Một hoặc nhiều vắc xin không còn bán tại chi nhánh này.']);
-            }
-
-            $customer = Customer::where('phone', $phone)->lockForUpdate()->first();
-            if (!$customer) {
-                $customer = Customer::create([
-                    'name' => trim($validated['patient_name']),
-                    'phone' => $phone,
-                ]);
-            }
-
             $items = [];
             $total = 0;
-            $quantities = $request->input('quantities', []);
+            $quantities = $validated['quantities'] ?? [];
+            $demand = [];
+            foreach ($vaccineIds as $vaccineId) {
+                $demand[$vaccineId] = (int) ($quantities[$vaccineId] ?? 1);
+            }
+            $centerVaccines = $stockService->commit($center->id, $demand);
+            $customer = Customer::findOrCreateByPhone($accountPhone, $validated['account_name'] ?? $validated['patient_name']);
+
             foreach ($vaccineIds as $vaccineId) {
                 $centerVaccine = $centerVaccines->get($vaccineId);
-                $qty = (int) ($quantities[$vaccineId] ?? 1);
-                if ($qty < 1) {
-                    $qty = 1;
-                }
-                if ($qty > $centerVaccine->stock_quantity) {
-                    throw ValidationException::withMessages([
-                        'vaccine_ids' => "Số lượng đăng ký vắc xin {$centerVaccine->vaccine->name} vượt quá tồn kho hiện tại ({$centerVaccine->stock_quantity})."
-                    ]);
-                }
+                $qty = $demand[$vaccineId];
                 $price = $centerVaccine->hasSalePrice() ? $centerVaccine->sale_price : $centerVaccine->price;
                 $total += $price * $qty;
-                $items[$vaccineId] = ['price' => $price, 'sale_price' => null, 'quantity' => $qty];
+                $items[$vaccineId] = ['price' => $price, 'sale_price' => null, 'quantity' => $qty, 'stock_committed_quantity' => $qty];
             }
 
             $registration = Registration::create([
                 'registration_code' => $this->newRegistrationCode(),
                 'customer_id' => $customer->id,
                 'patient_name' => trim($validated['patient_name']),
-                'patient_phone' => $phone,
+                'patient_phone' => $recipientPhone,
                 'center_id' => $center->id,
                 'center_name' => $center->name,
                 'injection_date' => $slot->schedule->date->toDateString(),
@@ -185,6 +206,7 @@ class AdminRegistrationController extends Controller
                 'booking_status' => $validated['booking_status'],
                 'payment_status' => Registration::PAYMENT_UNPAID,
                 'payment_method' => 'Tại trung tâm',
+                'idempotency_key' => $idempotencyKey,
                 'total_price' => $total,
             ]);
             $registration->vaccines()->attach($items);
@@ -219,6 +241,12 @@ class AdminRegistrationController extends Controller
             }
 
             return back()->with('success', 'Đã hủy lịch hẹn và giải phóng khung giờ.');
+        }
+
+        if ($validated['booking_status'] === Registration::BOOKING_NO_SHOW) {
+            $paymentService->markNoShow($registration->id, AdminContext::user());
+
+            return back()->with('success', 'Đã ghi nhận khách không đến và hoàn tồn kho đã giữ.');
         }
 
         try {

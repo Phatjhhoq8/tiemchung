@@ -59,26 +59,6 @@ class AuditLogger
     }
 
     /**
-     * Helper for stock updates.
-     */
-    public static function logStockUpdate(
-        string|int $resourceId,
-        ?array $oldValues,
-        ?array $newValues,
-        ?int $centerId = null,
-        string $resourceType = 'stock'
-    ): AuditLog {
-        return static::log(
-            action: 'stock_update',
-            resourceType: $resourceType,
-            resourceId: $resourceId,
-            oldValues: $oldValues,
-            newValues: $newValues,
-            centerId: $centerId
-        );
-    }
-
-    /**
      * Helper for order status changes.
      */
     public static function logOrderStatusUpdate(

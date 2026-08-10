@@ -2,16 +2,20 @@
 
 namespace Modules\VaccineRegistration\Models;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
 
 class PointTransaction extends Model
 {
     public const EARN = 'earn';
+
     public const REDEEM = 'redeem';
+
     public const EARN_REVERSAL = 'earn_reversal';
+
     public const REDEEM_REFUND = 'redeem_refund';
+
     public const ADJUSTMENT = 'adjustment';
 
     protected $fillable = [
@@ -47,5 +51,17 @@ class PointTransaction extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function typeLabel(): string
+    {
+        return match ($this->type) {
+            self::EARN => 'Tích điểm',
+            self::REDEEM => 'Sử dụng điểm',
+            self::EARN_REVERSAL => 'Đảo điểm tích lũy',
+            self::REDEEM_REFUND => 'Hoàn điểm đã sử dụng',
+            self::ADJUSTMENT => 'Điều chỉnh',
+            default => 'Không xác định',
+        };
     }
 }

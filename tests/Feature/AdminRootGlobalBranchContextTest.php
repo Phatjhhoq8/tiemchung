@@ -10,7 +10,6 @@ use Illuminate\Support\Str;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
 use Modules\VaccineRegistration\Models\Vaccine;
-use Modules\VaccineRegistration\Models\VaccineStockMovement;
 use Modules\VaccineRegistration\Support\AdminContext;
 use Tests\TestCase;
 
@@ -62,7 +61,6 @@ class AdminRootGlobalBranchContextTest extends TestCase
 
         $this->vaccine = Vaccine::create([
             'name' => 'Vắc xin lọc tồn ' . $unique,
-            'type' => 'single',
             'disease_prevention' => 'Phòng bệnh kiểm thử',
             'age_group' => 'Mọi độ tuổi',
             'origin' => 'Việt Nam',
@@ -168,7 +166,6 @@ class AdminRootGlobalBranchContextTest extends TestCase
             'name' => $this->vaccine->name,
             'center_id' => $this->centerB->id,
             'price' => 115000,
-            'type' => $this->vaccine->type,
             'doses' => $this->vaccine->doses,
             'stock_status' => 'limited',
             'disease_prevention' => $this->vaccine->disease_prevention,
@@ -204,13 +201,13 @@ class AdminRootGlobalBranchContextTest extends TestCase
 
         $this->actingAsAdmin($this->superAdmin)
             ->withSession([AdminContext::SELECTED_CENTER_SESSION_KEY => $this->centerB->id])
-            ->get(route('admin.stock.index'))
+            ->get(route('admin.vaccines.index'))
             ->assertOk()
             ->assertViewHas('selectedCenterId', $this->centerB->id);
 
         $this->actingAsAdmin($this->superAdmin)
             ->withSession([AdminContext::SELECTED_CENTER_SESSION_KEY => $this->centerB->id])
-            ->from(route('admin.stock.index'))
+            ->from(route('admin.vaccines.index'))
             ->post(route('admin.context.center'), ['center_id' => ''])
             ->assertRedirect()
             ->assertSessionMissing(AdminContext::SELECTED_CENTER_SESSION_KEY);
@@ -227,38 +224,16 @@ class AdminRootGlobalBranchContextTest extends TestCase
             ->assertSessionMissing(AdminContext::SELECTED_CENTER_SESSION_KEY);
     }
 
-    public function test_root_can_import_stock_but_branch_cannot_manage_another_center(): void
+    public function test_stock_management_is_not_available_in_admin(): void
     {
         $this->actingAsAdmin($this->superAdmin)
-            ->get(route('admin.stock.create'))
+            ->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertSee('-- Chọn chi nhánh nhập kho --');
+            ->assertDontSee('Nhập / Xuất Kho');
 
-        $this->actingAsAdmin($this->superAdmin)
-            ->post(route('admin.stock.store'), [
-                'center_id' => $this->centerA->id,
-                'vaccine_id' => $this->vaccine->id,
-                'type' => 'import',
-                'quantity' => 2,
-                'unit_price' => 90000,
-                'note' => 'Nhập kho bằng tài khoản root',
-            ])
-            ->assertRedirect(route('admin.stock.index', ['center_id' => $this->centerA->id]));
-
-        $this->assertDatabaseHas('center_vaccines', [
-            'center_id' => $this->centerA->id,
-            'vaccine_id' => $this->vaccine->id,
-            'stock_quantity' => 14,
-        ]);
-
-        $this->actingAsAdmin($this->branchAdmin)
-            ->post(route('admin.stock.store'), [
-                'center_id' => $this->centerB->id,
-                'vaccine_id' => $this->vaccine->id,
-                'type' => 'import',
-                'quantity' => 2,
-            ])
-            ->assertForbidden();
+        $this->actingAsAdmin($this->superAdmin)->get('/admin/stock')->assertNotFound();
+        $this->actingAsAdmin($this->superAdmin)->get('/admin/stock/create')->assertNotFound();
+        $this->actingAsAdmin($this->superAdmin)->post('/admin/stock')->assertNotFound();
     }
 
     public function test_all_branch_stock_endpoint_is_reserved_for_root(): void
@@ -271,33 +246,6 @@ class AdminRootGlobalBranchContextTest extends TestCase
         $this->actingAsAdmin($this->branchAdmin)
             ->getJson(route('admin.vaccines.branches-stock', $this->vaccine->id))
             ->assertForbidden();
-    }
-
-    public function test_import_rejects_vaccine_disabled_at_target_branch_without_writing_movement(): void
-    {
-        CenterVaccine::where('center_id', $this->centerB->id)
-            ->where('vaccine_id', $this->vaccine->id)
-            ->update(['is_active' => false]);
-        $movementCount = VaccineStockMovement::count();
-
-        $this->actingAsAdmin($this->superAdmin)
-            ->from(route('admin.stock.create', ['center_id' => $this->centerB->id]))
-            ->post(route('admin.stock.store'), [
-                'center_id' => $this->centerB->id,
-                'vaccine_id' => $this->vaccine->id,
-                'type' => 'import',
-                'quantity' => 2,
-            ])
-            ->assertRedirect()
-            ->assertSessionHasErrors('vaccine_id');
-
-        $this->assertSame($movementCount, VaccineStockMovement::count());
-        $this->assertDatabaseHas('center_vaccines', [
-            'center_id' => $this->centerB->id,
-            'vaccine_id' => $this->vaccine->id,
-            'stock_quantity' => 3,
-            'is_active' => false,
-        ]);
     }
 
     private function actingAsAdmin(User $user): self

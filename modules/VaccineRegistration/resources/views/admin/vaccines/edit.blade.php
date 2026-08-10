@@ -1,6 +1,6 @@
 @extends('vaccine::layouts.admin')
 
-@section('title', 'Chỉnh Sửa Vắc Xin - Medicare Cờ Đỏ')
+@section('title', 'Chỉnh Sửa Vắc Xin - Medicare')
 @section('page_title', 'Chỉnh Sửa Thông Tin Vắc Xin')
 
 @section('admin_content')

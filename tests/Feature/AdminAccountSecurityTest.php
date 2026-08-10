@@ -51,6 +51,8 @@ class AdminAccountSecurityTest extends TestCase
             'role' => 'super_admin',
             'status' => 'active',
             'center_id' => null,
+            'must_change_password' => true,
+            'password_changed_at' => null,
         ]);
     }
 
@@ -74,6 +76,8 @@ class AdminAccountSecurityTest extends TestCase
             'email' => 'branchadmin_test@medicare.local',
             'role' => 'branch_admin',
             'center_id' => $center->id,
+            'must_change_password' => true,
+            'password_changed_at' => null,
         ]);
     }
 

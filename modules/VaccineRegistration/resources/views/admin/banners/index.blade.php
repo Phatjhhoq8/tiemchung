@@ -1,6 +1,6 @@
 @extends('vaccine::layouts.admin')
 
-@section('title', 'Quản lý Banner - Medicare Cờ Đỏ')
+@section('title', 'Quản lý Banner - Medicare')
 @section('page_title', 'Quản Lý Banner Trang Chủ')
 
 @section('admin_content')
@@ -66,14 +66,14 @@
                             </td>
                             <td style="text-align: center;">
                                 <div style="display: inline-flex; gap: 8px; justify-content: center; width: 100%;">
-                                    <a href="{{ route('admin.banners.edit', $banner->id) }}" class="btn-action-sm">
-                                        <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i> Sửa
+                                    <a href="{{ route('admin.banners.edit', $banner->id) }}" class="btn-action-sm" title="Chỉnh sửa" style="width: 32px; height: 32px; justify-content: center; padding: 0;">
+                                        <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
                                     </a>
-                                    <form action="{{ route('admin.banners.destroy', $banner->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa banner này?')" style="display: inline;">
+                                    <form action="{{ route('admin.banners.destroy', $banner->id) }}" method="POST" data-confirm="Bạn có chắc chắn muốn xóa biểu ngữ này?" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-action-sm btn-action-danger">
-                                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Xóa
+                                        <button type="submit" class="btn-action-sm btn-action-danger" title="Xóa" style="width: 32px; height: 32px; justify-content: center; padding: 0;">
+                                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                                         </button>
                                     </form>
                                 </div>

@@ -1,6 +1,6 @@
 @extends('vaccine::layouts.admin')
 
-@section('title', 'Lịch Hẹn Tuần - Medicare Cờ Đỏ')
+@section('title', 'Lịch Hẹn Tuần - Medicare')
 @section('page_title', 'Lịch Hẹn Tiêm Chủng Theo Tuần')
 
 @section('admin_content')
@@ -47,6 +47,12 @@
             @php
                 $hasItems = $day['items']->isNotEmpty();
                 $isToday = $dateStr === date('Y-m-d');
+                $scheduleStatusLabels = [
+                    'pending' => 'Chờ xác nhận', 'confirmed' => 'Đã xác nhận', 'completed' => 'Đã hoàn tất',
+                    'no_show' => 'Không đến', 'cancelled' => 'Đã hủy', 'paid' => 'Đã thanh toán',
+                    'Đã thanh toán' => 'Đã thanh toán', 'Đã tiêm' => 'Đã tiêm', 'Đã hủy' => 'Đã hủy',
+                    'Đã tư vấn' => 'Đã tư vấn', 'Chờ tư vấn' => 'Chờ tư vấn',
+                ];
             @endphp
             <div style="background: #ffffff; border-radius: 12px; border: 1px solid {{ $isToday ? 'var(--primary-color)' : 'var(--border-color)' }}; overflow: hidden; box-shadow: var(--shadow-sm); transition: all 0.3s ease; {{ $isToday ? 'box-shadow: 0 4px 16px rgba(200,16,46,0.1);' : '' }}">
                 <!-- Day Header -->
@@ -73,6 +79,7 @@
                     @else
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
                             @foreach($day['items'] as $item)
+                                @php($scheduleStatusLabel = $scheduleStatusLabels[$item->status] ?? 'Không xác định')
                                 <div class="schedule-appointment-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.01);" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.boxShadow='0 4px 12px rgba(200,16,46,0.05)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.01)';">
                                     
                                     <!-- Info block -->
@@ -82,13 +89,12 @@
                                                 {{ $item->registration_code }} <i data-lucide="external-link" style="width: 12px; height: 12px; display: inline-block; vertical-align: middle;"></i>
                                             </a>
                                             <span class="badge-modern 
-                                                @if($item->status === 'Đã thanh toán') badge-modern-success
-                                                @elseif($item->status === 'Đã tiêm') badge-modern-info
-                                                @elseif($item->status === 'Đã hủy') badge-modern-danger
-                                                @elseif($item->status === 'Đã tư vấn') badge-modern-success
-                                                @elseif($item->status === 'Chờ tư vấn') badge-modern-warning
+                                                @if(in_array($scheduleStatusLabel, ['Đã thanh toán', 'Đã tư vấn', 'Đã hoàn tất'], true)) badge-modern-success
+                                                @elseif(in_array($scheduleStatusLabel, ['Đã tiêm', 'Đã xác nhận'], true)) badge-modern-info
+                                                @elseif($scheduleStatusLabel === 'Đã hủy') badge-modern-danger
+                                                @elseif(in_array($scheduleStatusLabel, ['Chờ tư vấn', 'Chờ xác nhận'], true)) badge-modern-warning
                                                 @else badge-modern-warning @endif" style="font-size: 12px; padding: 4px 8px; border-radius: 4px;">
-                                                {{ $item->status }}
+                                                 {{ $scheduleStatusLabel }}
                                             </span>
                                         </div>
                                         

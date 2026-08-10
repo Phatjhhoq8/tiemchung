@@ -14,6 +14,7 @@
             @php
                 $hasSalePrice = $vaccine->hasSalePrice();
                 $displayPrice = $hasSalePrice ? $vaccine->sale_price : $vaccine->price;
+                $outOfStock = (int) $vaccine->stock_quantity <= 0;
             @endphp
             <article class="catalog-product-card {{ isset($cart[$vaccine->id]) ? 'selected' : '' }}" data-id="{{ $vaccine->id }}">
                 <a href="{{ route('vaccine.show', $vaccine->id) }}" class="catalog-product-media" style="display: block; text-decoration: none;">
@@ -44,13 +45,14 @@
                             <del style="font-size: 12px; color: #94a3b8; margin-left: 6px;">{{ number_format($vaccine->price, 0, ',', '.') }}đ</del>
                         @endif
                     </div>
+                    @if($outOfStock)<small style="color:#b91c1c; font-weight:700;">Hết hàng tại chi nhánh này</small>@endif
                     <div class="catalog-action-group" style="display: flex; gap: 8px; align-items: center; width: 100%;">
                         <a href="{{ route('vaccine.show', $vaccine->id) }}" class="btn-detail-link" style="flex: 1; text-align: center; padding: 8px 10px; border-radius: 20px; border: 1px solid var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); font-size: 12.5px; font-weight: 700; text-decoration: none; transition: all 0.2s ease; white-space: nowrap;">
                             Xem chi tiết
                         </a>
-                        <button class="btn-select-vaccine {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" onclick="toggleCart({{ $vaccine->id }})" style="flex: 1; text-align: center; padding: 8px 10px; justify-content: center; display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; white-space: nowrap;">
+                        <button class="btn-select-vaccine {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" onclick="toggleCart({{ $vaccine->id }})" {{ $outOfStock ? 'disabled' : '' }} style="flex: 1; text-align: center; padding: 8px 10px; justify-content: center; display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; white-space: nowrap; {{ $outOfStock ? 'opacity:.5; cursor:not-allowed;' : '' }}">
                             <i data-lucide="{{ isset($cart[$vaccine->id]) ? 'x' : 'plus' }}"></i>
-                            <span>{{ isset($cart[$vaccine->id]) ? 'Hủy chọn' : 'Chọn tiêm' }}</span>
+                            <span>{{ $outOfStock ? 'Hết hàng' : (isset($cart[$vaccine->id]) ? 'Hủy chọn' : 'Chọn tiêm') }}</span>
                         </button>
                     </div>
                 </div>

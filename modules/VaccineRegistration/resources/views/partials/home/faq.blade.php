@@ -36,17 +36,6 @@
                 </div>
             </div>
 
-            <!-- FAQ 3 -->
-            <div class="faq-item bg-white border border-slate-100/50 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                <button class="faq-toggle w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition-colors" onclick="toggleFaq(this)">
-                    <span class="font-bold text-slate-900 text-sm md:text-base pr-4">Medicare có nhận đặt giữ vắc xin không?</span>
-                    <i data-lucide="chevron-down" class="w-5 h-5 text-[#c8102e] shrink-0 faq-icon transition-transform duration-300"></i>
-                </button>
-                <div class="faq-content hidden px-5 pb-5">
-                    <p class="text-sm text-slate-600 leading-relaxed">Có. Medicare hỗ trợ đặt giữ vắc xin 100% khi khách hàng đăng ký gói tiêm chủng trọn gói. Vắc xin được cam kết giữ hàng trong suốt phác đồ tiêm, không lo thiếu mũi hay tăng giá.</p>
-                </div>
-            </div>
-
             <!-- FAQ 4 -->
             <div class="faq-item bg-white border border-slate-100/50 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
                 <button class="faq-toggle w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition-colors" onclick="toggleFaq(this)">

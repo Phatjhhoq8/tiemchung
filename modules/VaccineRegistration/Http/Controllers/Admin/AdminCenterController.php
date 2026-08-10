@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Chức năng: AdminCenterController quản trị danh sách các trung tâm tiêm chủng Medicare Cờ Đỏ.
  * Lý do tạo: Cho phép Admin thêm mới chi nhánh, cập nhật địa chỉ hoặc kích hoạt/tạm dừng chi nhánh tiêm chủng.
@@ -8,8 +9,10 @@ namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Modules\VaccineRegistration\Models\Center;
-
+use Modules\VaccineRegistration\Models\CenterVaccine;
+use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminCenterController extends Controller
@@ -24,16 +27,16 @@ class AdminCenterController extends Controller
      */
     public function index(Request $request)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
-        
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền quản lý trung tâm tiêm chủng.');
+
         $query = Center::query();
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('address', 'like', '%' . $search . '%')
-                  ->orWhere('phone', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('address', 'like', '%'.$search.'%')
+                    ->orWhere('phone', 'like', '%'.$search.'%');
             });
         }
 
@@ -41,7 +44,29 @@ class AdminCenterController extends Controller
             $query->where('is_active', $request->boolean('is_active'));
         }
 
+        $day = $request->input('filter_day') ?? $request->input('day');
+        $month = $request->input('filter_month') ?? $request->input('month');
+        $year = $request->input('filter_year') ?? $request->input('year');
+
+        if ($day !== null && $day !== '') {
+            $query->whereDay('centers.created_at', (int) $day);
+        }
+        if ($month !== null && $month !== '') {
+            $query->whereMonth('centers.created_at', (int) $month);
+        }
+        if ($year !== null && $year !== '') {
+            $query->whereYear('centers.created_at', (int) $year);
+        }
+
         $centers = $query->orderBy('is_active', 'desc')->orderBy('name', 'asc')->paginate(10)->withQueryString();
+
+        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'html' => view('vaccine::admin.centers._table', compact('centers'))->render(),
+            ]);
+        }
+
         return view('vaccine::admin.centers.index', compact('centers'));
     }
 
@@ -50,7 +75,8 @@ class AdminCenterController extends Controller
      */
     public function create()
     {
-        $center = new Center();
+        $center = new Center;
+
         return view('vaccine::admin.centers.create', compact('center'));
     }
 
@@ -72,12 +98,13 @@ class AdminCenterController extends Controller
                     $lowerVal = strtolower(trim($value));
                     if (preg_match('/^\s*(javascript|data|vbscript)\s*:/i', $value) || str_contains($lowerVal, 'javascript:') || str_contains($lowerVal, 'data:')) {
                         $fail('Bản đồ phải là đường dẫn Google Maps hợp lệ.');
+
                         return;
                     }
-                    if (!str_starts_with($value, 'https://www.google.com/maps/embed') && !str_starts_with($value, 'https://www.google.com/maps/place') && !str_starts_with($value, 'https://www.google.com/maps/')) {
+                    if (! str_starts_with($value, 'https://www.google.com/maps/embed') && ! str_starts_with($value, 'https://www.google.com/maps/place') && ! str_starts_with($value, 'https://www.google.com/maps/')) {
                         $fail('Bản đồ phải là đường dẫn Google Maps hợp lệ.');
                     }
-                }
+                },
             ],
             'working_hours' => 'nullable|string|max:255',
             'sort_order' => 'nullable|integer|min:0',
@@ -88,12 +115,12 @@ class AdminCenterController extends Controller
             'is_active.required' => 'Vui lòng chọn trạng thái hoạt động.',
         ]);
 
-        $validated['slug'] = ($validated['slug'] ?? null) ?: \Illuminate\Support\Str::slug($validated['name']);
+        $validated['slug'] = ($validated['slug'] ?? null) ?: Str::slug($validated['name']);
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
 
         $center = Center::create($validated);
-        \Modules\VaccineRegistration\Models\Vaccine::active()->each(function ($vaccine) use ($center) {
-            \Modules\VaccineRegistration\Models\CenterVaccine::firstOrCreate(
+        Vaccine::active()->each(function ($vaccine) use ($center) {
+            CenterVaccine::firstOrCreate(
                 ['center_id' => $center->id, 'vaccine_id' => $vaccine->id],
                 [
                     'price' => $vaccine->price,
@@ -113,6 +140,7 @@ class AdminCenterController extends Controller
     public function edit($id)
     {
         $center = Center::findOrFail($id);
+
         return view('vaccine::admin.centers.edit', compact('center'));
     }
 
@@ -125,7 +153,7 @@ class AdminCenterController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:centers,slug,' . $center->id,
+            'slug' => 'nullable|string|max:255|unique:centers,slug,'.$center->id,
             'address' => 'required|string|max:500',
             'phone' => 'nullable|string|max:20',
             'zalo_phone' => 'nullable|string|max:20',
@@ -136,12 +164,13 @@ class AdminCenterController extends Controller
                     $lowerVal = strtolower(trim($value));
                     if (preg_match('/^\s*(javascript|data|vbscript)\s*:/i', $value) || str_contains($lowerVal, 'javascript:') || str_contains($lowerVal, 'data:')) {
                         $fail('Bản đồ phải là đường dẫn Google Maps hợp lệ.');
+
                         return;
                     }
-                    if (!str_starts_with($value, 'https://www.google.com/maps/embed') && !str_starts_with($value, 'https://www.google.com/maps/place') && !str_starts_with($value, 'https://www.google.com/maps/')) {
+                    if (! str_starts_with($value, 'https://www.google.com/maps/embed') && ! str_starts_with($value, 'https://www.google.com/maps/place') && ! str_starts_with($value, 'https://www.google.com/maps/')) {
                         $fail('Bản đồ phải là đường dẫn Google Maps hợp lệ.');
                     }
-                }
+                },
             ],
             'working_hours' => 'nullable|string|max:255',
             'sort_order' => 'nullable|integer|min:0',
@@ -152,7 +181,7 @@ class AdminCenterController extends Controller
             'is_active.required' => 'Vui lòng chọn trạng thái hoạt động.',
         ]);
 
-        $validated['slug'] = ($validated['slug'] ?? null) ?: \Illuminate\Support\Str::slug($validated['name']);
+        $validated['slug'] = ($validated['slug'] ?? null) ?: Str::slug($validated['name']);
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
 
         $center->update($validated);
@@ -169,7 +198,7 @@ class AdminCenterController extends Controller
         $center->is_active = false;
         $center->save();
 
-        \Modules\VaccineRegistration\Models\CenterVaccine::where('center_id', $center->id)->update(['is_active' => false]);
+        CenterVaccine::where('center_id', $center->id)->update(['is_active' => false]);
 
         return redirect()->route('admin.centers.index')->with('success', 'Vô hiệu hóa trung tâm tiêm chủng thành công.');
     }

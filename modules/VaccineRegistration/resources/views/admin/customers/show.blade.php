@@ -36,7 +36,7 @@
     @endif
 
     <div class="card-modern">
-        <h3 style="margin-top:0;">Lịch sử điểm</h3>
+        <h3 style="margin-top:0;">Lịch sử điểm toàn hệ thống</h3>
         @if($transactions->isEmpty())
             <p style="color:var(--text-muted);">Chưa có giao dịch điểm.</p>
         @else
@@ -47,7 +47,7 @@
                         @foreach($transactions as $transaction)
                             <tr>
                                 <td>{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
-                                <td>{{ $transaction->type }}</td>
+                                <td>{{ $transaction->typeLabel() }}</td>
                                 <td>{{ $transaction->center?->name ?? 'Hệ thống' }}</td>
                                 <td style="font-weight:700; color:{{ $transaction->points >= 0 ? 'var(--primary-color)' : '#b91c1c' }};">{{ $transaction->points > 0 ? '+' : '' }}{{ number_format($transaction->points) }}</td>
                                 <td>{{ $transaction->note }}</td>

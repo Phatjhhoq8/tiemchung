@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Chức năng: AdminSettingController quản lý cấu hình chung (Settings) của trang web.
  * Lý do tạo: Cho phép Quản trị viên thay đổi thông tin Hotline, địa chỉ, email và thông tin chân trang của Medicare Cờ Đỏ.
@@ -9,7 +10,6 @@ namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Setting;
-
 use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminSettingController extends Controller
@@ -24,14 +24,14 @@ class AdminSettingController extends Controller
      */
     public function index()
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền xem cấu hình trang web.');
         $settings = [
-            'site_name' => Setting::get('site_name', 'Medicare Cờ Đỏ'),
+            'site_name' => Setting::get('site_name', 'Medicare'),
             'hotline' => Setting::get('hotline', '0938 60 38 39'),
             'hotline_2' => Setting::get('hotline_2', '0932 477 184'),
             'email' => Setting::get('email', 'cskh@medicarecodo.vn'),
             'address' => Setting::get('address', 'Ấp Thới Hòa, Thị trấn Cờ Đỏ, Huyện Cờ Đỏ, TP. Cần Thơ'),
-            'footer_text' => Setting::get('footer_text', '© 2026 Medicare Cờ Đỏ. Hệ thống tiêm chủng uy tín.'),
+            'footer_text' => Setting::get('footer_text', '© 2026 Medicare. Hệ thống tiêm chủng uy tín.'),
         ];
 
         return view('vaccine::admin.settings.index', compact('settings'));
@@ -50,10 +50,10 @@ class AdminSettingController extends Controller
             'address' => 'required|string|max:500',
             'footer_text' => 'required|string|max:500',
         ], [
-            'site_name.required' => 'Tên website không được để trống.',
-            'hotline.required' => 'Hotline không được để trống.',
-            'email.required' => 'Email không được để trống.',
-            'email.email' => 'Email không đúng định dạng.',
+            'site_name.required' => 'Tên trang web không được để trống.',
+            'hotline.required' => 'Số điện thoại đường dây nóng không được để trống.',
+            'email.required' => 'Địa chỉ thư điện tử không được để trống.',
+            'email.email' => 'Địa chỉ thư điện tử không đúng định dạng.',
             'address.required' => 'Địa chỉ không được để trống.',
             'footer_text.required' => 'Nội dung chân trang không được để trống.',
         ]);
@@ -62,6 +62,6 @@ class AdminSettingController extends Controller
             Setting::set($key, $value);
         }
 
-        return redirect()->route('admin.settings.index')->with('success', 'Cập nhật cấu hình website thành công.');
+        return redirect()->route('admin.settings.index')->with('success', 'Cập nhật cấu hình trang web thành công.');
     }
 }

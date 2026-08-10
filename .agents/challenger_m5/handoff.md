@@ -1,91 +1,92 @@
-# Handoff Report: Challenger M5 - Weekly Calendar Grid Stress Test & Empirical Verification
+# Milestone 5 Empirical Stress Testing Handoff Report
 
 ## 1. Observation
 
-Direct empirical observations from test execution and code analysis:
+### Test Execution Commands & Outputs
+Executed test commands in root directory `/home/hongphuoc/Desktop/thue`:
 
-### A. Test Execution Results
-1. **Target Test Suite Execution**:
-   - Command: `/opt/lampp/bin/php artisan test --filter=WeeklyCalendarDashboardTest`
-   - Output:
-     ```
-     PASS  Tests\Feature\WeeklyCalendarDashboardTest
-     ✓ weekly schedule grid index returns 7 days of selected week           0.15s  
-     ✓ week navigation filtering                                            0.02s  
-     ✓ slot crud ajax endpoints                                             0.04s  
-     ✓ day toggle status and day schedule deletion                          0.02s  
-     ✓ copy schedule from source day to target days success when reserved…  0.03s  
-     ✓ copy schedule blocked with 422 when target day has reserved count g… 0.02s  
-     ✓ copy schedule multiple targets where one target has bookings blocks… 0.02s  
-     ✓ copy schedule blocked when target has linked registration records    0.02s  
-     ✓ cross month and cross year week navigation queries                   0.02s  
-     ✓ branch admin scope checks returns 403 on cross branch access         0.02s  
-     ✓ destroy day blocked with 422 when reserved count greater than zero   0.01s  
+Command 1:
+```bash
+export PATH=/opt/lampp/bin:$PATH; php artisan test --filter=AdminAjaxFilteringTest
+```
+Output:
+```text
+PASS  Tests\Feature\AdminAjaxFilteringTest
+✓ registrations ajax filtering and flexible date filters               0.14s  
+✓ customers ajax filtering and date filters                            0.03s  
+✓ consultation leads ajax filtering and date filters                   0.02s  
+✓ vaccines ajax filtering and date filters                             0.04s  
+✓ centers ajax filtering and date filters                              0.02s  
+✓ ajax pagination link and query string preservation                   0.03s  
+✓ out of range and invalid date inputs                                 0.08s  
+✓ special sql wildcard characters and empty search                     0.21s  
+✓ combined filters matching and mismatching                            0.02s  
+✓ ajax vs standard http request response structure                     0.09s  
 
-     Tests:    11 passed (44 assertions)
-     Duration: 0.44s
-     ```
+Tests:    10 passed (296 assertions)
+Duration: 0.73s
+```
 
-2. **Full Application Test Suite Execution**:
-   - Command: `/opt/lampp/bin/php artisan test`
-   - Result: `Tests: 96 passed (532 assertions), Duration: 4.77s`
+Command 2:
+```bash
+export PATH=/opt/lampp/bin:$PATH; php artisan test
+```
+Output:
+```text
+Tests:    132 passed (1066 assertions)
+Duration: 7.50s
+```
 
-### B. Tested Edge Cases
+### Inspected Code Locations
+1. `modules/VaccineRegistration/Http/Controllers/Admin/AdminRegistrationController.php` (lines 56–68)
+2. `modules/VaccineRegistration/Http/Controllers/Admin/AdminCustomerController.php` (lines 42–54)
+3. `modules/VaccineRegistration/Http/Controllers/Admin/AdminConsultationLeadController.php` (lines 39–51)
+4. `modules/VaccineRegistration/Http/Controllers/Admin/AdminVaccineController.php` (lines 36–41, 94–106)
+5. `modules/VaccineRegistration/Http/Controllers/Admin/AdminCenterController.php` (lines 47–59)
+6. `tests/Feature/AdminAjaxFilteringTest.php`
 
-1. **`copySchedule` Safety Guards (`reserved_count = 0` vs `reserved_count > 0`)**:
-   - Target day with `reserved_count = 0` (unbooked): Succeeds and clones slots properly.
-   - Target day with `reserved_count > 0` (booked): Returns 422 Unprocessable Entity with error message `"Không thể sao chép đè lịch ngày {date} vì đã có {count} lượt đặt tiêm!"`.
-   - Target day with `reserved_count = 0` but having linked `Registration` records: Returns 422 Unprocessable Entity with validation error message.
-
-2. **Multiple Target Dates Transaction Rollback**:
-   - When copying to `[Target 1 (unbooked), Target 2 (booked)]`, `AdminScheduleController::copySchedule` validates all target dates before entering `DB::transaction()`. Validation fails on Target 2 with HTTP 422, ensuring Target 1 is **NOT** mutated or created.
-
-3. **Cross-Month / Cross-Year Navigation Queries**:
-   - Querying date `'2026-12-31'` (Thursday, year-end): Resolves `week_start = '2026-12-28'` (Monday) to `week_end = '2027-01-03'` (Sunday cross-year).
-   - Querying date `'2026-08-31'` (Monday, month-end): Resolves `week_start = '2026-08-31'` to `week_end = '2026-09-06'` (Sunday cross-month).
-
-4. **Cross-Branch Security Scope Checks**:
-   - Branch admins attempting to invoke `index`, `copySchedule`, `toggleDayStatus`, or `destroyDay` using a `center_id` belonging to another branch receive HTTP 403 Forbidden via `AdminContext::assertCanManageCenter`.
-
----
+### Empirical Test Scenarios Verified
+- **Out-of-range / Invalid Dates**: `filter_day=99`, `filter_month=13`, `filter_year=-1`, `filter_day='abc'`.
+  - In `AdminRegistrationController`, `AdminCustomerController`, `AdminConsultationLeadController`, and `AdminCenterController`, inputs are cast to `(int)` and processed safely by `whereDay`, `whereMonth`, `whereYear` without throwing database syntax errors or 500 exceptions, returning `200 OK` JSON with `"success": true` and empty table HTML.
+  - In `AdminVaccineController`, validation rules (`filter_day => between:1,31`) trigger a `422 Unprocessable Content` JSON validation error on AJAX requests, properly rejecting invalid date parameters.
+- **SQL Wildcard Characters & Injection Payloads**: Tested `search` values `""`, `"   "`, `"%"`, `"_"`, `"%'_"`, `"' OR '1'='1"`, `"\\"`, and `"\"><script>alert(1)</script>"`. All 5 controllers safely handle search payloads using Eloquent parameter binding without SQL injection or syntax error vulnerabilities.
+- **Combined Filters Chaining**: Tested multi-parameter queries (`search` + `filter_day` + `filter_month` + `filter_year` + `center_id` + `booking_status` + `payment_status`). Matching criteria successfully return expected records; mismatching single parameters gracefully return an empty table notice (e.g. `"Không có đơn đặt lịch phù hợp"`).
+- **Pagination Query String Preservation**: Verified that paginated AJAX requests (`page=2`) maintain all query parameters (`search`, `filter_day`, `filter_month`, `filter_year`, etc.) via `->withQueryString()` in pagination link URLs.
+- **AJAX vs Standard Request Response Format**:
+  - `X-Requested-With: XMLHttpRequest` header produces HTTP 200 JSON `{ "success": true, "html": "<table...>...</table>" }`.
+  - Standard GET request without AJAX headers produces standard HTTP 200 HTML page containing full layout structure (`<!DOCTYPE html>`).
 
 ## 2. Logic Chain
 
-1. **Safety Validation Strategy**:
-   - `AdminScheduleController::copySchedule` calculates `$totalBookings = max($reservedCount, $registrationCount)` across target dates. By pre-screening target schedules before database transactions, the controller prevents partial updates or overwriting active patient appointments.
-2. **Date Normalization Logic**:
-   - Carbon's `startOfWeek()` and `endOfWeek()` natively handle month and year boundaries correctly without leap year or year-wrap glitches.
-3. **Multi-Tenant Security Enforcement**:
-   - `AdminContext::assertCanManageCenter((int) $validated['center_id'])` strictly bounds branch admin authority to their assigned `center_id`. Super admins retain cross-branch management capabilities.
-4. **Empirical Proof**:
-   - Running all 11 unit & feature stress tests confirms 100% pass rate with zero side-effects or regressions across the system.
-
----
+1. **Observation**: `AdminAjaxFilteringTest` was expanded to cover 10 feature test cases with 296 assertions testing out-of-range dates, SQL wildcards, combined filter chains, pagination query preservation, and response headers across all 5 admin endpoints (`registrations`, `customers`, `leads`, `vaccines`, `centers`).
+2. **Step 1 Reasoning**: Out-of-range date inputs (`day=99`, `month=13`, `year=-1`) cast safely to `(int)` in controllers (or trigger `422` validation errors in `AdminVaccineController`), preventing SQL exception crashes or 500 errors.
+3. **Step 2 Reasoning**: Parameterized Eloquent queries (`where('col', 'like', '%'.$search.'%')`) treat SQL wildcards (`%`, `_`) and SQL quotes as literal string bindings, preventing SQL injection and unhandled query failures.
+4. **Step 3 Reasoning**: Chained Eloquent scopes construct valid SQL compound `WHERE` clauses. If all conditions match, target records are returned; if any condition mismatches, an empty table HTML snippet is returned with HTTP status 200.
+5. **Step 4 Reasoning**: `paginate(N)->withQueryString()` generates pagination links that retain all active request query parameters.
+6. **Step 5 Reasoning**: Header inspection in controllers (`$request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest'`) accurately differentiates AJAX requests (returning JSON partial HTML) from full-page GET requests (returning Blade layout HTML).
+7. **Conclusion**: The implementation is empirically robust, secure, and fully compliant with Milestone 5 requirements.
 
 ## 3. Caveats
 
-- None. All edge cases have been empirically tested against the active MySQL database.
-
----
+No caveats.
 
 ## 4. Conclusion
 
-**VERDICT: PASS**
+**Verdict: PASS**
 
-The Weekly Calendar Grid implementation (Milestone 5) passes all adversarial stress tests, security checks, and edge cases with zero defects and 100% test pass rate across 96 application tests.
-
----
+The Real-Time AJAX Filtering & Flexible Date Filter implementation across all admin endpoints (`registrations`, `customers`, `leads`, `vaccines`, `centers`) passes all unit, feature, and empirical stress tests. Edge cases involving invalid dates, SQL wildcard characters, multi-filter combinations, pagination parameter retention, and AJAX response structures are handled safely and predictably without errors or security flaws.
 
 ## 5. Verification Method
 
-To re-verify the empirical results:
+To independently verify this result, execute the following commands in the workspace root directory (`/home/hongphuoc/Desktop/thue`):
 
-1. Run the target weekly calendar test suite:
-   ```bash
-   /opt/lampp/bin/php artisan test --filter=WeeklyCalendarDashboardTest
-   ```
-2. Run the full test suite:
-   ```bash
-   /opt/lampp/bin/php artisan test
-   ```
-3. Inspect test assertions in `tests/Feature/WeeklyCalendarDashboardTest.php`.
+```bash
+export PATH=/opt/lampp/bin:$PATH; php artisan test --filter=AdminAjaxFilteringTest
+export PATH=/opt/lampp/bin:$PATH; php artisan test
+```
+
+### Invalidation Conditions
+- Any test failure in `AdminAjaxFilteringTest`.
+- Any failure in the full `php artisan test` suite.
+- SQL syntax error or 500 server error when passing invalid date parameters or wildcard search strings.
+- Omission of active query parameters in AJAX pagination URLs.

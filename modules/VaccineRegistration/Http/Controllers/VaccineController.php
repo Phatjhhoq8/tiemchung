@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Chức năng: VaccineController xử lý danh mục vắc xin, giỏ hàng và quy trình đăng ký tiêm chủng của khách hàng.
  * Lý do chỉnh sửa: Xử lý danh mục, giỏ hàng và quy trình đặt lịch một người theo chi nhánh.
@@ -7,19 +8,24 @@
 namespace Modules\VaccineRegistration\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Services\BranchStockService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Modules\VaccineRegistration\Models\Vaccine;
-use Modules\VaccineRegistration\Models\Registration;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
+use Modules\VaccineRegistration\Models\ConsultationLead;
+use Modules\VaccineRegistration\Models\Customer;
+use Modules\VaccineRegistration\Models\Registration;
 use Modules\VaccineRegistration\Models\Schedule;
 use Modules\VaccineRegistration\Models\Slot;
-use Modules\VaccineRegistration\Models\Customer;
+use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Support\CenterContext;
 use Modules\VaccineRegistration\Support\PhoneNormalizer;
-use Modules\VaccineRegistration\Models\ConsultationLead;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
 
 class VaccineController extends Controller
 {
@@ -30,25 +36,24 @@ class VaccineController extends Controller
     {
         $currentCenter = CenterContext::current();
         $query = Vaccine::forCenter($currentCenter?->id);
-        $type = $request->input('type');
 
         // Tìm kiếm theo tên sản phẩm. Lọc theo bệnh dùng tham số disease riêng.
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where('name', 'like', '%' . $search . '%');
+            $query->where('name', 'like', '%'.$search.'%');
         }
 
         if ($request->filled('disease')) {
             $disease = $request->input('disease');
             $query->where(function ($q) use ($disease) {
-                $q->where('disease_prevention', 'like', '%' . $disease . '%')
-                    ->orWhere('category', 'like', '%' . $disease . '%');
+                $q->where('disease_prevention', 'like', '%'.$disease.'%')
+                    ->orWhere('category', 'like', '%'.$disease.'%');
             });
         }
 
         // Lọc theo nhóm tuổi chỉ định
         if ($request->filled('age_group')) {
-            $query->where('age_group', 'like', '%' . $request->input('age_group') . '%');
+            $query->where('age_group', 'like', '%'.$request->input('age_group').'%');
         }
 
         if ($request->filled('origin')) {
@@ -57,10 +62,6 @@ class VaccineController extends Controller
 
         if ($request->filled('doses')) {
             $query->where('doses', (int) $request->input('doses'));
-        }
-
-        if (in_array($type, ['single', 'package'], true)) {
-            $query->where('type', $type);
         }
 
         $sort = $request->input('sort', 'popular');
@@ -78,7 +79,7 @@ class VaccineController extends Controller
         $allVaccines = Vaccine::forCenter($currentCenter?->id)->get();
         $diseaseOptions = $this->buildDiseaseOptions($allVaccines);
         $diseases = $diseaseOptions;
-        
+
         $ageGroupOptions = $this->buildAgeGroupOptions($allVaccines);
         $ageGroups = $ageGroupOptions;
 
@@ -118,15 +119,15 @@ class VaccineController extends Controller
         return $vaccines
             ->flatMap(function ($vaccine) {
                 $items = [];
-                if (!empty($vaccine->category)) {
+                if (! empty($vaccine->category)) {
                     $items[] = trim($vaccine->category);
                 }
 
-                if (!empty($vaccine->disease_prevention)) {
+                if (! empty($vaccine->disease_prevention)) {
                     $parts = preg_split('/[,;\-\/]+/', $vaccine->disease_prevention);
                     foreach ($parts as $part) {
                         $cleaned = trim($part);
-                        if (!empty($cleaned)) {
+                        if (! empty($cleaned)) {
                             $items[] = $cleaned;
                         }
                     }
@@ -165,7 +166,7 @@ class VaccineController extends Controller
     private function buildProductCategories($vaccines)
     {
         return $vaccines
-            ->filter(fn ($vaccine) => !empty($vaccine->category) || !empty($vaccine->disease_prevention))
+            ->filter(fn ($vaccine) => ! empty($vaccine->category) || ! empty($vaccine->disease_prevention))
             ->groupBy(fn ($vaccine) => $vaccine->category ?: $this->buildDiseaseOptions(collect([$vaccine]))->first())
             ->map(function ($items, $name) {
                 $first = $items->first();
@@ -187,22 +188,20 @@ class VaccineController extends Controller
     {
         $currentCenter = CenterContext::current();
         $vaccine = Vaccine::forCenter($currentCenter?->id)->where('vaccines.id', $id)->firstOrFail();
-        
+
         // Tăng số lượt xem sản phẩm khi xem chi tiết
         $vaccine->increment('views');
-        
+
         $cart = CenterContext::resolveCart($currentCenter?->id)['cart'];
 
-        if ($request->header('X-Vaccine-Detail-Json') || ($request->wantsJson() && !$request->header('X-SPA-Request') && !$request->ajax())) {
+        if ($request->header('X-Vaccine-Detail-Json') || ($request->wantsJson() && ! $request->header('X-SPA-Request') && ! $request->ajax())) {
             return response()->json([
                 'success' => true,
                 'vaccine' => [
                     'id' => $vaccine->id,
                     'name' => $vaccine->name,
                     'price' => $vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price,
-                    'formatted_price' => number_format($vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price, 0, ',', '.') . ' đ',
-                    'type' => $vaccine->type,
-                    'type_label' => $vaccine->type === 'package' ? 'Gói vắc xin' : 'Vắc xin lẻ',
+                    'formatted_price' => number_format($vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price, 0, ',', '.').' đ',
                     'doses' => $vaccine->doses,
                     'disease_prevention' => $vaccine->disease_prevention,
                     'age_group' => $vaccine->age_group,
@@ -210,19 +209,26 @@ class VaccineController extends Controller
                     'manufacturer' => $vaccine->manufacturer,
                     'dosage' => $vaccine->dosage,
                     'description' => $vaccine->description,
-                    'image' => asset('images/vaccines/' . ($vaccine->image ?: 'hexaxim.jpg')),
+                    'administration_route' => $vaccine->administration_route,
+                    'detailed_schedule' => $vaccine->detailed_schedule,
+                    'contraindications' => $vaccine->contraindications,
+                    'adverse_effects' => $vaccine->adverse_effects,
+                    'warnings' => $vaccine->warnings,
+                    'source_reference_url' => $vaccine->source_reference_url,
+                    'source_review_date' => $vaccine->source_review_date?->toDateString(),
+                    'image' => asset('images/vaccines/'.($vaccine->image ?: 'hexaxim.jpg')),
                     'is_in_cart' => isset($cart[$vaccine->id]),
                     'views' => $vaccine->views,
-                    'formatted_views' => number_format($vaccine->views, 0, ',', '.') . ' lượt xem',
-                ]
+                    'formatted_views' => number_format($vaccine->views, 0, ',', '.').' lượt xem',
+                ],
             ]);
         }
 
         // Lấy 8 vắc xin liên quan cùng phòng bệnh hoặc cùng xuất xứ
         $relatedVaccines = Vaccine::forCenter($currentCenter?->id)->where('vaccines.id', '!=', $vaccine->id)
             ->where(function ($q) use ($vaccine) {
-                $q->where('disease_prevention', 'like', '%' . $vaccine->disease_prevention . '%')
-                  ->orWhere('origin', $vaccine->origin);
+                $q->where('disease_prevention', 'like', '%'.$vaccine->disease_prevention.'%')
+                    ->orWhere('origin', $vaccine->origin);
             })
             ->take(8)
             ->get();
@@ -247,10 +253,10 @@ class VaccineController extends Controller
         $isAvailable = $currentCenter && CenterVaccine::where('center_id', $currentCenter->id)
             ->where('vaccine_id', $vaccine->id)
             ->where('is_active', true)
-            ->where('stock_status', '!=', 'out_of_stock')
+            ->where('stock_quantity', '>', 0)
             ->exists();
 
-        if (!$isAvailable) {
+        if (! $isAvailable) {
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => 'Sản phẩm không được bán tại chi nhánh đang chọn.'], 422);
             }
@@ -268,7 +274,6 @@ class VaccineController extends Controller
                 'price' => 0,
                 'image' => $vaccine->image ?: 'hexaxim.jpg',
                 'quantity' => 1,
-                'type' => $vaccine->type,
                 'disease_prevention' => $vaccine->disease_prevention,
             ];
         }
@@ -285,7 +290,7 @@ class VaccineController extends Controller
                 'cart' => $cart,
                 'cart_count' => count($cart),
                 'total_price' => $totalPrice,
-                'formatted_total_price' => number_format($totalPrice, 0, ',', '.') . ' đ',
+                'formatted_total_price' => number_format($totalPrice, 0, ',', '.').' đ',
             ]);
         }
 
@@ -316,7 +321,7 @@ class VaccineController extends Controller
                 'cart' => $cart,
                 'cart_count' => count($cart),
                 'total_price' => $totalPrice,
-                'formatted_total_price' => number_format($totalPrice, 0, ',', '.') . ' đ',
+                'formatted_total_price' => number_format($totalPrice, 0, ',', '.').' đ',
             ]);
         }
 
@@ -357,7 +362,7 @@ class VaccineController extends Controller
             $isAvailable = $vaccine && CenterVaccine::where('center_id', $currentCenter->id)
                 ->where('vaccine_id', $vaccine->id)
                 ->where('is_active', true)
-                ->where('stock_status', '!=', 'out_of_stock')
+                ->where('stock_quantity', '>', 0)
                 ->exists();
 
             if ($isAvailable) {
@@ -367,7 +372,6 @@ class VaccineController extends Controller
                     'price' => 0,
                     'quantity' => 1,
                     'image' => $vaccine->image ?: 'hexaxim.jpg',
-                    'type' => $vaccine->type,
                     'disease_prevention' => $vaccine->disease_prevention,
                 ];
                 session()->put('cart', $cart);
@@ -401,7 +405,7 @@ class VaccineController extends Controller
                     'success' => false,
                     'message' => 'Bạn chưa chọn vắc xin nào',
                     'centers' => $centers,
-                    'current_center' => $currentCenter
+                    'current_center' => $currentCenter,
                 ]);
             }
 
@@ -412,7 +416,7 @@ class VaccineController extends Controller
                 'unavailable_count' => $cartState['unavailable_count'],
                 'schedules' => $schedules,
                 'centers' => $centers,
-                'current_center' => $currentCenter
+                'current_center' => $currentCenter,
             ]);
         }
 
@@ -446,11 +450,11 @@ class VaccineController extends Controller
         ]);
 
         $phone = PhoneNormalizer::normalize($validated['phone']);
-        if (!$phone) {
+        if (! $phone) {
             return back()->withErrors(['phone' => 'Số điện thoại di động Việt Nam không hợp lệ.'])->withInput();
         }
 
-        $code = trim((string)$request->input('registration_code'));
+        $code = trim((string) $request->input('registration_code'));
 
         $registrations = Registration::query()
             ->with(['vaccines:id,name', 'slot.schedule'])
@@ -463,18 +467,18 @@ class VaccineController extends Controller
             ->get();
 
         $registrations->each(function ($reg) use ($code) {
-            if (!empty($code) && strtolower($reg->registration_code) === strtolower($code)) {
+            if (! empty($code) && strtolower($reg->registration_code) === strtolower($code)) {
                 $reg->is_masked = false;
                 $reg->display_name = $reg->patient_name;
                 $reg->display_code = $reg->registration_code;
-                $reg->display_price = number_format($reg->netPaidAmount(), 0, ',', '.') . ' đ';
-                $reg->display_vaccines = $reg->vaccines->map(fn ($vaccine) => $vaccine->name . (($vaccine->pivot->quantity ?? 1) > 1 ? ' x' . $vaccine->pivot->quantity : ''))->implode(', ');
+                $reg->display_price = number_format($reg->netPaidAmount(), 0, ',', '.').' đ';
+                $reg->display_vaccines = $reg->vaccines->map(fn ($vaccine) => $vaccine->name.(($vaccine->pivot->quantity ?? 1) > 1 ? ' x'.$vaccine->pivot->quantity : ''))->implode(', ');
             } else {
                 $reg->is_masked = true;
                 $reg->display_name = self::maskName($reg->patient_name);
                 $reg->display_code = self::maskCode($reg->registration_code);
                 $reg->display_price = '*** đ';
-                $reg->display_vaccines = $reg->vaccines->count() . ' loại vắc xin (Nhập Mã đặt lịch để xem chi tiết)';
+                $reg->display_vaccines = $reg->vaccines->count().' loại vắc xin (Nhập Mã đặt lịch để xem chi tiết)';
             }
         });
 
@@ -494,31 +498,34 @@ class VaccineController extends Controller
             if ($len <= 2) {
                 return $name;
             }
-            return mb_substr($name, 0, 1, 'UTF-8') . '*' . mb_substr($name, -1, 1, 'UTF-8');
+
+            return mb_substr($name, 0, 1, 'UTF-8').'*'.mb_substr($name, -1, 1, 'UTF-8');
         }
         $first = $parts[0];
         $last = $parts[count($parts) - 1];
-        return $first . ' * ' . $last;
+
+        return $first.' * '.$last;
     }
 
     public static function maskCode(string $code): string
     {
         $parts = explode('-', $code);
         if (count($parts) < 3) {
-            return substr($code, 0, 3) . '-***';
+            return substr($code, 0, 3).'-***';
         }
-        return $parts[0] . '-***-' . $parts[2];
+
+        return $parts[0].'-***-'.$parts[2];
     }
 
     /**
      * Create one booking. Prices and branch membership are always resolved server-side.
      */
-    public function postRegister(Request $request)
+    public function postRegister(Request $request, BranchStockService $stockService)
     {
         $hasPatientsArrayInRequest = $request->has('patients');
 
         // 1. Pack single patient fields into patients array if client sends legacy format
-        if (!$hasPatientsArrayInRequest && $request->filled('patient_name')) {
+        if (! $hasPatientsArrayInRequest && $request->filled('patient_name')) {
             $request->merge([
                 'patients' => [
                     [
@@ -528,8 +535,8 @@ class VaccineController extends Controller
                         'gender' => $request->input('patient_gender', 'Khác'),
                         'address' => $request->input('patient_address', 'Tại trung tâm'),
                         'vaccine_ids' => $request->input('vaccine_ids', []),
-                    ]
-                ]
+                    ],
+                ],
             ]);
         }
 
@@ -541,10 +548,12 @@ class VaccineController extends Controller
             'patients.*.gender' => 'nullable|string|in:Nam,Nữ,Khác',
             'patients.*.address' => 'nullable|string|max:500',
             'patients.*.vaccine_ids' => 'required|array|min:1',
-            'patients.*.vaccine_ids.*' => 'required|integer|distinct|exists:vaccines,id',
+            'patients.*.vaccine_ids.*' => 'required|integer|exists:vaccines,id',
             'slot_id' => 'required|integer|exists:slots,id',
             'guardian_name' => 'nullable|string|max:255',
             'guardian_phone' => 'nullable|string|max:30',
+            'account_name' => 'nullable|string|max:255',
+            'account_phone' => 'nullable|string|max:30',
             'idempotency_key' => 'nullable|string|max:100',
         ], [
             'patients.required' => 'Vui lòng cung cấp thông tin người đăng ký tiêm.',
@@ -558,10 +567,27 @@ class VaccineController extends Controller
         $currentCenter = CenterContext::current();
         abort_unless($currentCenter, 404, 'Không tìm thấy chi nhánh đang hoạt động.');
 
+        foreach ($validated['patients'] as $index => $patient) {
+            if (count($patient['vaccine_ids']) !== count(array_unique($patient['vaccine_ids']))) {
+                throw ValidationException::withMessages([
+                    "patients.{$index}.vaccine_ids" => 'Mỗi loại vắc xin chỉ được chọn một lần cho một người tiêm.',
+                ]);
+            }
+        }
+
+        $accountPhoneInput = $validated['account_phone'] ?? $validated['guardian_phone'] ?? $validated['patients'][0]['phone'];
+        $accountPhone = PhoneNormalizer::normalize($accountPhoneInput);
+        if (! $accountPhone) {
+            return back()->withErrors(['account_phone' => 'Số điện thoại tài khoản tích điểm không hợp lệ.'])->withInput();
+        }
+        $accountName = trim($validated['account_name']
+            ?? (isset($validated['guardian_phone']) ? ($validated['guardian_name'] ?? '') : '')
+            ?: $validated['patients'][0]['name']);
+
         $idempotencyKey = $validated['idempotency_key'] ?? null;
         if ($idempotencyKey) {
             $existing = Registration::where('idempotency_key', $idempotencyKey)
-                ->orWhere('idempotency_key', $idempotencyKey . '_0')
+                ->orWhere('idempotency_key', $idempotencyKey.'_0')
                 ->first();
             if ($existing) {
                 return $this->completePublicBooking($existing);
@@ -571,58 +597,38 @@ class VaccineController extends Controller
         $successCodes = [];
 
         try {
-            DB::transaction(function () use ($validated, $currentCenter, &$successCodes, $idempotencyKey, $request, $hasPatientsArrayInRequest) {
+            DB::transaction(function () use ($validated, $currentCenter, &$successCodes, $idempotencyKey, $request, $hasPatientsArrayInRequest, $stockService, $accountPhone, $accountName) {
                 // Lock slot
                 $slot = Slot::with('schedule')->whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
-                if (!$slot->is_active || !$slot->schedule || !$slot->schedule->is_active
+                if (! $slot->is_active || ! $slot->schedule || ! $slot->schedule->is_active
                     || (int) $slot->schedule->center_id !== (int) $currentCenter->id
                     || $slot->schedule->date->isBefore(today())) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
+                    throw ValidationException::withMessages([
                         'slot_id' => 'Khung giờ không khả dụng hoặc không thuộc chi nhánh đang chọn.',
                     ]);
                 }
 
                 $patientCount = count($validated['patients']);
                 if ($slot->reserved_count + $patientCount > $slot->capacity) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'slot_id' => 'Khung giờ này chỉ còn lại ' . ($slot->capacity - $slot->reserved_count) . ' chỗ trống.',
+                    throw ValidationException::withMessages([
+                        'slot_id' => 'Khung giờ này chỉ còn lại '.($slot->capacity - $slot->reserved_count).' chỗ trống.',
                     ]);
                 }
 
-                // Check stock for all unique vaccines selected
-                $allVaccineIds = collect($validated['patients'])->flatMap(fn($p) => $p['vaccine_ids'])->unique()->toArray();
-                $centerVaccines = CenterVaccine::with('vaccine')
-                    ->where('center_id', $currentCenter->id)
-                    ->whereIn('vaccine_id', $allVaccineIds)
-                    ->where('is_active', true)
-                    ->where('stock_status', '!=', 'out_of_stock')
-                    ->get()
-                    ->keyBy('vaccine_id');
-
-                if ($centerVaccines->count() !== count($allVaccineIds)) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'vaccine_ids' => 'Một hoặc nhiều vắc xin đã hết hàng hoặc không được bán tại chi nhánh này.',
-                    ]);
-                }
+                $demand = collect($validated['patients'])
+                    ->flatMap(fn ($patient) => $patient['vaccine_ids'])
+                    ->countBy()
+                    ->all();
+                $centerVaccines = $stockService->commit($currentCenter->id, $demand);
+                $customer = Customer::findOrCreateByPhone($accountPhone, $accountName);
 
                 // Create registrations for each profile
                 foreach ($validated['patients'] as $index => $patient) {
                     $phone = PhoneNormalizer::normalize($patient['phone']);
-                    if (!$phone) {
-                        throw \Illuminate\Validation\ValidationException::withMessages([
-                            "patients.{$index}.phone" => "Số điện thoại của người tiêm #" . ($index + 1) . " không hợp lệ.",
+                    if (! $phone) {
+                        throw ValidationException::withMessages([
+                            "patients.{$index}.phone" => 'Số điện thoại của người tiêm #'.($index + 1).' không hợp lệ.',
                         ]);
-                    }
-
-                    $customer = Customer::where('phone', $phone)->lockForUpdate()->first();
-                    if (!$customer) {
-                        DB::table('customers')->insertOrIgnore([
-                            'name' => trim($patient['name']),
-                            'phone' => $phone,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                        $customer = Customer::where('phone', $phone)->lockForUpdate()->firstOrFail();
                     }
 
                     $items = [];
@@ -635,10 +641,11 @@ class VaccineController extends Controller
                             'price' => $price,
                             'sale_price' => null,
                             'quantity' => 1,
+                            'stock_committed_quantity' => 1,
                         ];
                     }
 
-                    $regCode = 'MCD-' . strtoupper(\Illuminate\Support\Str::random(8)) . '-' . ($index + 1);
+                    $regCode = 'MCD-'.strtoupper(Str::random(8)).'-'.($index + 1);
                     $registration = Registration::create([
                         'registration_code' => $regCode,
                         'customer_id' => $customer->id,
@@ -657,7 +664,7 @@ class VaccineController extends Controller
                         'booking_status' => Registration::BOOKING_PENDING,
                         'payment_status' => Registration::PAYMENT_UNPAID,
                         'payment_method' => $request->input('payment_method', 'Tại trung tâm'),
-                        'idempotency_key' => $idempotencyKey ? ($hasPatientsArrayInRequest ? ($idempotencyKey . '_' . $index) : $idempotencyKey) : null,
+                        'idempotency_key' => $idempotencyKey ? ($hasPatientsArrayInRequest ? ($idempotencyKey.'_'.$index) : $idempotencyKey) : null,
                         'total_price' => $total,
                     ]);
 
@@ -666,10 +673,10 @@ class VaccineController extends Controller
                     $successCodes[] = $regCode;
                 }
             });
-        } catch (\Illuminate\Database\QueryException $exception) {
+        } catch (QueryException $exception) {
             if ($idempotencyKey) {
                 $existing = Registration::where('idempotency_key', $idempotencyKey)
-                    ->orWhere('idempotency_key', $idempotencyKey . '_0')
+                    ->orWhere('idempotency_key', $idempotencyKey.'_0')
                     ->first();
                 if ($existing) {
                     return $this->completePublicBooking($existing);
@@ -681,7 +688,7 @@ class VaccineController extends Controller
         // Store result registration codes in session
         session()->forget('cart');
         session()->put('success_codes', $successCodes);
-        if (!empty($successCodes)) {
+        if (! empty($successCodes)) {
             session()->put('success_code', $successCodes[0]);
         }
 
@@ -708,7 +715,7 @@ class VaccineController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Đặt lịch tiêm chủng thành công!',
-                'redirect_url' => route('register.success')
+                'redirect_url' => route('register.success'),
             ]);
         }
 
@@ -718,7 +725,7 @@ class VaccineController extends Controller
     private function newRegistrationCode(): string
     {
         do {
-            $code = 'MCD-' . strtoupper(Str::random(8));
+            $code = 'MCD-'.strtoupper(Str::random(8));
         } while (Registration::where('registration_code', $code)->exists());
 
         return $code;
@@ -732,7 +739,7 @@ class VaccineController extends Controller
         $codes = session('success_codes');
         $singleCode = session('success_code');
 
-        if (!$codes && $singleCode) {
+        if (! $codes && $singleCode) {
             $codes = [$singleCode];
         }
 
@@ -752,17 +759,17 @@ class VaccineController extends Controller
     public function diseaseDetail(Request $request, $disease)
     {
         $diseaseDecoded = urldecode($disease);
-        
+
         // Lọc danh sách vắc xin thuộc nhóm bệnh này
         $currentCenter = CenterContext::current();
         $vaccines = Vaccine::forCenter($currentCenter?->id)
             ->where(function ($q) use ($diseaseDecoded) {
-                $q->where('category', 'like', '%' . $diseaseDecoded . '%')
-                    ->orWhere('disease_prevention', 'like', '%' . $diseaseDecoded . '%');
+                $q->where('category', 'like', '%'.$diseaseDecoded.'%')
+                    ->orWhere('disease_prevention', 'like', '%'.$diseaseDecoded.'%');
             })
             ->orderBy('center_vaccines.sort_order', 'asc')
             ->get();
-               
+
         $cart = CenterContext::resolveCart($currentCenter?->id)['cart'];
         $centers = Center::active()->get();
 
@@ -770,24 +777,24 @@ class VaccineController extends Controller
         $diseaseData = [
             'hpv' => [
                 'title' => 'Vắc xin phòng Ung thư do HPV',
-                'description' => '<h6>Phòng ngừa ung thư do HPV thế nào cho hiệu quả?</h6><p><strong>HPV (Human Papillomavirus)</strong> là nguyên nhân chính gây ung thư cổ tử cung và các bệnh lý nguy hiểm khác như mụn cóc sinh dục, ung thư hậu môn, dương vật, hầu họng… Bệnh thường lây nhiễm rất nhanh qua đường quan hệ tình dục, diễn tiến âm thầm và cực kỳ khó phát hiện sớm.</p><p>💉 <strong>Tiêm vắc xin đúng lịch, đủ liều</strong> là biện pháp phòng ngừa hiệu quả chủ động các bệnh lý liên quan đến HPV, đặc biệt là ung thư cổ tử cung ở nữ giới.</p><p>🛡️ <strong>Gardasil (Mỹ)</strong>: Bảo vệ cơ thể khỏi 4 chủng virus HPV phổ biến (6, 11, 16, 18), khuyến cáo tiêm cho nữ từ 9 đến 26 tuổi.</p><p>🛡️ <strong>Gardasil 9 (Mỹ)</strong>: Bảo vệ cơ thể khỏi 9 chủng virus HPV phổ biến (6, 11, 16, 18, 31, 33, 45, 52, 58), mở rộng chỉ định tiêm phòng cho cả nam và nữ giới từ 9 đến 45 tuổi.</p>'
+                'description' => '<h6>Phòng ngừa ung thư do HPV thế nào cho hiệu quả?</h6><p><strong>HPV (Human Papillomavirus)</strong> là nguyên nhân chính gây ung thư cổ tử cung và các bệnh lý nguy hiểm khác như mụn cóc sinh dục, ung thư hậu môn, dương vật, hầu họng… Bệnh thường lây nhiễm rất nhanh qua đường quan hệ tình dục, diễn tiến âm thầm và cực kỳ khó phát hiện sớm.</p><p>💉 <strong>Tiêm vắc xin đúng lịch, đủ liều</strong> là biện pháp phòng ngừa hiệu quả chủ động các bệnh lý liên quan đến HPV, đặc biệt là ung thư cổ tử cung ở nữ giới.</p><p>🛡️ <strong>Gardasil (Mỹ)</strong>: Bảo vệ cơ thể khỏi 4 chủng virus HPV phổ biến (6, 11, 16, 18), khuyến cáo tiêm cho nữ từ 9 đến 26 tuổi.</p><p>🛡️ <strong>Gardasil 9 (Mỹ)</strong>: Bảo vệ cơ thể khỏi 9 chủng virus HPV phổ biến (6, 11, 16, 18, 31, 33, 45, 52, 58), mở rộng chỉ định tiêm phòng cho cả nam và nữ giới từ 9 đến 45 tuổi.</p>',
             ],
             'cúm' => [
                 'title' => 'Vắc xin phòng bệnh Cúm Mùa',
-                'description' => '<h6>Bảo vệ lá phổi khỏe mạnh trước đại dịch Cúm Mùa</h6><p><strong>Cúm mùa</strong> là bệnh nhiễm trùng đường hô hấp cấp tính do virus cúm (Influenza) gây ra. Bệnh lây lan rất nhanh qua giọt bắn và có thể dẫn đến các biến chứng nguy hiểm như viêm phổi nặng, suy hô hấp, viêm cơ tim, thậm chí tử vong ở người cao tuổi và trẻ nhỏ.</p><p>💉 <strong>Tiêm vắc xin cúm hằng năm</strong> giúp giảm đến 90% nguy cơ mắc bệnh và 80% nguy cơ tử vong do các biến chứng nguy hiểm của cúm.</p>'
+                'description' => '<h6>Bảo vệ lá phổi khỏe mạnh trước đại dịch Cúm Mùa</h6><p><strong>Cúm mùa</strong> là bệnh nhiễm trùng đường hô hấp cấp tính do virus cúm (Influenza) gây ra. Bệnh lây lan rất nhanh qua giọt bắn và có thể dẫn đến các biến chứng nguy hiểm như viêm phổi nặng, suy hô hấp, viêm cơ tim, thậm chí tử vong ở người cao tuổi và trẻ nhỏ.</p><p>💉 <strong>Tiêm vắc xin cúm hằng năm</strong> giúp giảm đến 90% nguy cơ mắc bệnh và 80% nguy cơ tử vong do các biến chứng nguy hiểm của cúm.</p>',
             ],
             'thủy đậu' => [
                 'title' => 'Vắc xin phòng bệnh Thủy Đậu',
-                'description' => '<h6>Chủ động phòng ngừa biến chứng nguy hiểm của Thủy đậu</h6><p><strong>Bệnh thủy đậu</strong> do virus Varicella-Zoster gây ra. Bệnh lây qua đường hô hấp hoặc tiếp xúc trực tiếp với dịch bóng nước. Mặc dù là bệnh lành tính trong nhiều trường hợp, thủy đậu có thể dẫn đến các biến chứng nặng nề như viêm màng não, viêm phổi, nhiễm trùng huyết và để lại sẹo vĩnh viễn trên cơ thể.</p><p>💉 <strong>Tiêm vắc xin thủy đậu</strong> giúp bảo vệ cơ thể khỏi nguy cơ lây nhiễm lên đến 95%. Khuyến cáo tiêm phòng cho trẻ em từ 9 tháng tuổi trở lên và người trưởng thành chưa có kháng thể.</p>'
+                'description' => '<h6>Chủ động phòng ngừa biến chứng nguy hiểm của Thủy đậu</h6><p><strong>Bệnh thủy đậu</strong> do virus Varicella-Zoster gây ra. Bệnh lây qua đường hô hấp hoặc tiếp xúc trực tiếp với dịch bóng nước. Mặc dù là bệnh lành tính trong nhiều trường hợp, thủy đậu có thể dẫn đến các biến chứng nặng nề như viêm màng não, viêm phổi, nhiễm trùng huyết và để lại sẹo vĩnh viễn trên cơ thể.</p><p>💉 <strong>Tiêm vắc xin thủy đậu</strong> giúp bảo vệ cơ thể khỏi nguy cơ lây nhiễm lên đến 95%. Khuyến cáo tiêm phòng cho trẻ em từ 9 tháng tuổi trở lên và người trưởng thành chưa có kháng thể.</p>',
             ],
             'ho gà' => [
                 'title' => 'Vắc xin phòng Bạch hầu - Ho gà - Uốn ván',
-                'description' => '<h6>Bảo vệ gia đình khỏi Bạch hầu - Ho gà - Uốn ván</h6><p><strong>Bạch hầu, Ho gà và Uốn ván</strong> là những bệnh truyền nhiễm nguy hiểm gây ra bởi vi khuẩn, có tỷ lệ tử vong cao đặc biệt ở trẻ sơ sinh dưới 1 tuổi. Bệnh ho gà có thể gây ra những cơn ho rũ rượi kéo dài dẫn đến ngừng thở; bạch hầu gây giả mạc làm tắc đường thở; uốn ván gây co cứng cơ cực kỳ đau đớn.</p><p>💉 <strong>Tiêm vắc xin kết hợp (như 6 trong 1, 5 trong 1, hoặc vắc xin Adacel/Boostrix)</strong> là giải pháp toàn diện để tạo lá chắn vững chắc bảo vệ trẻ nhỏ và người lớn khỏi 3 căn bệnh nguy hiểm này.</p>'
+                'description' => '<h6>Bảo vệ gia đình khỏi Bạch hầu - Ho gà - Uốn ván</h6><p><strong>Bạch hầu, Ho gà và Uốn ván</strong> là những bệnh truyền nhiễm nguy hiểm gây ra bởi vi khuẩn, có tỷ lệ tử vong cao đặc biệt ở trẻ sơ sinh dưới 1 tuổi. Bệnh ho gà có thể gây ra những cơn ho rũ rượi kéo dài dẫn đến ngừng thở; bạch hầu gây giả mạc làm tắc đường thở; uốn ván gây co cứng cơ cực kỳ đau đớn.</p><p>💉 <strong>Tiêm vắc xin kết hợp (như 6 trong 1, 5 trong 1, hoặc vắc xin Adacel/Boostrix)</strong> là giải pháp toàn diện để tạo lá chắn vững chắc bảo vệ trẻ nhỏ và người lớn khỏi 3 căn bệnh nguy hiểm này.</p>',
             ],
             'phế cầu' => [
                 'title' => 'Vắc xin phòng các bệnh do Phế Cầu Khuẩn',
-                'description' => '<h6>Phòng ngừa Viêm phổi, Viêm màng não do Phế cầu khuẩn</h6><p><strong>Phế cầu khuẩn (Streptococcus pneumoniae)</strong> là tác nhân hàng đầu gây ra các bệnh lý nghiêm trọng đe dọa tính mạng như viêm phổi, viêm màng não, nhiễm trùng huyết và viêm tai giữa cấp tính, đặc biệt ở trẻ nhỏ dưới 5 tuổi và người già trên 65 tuổi hoặc người suy giảm miễn dịch.</p><p>💉 <strong>Vắc xin phế cầu (như Synflorix hoặc Prevenar 13)</strong> giúp bảo vệ cơ thể chủ động chống lại các chủng phế cầu khuẩn phổ biến, làm giảm gánh nặng bệnh tật và ngăn ngừa các di chứng thần kinh vĩnh viễn.</p>'
-            ]
+                'description' => '<h6>Phòng ngừa Viêm phổi, Viêm màng não do Phế cầu khuẩn</h6><p><strong>Phế cầu khuẩn (Streptococcus pneumoniae)</strong> là tác nhân hàng đầu gây ra các bệnh lý nghiêm trọng đe dọa tính mạng như viêm phổi, viêm màng não, nhiễm trùng huyết và viêm tai giữa cấp tính, đặc biệt ở trẻ nhỏ dưới 5 tuổi và người già trên 65 tuổi hoặc người suy giảm miễn dịch.</p><p>💉 <strong>Vắc xin phế cầu (như Synflorix hoặc Prevenar 13)</strong> giúp bảo vệ cơ thể chủ động chống lại các chủng phế cầu khuẩn phổ biến, làm giảm gánh nặng bệnh tật và ngăn ngừa các di chứng thần kinh vĩnh viễn.</p>',
+            ],
         ];
 
         // So khớp thông minh không phân biệt hoa thường
@@ -801,11 +808,11 @@ class VaccineController extends Controller
         }
 
         // Fallback mặc định nếu không khớp bệnh phổ biến
-        if (!$info) {
+        if (! $info) {
             $safeDisease = htmlspecialchars($diseaseDecoded, ENT_QUOTES, 'UTF-8');
             $info = [
-                'title' => 'Vắc xin phòng bệnh ' . $safeDisease,
-                'description' => '<h6>Chủ động phòng ngừa bệnh ' . $safeDisease . ' hiệu quả</h6><p>Bệnh <strong>' . $safeDisease . '</strong> là bệnh truyền nhiễm có diễn biến phức tạp và có thể gây ra các biến chứng nguy hiểm đối với sức khỏe. Việc chủ động tiêm ngừa vắc xin là phương pháp phòng bệnh khoa học, an toàn và tiết kiệm nhất cho cả gia đình.</p><p>💉 Hãy liên hệ Medicare để nhận tư vấn chi tiết về phác đồ và lịch tiêm chủng vắc xin phòng bệnh ' . $safeDisease . ' phù hợp nhất với độ tuổi của bạn.</p>'
+                'title' => 'Vắc xin phòng bệnh '.$safeDisease,
+                'description' => '<h6>Chủ động phòng ngừa bệnh '.$safeDisease.' hiệu quả</h6><p>Bệnh <strong>'.$safeDisease.'</strong> là bệnh truyền nhiễm có diễn biến phức tạp và có thể gây ra các biến chứng nguy hiểm đối với sức khỏe. Việc chủ động tiêm ngừa vắc xin là phương pháp phòng bệnh khoa học, an toàn và tiết kiệm nhất cho cả gia đình.</p><p>💉 Hãy liên hệ Medicare để nhận tư vấn chi tiết về phác đồ và lịch tiêm chủng vắc xin phòng bệnh '.$safeDisease.' phù hợp nhất với độ tuổi của bạn.</p>',
             ];
         }
 
@@ -819,7 +826,7 @@ class VaccineController extends Controller
     {
         $diseaseDecoded = urldecode($disease);
 
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'consultType' => 'required|string|in:online,offline',
             'customerName' => 'required|string|max:255',
             'customerPhone' => 'required|string|regex:/^[0-9]{9,11}$/',
@@ -835,7 +842,7 @@ class VaccineController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -848,7 +855,7 @@ class VaccineController extends Controller
         }
         $selectedCenter = $selectedCenter ?: $currentCenter;
 
-        $note = 'Hình thức: ' . ($validated['consultType'] === 'online' ? 'Online' : 'Trực tiếp tại trung tâm') . ' - Đăng ký tư vấn: ' . $diseaseDecoded . ($validated['customerNote'] ? (' - Ghi chú: ' . $validated['customerNote']) : '');
+        $note = 'Hình thức: '.($validated['consultType'] === 'online' ? 'Trực tuyến' : 'Trực tiếp tại trung tâm').' - Đăng ký tư vấn: '.$diseaseDecoded.($validated['customerNote'] ? (' - Ghi chú: '.$validated['customerNote']) : '');
 
         DB::beginTransaction();
         try {
@@ -856,7 +863,7 @@ class VaccineController extends Controller
             $lead = ConsultationLead::create([
                 'name' => $validated['customerName'],
                 'phone' => $validated['customerPhone'],
-                'source' => 'Nhóm bệnh: ' . $diseaseDecoded,
+                'source' => 'Nhóm bệnh: '.$diseaseDecoded,
                 'status' => 'new',
                 'note' => $note,
                 'center_id' => $selectedCenter?->id,
@@ -866,18 +873,18 @@ class VaccineController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Gửi yêu cầu tư vấn thành công! Nhân viên y tế Medicare sẽ liên hệ hỗ trợ bạn qua SĐT ' . $validated['customerPhone'] . ' trong thời gian sớm nhất.',
-                'lead_id' => $lead->id
+                'message' => 'Gửi yêu cầu tư vấn thành công! Nhân viên y tế Medicare sẽ liên hệ hỗ trợ bạn qua số điện thoại '.$validated['customerPhone'].' trong thời gian sớm nhất.',
+                'lead_id' => $lead->id,
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Illuminate\Support\Facades\Log::error('Consultation lead creation error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            Log::error('Consultation lead creation error: '.$e->getMessage()."\n".$e->getTraceAsString());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Có lỗi xảy ra khi lưu yêu cầu tư vấn. Vui lòng thử lại.'
+                'message' => 'Có lỗi xảy ra khi lưu yêu cầu tư vấn. Vui lòng thử lại.',
             ], 500);
         }
     }
-
 }

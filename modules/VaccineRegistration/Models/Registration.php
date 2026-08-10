@@ -2,8 +2,9 @@
 
 namespace Modules\VaccineRegistration\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -12,13 +13,19 @@ class Registration extends Model
     use HasFactory;
 
     public const BOOKING_PENDING = 'pending';
+
     public const BOOKING_CONFIRMED = 'confirmed';
+
     public const BOOKING_COMPLETED = 'completed';
+
     public const BOOKING_CANCELLED = 'cancelled';
+
     public const BOOKING_NO_SHOW = 'no_show';
 
     public const PAYMENT_UNPAID = 'unpaid';
+
     public const PAYMENT_PAID = 'paid';
+
     public const PAYMENT_REFUNDED = 'refunded';
 
     protected $fillable = [
@@ -86,8 +93,8 @@ class Registration extends Model
     public function vaccines()
     {
         return $this->belongsToMany(Vaccine::class, 'registration_vaccines')
-                    ->withPivot(['id', 'quantity', 'price', 'sale_price', 'inventory_lot_id'])
-                    ->withTimestamps();
+            ->withPivot(['id', 'quantity', 'stock_committed_quantity', 'price', 'sale_price', 'inventory_lot_id'])
+            ->withTimestamps();
     }
 
     public function center(): BelongsTo
@@ -102,7 +109,7 @@ class Registration extends Model
 
     public function settledBy(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'settled_by');
+        return $this->belongsTo(User::class, 'settled_by');
     }
 
     public function pointTransactions(): HasMany
@@ -140,7 +147,7 @@ class Registration extends Model
      */
     public function checkIn(): self
     {
-        if (!$this->patient_id) {
+        if (! $this->patient_id) {
             $patient = Patient::findOrCreateCentralized([
                 'full_name' => $this->patient_name,
                 'dob' => $this->patient_dob,
@@ -162,8 +169,8 @@ class Registration extends Model
      */
     public function screening(string $status, ?string $notes = null): self
     {
-        if (!in_array($status, ['eligible', 'deferred', 'contraindicated'])) {
-            throw new \InvalidArgumentException("Invalid screening status: {$status}");
+        if (! in_array($status, ['eligible', 'deferred', 'contraindicated'])) {
+            throw new \InvalidArgumentException('Trạng thái khám sàng lọc không hợp lệ.');
         }
 
         $this->screening_status = $status;
@@ -179,17 +186,17 @@ class Registration extends Model
     public function administer(?int $vaccinatorId = null, ?int $vaccineId = null, ?int $inventoryLotId = null, int $observationMinutes = 30, ?string $observationNotes = null): AdministeredDose
     {
         if ($this->screening_status !== 'eligible') {
-            throw new \RuntimeException("Cannot administer vaccine. Screening status is '{$this->screening_status}' (must be 'eligible').");
+            throw new \RuntimeException('Không thể thực hiện tiêm chủng khi bệnh nhân chưa đủ điều kiện tiêm.');
         }
 
-        if (!$this->patient_id) {
+        if (! $this->patient_id) {
             $this->checkIn();
         }
 
-        if (!$vaccineId) {
+        if (! $vaccineId) {
             $firstVaccine = $this->vaccines()->first();
             $vaccineId = $firstVaccine ? $firstVaccine->id : null;
-            if (!$inventoryLotId && $firstVaccine && isset($firstVaccine->pivot->inventory_lot_id)) {
+            if (! $inventoryLotId && $firstVaccine && isset($firstVaccine->pivot->inventory_lot_id)) {
                 $inventoryLotId = $firstVaccine->pivot->inventory_lot_id;
             }
         }

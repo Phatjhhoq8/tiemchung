@@ -1,102 +1,48 @@
-# Handoff Report: Weekly Calendar Grid Interface Implementation
+# Handoff Report — Admin Dashboard Improvements (Requirements R1, R2, R3)
 
 ## 1. Observation
-
-Direct observations from implementation and testing execution:
-
-### A. Routes Configuration
-- **File**: `modules/VaccineRegistration/routes/web.php` (Lines 143-145)
-- Added new schedule routes prior to resource routes:
-  ```php
-  Route::post('/schedules/copy', [AdminScheduleController::class, 'copySchedule'])->name('schedules.copy');
-  Route::post('/schedules/toggle-day', [AdminScheduleController::class, 'toggleDayStatus'])->name('schedules.toggle-day');
-  Route::delete('/schedules/day', [AdminScheduleController::class, 'destroyDay'])->name('schedules.destroy-day');
-  ```
-
-### B. Controller Implementation
-- **File**: `modules/VaccineRegistration/Http/Controllers/Admin/AdminScheduleController.php`
-  - `index(Request $request)`: Resolves week range (Monday to Sunday) using Carbon based on `$request->input('date')` or `$request->input('week_start')`. Invokes `Schedule::generateFromDefaults($selectedCenterId, $weekStart, $weekEnd)` and queries 7 days of schedule & slot data for `$selectedCenterId`. Formats `$weekGrid` array containing date, day name, total capacity, total reserved count, active status, and slot list. Supports both Blade view rendering and AJAX JSON responses.
-  - `copySchedule(Request $request)`: Validates `center_id`, `source_date`, and `target_dates`. Enforces security check `AdminContext::assertCanManageCenter($centerId)`.
-    - **SAFETY GUARD (`reserved_count > 0`)**: Inspects target date schedules for existing bookings (`reserved_count > 0` or linked `Registration` records). If bookings exist, rejects the request with HTTP 422 Unprocessable Entity error message: `"Không thể sao chép đè lịch ngày {date} vì đã có {count} lượt đặt tiêm!"`.
-    - **DB Transaction**: Executes inside `DB::transaction()` for unbooked target dates, updating/creating target schedules and cloning slots from the source day.
-  - `toggleDayStatus(Request $request)`: Toggles active status `is_active` for a schedule date for `$centerId`.
-  - `destroyDay(Request $request)`: Deletes entire schedule and slots for a specific date if `reserved_count == 0` (or blocks deletion if `reserved_count > 0` with 422 validation response).
-
-### C. Frontend UI Redesign
-- **File**: `modules/VaccineRegistration/resources/views/admin/schedules/index.blade.php`
-  - 7 Parallel Columns Grid layout (Monday to Sunday) using responsive CSS grid `grid-template-columns: repeat(7, minmax(185px, 1fr))`.
-  - Top Week Navigation bar with "Tuần trước", "Tuần hiện tại", "Tuần sau" buttons, Date Picker, Branch selector for super admin, and week range header display (`10/08/2026 - 16/08/2026`).
-  - Column Headers displaying Day Name (Thứ 2 .. Chủ Nhật), date (`d/m/Y`), Open/Close toggle badge, total capacity metric (`0/12`), "+ Thêm giờ", "Sao chép", and "Xóa lịch ngày" action buttons.
-  - Slot Cards displaying start/end times (`08:00 - 09:00`), capacity metrics (`0/10`), active status indicators, and pencil edit button.
-  - Modals: Quick Add Slot Modal (`addSlotModal`), Edit/Delete Slot Modal (`editSlotModal`), and Copy Schedule Modal (`copyScheduleModal`) with target day checklist and overwrite warning banner.
-  - Color Palette: Medicare Red (`#c8102e`), Medicare Gold (`#eaaa00`), Medicare Navy (`#004b8f`). No unapproved icons or emojis.
-
-### D. Automated Test Suite & Documentation
-- **File**: `tests/Feature/WeeklyCalendarDashboardTest.php`
-  - Created test suite with 7 test cases (30 assertions):
-    - `test_weekly_schedule_grid_index_returns_7_days_of_selected_week`
-    - `test_week_navigation_filtering`
-    - `test_slot_crud_ajax_endpoints`
-    - `test_day_toggle_status_and_day_schedule_deletion`
-    - `test_copy_schedule_from_source_day_to_target_days_success_when_reserved_count_zero`
-    - `test_copy_schedule_blocked_with_422_when_target_day_has_reserved_count_greater_than_zero`
-    - `test_branch_admin_scope_checks_returns_403_on_cross_branch_access`
-  - Test execution result:
-    ```
-    PASS Tests\Feature\WeeklyCalendarDashboardTest (7 passed, 30 assertions)
-    PASS Full Test Suite (92 passed, 518 assertions)
-    ```
-- **File**: `CHANGELOG.md`
-  - Updated top of `CHANGELOG.md` with release notes for `## [v6.1.0] - 2026-08-10` in English.
-
----
+- **Modified files**:
+  - `modules/VaccineRegistration/Http/Controllers/Admin/AdminDashboardController.php`
+  - `modules/VaccineRegistration/resources/views/admin/dashboard.blade.php`
+  - `CHANGELOG.md`
+- **New test file**:
+  - `tests/Feature/AdminDashboardTest.php`
+- **Commands & Results**:
+  - Executed test command: `/opt/lampp/bin/php artisan test --filter AdminDashboardTest`
+    - Result: `PASS Tests\Feature\AdminDashboardTest (4 passed, 39 assertions)`
+  - Executed full test suite: `/opt/lampp/bin/php artisan test`
+    - Result: `PASS (141 passed, 1136 assertions across 18 test classes)`
 
 ## 2. Logic Chain
-
-1. **Backend Route & Controller Logic**:
-   - Defining `POST /schedules/copy`, `POST /schedules/toggle-day`, and `DELETE /schedules/day` in `routes/web.php` before resource routes prevents parameter routing collisions.
-   - Using Carbon `startOfWeek()` ensures exact 7-day Monday-to-Sunday date resolution regardless of the user's selected date.
-   - Intercepting target dates during copy operation to inspect `reserved_count` and linked `registrations` before initiating `DB::transaction` ensures atomic rejection when target dates have existing patient bookings.
-
-2. **Frontend UI & SPA Interaction**:
-   - The 7-column parallel CSS grid provides full weekly visibility at a single glance.
-   - Modals connected to Fetch API endpoints enable instant slot CRUD, schedule copying, and day status toggling without full-page refreshes.
-   - Restricting icon usage to standard SVG Lucide icons (`copy`, `plus`, `trash-2`, `edit-3`, `calendar`) satisfies brand and UI constraints.
-
-3. **Verification**:
-   - Running `/opt/lampp/bin/php artisan test --filter=WeeklyCalendarDashboardTest` confirms all 7 feature requirements pass 100%.
-   - Running `/opt/lampp/bin/php artisan test` confirms all 92 application tests pass with zero regressions.
-
----
+1. **R1 Dynamic Metrics Calculation**:
+   - Updated `AdminDashboardController.php` to calculate `$consultCount` by querying `consultation_leads` where `status` is in `['pending', 'new']`, scoped by `$selectedCenterId` when present.
+   - Calculated `$importedQuantity` by summing `available_quantity + reserved_quantity` from `inventory_lots`, scoped by `$selectedCenterId` when present.
+   - Calculated `$soldQuantity` by counting `registrations` where `booking_status` = `'completed'`, scoped by `$selectedCenterId` when present.
+2. **R2 Today's Injections Widget**:
+   - Computed `$todayInjectionsCount` in `AdminDashboardController.php` by filtering `registrations` where `injection_date` matches today's date (`now()->toDateString()`), scoped by `$selectedCenterId`.
+   - Updated `dashboard.blade.php` to feature a prominent medical tracking widget styled with Medicare Navy (`#004b8f`) background, white high-contrast text, Medicare Gold (`#eaaa00`) badge, and direct button linking to registration schedule management.
+3. **R3 Revenue & Registration Trends Data & Pure SVG Charts**:
+   - Computed `$dailyTrends` (7 days daily aggregate for revenue and registrations count) and `$monthlyTrends` (6 months monthly aggregate for revenue and registrations count) in `AdminDashboardController.php`.
+   - Rendered responsive pure SVG line/area charts in `dashboard.blade.php` using pure SVG tags (`<svg viewBox="...">`, `<polyline>`, `<path>`, `<circle>`, `<text>`) with no external JS dependencies.
+   - Applied the strict brand color palette: Medicare Red (`#c8102e`), Medicare Navy (`#004b8f`), Medicare Gold (`#eaaa00`), with clean dark text (`#0f172a`, `#475569`) on light backgrounds. Included tab controls to switch between 7-day and 6-month trend views.
+4. **Automated Feature Testing**:
+   - Created `tests/Feature/AdminDashboardTest.php` to test SuperAdmin and BranchAdmin dashboard loading, dynamic metric accuracy & center scoping, today's injection count calculations, and SVG chart element rendering.
 
 ## 3. Caveats
-
-- **Timezone Context**: Date resolution uses the application timezone configured in `config/app.php`. Carbon date parsing relies on ISO `YYYY-MM-DD` strings.
-- No other caveats.
-
----
+- No external JS libraries were used for charts as mandated by R3.
+- DatabaseTransactions trait is used in tests to ensure zero lingering test data.
 
 ## 4. Conclusion
-
-All Backend (M2), Frontend UI (M3), Automated Test Suite (M4), and CHANGELOG updates for the Weekly Calendar Grid interface have been implemented cleanly with zero defects and 100% test pass rate.
-
----
+The Medicare Admin Dashboard improvements (R1, R2, R3) have been fully implemented, integrated with center scoping, styled according to Medicare brand guidelines, and verified with 100% passing tests.
 
 ## 5. Verification Method
-
-To independently verify the implementation:
-
-1. Run target feature test suite:
-   ```bash
-   /opt/lampp/bin/php artisan test --filter=WeeklyCalendarDashboardTest
-   ```
-2. Run full test suite:
-   ```bash
-   /opt/lampp/bin/php artisan test
-   ```
-3. Inspect modified source files:
-   - `modules/VaccineRegistration/routes/web.php`
-   - `modules/VaccineRegistration/Http/Controllers/Admin/AdminScheduleController.php`
-   - `modules/VaccineRegistration/resources/views/admin/schedules/index.blade.php`
-   - `tests/Feature/WeeklyCalendarDashboardTest.php`
-   - `CHANGELOG.md`
+Run the following terminal commands to independently verify:
+```bash
+/opt/lampp/bin/php artisan test --filter AdminDashboardTest
+/opt/lampp/bin/php artisan test
+```
+Inspect files:
+- `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminDashboardController.php`
+- `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/dashboard.blade.php`
+- `file:///home/hongphuoc/Desktop/thue/tests/Feature/AdminDashboardTest.php`
+- `file:///home/hongphuoc/Desktop/thue/CHANGELOG.md`

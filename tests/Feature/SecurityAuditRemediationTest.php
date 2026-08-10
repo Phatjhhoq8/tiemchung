@@ -56,7 +56,6 @@ class SecurityAuditRemediationTest extends TestCase
         $this->vaccine = Vaccine::create([
             'name' => 'Vắc xin Test ' . $suffix,
             'price' => 150000,
-            'type' => 'single',
             'doses' => 1,
             'stock_status' => 'available',
             'disease_prevention' => 'Cúm',

@@ -35,13 +35,35 @@ class AdminCustomerController extends Controller
             $phone = PhoneNormalizer::normalize($search);
             $query->where(function ($builder) use ($search, $phone) {
                 $builder->where('phone', $phone ?: $search)
-                    ->orWhere('name', 'like', '%' . $search . '%');
+                    ->orWhere('name', 'like', '%'.$search.'%');
             });
         }
 
-        $customers = $query->latest('id')->paginate(20)->withQueryString();
+        $day = $request->input('filter_day') ?? $request->input('day');
+        $month = $request->input('filter_month') ?? $request->input('month');
+        $year = $request->input('filter_year') ?? $request->input('year');
 
-        return view('vaccine::admin.customers.index', compact('customers', 'search', 'selectedCenterId'));
+        if ($day !== null && $day !== '') {
+            $query->whereDay('customers.created_at', (int) $day);
+        }
+        if ($month !== null && $month !== '') {
+            $query->whereMonth('customers.created_at', (int) $month);
+        }
+        if ($year !== null && $year !== '') {
+            $query->whereYear('customers.created_at', (int) $year);
+        }
+
+        $customers = $query->latest('id')->paginate(20)->withQueryString();
+        $isSuperAdmin = AdminContext::isSuperAdmin();
+
+        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'html' => view('vaccine::admin.customers._table', compact('customers', 'search', 'selectedCenterId', 'isSuperAdmin'))->render(),
+            ]);
+        }
+
+        return view('vaccine::admin.customers.index', compact('customers', 'search', 'selectedCenterId', 'isSuperAdmin'));
     }
 
     public function show(int $id)
@@ -52,7 +74,7 @@ class AdminCustomerController extends Controller
 
         if ($selectedCenterId) {
             $registrations->where('center_id', $selectedCenterId);
-            if (!(clone $registrations)->exists()) {
+            if (! (clone $registrations)->exists()) {
                 abort(403, 'Khách hàng không thuộc phạm vi chi nhánh đang chọn.');
             }
         }
@@ -70,7 +92,7 @@ class AdminCustomerController extends Controller
 
     public function adjustPoints(Request $request, int $id)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền điều chỉnh điểm khách hàng.');
 
         $validated = $request->validate([
             'points' => 'required|integer|not_in:0',
@@ -84,7 +106,7 @@ class AdminCustomerController extends Controller
                 'created_by' => AdminContext::user()?->id,
                 'type' => PointTransaction::ADJUSTMENT,
                 'points' => (int) $validated['points'],
-                'source_key' => 'adjustment:' . $customer->id . ':' . Str::uuid(),
+                'source_key' => 'adjustment:'.$customer->id.':'.Str::uuid(),
                 'note' => $validated['note'],
             ]);
 

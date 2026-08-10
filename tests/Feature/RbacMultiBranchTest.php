@@ -89,7 +89,6 @@ class RbacMultiBranchTest extends TestCase
         // Create a test master vaccine
         $this->vaccine = Vaccine::create([
             'name' => 'Test Master Vaccine 1',
-            'type' => 'single',
             'disease_prevention' => 'Phòng Bệnh Test',
             'age_group' => 'Từ 2 tháng tuổi',
             'origin' => 'Bỉ',
@@ -174,7 +173,6 @@ class RbacMultiBranchTest extends TestCase
     {
         $response = $this->actingAsAdmin($this->superAdmin)->post(route('admin.vaccines.store'), [
             'name' => 'New Master Vaccine by SuperAdmin',
-            'type' => 'single',
             'disease_prevention' => 'Phòng Bệnh Mới',
             'age_group' => 'Từ 1 tuổi',
             'origin' => 'Pháp',
@@ -197,7 +195,6 @@ class RbacMultiBranchTest extends TestCase
     {
         $response = $this->actingAsAdmin($this->branchAdminA)->post(route('admin.vaccines.store'), [
             'name' => 'Branch Admin Attempted Vaccine',
-            'type' => 'single',
             'disease_prevention' => 'Phòng Bệnh Fake',
             'age_group' => 'Từ 1 tuổi',
             'origin' => 'Mỹ',
@@ -227,7 +224,6 @@ class RbacMultiBranchTest extends TestCase
             'category' => $this->vaccine->category,
             'disease_prevention' => $this->vaccine->disease_prevention,
             'age_group' => $this->vaccine->age_group,
-            'type' => $this->vaccine->type,
             'doses' => $this->vaccine->doses,
             'price' => 590000,
             'sale_price' => 540000,
@@ -255,7 +251,6 @@ class RbacMultiBranchTest extends TestCase
             'category' => $this->vaccine->category,
             'disease_prevention' => $this->vaccine->disease_prevention,
             'age_group' => $this->vaccine->age_group,
-            'type' => $this->vaccine->type,
             'doses' => $this->vaccine->doses,
             'price' => 500000,
             'stock_status' => 'available',
@@ -295,7 +290,6 @@ class RbacMultiBranchTest extends TestCase
             'category' => $this->vaccine->category,
             'disease_prevention' => $this->vaccine->disease_prevention,
             'age_group' => $this->vaccine->age_group,
-            'type' => $this->vaccine->type,
             'doses' => $this->vaccine->doses,
             'price' => 999999,
             'stock_status' => 'available',

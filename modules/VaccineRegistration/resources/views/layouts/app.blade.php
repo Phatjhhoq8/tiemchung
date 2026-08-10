@@ -498,7 +498,7 @@
                     <span>Đặt lịch</span>
                 </a>
                 <!-- Mobile Hamburger Button -->
-                <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Menu">
+                <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Mở trình đơn">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
             </div>
@@ -821,6 +821,7 @@
     <!-- SPA Modals & Toast Container -->
     @include('vaccine::partials.modal-detail')
     @include('vaccine::partials.modal-register')
+    @include('vaccine::partials.app-dialog')
     <div id="toast-container" style="position: fixed; top: 24px; right: 24px; z-index: 9999999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
 
     <!-- JS Custom -->

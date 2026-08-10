@@ -39,13 +39,28 @@
     <form method="POST" action="{{ route('admin.registrations.store') }}" class="card-modern" style="display:grid; gap:22px;">
         @csrf
         <input type="hidden" name="center_id" value="{{ $center->id }}">
+        <input type="hidden" name="idempotency_key" value="{{ old('idempotency_key', (string) \Illuminate\Support\Str::uuid()) }}">
+        <div style="padding:14px; border:1px solid #bfdbfe; border-radius:10px; background:#eff6ff;">
+            <strong style="display:block; margin-bottom:5px;">Tài khoản tích điểm toàn hệ thống</strong>
+            <small style="display:block; color:var(--text-muted); margin-bottom:12px;">Số dư dùng được tại mọi chi nhánh; người tiêm vẫn được lưu riêng bên dưới.</small>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+                <div>
+                    <label class="form-label-modern" for="account_name">Họ tên chủ tài khoản</label>
+                    <input class="form-control-modern" id="account_name" name="account_name" value="{{ old('account_name') }}" required>
+                </div>
+                <div>
+                    <label class="form-label-modern" for="account_phone">Số điện thoại tài khoản</label>
+                    <input class="form-control-modern" id="account_phone" name="account_phone" value="{{ old('account_phone') }}" inputmode="tel" required>
+                </div>
+            </div>
+        </div>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
             <div>
                 <label class="form-label-modern" for="patient_name">Họ tên người tiêm</label>
                 <input class="form-control-modern" id="patient_name" name="patient_name" value="{{ old('patient_name') }}" autocomplete="name" required>
             </div>
             <div>
-                <label class="form-label-modern" for="patient_phone">Số điện thoại</label>
+                <label class="form-label-modern" for="patient_phone">Số điện thoại người tiêm / liên hệ</label>
                 <input class="form-control-modern" id="patient_phone" name="patient_phone" value="{{ old('patient_phone') }}" inputmode="tel" autocomplete="tel" placeholder="0912345678" required>
             </div>
             <div>
@@ -84,12 +99,6 @@
                 <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; background:#f1f5f9; padding:10px; border-radius:10px;">
                     <input type="text" id="vaccine_search" placeholder="Tìm tên vắc xin..." style="flex:1 1 200px; padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; box-sizing: border-box; height: 36px;">
                     
-                    <select id="filter_type" style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; height: 36px; background:#fff; min-width:120px;">
-                        <option value="all">Tất cả loại</option>
-                        <option value="single">Vắc xin lẻ</option>
-                        <option value="package">Gói vắc xin</option>
-                    </select>
-
                     <select id="filter_category" style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; height: 36px; background:#fff; min-width:120px;">
                         <option value="all">Mọi nhóm bệnh</option>
                         @foreach($categories as $cat)
@@ -122,29 +131,29 @@
             <div id="vaccine_list_container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px; max-height:420px; overflow:auto; padding:4px;">
                 @foreach($vaccines as $centerVaccine)
                     @php($price = $centerVaccine->hasSalePrice() ? $centerVaccine->sale_price : $centerVaccine->price)
+                    @php($outOfStock = $centerVaccine->stock_quantity <= 0)
                     <label class="vaccine-search-item" 
                            data-name="{{ strtolower($centerVaccine->vaccine->name) }} {{ strtolower($centerVaccine->vaccine->origin) }}"
-                           data-type="{{ $centerVaccine->vaccine->type }}"
                            data-category="{{ $centerVaccine->vaccine->category }}"
                            data-origin="{{ $centerVaccine->vaccine->origin }}"
                            data-age-group="{{ $centerVaccine->vaccine->age_group }}"
                            style="display:flex; gap:10px; align-items:center; border:1px solid #e2e8f0; border-radius:10px; padding:12px; cursor:pointer; background:#fff; transition:all 0.2s;">
-                        <input type="checkbox" name="vaccine_ids[]" value="{{ $centerVaccine->vaccine_id }}" {{ in_array($centerVaccine->vaccine_id, old('vaccine_ids', [])) ? 'checked' : '' }} onchange="onVaccineCheckboxChange(this, {{ $centerVaccine->vaccine_id }})">
+                         <input type="checkbox" name="vaccine_ids[]" value="{{ $centerVaccine->vaccine_id }}" {{ !$outOfStock && in_array($centerVaccine->vaccine_id, old('vaccine_ids', [])) ? 'checked' : '' }} onchange="onVaccineCheckboxChange(this, {{ $centerVaccine->vaccine_id }})" {{ $outOfStock ? 'disabled' : '' }}>
                         <span style="flex:1;">
                             <strong>{{ $centerVaccine->vaccine->name }}</strong>
                             <span style="display:flex; gap:8px; align-items:center; margin-top:3px; font-size:12px;">
                                 <small style="color:var(--text-muted);">{{ $centerVaccine->vaccine->origin }}</small>
                                 <span style="width:3px; height:3px; border-radius:50%; background:#94a3b8;"></span>
-                                <small style="font-weight:700; color:{{ $centerVaccine->stock_quantity <= 5 ? '#b91c1c' : '#15803d' }};">Tồn: {{ $centerVaccine->stock_quantity }}</small>
+                                <small style="font-weight:700; color:{{ $centerVaccine->stock_quantity <= 5 ? '#b91c1c' : '#15803d' }};">{{ $outOfStock ? 'Hết hàng' : 'Tồn: '.$centerVaccine->stock_quantity }}</small>
                             </span>
                         </span>
                         <div style="display:flex; align-items:center; gap:4px;" onclick="event.stopPropagation();">
-                            <span style="font-size:12px; color:var(--text-muted);">SL:</span>
+                            <span style="font-size:12px; color:var(--text-muted);">Số lượng:</span>
                             <input type="number" id="qty_{{ $centerVaccine->vaccine_id }}" name="quantities[{{ $centerVaccine->vaccine_id }}]" 
                                    value="{{ old('quantities.'.$centerVaccine->vaccine_id, 1) }}" 
                                    min="1" max="{{ $centerVaccine->stock_quantity }}" 
                                    style="width: 55px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; text-align: center; height:28px;"
-                                   {{ in_array($centerVaccine->vaccine_id, old('vaccine_ids', [])) ? '' : 'disabled' }}>
+                                   {{ !$outOfStock && in_array($centerVaccine->vaccine_id, old('vaccine_ids', [])) ? '' : 'disabled' }}>
                         </div>
                         <strong style="color:var(--primary-color); white-space:nowrap; margin-left:8px;">{{ number_format($price) }} đ</strong>
                     </label>
@@ -240,7 +249,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         const searchInput = document.getElementById('vaccine_search');
-        const typeSelect = document.getElementById('filter_type');
         const categorySelect = document.getElementById('filter_category');
         const originSelect = document.getElementById('filter_origin');
         const ageGroupSelect = document.getElementById('filter_age_group');
@@ -250,7 +258,6 @@
             const query = searchInput ? searchInput.value.toLowerCase().trim()
                 .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd') : '';
             
-            const selectedType = typeSelect ? typeSelect.value : 'all';
             const selectedCategory = categorySelect ? categorySelect.value : 'all';
             const selectedOrigin = originSelect ? originSelect.value : 'all';
             const selectedAgeGroup = ageGroupSelect ? ageGroupSelect.value : 'all';
@@ -258,18 +265,16 @@
             items.forEach(item => {
                 const name = item.getAttribute('data-name')
                     .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
-                const type = item.getAttribute('data-type');
                 const category = item.getAttribute('data-category');
                 const origin = item.getAttribute('data-origin');
                 const ageGroup = item.getAttribute('data-age-group');
 
                 const matchesSearch = !query || name.includes(query);
-                const matchesType = selectedType === 'all' || type === selectedType;
                 const matchesCategory = selectedCategory === 'all' || category === selectedCategory;
                 const matchesOrigin = selectedOrigin === 'all' || origin === selectedOrigin;
                 const matchesAgeGroup = selectedAgeGroup === 'all' || ageGroup === selectedAgeGroup;
 
-                if (matchesSearch && matchesType && matchesCategory && matchesOrigin && matchesAgeGroup) {
+                if (matchesSearch && matchesCategory && matchesOrigin && matchesAgeGroup) {
                     item.style.display = 'flex';
                 } else {
                     item.style.display = 'none';
@@ -277,7 +282,7 @@
             });
         }
 
-        [searchInput, typeSelect, categorySelect, originSelect, ageGroupSelect].forEach(el => {
+        [searchInput, categorySelect, originSelect, ageGroupSelect].forEach(el => {
             if (el) {
                 el.addEventListener('input', filterVaccines);
                 el.addEventListener('change', filterVaccines);

@@ -1,48 +1,35 @@
 # Original User Request
 
-## 2026-08-10T05:26:57Z
+## 2026-08-10T16:04:54Z
 
-Thiết kế và triển khai giao diện Quản lý lịch & Khung giờ tiêm chủng mới dạng Bảng Lịch Tuần (Weekly Calendar Grid) chia làm 7 cột tương ứng từ Thứ 2 đến Chủ nhật, hỗ trợ sao chép nhanh (Copy) toàn bộ khung giờ của một ngày sang các ngày khác, và chỉnh sửa/xóa trực tiếp các khung giờ/lịch hẹn.
+Cải tiến trang bảng điều khiển quản trị (Dashboard) cho hệ thống đăng ký tiêm chủng Medicare. Dashboard sẽ tải động toàn bộ số liệu thống kê thực tế từ cơ sở dữ liệu MySQL, tích hợp biểu đồ SVG trực quan và hiển thị số lượng ca tiêm trong ngày.
 
 Working directory: /home/hongphuoc/Desktop/thue
 Integrity mode: development
 
 ## Requirements
 
-### R1. Giao diện Bảng Lịch Tuần (Weekly Calendar Grid)
-* Thay đổi màn hình quản lý lịch tiêm hiện tại index.blade.php (file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/schedules/index.blade.php) thành dạng bảng chia làm 7 cột song song đại diện cho 7 ngày trong tuần (Thứ 2 đến Chủ nhật) của tuần được chọn.
-* Mỗi cột của ngày phải hiển thị rõ ràng:
-  * Ngày tháng (định dạng dd/m/yyyy).
-  * Trạng thái Đóng/Mở lịch của ngày đó kèm nút chuyển đổi trạng thái nhanh.
-  * Danh sách các khung giờ hoạt động. Mỗi khung giờ hiển thị khoảng thời gian, công suất thực tế (ví dụ: 0/12) và một nút bút chì nhỏ để mở modal chỉnh sửa/xóa khung giờ đó.
-  * Nút "Xóa lịch ngày" để gỡ bỏ toàn bộ lịch của ngày đó.
-  * Form hoặc nút nhanh cho phép "Thêm khung giờ" trực tiếp cho ngày tương ứng.
-* Bổ sung thanh điều hướng tuần ở phía trên (Tuần trước, Tuần hiện tại, Tuần sau, hoặc chọn tuần bất kỳ) để lọc lịch.
+### R1. Tích hợp dữ liệu động thực tế
+- Thay thế các giá trị cứng `$consultCount`, `$importedQuantity`, `$soldQuantity` trong [AdminDashboardController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminDashboardController.php).
+- `$consultCount`: Tổng số ca yêu cầu tư vấn chưa xử lý (trạng thái `pending` hoặc `new`) từ bảng `consultation_leads`, có lọc theo `center_id`.
+- `$importedQuantity`: Tổng số lượng vắc xin hiện có (tổng `available_quantity` + `reserved_quantity` từ bảng `inventory_lots`), có lọc theo `center_id`.
+- `$soldQuantity`: Tổng số vắc xin đã bán/tiêm hoàn tất (các registration có `booking_status` = 'completed'), có lọc theo `center_id`.
 
-### R2. Tính năng Sao chép lịch (Copy Schedule)
-* Cho phép người dùng sao chép toàn bộ danh sách khung giờ và công suất của một ngày sang một hoặc nhiều ngày khác trong tuần/tháng.
-* Giao diện cung cấp nút "Sao chép lịch" ở mỗi cột ngày. Khi click, hiển thị form lựa chọn các ngày đích (ví dụ: checklist các thứ trong tuần hoặc chọn khoảng ngày) để áp dụng cấu hình khung giờ của ngày gốc sang các ngày đích đó.
-* Có thông báo xác nhận và kiểm tra nếu ngày đích đã có khách hàng đặt lịch tiêm để tránh ghi đè làm mất lịch hẹn của khách.
+### R2. Thống kê ca tiêm hôm nay
+- Tính toán số ca tiêm dự kiến trong ngày hôm nay (`injection_date` bằng ngày hiện tại) và hiển thị một widget nổi bật trên Dashboard để nhân viên y tế theo dõi, có lọc theo `center_id`.
 
-### R3. Đảm bảo nghiệp vụ và bảo mật
-* Giữ nguyên và tương thích tốt với cơ chế tự động sinh lịch từ khung giờ mặc định đã phát triển.
-* Tuân thủ nghiêm ngặt phân quyền chi nhánh (Branch Admin chỉ quản lý được chi nhánh của mình; Super Admin có dropdown chọn chi nhánh).
-* Đảm bảo các hoạt động AJAX / Form Submit diễn ra mượt mà, không tải lại trang không cần thiết (SPA experience).
-
----
+### R3. Biểu đồ trực quan doanh thu & lượt đăng ký bằng SVG
+- Hiển thị biểu đồ thống kê xu hướng doanh thu và số lượng đơn tiêm chủng trong 7 ngày gần nhất hoặc 6 tháng gần nhất.
+- Sử dụng SVG thuần kết hợp CSS Tailwind/Vanilla có sẵn để đảm bảo tốc độ tải trang nhanh, không phụ thuộc thư viện JS bên ngoài.
+- Tuân thủ nghiêm ngặt bảng màu thương hiệu: Medicare Red (`#c8102e`), Medicare Gold (`#eaaa00`), Medicare Navy (`#004b8f`).
 
 ## Acceptance Criteria
 
-### Giao diện Bảng Lịch Tuần
-- [ ] Truy cập /admin/schedules hiển thị giao diện 7 cột song song của tuần hiện tại thay vì danh sách cuộn dọc.
-- [ ] Các nút điều hướng tuần hoạt động chính xác, cập nhật đúng danh sách ngày của tuần đó.
-- [ ] Bấm chỉnh sửa khung giờ (icon bút chì) hiển thị đúng modal với thông tin của khung giờ đó, lưu thay đổi và cập nhật lại giao diện không cần tải lại trang.
+### Thống kê chính xác và đồng bộ
+- [ ] Số liệu tư vấn, tồn kho, và đã bán được truy vấn và hiển thị động, khớp chính xác với dữ liệu trong database khi lọc theo từng chi nhánh hoặc tất cả chi nhánh.
+- [ ] Số ca tiêm dự kiến hôm nay hiển thị đúng theo thời gian thực của máy chủ.
 
-### Tính năng Sao chép lịch
-- [ ] Bấm nút "Sao chép lịch" hiển thị tùy chọn các ngày đích.
-- [ ] Xác nhận sao chép thành công sao chép toàn bộ khung giờ sang ngày đích trong cơ sở dữ liệu.
-- [ ] Ngăn chặn việc ghi đè nếu ngày đích đang có khách hàng đặt lịch tiêm (đã có lượt đặt reserved_count > 0).
-
-### Kiểm thử tự động
-- [ ] Viết test tự động trong tests/Feature/WeeklyCalendarDashboardTest.php kiểm tra việc hiển thị lịch tuần và sao chép lịch thành công.
-- [ ] Toàn bộ test suite vượt qua (Pass 100%) không có lỗi.
+### Giao diện và Biểu đồ
+- [ ] Biểu đồ SVG hiển thị đúng tỷ lệ, trực quan, có chú thích đầy đủ cho các cột hoặc đường dữ liệu.
+- [ ] Toàn bộ Dashboard đáp ứng chuẩn responsive trên di động và PC, không làm vỡ giao diện.
+- [ ] Sử dụng đúng hệ màu thương hiệu được định nghĩa trong [AGENTS.md](file:///home/hongphuoc/Desktop/thue/.agents/AGENTS.md).

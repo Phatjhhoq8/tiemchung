@@ -1,19 +1,16 @@
-## 2026-08-10T05:27:31Z
-You are the Codebase Explorer for Milestone 1: Weekly Calendar Grid Implementation.
-Working directory: /home/hongphuoc/Desktop/thue/.agents/explorer_m1
+## 2026-08-10T16:05:19Z
+Task: Perform comprehensive codebase exploration for Medicare Vaccine Registration Admin Dashboard Improvement project.
 
-Your task is to explore and analyze the existing codebase for vaccination schedule management:
-1. Locate and view key files:
-   - Routes: `routes/web.php` or module routes under `modules/VaccineRegistration/`
-   - Controllers: Schedule controllers (e.g. `ScheduleController.php`)
-   - Views: `modules/VaccineRegistration/resources/views/admin/schedules/index.blade.php` and any partials/modals
-   - Models: `VaccineSchedule.php`, `VaccineSlot.php`, `Center.php`, `Registration.php` or relevant Eloquent models
-   - Artisan commands / Services: Auto-schedule generation logic (`GenerateSchedulesCommand` or default time slot templates)
-   - Existing tests for schedules in `tests/`
-2. Analyze the database schema & model relationships for schedules, slots, centers, and bookings/registrations (`reserved_count`).
-3. Identify existing APIs, routes, or methods, and outline what new/modified controller methods, AJAX routes, and view components are needed for:
-   - R1: 7-column weekly grid UI, week navigation (prev/current/next/date picker), toggle day status, add slot, edit slot modal, delete slot, delete day schedule.
-   - R2: Copy schedule from source day to target days with validation guard checking `reserved_count > 0` on target days.
-   - R3: Branch Admin scope checks (`center_id`), SPA AJAX updates, compatibility with auto-schedule generator.
-4. Document your detailed investigation in `/home/hongphuoc/Desktop/thue/.agents/explorer_m1/handoff.md` and update `/home/hongphuoc/Desktop/thue/.agents/explorer_m1/progress.md`.
-5. When finished, send a message back with your handoff summary.
+1. Inspect `modules/VaccineRegistration/Http/Controllers/Admin/AdminDashboardController.php` (or actual controller path for Admin Dashboard).
+2. Inspect the dashboard Blade view template(s) rendered by the Admin Dashboard Controller.
+3. Inspect database schema, migrations, models, and relationships for:
+   - `consultation_leads` table & `ConsultationLead` model (check status column, center_id column)
+   - `inventory_lots` table & `InventoryLot` model (check available_quantity, reserved_quantity, center_id column)
+   - `registrations` table & `Registration` model (check booking_status, injection_date, center_id, price/total_price columns)
+   - `centers` / `branches` table & `Center` model
+   - Center filtering mechanism (how request('center_id') or session center filter is used in Admin controllers)
+4. Inspect how revenue trends and registration counts over the last 7 days or 6 months are calculated or can be queried efficiently with center_id filter.
+5. Check existing test files under `tests/` to see existing patterns for admin dashboard tests.
+6. Verify brand colors defined in `AGENTS.md` and `COLOR_RULE.md` (#c8102e, #eaaa00, #004b8f).
+
+Write your detailed findings and recommendations to `/home/hongphuoc/Desktop/thue/.agents/explorer_m1/handoff.md` and send a summary message back to parent.

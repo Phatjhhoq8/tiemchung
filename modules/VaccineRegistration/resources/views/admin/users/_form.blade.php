@@ -24,13 +24,14 @@
         </div>
         <div class="form-group-modern" style="margin-bottom:0;">
             <label class="form-label-modern" for="password">Mật khẩu {{ $user->exists ? '(để trống nếu không đổi)' : '*' }}</label>
-            <input class="form-control-modern" type="password" id="password" name="password" {{ $user->exists ? '' : 'required' }} minlength="6">
+            <input class="form-control-modern" type="password" id="password" name="password" {{ $user->exists ? '' : 'required' }} minlength="12" autocomplete="new-password">
+            <small style="display:block; margin-top:8px; color:#64748b;">Ít nhất 12 ký tự, gồm chữ hoa, chữ thường, số và ký hiệu. Người dùng sẽ phải đổi mật khẩu tạm này khi đăng nhập.</small>
         </div>
         <div class="form-group-modern" style="margin-bottom:0;">
             <label class="form-label-modern" for="role">Quyền *</label>
             <select class="form-control-modern" id="role" name="role" required style="background-image:none;" onchange="toggleCenterSelect()">
-                <option value="branch_admin" {{ old('role', $user->role) === 'branch_admin' ? 'selected' : '' }}>Admin chi nhánh</option>
-                <option value="super_admin" {{ old('role', $user->role) === 'super_admin' ? 'selected' : '' }}>Admin gốc</option>
+                <option value="branch_admin" {{ old('role', $user->role) === 'branch_admin' ? 'selected' : '' }}>Quản trị viên chi nhánh</option>
+                <option value="super_admin" {{ old('role', $user->role) === 'super_admin' ? 'selected' : '' }}>Quản trị viên cấp cao</option>
             </select>
         </div>
         <div class="form-group-modern" style="margin-bottom:0;" id="centerField">

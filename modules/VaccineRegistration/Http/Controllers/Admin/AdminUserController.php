@@ -4,6 +4,7 @@ namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\AdminPasswordPolicy;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Support\AdminContext;
@@ -12,16 +13,16 @@ class AdminUserController extends Controller
 {
     public function index(Request $request)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền quản lý tài khoản quản trị.');
 
         $query = User::with('center');
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('username', 'like', '%' . $search . '%')
-                  ->orWhere('email', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('username', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%');
             });
         }
 
@@ -34,25 +35,28 @@ class AdminUserController extends Controller
         }
 
         $users = $query->orderBy('role')->orderBy('name')->paginate(15)->withQueryString();
+
         return view('vaccine::admin.users.index', compact('users'));
     }
 
     public function create()
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền tạo tài khoản quản trị.');
 
         $user = new User(['role' => 'branch_admin', 'is_active' => true]);
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
+
         return view('vaccine::admin.users.create', compact('user', 'centers'));
     }
 
     public function store(Request $request)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền tạo tài khoản quản trị.');
 
         $validated = $this->validateUser($request);
-        $validated['password'] = $validated['password'];
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['must_change_password'] = true;
+        $validated['password_changed_at'] = null;
         if ($validated['role'] === 'super_admin') {
             $validated['center_id'] = null;
         }
@@ -64,19 +68,23 @@ class AdminUserController extends Controller
 
     public function edit(User $user)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền chỉnh sửa tài khoản quản trị.');
 
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
+
         return view('vaccine::admin.users.edit', compact('user', 'centers'));
     }
 
     public function update(Request $request, User $user)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền chỉnh sửa tài khoản quản trị.');
 
         $validated = $this->validateUser($request, $user);
         if (empty($validated['password'])) {
             unset($validated['password']);
+        } else {
+            $validated['must_change_password'] = true;
+            $validated['password_changed_at'] = null;
         }
         $validated['is_active'] = $request->boolean('is_active');
         if ($validated['role'] === 'super_admin') {
@@ -90,7 +98,7 @@ class AdminUserController extends Controller
 
     public function destroy(User $user)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền vô hiệu hóa tài khoản quản trị.');
 
         if ($user->id === AdminContext::user()?->id) {
             return back()->with('error', 'Không thể xóa tài khoản đang đăng nhập.');
@@ -107,17 +115,16 @@ class AdminUserController extends Controller
     {
         $id = $user?->id ?: 'NULL';
 
+        $passwordRules = [$user ? 'nullable' : 'required', 'string', AdminPasswordPolicy::rule()];
+
         return $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username,' . $id,
-            'email' => 'required|email|max:255|unique:users,email,' . $id,
-            'password' => ($user ? 'nullable' : 'required') . '|string|min:8|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/',
+            'username' => 'required|string|max:255|unique:users,username,'.$id,
+            'email' => 'required|email|max:255|unique:users,email,'.$id,
+            'password' => $passwordRules,
             'role' => 'required|in:super_admin,branch_admin',
             'center_id' => 'required_if:role,branch_admin|nullable|exists:centers,id',
             'is_active' => 'nullable|boolean',
-        ], [
-            'password.min' => 'Mật khẩu phải dài ít nhất 8 ký tự.',
-            'password.regex' => 'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường và 1 chữ số.',
         ]);
     }
 }

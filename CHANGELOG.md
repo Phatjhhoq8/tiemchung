@@ -1,5 +1,51 @@
 # Release Notes
 
+## [v6.3.1] - 2026-08-10
+
+### Removed
+
+* **Admin Vaccine List - Remove irrelevant date filters**: Removed the Day/Month/Year filter dropdowns from the vaccine management list (`admin/vaccines/index.blade.php`) as vaccines have no expiry date, import date, or manufacture date fields. Also cleaned up corresponding validation rules and query logic in `AdminVaccineController`.
+
+## [v6.3.0] - 2026-08-10
+
+### Added & Improved
+
+* **Admin Dashboard Improvements (Requirements R1, R2, R3)**:
+  - **R1 Dynamic Metrics Integration**: Replaced hardcoded zeroes in `AdminDashboardController` with live database queries for unprocessed consultation leads (`consultation_leads` status in `pending`/`new`), total vaccine inventory (`inventory_lots` sum of `available_quantity + reserved_quantity`), and total vaccines sold (`registrations` status `completed`), all scoped dynamically by center ID when filtered.
+  - **R2 Today's Injections Widget**: Added a prominent medical tracking widget to the admin dashboard (`dashboard.blade.php`) displaying the total expected injection appointments for today (`injection_date` = current date), styled with Medicare Navy and Gold highlights for medical staff tracking.
+  - **R3 Pure SVG Revenue & Registrations Trend Charts**: Implemented visual SVG charts (`<svg viewBox="...">`, `<polyline>`, `<path>`, `<circle>`) for 7-day daily trends and 6-month monthly trends, supporting dual metric tracking (paid revenue and total registrations count) using the official Medicare color theme (`#c8102e` Medicare Red, `#004b8f` Medicare Navy, `#eaaa00` Medicare Gold) with interactive tab toggle between daily and monthly views.
+  - **Automated Feature Test Suite**: Added `tests/Feature/AdminDashboardTest.php` to verify dashboard loading, DB dynamic metrics calculation, center scoping, today's injection count accuracy, and SVG chart rendering structure with 100% test pass rate.
+
+## [v6.2.0] - 2026-08-10
+
+### Added & Improved
+
+* **Real-Time AJAX Filtering & Flexible Date Filters**:
+  - **Backend Controller Scopes & Partial Views**: Enhanced all 5 admin controllers (`AdminRegistrationController`, `AdminCustomerController`, `AdminConsultationLeadController`, `AdminVaccineController`, `AdminCenterController`) to support flexible Day (1-31), Month (1-12), and Year dropdown query filtering in any combination (`whereDay`, `whereMonth`, `whereYear`) targeting module date fields (`injection_date` or `created_at`).
+  - **Modular Blade Table Partial Extraction**: Extracted table markup and pagination controls into partial Blade views (`_table.blade.php`) across all 5 admin modules (`registrations`, `customers`, `leads`, `vaccines`, `centers`).
+  - **Frontend Real-Time AJAX Engine & URL Sync**: Built a lightweight Vanilla JS engine with a 300ms debounce on search text input, instant refresh on dropdown changes, pagination link click interception, Medicare Red loading indicator, `pushState`/`popstate` browser URL synchronization, and automated `lucide.createIcons()` re-rendering.
+  - **Automated Test Suite**: Added `tests/Feature/AdminAjaxFilteringTest.php` covering AJAX search & filter endpoints, flexible date combinations, AJAX pagination responses, and query parameter retention.
+
+## [v6.1.2] - 2026-08-10
+
+### Fixed
+
+* **Remove Hardcoded Center Name in Global Pages**: Removed the hardcoded clinic name suffix `Medicare Cờ Đỏ` from the admin login page title and body text to align with the system-wide scope. Updated default settings fallbacks and all admin view page title suffixes to use generic `Medicare` instead of the specific `Medicare Cờ Đỏ` branch, ensuring consistency across all center administration interfaces.
+* **Redesign Admin Action Buttons to Prevent Clutter**:
+  - Implemented an action dropdown menu (`btn-action-trigger`, `action-dropdown-menu`, `dropdown-item-action` in [admin.blade.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/layouts/admin.blade.php)) and integrated a global toggle JavaScript listener to streamline multi-button tables.
+  - Refactored the Vaccine management list ([index.blade.php (vaccines)](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/vaccines/index.blade.php)) to compress 4 actions (`Featured`, `Stock`, `Edit`, `Delete`) into a single three-dot horizontal action trigger, shrinking the column width from ~350px to ~50px.
+  - Revamped Banners ([index.blade.php (banners)](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/banners/index.blade.php)), Centers ([index.blade.php (centers)](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/centers/index.blade.php)), Articles ([index.blade.php (articles)](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/articles/index.blade.php)), and Users ([index.blade.php (users)](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/users/index.blade.php)) index views to use modern icon-only action buttons (Edit & Delete) with HTML `title` tooltips, narrowing action columns from 160px to ~90px.
+* **Improve Admin Filters & Merge Redundant Vaccine Columns**:
+  - Added dynamic date range filtering (`injection_date_from` and `injection_date_to`) and a reset filter button to the Registration management list ([index.blade.php (registrations)](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/registrations/index.blade.php) and [AdminRegistrationController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminRegistrationController.php)) to facilitate date-based appointment screening and export operations.
+  - Merged the redundant `Tồn kho` (Stock) and `Tình trạng` (Status) columns in the Vaccine management table ([index.blade.php (vaccines)](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/vaccines/index.blade.php)) into a single unified `Tồn kho / Trạng thái` cell, enhancing data density and aesthetics.
+* **Fix Missing Center ID Validation on Schedule Creation**: Resolved validation exception `The center id field is required.` in the weekly schedule dashboard ([AdminScheduleController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminScheduleController.php)) by automatically falling back to the first active center when no center is specified in session or request.
+
+## [v6.1.1] - 2026-08-10
+
+### Fixed & Improved
+
+* **Faded Placeholder Inputs**: Added custom global stylesheet configurations in [style.css](file:///home/hongphuoc/Desktop/thue/public/css/style.css) for input and textarea placeholders (`::placeholder`) to make them faded to a clean slate gray (`#94a3b8` in light mode, `#64748b` in dark mode) ensuring clarity that they are guidance texts, and avoiding duplicate lookups on input forms.
+
 ## [v6.1.0] - 2026-08-10
 
 ### Added

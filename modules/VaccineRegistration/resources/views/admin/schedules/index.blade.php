@@ -358,7 +358,7 @@
                         <button type="button" 
                                 class="day-status-btn {{ $day['is_active'] ? 'active' : 'inactive' }}"
                                 onclick="toggleDayStatus('{{ $day['date'] }}', {{ $day['is_active'] ? 0 : 1 }})"
-                                title="Click để {{ $day['is_active'] ? 'Đóng ngày' : 'Mở ngày' }}">
+                                title="Nhấn để {{ $day['is_active'] ? 'đóng ngày' : 'mở ngày' }}">
                             {{ $day['is_active'] ? 'Mở cửa' : 'Đóng cửa' }}
                         </button>
                     </div>
@@ -624,7 +624,7 @@
             return;
         }
 
-        if (!confirm(`Bạn có chắc chắn muốn xóa toàn bộ lịch và khung giờ ngày ${formattedDate}?`)) {
+        if (!await window.AppDialog.confirm(`Bạn có chắc chắn muốn xóa toàn bộ lịch và khung giờ ngày ${formattedDate}?`)) {
             return;
         }
 
@@ -766,9 +766,9 @@
         const reservedCount = parseInt(document.getElementById('edit_reserved_count').textContent, 10);
 
         if (reservedCount > 0) {
-            if (!confirm(`Khung giờ này đang có ${reservedCount} lượt đặt hẹn. Bạn có chắc chắn muốn xóa?`)) return;
+            if (!await window.AppDialog.confirm(`Khung giờ này đang có ${reservedCount} lượt đặt hẹn. Bạn có chắc chắn muốn xóa?`)) return;
         } else {
-            if (!confirm('Bạn có chắc chắn muốn xóa khung giờ này?')) return;
+            if (!await window.AppDialog.confirm('Bạn có chắc chắn muốn xóa khung giờ này?')) return;
         }
 
         try {

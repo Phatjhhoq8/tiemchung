@@ -20,7 +20,7 @@
                     <div style="text-align: center; padding: 40px; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);" data-aos="fade-up">
                         <i data-lucide="help-circle" style="width: 56px; height: 56px; color: var(--secondary-color, #eaaa00); margin: 0 auto 16px auto;"></i>
                         <h3 style="font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 10px; text-align: center; display: block;">Bạn chưa chọn vắc xin nào</h3>
-                        <p style="color: #64748b; margin-bottom: 24px; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.5; font-size: 14.5px; text-align: center;">Bạn có muốn tham khảo các gói vắc xin ưu đãi thiết kế sẵn hoặc gửi yêu cầu tư vấn để bác sĩ Medicare liên hệ ngay?</p>
+                        <p style="color: #64748b; margin-bottom: 24px; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.5; font-size: 14.5px; text-align: center;">Bạn có thể chọn vắc xin từ danh mục hoặc gửi yêu cầu để bác sĩ Medicare tư vấn phác đồ phù hợp.</p>
                         <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
                             <a href="{{ route('vaccine.index') }}" class="btn-primary" style="background: var(--secondary-color, #eaaa00); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; min-width: 160px;">Chọn vắc xin</a>
                             <button type="button" onclick="renderConsultationForm()" class="btn-primary" style="background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; min-width: 160px;">Yêu cầu tư vấn</button>
@@ -55,10 +55,10 @@
                                 <label style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: justify;">Hình thức tư vấn <span style="color:#ef4444;">*</span></label>
                                 <div style="display: inline-flex; width: 100%; background: #f1f5f9; border-radius: 30px; padding: 4px; border: 1px solid #cbd5e1; box-sizing: border-box;">
                                     <button type="button" id="btnConsultOnline" onclick="setConsultType('online')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: var(--primary-color, #c8102e); color: #ffffff; text-align: center;">
-                                        Tư vấn qua điện thoại (Online)
+                                        Tư vấn qua điện thoại (trực tuyến)
                                     </button>
                                     <button type="button" id="btnConsultOffline" onclick="setConsultType('offline')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: transparent; color: #475569; text-align: center;">
-                                        Tư vấn tại trung tâm (Offline)
+                                        Tư vấn tại trung tâm
                                     </button>
                                     <input type="hidden" name="consultType" id="consultTypeValue" value="online">
                                 </div>
@@ -145,7 +145,7 @@
                     el.classList.add('hidden');
                 });
 
-                if (!confirm('Bạn có thực sự muốn gửi yêu cầu tư vấn tiêm chủng này không?')) {
+                if (!await window.AppDialog.confirm('Bạn có thực sự muốn gửi yêu cầu tư vấn tiêm chủng này không?')) {
                     return;
                 }
 
@@ -187,20 +187,12 @@
                         throw new Error(data.message || 'Gửi yêu cầu thất bại.');
                     }
 
-                    if (typeof showToast === 'function') {
-                        showToast(data.message || 'Yêu cầu tư vấn đã được gửi thành công!', 'success');
-                    } else {
-                        alert(data.message || 'Yêu cầu tư vấn đã được gửi thành công!');
-                    }
+                    showToast(data.message || 'Yêu cầu tư vấn đã được gửi thành công!', 'success');
                     form.reset();
                     renderEmptyWarning();
                 } catch (err) {
                     console.error(err);
-                    if (typeof showToast === 'function') {
-                        showToast(err.message || 'Có lỗi xảy ra khi gửi yêu cầu.', 'error');
-                    } else {
-                        alert(err.message || 'Có lỗi xảy ra khi gửi yêu cầu.');
-                    }
+                    showToast(err.message || 'Có lỗi xảy ra khi gửi yêu cầu.', 'error');
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i data-lucide="send" style="width:16px;height:16px;"></i> Gửi yêu cầu';
@@ -249,6 +241,21 @@
                 <form action="{{ route('register.post') }}" method="POST" id="publicRegisterForm" onsubmit="handlePublicRegisterSubmit(event)">
                     @csrf
                     <input type="hidden" name="idempotency_key" value="{{ old('idempotency_key', (string) \Illuminate\Support\Str::uuid()) }}">
+
+                    <div style="padding:16px; margin-bottom:20px; border:1px solid #bfdbfe; border-radius:10px; background:#eff6ff;">
+                        <h3 style="margin:0 0 6px; font-size:15px;">Tài khoản tích điểm toàn hệ thống</h3>
+                        <p style="margin:0 0 14px; color:#475569; font-size:13px;">Một số điện thoại dùng chung cho toàn bộ người tiêm trong đơn và tại mọi chi nhánh.</p>
+                        <div class="spa-form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                            <div class="form-group" style="margin:0;">
+                                <label for="account_name">Họ tên chủ tài khoản <span class="required">*</span></label>
+                                <input id="account_name" name="account_name" value="{{ old('account_name') }}" required autocomplete="name" style="width:100%; box-sizing:border-box; height:42px; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label for="account_phone">Số điện thoại tài khoản <span class="required">*</span></label>
+                                <input id="account_phone" type="tel" name="account_phone" value="{{ old('account_phone') }}" required autocomplete="tel" placeholder="0912345678" style="width:100%; box-sizing:border-box; height:42px; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Patients List Container -->
                     <div id="patientsContainer" style="display: flex; flex-direction: column; gap: 20px;"></div>
@@ -423,7 +430,7 @@
                     </div>
                     
                     <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
-                        <label>Số điện thoại liên hệ <span class="required">*</span></label>
+                        <label>Số điện thoại người tiêm / liên hệ <span class="required">*</span></label>
                         <input type="tel" name="patients[${index}][phone]" placeholder="Ví dụ: 0912345678" required style="padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box; height: 42px;">
                     </div>
                 </div>
@@ -524,11 +531,7 @@
     function validatePublicRegisterForm() {
         const patientBlocks = document.querySelectorAll('.patient-form-block');
         if (patientBlocks.length === 0) {
-            if (typeof showToast === 'function') {
-                showToast('Vui lòng thêm ít nhất một người tiêm.', 'error');
-            } else {
-                alert('Vui lòng thêm ít nhất một người tiêm.');
-            }
+            showToast('Vui lòng thêm ít nhất một người tiêm.', 'error');
             return false;
         }
         
@@ -536,11 +539,7 @@
             const block = patientBlocks[i];
             const checked = block.querySelectorAll('.patient-vaccine-checkbox:checked');
             if (checked.length === 0) {
-                if (typeof showToast === 'function') {
-                    showToast(`Vui lòng chọn ít nhất một loại vắc xin cho Người tiêm #${i + 1}.`, 'error');
-                } else {
-                    alert(`Vui lòng chọn ít nhất một loại vắc xin cho Người tiêm #${i + 1}.`);
-                }
+                showToast(`Vui lòng chọn ít nhất một loại vắc xin cho Người tiêm #${i + 1}.`, 'error');
                 return false;
             }
         }
@@ -554,8 +553,7 @@
             return;
         }
 
-        if (typeof showConfirmDialog === 'function') {
-            showConfirmDialog({
+        showConfirmDialog({
                 title: 'Xác nhận đặt lịch',
                 message: 'Bạn có chắc chắn muốn hoàn tất đặt lịch tiêm chủng này không?',
                 confirmText: 'Xác nhận',
@@ -571,16 +569,7 @@
                     }
                     document.getElementById('publicRegisterForm').submit();
                 }
-            });
-        } else {
-            if (confirm('Bạn có chắc chắn muốn hoàn tất đặt lịch tiêm chủng này không?')) {
-                const submitBtn = document.querySelector('.btn-submit-registration');
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                }
-                document.getElementById('publicRegisterForm').submit();
-            }
-        }
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {

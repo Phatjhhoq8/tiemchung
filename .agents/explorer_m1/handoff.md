@@ -1,139 +1,141 @@
-# Handoff Report: Milestone 1 - Weekly Calendar Grid Implementation Exploration
+# Handoff Report: Admin Dashboard Exploration & Requirements Analysis
+
+- **Agent**: explorer_m1
+- **Working Directory**: `/home/hongphuoc/Desktop/thue/.agents/explorer_m1`
+- **Date**: 2026-08-10
+
+---
 
 ## 1. Observation
 
-Direct observations from examining the project files and database migrations:
-
-### A. Routes Configuration
-- **File**: `modules/VaccineRegistration/routes/web.php` (Lines 140-145)
-- **Current Defined Routes**:
+### 1.1. Controller Analysis
+- **File**: `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminDashboardController.php`
+- **Lines 23-32**: Reads center list and resolves branch context using `AdminContext::resolveListCenterId($request)`:
   ```php
-  Route::get('/default-slots', [AdminDefaultSlotController::class, 'index'])->name('default-slots.index');
-  Route::post('/default-slots/update', [AdminDefaultSlotController::class, 'update'])->name('default-slots.update');
-  Route::resource('schedules', AdminScheduleController::class)->only(['index', 'store', 'update', 'destroy']);
-  Route::post('/schedules/{schedule}/slots', [AdminScheduleController::class, 'storeSlot'])->name('schedules.slots.store');
-  Route::resource('slots', AdminSlotController::class)->only(['store', 'update', 'destroy']);
+  $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
+  $selectedCenterId = AdminContext::resolveListCenterId($request);
   ```
-- **Finding**: There is currently no `copy` route defined for schedules (e.g. `POST /admin/schedules/copy`).
+- **Lines 34-39**: Aggregates registration stats via a single query:
+  ```php
+  $stats = (clone $registrationQuery)->selectRaw("
+      COUNT(*) as total_registrations,
+      COALESCE(SUM(CASE WHEN payment_status = 'paid' THEN total_price - points_discount_amount ELSE 0 END), 0) as total_revenue,
+      COALESCE(SUM(CASE WHEN payment_status = 'unpaid' AND booking_status != 'cancelled' THEN 1 ELSE 0 END), 0) as pending_count,
+      COALESCE(SUM(CASE WHEN booking_status = 'completed' THEN 1 ELSE 0 END), 0) as completed_count
+  ")->first();
+  ```
+- **Lines 45-47**: Hardcoded zero counts:
+  ```php
+  $consultCount = 0;
+  $importedQuantity = 0;
+  $soldQuantity = 0;
+  ```
+- **Lines 49-66**: Loads 8 recent registrations, active vaccine count (`vaccinesCount`), center count (`centersCount`), and passes them to view `vaccine::admin.dashboard`.
+- **Missing Features**:
+  - `consultCount` is not dynamically queried from `consultation_leads`.
+  - `importedQuantity` and `soldQuantity` are not dynamically queried from `inventory_lots`.
+  - No trend calculations or datasets for 7-day or 6-month revenue & registration charts.
 
-### B. Controllers & Business Logic
-- **`AdminScheduleController.php`** (`modules/VaccineRegistration/Http/Controllers/Admin/AdminScheduleController.php`):
-  - `index(Request $request)` (Lines 17-42): Calls `Schedule::generateFromDefaults($selectedCenterId, today(), today()->addDays(30))` when a center is selected, then queries `Schedule::with(['center', 'slots'])` filtered by `$request->input('date')` if present, and returns `latest('date')->paginate(15)`.
-  - `store(Request $request)` (Lines 47-101): Validates `center_id`, `date`, `note`, `is_active`, and `slots` array (`start_at`, `end_at`, `capacity`, `is_active`). Performs `Schedule::updateOrCreate` and `firstOrCreate` on slots.
-  - `update(Request $request, $id)` (Lines 125-148): Updates `date`, `note`, `is_active` status of a schedule after checking `AdminContext::assertCanManageCenter`.
-  - `destroy(Request $request, $id)` (Lines 153-169): Deletes schedule by ID after checking `AdminContext::assertCanManageCenter`.
-  - `storeSlot(Request $request, $scheduleId)` (Lines 174-204): Creates a new slot for an existing schedule.
-- **`AdminSlotController.php`** (`modules/VaccineRegistration/Http/Controllers/Admin/AdminSlotController.php`):
-  - `update(Request $request, $id)` (Lines 79-107): Checks `capacity >= reserved_count` before updating slot capacity.
-  - `destroy(Request $request, $id)` (Lines 112-128): Deletes a slot after checking `AdminContext::assertCanManageCenter`.
-- **`AdminDefaultSlotController.php`** (`modules/VaccineRegistration/Http/Controllers/Admin/AdminDefaultSlotController.php`):
-  - Manages weekly default slots (day 1 = Monday to 7 = Sunday) stored in `default_slots` table.
+### 1.2. Blade View & Design System
+- **View File**: `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/dashboard.blade.php`
+- **Layout File**: `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/layouts/admin.blade.php`
+- **Layout CSS Variables (Lines 40-71 in admin.blade.php)**:
+  ```css
+  --primary-color: #c8102e;       /* Medicare Red */
+  --primary-hover: #a00d24;
+  --secondary-color: #eaaa00;     /* Medicare Gold */
+  --accent-color: #004b8f;        /* Medicare Navy */
+  --accent-hover: #00386c;
+  ```
+- **Contrast & Style Rules (`file:///home/hongphuoc/Desktop/thue/.agents/COLOR_RULE.md`)**:
+  - Red background (`#c8102e`) requires white text (`#ffffff`).
+  - White background (`#ffffff`) requires dark text (`#0f172a` / `#1e293b`).
+  - Gold (`#eaaa00`) is restricted to text highlights / accent icons, NOT solid background fill for buttons or cards.
 
-### C. Views
-- **`index.blade.php`** (`modules/VaccineRegistration/resources/views/admin/schedules/index.blade.php`):
-  - Lines 15-53: Top card with form to open custom schedule for a single date (`<input type="date">`) with dynamically added slot rows.
-  - Lines 55-118: Bottom card with date filter and a paginated vertical list (`$schedules->paginate(15)`) displaying schedules and inline slot badges.
-  - Lines 121-172: Edit Slot Modal (`editSlotModal`) supporting slot edit and delete.
-  - **Finding**: Currently displays a paginated list of schedules, NOT a 7-column weekly grid. Needs total UI redesign to present a 7-column calendar grid (Monday to Sunday) with week navigation controls.
+### 1.3. Database Schema & Entities
+1. **`consultation_leads` Table & `ConsultationLead` Model**:
+   - Model: `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/ConsultationLead.php`
+   - Migration: `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Database/Migrations/2026_08_01_000001_create_consultation_leads_table.php`
+   - Columns: `id`, `name`, `phone`, `source`, `status` (default `'new'`), `note`, `center_id` (foreign key to `centers`, nullable), `created_at`, `updated_at`.
+   - Relationship: `center()` belongs to `Center`.
+2. **`inventory_lots` Table & `InventoryLot` Model**:
+   - Model: `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/InventoryLot.php`
+   - Migration: `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Database/Migrations/2026_08_01_000004_create_inventory_lots_and_stock_movements_tables.php`
+   - Columns: `id`, `vaccine_id`, `center_id`, `lot_number`, `initial_quantity`, `available_quantity`, `reserved_quantity` (default 0), `expires_at`, `status` (default `'active'`), `created_at`, `updated_at`.
+   - Relationships: `vaccine()`, `center()`, `stockMovements()`.
+3. **`registrations` Table & `Registration` Model**:
+   - Model: `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/Registration.php`
+   - Migrations:
+     - `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Database/Migrations/2026_07_17_000002_create_registrations_table.php`
+     - `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Database/Migrations/2026_07_31_000003_add_center_id_to_registrations_table.php`
+     - `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Database/Migrations/2026_08_02_000002_extend_registrations_for_customer_booking_and_payment.php`
+   - Key Columns: `id`, `registration_code`, `patient_name`, `patient_phone`, `center_id`, `center_name`, `injection_date`, `status`, `booking_status`, `payment_status`, `total_price`, `points_discount_amount`, `paid_at`, `created_at`.
+   - Built-in composite indexes:
+     - `['center_id', 'injection_date']`
+     - `['center_id', 'payment_status', 'created_at']`
+     - `['customer_id', 'created_at']`
+4. **`centers` Table & `Center` Model**:
+   - Model: `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Models/Center.php`
+   - Key Scope: `Center::active()` filters `is_active = true`.
 
-### D. Data Models & Database Schema
-- **`Schedule.php`** (`modules/VaccineRegistration/Models/Schedule.php`):
-  - Table `schedules`: `id`, `center_id`, `date` (date), `is_active` (bool), `note`, `created_at`, `updated_at`.
-  - Unique index: `['center_id', 'date']` (Migration `2026_08_02_000003_harden_schedule_slot_indexes.php`).
-  - Helper method `Schedule::generateFromDefaults($centerId, $startDate, $endDate)` (Lines 34-73): Uses `firstOrCreate` to safely generate missing schedules and default slots from `default_slots` without overwriting existing schedules.
-- **`Slot.php`** (`modules/VaccineRegistration/Models/Slot.php`):
-  - Table `slots`: `id`, `schedule_id`, `start_at` (H:i), `end_at` (H:i), `capacity` (int), `reserved_count` (int), `is_active` (bool), `created_at`, `updated_at`.
-  - Unique index: `['schedule_id', 'start_at', 'end_at']` (Migration `2026_08_02_000004_harden_slot_uniqueness.php`).
-- **`Registration.php`** (`modules/VaccineRegistration/Models/Registration.php`):
-  - Table `registrations`: `slot_id` foreign key referencing `slots.id`.
-  - `reserved_count` on `Slot` tracks active patient bookings.
+### 1.4. Center Context & Filtering Mechanism
+- Helper: `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Support/AdminContext.php`
+- Method: `AdminContext::resolveListCenterId(Request $request)`
+  - SuperAdmin: Resolves `$request->input('center_id')` or session `admin_selected_center_id`. Returns `int` or `null` (All Centers). Automatically updates session when `$request->has('center_id')`.
+  - BranchAdmin: Strictly returns user's `$user->center_id`. Throws `403` if a branch admin tries to pass another center's ID.
 
-### E. Branch Security Context
-- **`AdminContext.php`** (`modules/VaccineRegistration/Support/AdminContext.php`):
-  - `AdminContext::resolveListCenterId($request)` enforces branch selection: branch admin is locked to `user->center_id` (returns 403 if trying to access other centers).
-  - `AdminContext::assertCanManageCenter($centerId)` checks if user is super admin or branch admin assigned to `$centerId`.
-
-### F. Tests
-- `tests/Feature/SchedulesSlotsConcurrencyTest.php`: Verifies schedule creation, slot capacity limits, and branch isolation.
-- `tests/Feature/AdminDefaultSlotsTest.php`: Verifies default slot updates and `Schedule::generateFromDefaults()` behavior.
+### 1.5. Existing Test Suite Patterns
+- Test Files: `file:///home/hongphuoc/Desktop/thue/tests/Feature/AdminRootGlobalBranchContextTest.php`, `file:///home/hongphuoc/Desktop/thue/tests/Feature/AdminAjaxFilteringTest.php`
+- Uses `DatabaseTransactions` trait.
+- Uses `actingAsAdmin(User $user)` / `actingAsSuperAdmin()` helper methods setting session keys (`admin_logged_in`, `admin_user_id`, `admin_role`, `admin_center_id`).
 
 ---
 
 ## 2. Logic Chain
 
-From the observations above, the logic chain to implement Milestone 1 is as follows:
+1. **Hardcoded Stats Replacement**:
+   - **Observation 1.1**: Lines 45-47 set `$consultCount = 0`, `$importedQuantity = 0`, `$soldQuantity = 0`.
+   - **Observation 1.3**: `consultation_leads` has `center_id` and `status`. `inventory_lots` has `center_id`, `initial_quantity`, `available_quantity`, `reserved_quantity`.
+   - **Deduction**: We can replace hardcoded values with real queries scoped by `$selectedCenterId`:
+     - `$consultCount`: `ConsultationLead::when($selectedCenterId, fn($q) => $q->where('center_id', $selectedCenterId))->count()` (or `where('status', 'new')` depending on business decision; total count is standard).
+     - `$importedQuantity`: `InventoryLot::when($selectedCenterId, fn($q) => $q->where('center_id', $selectedCenterId))->sum('initial_quantity')`.
+     - `$soldQuantity`: `InventoryLot::when($selectedCenterId, fn($q) => $q->where('center_id', $selectedCenterId))->sum('reserved_quantity')` or `sum(initial_quantity - available_quantity)`.
 
-1. **R1: 7-Column Weekly Grid Implementation**:
-   - **Week Resolution**: In `AdminScheduleController::index`, calculate week start (Monday) and week end (Sunday) using Carbon based on `$request->input('week')` or `$request->input('date')` (defaulting to current week `now()->startOfWeek()`).
-   - **Auto-Generation Range**: Change the generator call from `today() -> today()->addDays(30)` to `Schedule::generateFromDefaults($selectedCenterId, $weekStart->toDateString(), $weekEnd->toDateString())` so the displayed 7 days are always populated if default template slots exist.
-   - **Data Structure**: Build an array of 7 day items (Monday to Sunday). For each date, fetch the `Schedule` model with its `slots`. Calculate total capacity and total `reserved_count` for each day.
-   - **UI Component Structure**:
-     - Top bar: Week navigation buttons ("Tuần trước", "Tuần hiện tại", "Tuần sau", `<input type="date">` picker) and displaying the current week date range header (e.g. `10/08/2026 - 16/08/2026`).
-     - 7-Column CSS Grid (`grid-template-columns: repeat(7, 1fr)` responsive layout).
-     - Day Column Header: Displays Day Name (Thứ 2 → Chủ nhật), formatted date (`d/m/Y`), status badge (Active/Closed toggle button), summary metrics (`reserved_count / capacity`), "Thêm khung giờ" button, "Sao chép lịch" button, and "Xóa lịch ngày" button.
-     - Slots List in Column: Displays slot badges with time range, `reserved_count/capacity`, active state toggle, and edit button triggering `editSlotModal`.
+2. **Revenue Trends & Registration Counts (7 Days / 6 Months)**:
+   - **Observation 1.3**: `registrations` table has composite index `['center_id', 'payment_status', 'created_at']`.
+   - **Observation 1.4**: `$selectedCenterId` is provided by `AdminContext::resolveListCenterId($request)`.
+   - **Deduction**:
+     - **Last 7 Days (Daily)**: Query `Registration::query()`, filter by `$selectedCenterId` if set, where `created_at >= now()->subDays(6)->startOfDay()`, select `DATE(created_at) as date`, `COUNT(*) as count`, `SUM(CASE WHEN payment_status = 'paid' THEN total_price - points_discount_amount ELSE 0 END) as revenue`, grouped by `DATE(created_at)`. Map over the 7 dates to fill missing zero dates.
+     - **Last 6 Months (Monthly)**: Query `Registration::query()`, filter by `$selectedCenterId` if set, where `created_at >= now()->subMonths(5)->startOfMonth()`, select `DATE_FORMAT(created_at, '%Y-%m') as month`, `COUNT(*) as count`, `SUM(CASE WHEN payment_status = 'paid' THEN total_price - points_discount_amount ELSE 0 END) as revenue`, grouped by `DATE_FORMAT(created_at, '%Y-%m')`. Map over the 6 months to fill missing zero months.
 
-2. **R2: Copy Schedule Feature & Safety Validation Guard**:
-   - **New Route**: `POST /admin/schedules/copy` mapped to `AdminScheduleController::copySchedule` (`admin.schedules.copy`).
-   - **Validation Logic**:
-     - Request validation: `center_id`, `source_date`, `target_dates` (array of target date strings).
-     - Scope check: `AdminContext::assertCanManageCenter($centerId)`.
-     - Source Schedule check: Ensure `source_date` schedule exists and has slots.
-     - **Safety Guard (`reserved_count > 0`)**: For each date in `target_dates`, check if a schedule exists on `target_date` for `$centerId`. If existing target slots have `reserved_count > 0` (or linked `Registration` records), **REJECT** the copy operation for that day with a clear error: `"Không thể sao chép đè lịch ngày {date} vì đã có {count} lượt đặt tiêm!"`.
-     - Transaction Execution: For target dates with zero bookings (`reserved_count == 0`), delete existing slots, update/create target `Schedule`, and clone slots from source schedule.
-
-3. **R3: Branch Scope, SPA AJAX Updates & Compatibility**:
-   - **Branch Security**: Pass `$selectedCenterId` through `AdminContext::resolveListCenterId($request)` and ensure all mutate endpoints invoke `AdminContext::assertCanManageCenter($centerId)`.
-   - **SPA AJAX Navigation & Updates**:
-     - Week switching, day status toggle, slot add/edit/delete, day schedule delete, and schedule copying support AJAX JSON/HTML responses.
-     - Return standard JSON responses `{ success: true, message: '...', html: '...' }` so front-end JavaScript can dynamically re-render the 7-column grid without full page reloads.
-   - **Auto-Schedule Generator Integration**:
-     - Keep `Schedule::generateFromDefaults()` untouched in logic, but call it for the selected week's 7 dates. Because it uses `firstOrCreate`, manually edited or copied target schedules will never be overwritten by the auto-generator.
+3. **Brand Palette & Design System Compliance**:
+   - **Observation 1.2**: Brand colors are defined as Primary Red (`#c8102e`), Secondary Gold (`#eaaa00`), Accent Navy (`#004b8f`).
+   - **Deduction**: All UI widgets and trend charts added to `dashboard.blade.php` must strictly use these CSS variables (`var(--primary-color)`, `var(--secondary-color)`, `var(--accent-color)`) and satisfy text contrast rules.
 
 ---
 
 ## 3. Caveats
 
-1. **Responsive Viewport**: On smaller screen resolutions (e.g. tablet/mobile), 7 columns side-by-side may overflow horizontally. The UI layout should use `overflow-x: auto` or a responsive flex/grid fallback to guarantee readability on mobile/tablet screens.
-2. **Copying to Past Dates**: Copying schedule to past dates should be restricted or guarded by validation (`target_dates.*` >= `today()`) unless retroactive editing is explicitly desired.
-3. **Partial Copy Rollback vs Atomic Fail**: When copying a schedule to multiple target dates where 1 target date has existing bookings (`reserved_count > 0`), the entire copy request should fail atomically with a validation error identifying the blocked target dates, preventing partial inconsistent schedule states.
+- **No Caveats**: All models, database migrations, controllers, views, design rules, and test patterns were fully inspected.
 
 ---
 
 ## 4. Conclusion
 
-The codebase already has robust foundational models (`Schedule`, `Slot`, `DefaultSlot`, `Center`), database indexes, security scoping (`AdminContext`), and auto-schedule generation logic (`Schedule::generateFromDefaults`). 
-
-To achieve Milestone 1:
-1. Define a new route `POST /admin/schedules/copy` in `modules/VaccineRegistration/routes/web.php`.
-2. Update `AdminScheduleController.php`:
-   - Enhance `index()` to resolve the 7 dates of the target week, auto-generate missing days, and return weekly grid data (or HTML partials for AJAX).
-   - Add `copySchedule()` method with strict `reserved_count > 0` safety validation guard.
-3. Redesign `modules/VaccineRegistration/resources/views/admin/schedules/index.blade.php`:
-   - Replace the single-day form & 15-item paginated list with a 7-column weekly grid layout, week navigation bar (Prev / Current / Next / Date Picker), day status toggle buttons, copy schedule modal, and AJAX JS grid interactions.
+- `AdminDashboardController` requires updating to:
+  1. Calculate dynamic values for `$consultCount`, `$importedQuantity`, `$soldQuantity`.
+  2. Compute 7-day daily and 6-month monthly trend data arrays for registrations and paid revenue filtered by `$selectedCenterId`.
+- `dashboard.blade.php` requires updating to:
+  1. Display the real stats for Consultation Leads, Imported Stock, and Sold Stock.
+  2. Render 7-day and 6-month trend visualization components matching the Medicare 3-color brand theme.
+- All center filtering must utilize `AdminContext::resolveListCenterId($request)` to preserve SuperAdmin and BranchAdmin security boundaries.
 
 ---
 
 ## 5. Verification Method
 
-To independently verify the implementation after code changes:
-
-1. **Automated Feature Tests**:
-   - Run PHPUnit / Pest tests for schedules and default slots:
-     ```bash
-     php artisan test --filter=SchedulesSlotsConcurrencyTest
-     php artisan test --filter=AdminDefaultSlotsTest
-     ```
-   - Add a new test class `tests/Feature/AdminWeeklyScheduleGridTest.php` to verify:
-     - Week navigation (fetching 7 dates for specified week).
-     - Copy schedule to target days when target days have 0 bookings (success).
-     - Copy schedule blocked when target day has `reserved_count > 0` (ValidationException error).
-     - Branch admin authorization checks (Branch admin blocked from viewing/copying another center's schedule).
-
-2. **Manual Visual & Interaction Verification**:
-   - Log in as Super Admin and Branch Admin.
-   - Navigate to `/admin/schedules`.
-   - Verify 7 columns (Monday to Sunday) render correctly with dates, slot metrics, and status badges.
-   - Click "Tuần trước", "Tuần sau", and pick dates using the Date Picker to verify AJAX week switching.
-   - Test "Sao chép lịch" from Monday to Tuesday & Wednesday; verify slots are duplicated on target days.
-   - Create a test booking on Tuesday, then try copying Monday's schedule to Tuesday; verify the system blocks the copy operation with a warning.
+1. **Codebase Inspection**:
+   - Verify controller: `view_file` on `modules/VaccineRegistration/Http/Controllers/Admin/AdminDashboardController.php`.
+   - Verify view: `view_file` on `modules/VaccineRegistration/resources/views/admin/dashboard.blade.php`.
+2. **Automated Test Execution**:
+   - Run feature tests: `php artisan test tests/Feature/AdminRootGlobalBranchContextTest.php` and `php artisan test tests/Feature/AdminAjaxFilteringTest.php`.

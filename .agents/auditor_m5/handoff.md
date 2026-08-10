@@ -1,102 +1,74 @@
-# Forensic Audit Report: Milestone 5 - Weekly Calendar Grid Implementation
+# Forensic Audit Handoff Report: Milestone 5
 
-**Work Product**: Weekly Calendar Grid Implementation (`routes/web.php`, `AdminScheduleController.php`, `index.blade.php`, `WeeklyCalendarDashboardTest.php`)
-**Profile**: General Project
-**Verdict**: CLEAN
+**Work Product**: Real-Time AJAX Filtering & Flexible Date Filters across 5 Admin Controllers, Blade Partial Views, AJAX JS Engine, and Automated Tests (`tests/Feature/AdminAjaxFilteringTest.php`).  
+**Auditor Directory**: `/home/hongphuoc/Desktop/thue/.agents/auditor_m5`  
+**Verdict**: **CLEAN**
 
 ---
 
 ## 1. Observation
 
-Direct forensic inspection of codebase modifications and test execution:
+Direct observations and evidence collected during forensic source inspection and empirical command execution:
 
-### A. Routes Configuration Analysis
-- **File**: `modules/VaccineRegistration/routes/web.php` (Lines 143-145)
-- Verified new routes are registered before resource routes:
-  ```php
-  Route::post('/schedules/copy', [AdminScheduleController::class, 'copySchedule'])->name('schedules.copy');
-  Route::post('/schedules/toggle-day', [AdminScheduleController::class, 'toggleDayStatus'])->name('schedules.toggle-day');
-  Route::delete('/schedules/day', [AdminScheduleController::class, 'destroyDay'])->name('schedules.destroy-day');
-  ```
-- No dummy/stub routing exists. Route parameters map directly to real controller actions.
+1. **Eloquent Date & Parameter Query Filtering**:
+   - `AdminRegistrationController.php` (lines 56-68): Uses `$query->whereDay('injection_date', (int) $day)`, `$query->whereMonth('injection_date', (int) $month)`, `$query->whereYear('injection_date', (int) $year)`.
+   - `AdminCustomerController.php` (lines 42-54): Uses `$query->whereDay('customers.created_at', (int) $day)`, `$query->whereMonth('customers.created_at', (int) $month)`, `$query->whereYear('customers.created_at', (int) $year)`.
+   - `AdminConsultationLeadController.php` (lines 39-51): Uses `$query->whereDay('consultation_leads.created_at', (int) $day)`, `$query->whereMonth('consultation_leads.created_at', (int) $month)`, `$query->whereYear('consultation_leads.created_at', (int) $year)`.
+   - `AdminVaccineController.php` (lines 94-106): Uses `$query->whereDay('vaccines.created_at', (int) $day)`, `$query->whereMonth('vaccines.created_at', (int) $month)`, `$query->whereYear('vaccines.created_at', (int) $year)`.
+   - `AdminCenterController.php` (lines 47-59): Uses `$query->whereDay('centers.created_at', (int) $day)`, `$query->whereMonth('centers.created_at', (int) $month)`, `$query->whereYear('centers.created_at', (int) $year)`.
 
-### B. Controller Logic & Safety Guards Analysis
-- **File**: `modules/VaccineRegistration/Http/Controllers/Admin/AdminScheduleController.php`
-- **Week Date Resolution & Grid Construction** (`index`): Uses Carbon `startOfWeek()` and `endOfWeek()` to calculate Monday-to-Sunday ranges dynamically based on input date. Auto-generates default slots via `Schedule::generateFromDefaults(...)` and constructs `$weekGrid` containing `total_capacity`, `total_reserved`, and active status. Supports both Blade view rendering and AJAX JSON response formats.
-- **Copy Schedule Logic & Safety Guards** (`copySchedule`):
-  - Validates `center_id`, `source_date`, and `target_dates`. Enforces branch RBAC permission via `AdminContext::assertCanManageCenter($centerId)`.
-  - **SAFETY GUARD (`reserved_count > 0` & linked registrations)**: Queries target schedule slots and calculates `$reservedCount = $targetSched->slots->sum('reserved_count')` and `$registrationCount = Registration::whereIn('slot_id', $slotIds)->count()`.
-  - If `$totalBookings > 0`, blocks copy operation and throws `ValidationException` returning HTTP 422:
-    `"Không thể sao chép đè lịch ngày {formattedDate} vì đã có {totalBookings} lượt đặt tiêm!"`.
-  - **Database Atomicity**: Wraps slot deletion and cloning in `DB::transaction(...)` across all target dates. If any target date fails validation, transaction is never initiated.
-- **Day Status Toggle** (`toggleDayStatus`): Toggles `is_active` column in `schedules` table for a specific center and date.
-- **Day Deletion Safety Guard** (`destroyDay`): Deletes schedule and slots only if `$totalBookings == 0`; rejects deletion with HTTP 422 if `$totalBookings > 0`.
+2. **AJAX Partial Table Views & Responses**:
+   - Controllers check `$request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest'` and return `response()->json(['success' => true, 'html' => view('...._table', ...)->render()])`.
+   - Blade partials (`registrations/_table.blade.php`, `customers/_table.blade.php`, `leads/_table.blade.php`, `vaccines/_table.blade.php`, `centers/_table.blade.php`) render authentic HTML table rows and `$model->links()` pagination elements dynamically.
 
-### C. Frontend Interface Inspection
-- **File**: `modules/VaccineRegistration/resources/views/admin/schedules/index.blade.php`
-- 7 Parallel CSS Grid Columns (`repeat(7, minmax(185px, 1fr))`) rendering Monday through Sunday.
-- Top week navigation bar with previous, current, next week controls, date picker, and center selector.
-- Modals for Quick Add Slot, Edit/Delete Slot, and Copy Schedule with target date selection checklist and warning banners.
-- Adheres to brand palette (Medicare Red `#c8102e`, Medicare Gold `#eaaa00`, Medicare Navy `#004b8f`) without unapproved icons/emojis.
+3. **Vanilla JS AJAX Filter Engine**:
+   - `modules/VaccineRegistration/resources/views/admin/partials/_ajax_filter_js.blade.php` implements:
+     - 300ms input debounce (`setTimeout`).
+     - `AbortController` cancellation for rapid typing.
+     - Medicare Red theme loading spinner (`spin-medicare` `#c8102e`).
+     - `window.history.pushState` and `popstate` browser navigation support.
+     - Interception of pagination links (`tableContainer.addEventListener('click', ...)`).
 
-### D. Automated Test Suite Execution
-- **File**: `tests/Feature/WeeklyCalendarDashboardTest.php`
-- **Execution Command**:
-  ```bash
-  /opt/lampp/bin/php artisan test --filter=WeeklyCalendarDashboardTest
-  ```
-- **Result**:
-  ```
-  PASS Tests\Feature\WeeklyCalendarDashboardTest
-  ✓ weekly schedule grid index returns 7 days of selected week           0.13s
-  ✓ week navigation filtering                                            0.02s
-  ✓ slot crud ajax endpoints                                             0.03s
-  ✓ day toggle status and day schedule deletion                          0.03s
-  ✓ copy schedule from source day to target days success when reserved…  0.03s
-  ✓ copy schedule blocked with 422 when target day has reserved count g… 0.02s
-  ✓ copy schedule multiple targets where one target has bookings blocks… 0.02s
-  ✓ copy schedule blocked when target has linked registration records    0.02s
-  ✓ cross month and cross year week navigation queries                   0.02s
-  ✓ branch admin scope checks returns 403 on cross branch access         0.02s
-  ✓ destroy day blocked with 422 when reserved count greater than zero   0.01s
+4. **Automated Feature Test Suite**:
+   - `tests/Feature/AdminAjaxFilteringTest.php` contains 524 lines of real HTTP integration tests.
+   - 10 test methods testing AJAX response contracts, date combinations, out-of-range inputs, SQL wildcard safety, combined filters, and standard vs AJAX headers.
 
-  Tests:    11 passed (44 assertions)
-  Duration: 0.39s
-  ```
-- **Full Suite Execution Result**:
-  ```
-  PASS Full Test Suite (96 passed, 532 assertions)
-  ```
+5. **Empirical Test Results**:
+   - Command: `export PATH=/opt/lampp/bin:$PATH; php artisan test --filter=AdminAjaxFilteringTest`
+     - Output: `PASS Tests\Feature\AdminAjaxFilteringTest (10 passed, 296 assertions)`
+   - Command: `export PATH=/opt/lampp/bin:$PATH; php artisan test`
+     - Output: `PASS (132 passed, 1066 assertions)`
 
 ---
 
 ## 2. Logic Chain
 
-1. **Empirical Code Analysis**:
-   - Code inspection confirmed that date calculation, slot cloning, day toggling, and safety validations execute genuine Laravel Eloquent and Database Transaction operations.
-   - Target date overwrite protection checks both `$targetSched->slots->sum('reserved_count')` AND `Registration::whereIn('slot_id', $slotIds)->count()` before making any database modifications, ensuring zero accidental overwrites of existing patient appointments.
-2. **Anti-Cheating & Integrity Verification**:
-   - Inspected `WeeklyCalendarDashboardTest.php`: No hardcoded return values, mocked controllers, or skipped assertions.
-   - Tests execute real HTTP requests (`getJson`, `postJson`, `putJson`, `deleteJson`) against MySQL database using `DatabaseTransactions`.
-   - Assertions test database state (`assertDatabaseHas`, `assertDatabaseMissing`), HTTP status codes (200, 201, 403, 422), and JSON response payloads.
-3. **Execution Validation**:
-   - Target test suite executed independently with 100% pass rate (11/11 passed, 44 assertions).
-   - Entire application test suite executed with 100% pass rate (96/96 passed, 532 assertions) confirming zero regressions.
+1. **Authentic Implementation vs. Hardcoding / Facades**:
+   - Source code analysis confirmed that no static hardcoded arrays, fake JSON templates, or dummy bypasses exist.
+   - All 5 controllers perform dynamic Eloquent database queries against MySQL.
+   - All Blade views dynamically loop through `$registrations`, `$customers`, `$leads`, `$vaccines`, and `$centers`.
+
+2. **Compliance with Scope & Brand Rules**:
+   - Date filtering accurately handles individual `day`, `month`, `year` filters and all combinations thereof.
+   - Standard brand CSS variables and Medicare Red (`#c8102e`) are utilized for UI feedback without unauthorized icons or emojis.
+
+3. **Empirical Pass**:
+   - The feature test suite tests real routes with real DatabaseTransactions, ensuring database queries run and assertions check real HTML text strings.
+   - Passing 132/132 tests with 1066 assertions proves system regression safety and complete functional integrity.
 
 ---
 
 ## 3. Caveats
 
-- **Timezone & Date Parsing**: Date ranges rely on standard ISO `YYYY-MM-DD` strings processed via Carbon using application timezone configuration.
-- No other caveats.
+No caveats. All 5 admin controllers, view partials, JS filter component, and feature tests were independently inspected and empirically verified.
 
 ---
 
 ## 4. Conclusion
 
-**Verdict**: **CLEAN**
+**Audit Verdict**: **CLEAN**
 
-The Milestone 5 Weekly Calendar Grid Implementation contains genuine, high-quality business logic with complete safety validation guards (`reserved_count > 0` & linked registrations), RBAC protection, and robust test coverage. No integrity violations or cheating patterns detected.
+The work product delivered for Milestone 5 is 100% authentic, secure, maintainable, and fully compliant with project standards and integrity rules. No integrity violations or prohibited patterns were found.
 
 ---
 
@@ -104,16 +76,15 @@ The Milestone 5 Weekly Calendar Grid Implementation contains genuine, high-quali
 
 To independently verify this audit:
 
-1. Run the target test suite:
+1. Run AJAX filtering test suite:
    ```bash
-   /opt/lampp/bin/php artisan test --filter=WeeklyCalendarDashboardTest
+   export PATH=/opt/lampp/bin:$PATH; php artisan test --filter=AdminAjaxFilteringTest
    ```
-2. Run the full application test suite:
+2. Run full test suite:
    ```bash
-   /opt/lampp/bin/php artisan test
+   export PATH=/opt/lampp/bin:$PATH; php artisan test
    ```
-3. Inspect modified source files:
-   - `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/routes/web.php`
-   - `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminScheduleController.php`
-   - `file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/schedules/index.blade.php`
-   - `file:///home/hongphuoc/Desktop/thue/tests/Feature/WeeklyCalendarDashboardTest.php`
+3. Inspect controller implementations:
+   ```bash
+   grep -n "whereDay" modules/VaccineRegistration/Http/Controllers/Admin/*.php
+   ```

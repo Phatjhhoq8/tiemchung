@@ -159,32 +159,5 @@
         }
     });
 
-    // ========== Vaccine Catalog Tab Switcher ==========
-    function switchVaccineTab(tabType) {
-        const singleTab = document.getElementById('single-vaccines');
-        const packageTab = document.getElementById('package-vaccines');
-        const singleBtn = document.getElementById('tab-btn-single');
-        const packageBtn = document.getElementById('tab-btn-package');
-
-        if (tabType === 'single') {
-            if (singleTab) singleTab.classList.remove('hidden');
-            if (packageTab) packageTab.classList.add('hidden');
-            if (singleBtn) {
-                singleBtn.className = 'px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider bg-[#c8102e] text-white shadow-md transition-all';
-            }
-            if (packageBtn) {
-                packageBtn.className = 'px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all';
-            }
-        } else {
-            if (singleTab) singleTab.classList.add('hidden');
-            if (packageTab) packageTab.classList.remove('hidden');
-            if (packageBtn) {
-                packageBtn.className = 'px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider bg-[#c8102e] text-white shadow-md transition-all';
-            }
-            if (singleBtn) {
-                singleBtn.className = 'px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all';
-            }
-        }
-    }
 </script>
 @endsection

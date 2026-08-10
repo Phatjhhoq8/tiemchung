@@ -85,7 +85,7 @@
             <!-- Slider indicators -->
             <div class="absolute z-30 flex -translate-x-1/2 bottom-5 left-1/2 space-x-3 rtl:space-x-reverse">
                 @foreach($banners as $index => $banner)
-                    <button type="button" class="w-3 h-3 rounded-full bg-white/50 hover:bg-yellow-400 transition-colors" aria-current="{{ $index === 0 ? 'true' : 'false' }}" aria-label="Slide {{ $index + 1 }}" data-carousel-slide-to="{{ $index }}"></button>
+                    <button type="button" class="w-3 h-3 rounded-full bg-white/50 hover:bg-yellow-400 transition-colors" aria-current="{{ $index === 0 ? 'true' : 'false' }}" aria-label="Trang trình chiếu {{ $index + 1 }}" data-carousel-slide-to="{{ $index }}"></button>
                 @endforeach
             </div>
             <!-- Slider controls -->

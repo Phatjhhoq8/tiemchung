@@ -1,37 +1,33 @@
-# Medicare Vaccine Registration System (Hệ Thống Tiêm Chủng Medicare)
+# Medicare Vaccine Registration
 
-> **Commercial Production Application**: Modern, high-performance Laravel Single-Page Application (SPA) for vaccine catalog browsing, online appointment booking, and multi-branch management.
+Laravel 11 application using PHP 8.2 and MySQL 8. Docker is the only required local runtime.
 
-## Project Technology Stack
+## Development
 
-- **Backend**: Laravel 11.x (PHP >= 8.2), MySQL.
-- **Frontend**: Vite 6.x, Tailwind CSS 3.x, **Flowbite UI Kit**, Axios, Vanilla JS (SPA).
-- **Brand Theme**: **Medicare Red (`#c8102e`)** as primary dominant brand color.
-
-## Quick Installation & Setup Guide
-
-### 1. Backend Setup
 ```bash
-composer install
 cp .env.example .env
-php artisan key:generate
-php database/create_db.php
-php artisan migrate --seed
+docker compose build app
+docker compose run --rm app php artisan key:generate
+docker compose up -d
+docker compose exec app php artisan migrate --seed
 ```
 
-### 2. Frontend & Flowbite Setup
+`db:seed` does not create or restore vaccine records. The vaccine catalog is managed through the admin UI, so reseeding will not undo manual additions, edits, or deactivations.
+
+Open <http://localhost:8000>. MySQL is available on host port `3307`; override it with `FORWARD_DB_PORT=3308 docker compose up -d` when needed.
+
+## Tests
+
+The MySQL container creates both `medicare_codo` and the isolated `yvidlapc_tiemchung_testing` test database.
+
 ```bash
-npm install
-npm run build    # Or `npm run dev` for hot reload
+docker compose run --rm test
 ```
 
-### 3. Start Development Server
+Useful commands:
+
 ```bash
-php artisan serve
+docker compose logs -f app
+docker compose down
+docker compose down -v   # Also delete development and test data.
 ```
-Access the application at `http-[#127.0.0.1:8000](http://127.0.0.1:8000)`.
-
-## Project Documentation & Rules
-
-- **Release Notes & Versions**: See [CHANGELOG.md](file:///home/hongphuoc/Desktop/thue/CHANGELOG.md).
-- **AI Agent & Coding Standards**: See [.agents/AGENTS.md](file:///home/hongphuoc/Desktop/thue/.agents/AGENTS.md).

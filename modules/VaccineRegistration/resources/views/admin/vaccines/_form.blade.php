@@ -38,7 +38,7 @@
     <div class="form-grid-2">
         <!-- Tên Vắc xin -->
         <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0;">
-            <label for="name" class="form-label-modern">Tên vắc xin / Gói vắc xin <span style="color: #ef4444;">*</span></label>
+            <label for="name" class="form-label-modern">Tên vắc xin <span style="color: #ef4444;">*</span></label>
             <input type="text" name="name" id="name" value="{{ old('name', $vaccine->name) }}" required class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
         </div>
 
@@ -58,15 +58,6 @@
             <input type="hidden" name="center_id" value="{{ $adminUser?->center_id }}">
         @endif
 
-        <!-- Phân loại -->
-        <div class="form-group-modern" style="margin-bottom: 0;">
-            <label for="type" class="form-label-modern">Phân loại <span style="color: #ef4444;">*</span></label>
-            <select name="type" id="type" required class="form-control-modern" style="background-image: none;" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
-                <option value="single" {{ old('type', $vaccine->type) === 'single' ? 'selected' : '' }}>Vắc xin lẻ</option>
-                <option value="package" {{ old('type', $vaccine->type) === 'package' ? 'selected' : '' }}>Gói vắc xin</option>
-            </select>
-        </div>
-
         <!-- Nhóm bệnh -->
         <div class="form-group-modern" style="margin-bottom: 0;">
             <label for="category" class="form-label-modern">Nhóm bệnh</label>
@@ -78,6 +69,12 @@
                 @endforeach
             </datalist>
             @endif
+        </div>
+
+        <!-- Độ tuổi chỉ định -->
+        <div class="form-group-modern" style="margin-bottom: 0;">
+            <label for="age_group" class="form-label-modern">Độ tuổi chỉ định <span style="color: #ef4444;">*</span></label>
+            <input type="text" name="age_group" id="age_group" value="{{ old('age_group', $vaccine->age_group) }}" placeholder="VD: Trẻ từ 2 tháng tuổi và người lớn" required class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
         </div>
 
         <!-- Bệnh phòng ngừa -->
@@ -97,7 +94,7 @@
     <div class="form-grid-2">
         <!-- Giá tiêm -->
         <div class="form-group-modern" style="margin-bottom: 0;">
-            <label for="price" class="form-label-modern">Giá bán lẻ / liều (VND) <span style="color: #ef4444;">*</span></label>
+            <label for="price" class="form-label-modern">Giá / liều (VND) <span style="color: #ef4444;">*</span></label>
             <input type="number" name="price" id="price" value="{{ old('price', $vaccine->price) }}" required min="0" class="form-control-modern">
         </div>
 
@@ -155,7 +152,41 @@
         <!-- Quy cách đóng gói -->
         <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0;">
             <label for="dosage" class="form-label-modern">Quy cách liều lượng (Hàm lượng/Đóng gói)</label>
-            <input type="text" name="dosage" id="dosage" value="{{ old('dosage', $vaccine->dosage) }}" placeholder="VD: Hộp 1 bơm tiêm đóng sẵn gia liều 0.5ml dung dịch..." class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
+            <input type="text" name="dosage" id="dosage" value="{{ old('dosage', $vaccine->dosage) }}" placeholder="Ví dụ: Hộp 1 bơm tiêm đóng sẵn, liều 0,5 ml dung dịch..." class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
+        </div>
+    </div>
+</div>
+
+{{-- ===== NỘI DUNG CHUYÊN MÔN ĐÃ XÁC MINH ===== --}}
+<div class="card-modern">
+    <h3 style="font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="clipboard-check" style="width: 18px; height: 18px; color: var(--accent-color);"></i>
+        Nội dung chuyên môn đã xác minh
+    </h3>
+    <p style="margin: -8px 0 18px; color: #64748b; font-size: 13px;">Chỉ nhập nội dung có trong tài liệu nguồn của đúng sản phẩm. Để trống nếu chưa xác minh.</p>
+    <div class="form-grid-2">
+        <div class="form-group-modern" style="margin-bottom: 0;">
+            <label for="administration_route" class="form-label-modern">Đường dùng</label>
+            <input type="text" name="administration_route" id="administration_route" value="{{ old('administration_route', $vaccine->administration_route) }}" placeholder="Chỉ nhập theo tài liệu nguồn" class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
+        </div>
+        <div class="form-group-modern" style="margin-bottom: 0;">
+            <label for="source_review_date" class="form-label-modern">Ngày rà soát nguồn</label>
+            <input type="date" name="source_review_date" id="source_review_date" value="{{ old('source_review_date', $vaccine->source_review_date?->format('Y-m-d')) }}" max="{{ now()->toDateString() }}" class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
+        </div>
+        @foreach([
+            'detailed_schedule' => 'Phác đồ / lịch tiêm chi tiết',
+            'contraindications' => 'Chống chỉ định',
+            'adverse_effects' => 'Phản ứng bất lợi',
+            'warnings' => 'Cảnh báo và thận trọng',
+        ] as $field => $label)
+            <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0;">
+                <label for="{{ $field }}" class="form-label-modern">{{ $label }}</label>
+                <textarea name="{{ $field }}" id="{{ $field }}" rows="4" class="form-control-modern" style="font-family: inherit; resize: vertical;" placeholder="Chỉ nhập theo tài liệu nguồn" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>{{ old($field, $vaccine->$field) }}</textarea>
+            </div>
+        @endforeach
+        <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0;">
+            <label for="source_reference_url" class="form-label-modern">URL nguồn / tài liệu tham khảo</label>
+            <input type="url" name="source_reference_url" id="source_reference_url" value="{{ old('source_reference_url', $vaccine->source_reference_url) }}" placeholder="https://..." class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
         </div>
     </div>
 </div>
@@ -169,7 +200,7 @@
     <div class="form-grid-2">
         <!-- Tải lên hình ảnh -->
         <div class="form-group-modern" style="margin-bottom: 0; grid-column: span 2;">
-            <label class="form-label-modern">Hình ảnh vắc xin / Gói vắc xin</label>
+            <label class="form-label-modern">Hình ảnh vắc xin</label>
             <input type="file" name="image_file" id="image_file" accept="image/*" style="display: none;" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
             <input type="hidden" name="image" id="image_hidden" value="{{ old('image', $vaccine->image) }}">
             
@@ -181,7 +212,7 @@
                 </div>
                 <div id="image_preview_container" class="image-upload-preview-container" style="{{ $vaccine->image ? 'display: block;' : '' }}">
                     <div class="image-upload-preview-wrapper">
-                        <img id="image_preview" class="image-upload-preview" src="{{ $vaccine->image ? asset('images/vaccines/' . $vaccine->image) : '' }}" alt="Preview">
+                        <img id="image_preview" class="image-upload-preview" src="{{ $vaccine->image ? asset('images/vaccines/' . $vaccine->image) : '' }}" alt="Xem trước hình ảnh">
                         @if($isSuperAdmin ?? false)
                         <button type="button" id="btn_remove_image" class="image-upload-remove-btn" title="Xóa hình ảnh">
                             <i data-lucide="x" style="width: 14px; height: 14px;"></i>
@@ -300,11 +331,11 @@
             if (files.length === 0) return;
             const file = files[0];
             if (!file.type.startsWith('image/')) {
-                alert('Vui lòng chỉ tải lên file hình ảnh.');
+                window.AppDialog.alert('Vui lòng chỉ tải lên tệp hình ảnh.');
                 return;
             }
             if (file.size > 2 * 1024 * 1024) {
-                alert('Dung lượng hình ảnh không được vượt quá 2MB.');
+                window.AppDialog.alert('Dung lượng hình ảnh không được vượt quá 2 MB.');
                 return;
             }
 

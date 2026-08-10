@@ -1,7 +1,7 @@
 <?php
 /**
  * Chức năng: SettingSeeder nạp cấu hình hệ thống thương hiệu Medicare quản lý chuỗi nhiều chi nhánh.
- * Lý do chỉnh sửa: Thay địa chỉ trụ sở chính đơn lẻ thành danh sách các chi nhánh trụ sở trong hệ thống.
+ * Lý do chỉnh sửa: Thay một địa chỉ trụ sở chính thành danh sách các chi nhánh trong hệ thống.
  */
 
 namespace Modules\VaccineRegistration\Database\Seeders;

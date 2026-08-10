@@ -26,9 +26,9 @@
             
             <!-- Dòng 4: Ô tìm kiếm viên thuốc dùng chung component -->
             <div class="search-bar-container catalog-search-box">
-                <form action="{{ route('news.index') }}" method="GET" class="search-form" onsubmit="filterNewsSpa(event)">
+                <form action="{{ route('news.index') }}" method="GET" class="search-form">
                     <i data-lucide="search" class="search-icon"></i>
-                    <input type="text" name="search" id="newsSearchInput" placeholder="Nhập từ khóa tìm kiếm bài viết y khoa..." value="{{ request('search') }}" oninput="debouncedFilterNewsSpa()">
+                    <input type="text" name="search" id="newsSearchInput" placeholder="Nhập từ khóa tìm kiếm bài viết y khoa..." value="{{ request('search') }}">
                     <button type="submit" class="search-btn">Tìm kiếm</button>
                 </form>
             </div>

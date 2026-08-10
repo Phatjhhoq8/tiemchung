@@ -149,7 +149,6 @@ class ContentSecurityAndHardeningTest extends TestCase
                 'name' => 'Vaccine SVG Test',
                 'center_id' => $this->center->id,
                 'price' => 100000,
-                'type' => 'single',
                 'doses' => 1,
                 'stock_status' => 'available',
                 'disease_prevention' => 'Bệnh cúm',
@@ -270,7 +269,6 @@ class ContentSecurityAndHardeningTest extends TestCase
             ['name' => 'Vắc xin Cúm Test CSV'],
             [
                 'price' => 200000,
-                'type' => 'single',
                 'doses' => 1,
                 'stock_status' => 'available',
                 'disease_prevention' => 'Cúm mùa',
@@ -403,7 +401,6 @@ class ContentSecurityAndHardeningTest extends TestCase
                 'name' => 'Vaccine Upper SVG',
                 'center_id' => $this->center->id,
                 'price' => 100000,
-                'type' => 'single',
                 'doses' => 1,
                 'stock_status' => 'available',
                 'disease_prevention' => 'Bệnh cúm',

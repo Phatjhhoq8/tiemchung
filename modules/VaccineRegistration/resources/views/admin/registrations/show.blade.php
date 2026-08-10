@@ -12,10 +12,11 @@
 
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px;">
         <div class="card-modern">
-            <h3 style="margin-top:0;">Khách hàng</h3>
+            <h3 style="margin-top:0;">Người tiêm</h3>
             <p style="margin:0 0 8px;"><strong>{{ $registration->patient_name }}</strong></p>
             <p style="margin:0 0 12px;">{{ \Modules\VaccineRegistration\Support\PhoneNormalizer::display($registration->patient_phone) }}</p>
             @if($registration->customer)
+                <p style="margin:0 0 12px; color:var(--text-muted);"><strong>Tài khoản tích điểm:</strong> {{ $registration->customer->name }} · {{ \Modules\VaccineRegistration\Support\PhoneNormalizer::display($registration->customer->phone) }}</p>
                 <a class="btn-action-sm" href="{{ route('admin.customers.show', $registration->customer) }}">Xem lịch sử mua và điểm</a>
             @endif
         </div>
@@ -51,19 +52,19 @@
         </div>
 
         @if($registration->payment_status === \Modules\VaccineRegistration\Models\Registration::PAYMENT_UNPAID && $registration->booking_status !== \Modules\VaccineRegistration\Models\Registration::BOOKING_CANCELLED)
-            <form action="{{ route('admin.registrations.settle', $registration) }}" method="POST" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+            <form action="{{ route('admin.registrations.settle', $registration) }}" method="POST" data-confirm="Xác nhận đã thu tiền tại quầy?" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
                 @csrf
                 <div style="flex:1 1 230px;">
                     <label class="form-label-modern" for="redeem_points">Điểm khách muốn dùng</label>
                     <input class="form-control-modern" id="redeem_points" type="number" name="redeem_points" min="0" max="{{ $pointQuote['available_points'] ?? 0 }}" value="{{ old('redeem_points', 0) }}">
-                    <small style="display:block; margin-top:5px; color:var(--text-muted);">Số dư: {{ number_format($pointQuote['balance'] ?? 0) }} điểm. Có thể dùng tối đa {{ number_format($pointQuote['available_points'] ?? 0) }} điểm (50% đơn).</small>
+                    <small style="display:block; margin-top:5px; color:var(--text-muted);">Số dư toàn hệ thống: {{ number_format($pointQuote['balance'] ?? 0) }} điểm. Có thể dùng tối đa {{ number_format($pointQuote['available_points'] ?? 0) }} điểm (50% đơn).</small>
                 </div>
-                <button type="submit" class="btn-modern btn-modern-primary" onclick="return confirm('Xác nhận đã thu tiền tại quầy?')">Xác nhận thanh toán</button>
+                <button type="submit" class="btn-modern btn-modern-primary">Xác nhận thanh toán</button>
             </form>
         @elseif($registration->payment_status === \Modules\VaccineRegistration\Models\Registration::PAYMENT_PAID)
-            <form action="{{ route('admin.registrations.refund', $registration) }}" method="POST">
+            <form action="{{ route('admin.registrations.refund', $registration) }}" method="POST" data-confirm="Hoàn tiền toàn bộ đơn này? Điểm sẽ được hoàn lại.">
                 @csrf
-                <button type="submit" class="btn-modern btn-modern-secondary" onclick="return confirm('Hoàn toàn bộ đơn này? Điểm sẽ được đảo lại.')">Hoàn tiền toàn bộ</button>
+                <button type="submit" class="btn-modern btn-modern-secondary">Hoàn tiền toàn bộ</button>
             </form>
         @endif
     </div>

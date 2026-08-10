@@ -5,9 +5,10 @@ namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-use Modules\VaccineRegistration\Models\Registration;
 use Modules\VaccineRegistration\Models\InventoryLot;
+use Modules\VaccineRegistration\Models\Registration;
 use Modules\VaccineRegistration\Models\StockMovement;
 use Modules\VaccineRegistration\Support\AdminContext;
 
@@ -21,8 +22,8 @@ class VaccinationWorkflowController extends Controller
     {
         $registration = Registration::findOrFail($id);
 
-        if (AdminContext::isBranchAdmin() && (int)$registration->center_id !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
+        if (AdminContext::isBranchAdmin() && (int) $registration->center_id !== (int) AdminContext::centerId()) {
+            abort(403, 'Bạn không có quyền tiếp nhận bệnh nhân thuộc chi nhánh khác.');
         }
 
         $registration->checkIn();
@@ -30,12 +31,12 @@ class VaccinationWorkflowController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Check-in thành công. Trạng thái đã được chuyển sang checked_in.',
+                'message' => 'Tiếp nhận bệnh nhân thành công.',
                 'data' => $registration->fresh(['patient']),
             ]);
         }
 
-        return redirect()->back()->with('success', 'Check-in bệnh nhân thành công.');
+        return redirect()->back()->with('success', 'Tiếp nhận bệnh nhân thành công.');
     }
 
     /**
@@ -46,8 +47,8 @@ class VaccinationWorkflowController extends Controller
     {
         $registration = Registration::findOrFail($id);
 
-        if (AdminContext::isBranchAdmin() && (int)$registration->center_id !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
+        if (AdminContext::isBranchAdmin() && (int) $registration->center_id !== (int) AdminContext::centerId()) {
+            abort(403, 'Bạn không có quyền khám sàng lọc cho bệnh nhân thuộc chi nhánh khác.');
         }
 
         $validated = $request->validate([
@@ -77,18 +78,24 @@ class VaccinationWorkflowController extends Controller
     {
         $registration = Registration::findOrFail($id);
 
-        if (AdminContext::isBranchAdmin() && (int)$registration->center_id !== (int)AdminContext::centerId()) {
-            abort(403, 'Cross-branch access forbidden.');
+        if (AdminContext::isBranchAdmin() && (int) $registration->center_id !== (int) AdminContext::centerId()) {
+            abort(403, 'Bạn không có quyền thực hiện tiêm cho bệnh nhân thuộc chi nhánh khác.');
         }
 
         if ($registration->screening_status !== 'eligible') {
-            $msg = "Không thể thực hiện tiêm chủng. Bệnh nhân có trạng thái khám sàng lọc là '{$registration->screening_status}' (Cần 'eligible').";
+            $screeningStatus = match ($registration->screening_status) {
+                'deferred' => 'tạm hoãn tiêm',
+                'contraindicated' => 'chống chỉ định tiêm',
+                default => 'chưa đủ điều kiện tiêm',
+            };
+            $msg = "Không thể thực hiện tiêm chủng vì kết quả khám sàng lọc là: {$screeningStatus}.";
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => $msg,
                 ], 422);
             }
+
             return redirect()->back()->withErrors(['screening_status' => $msg]);
         }
 
@@ -101,7 +108,7 @@ class VaccinationWorkflowController extends Controller
 
         // Kiểm tra xem vaccine_id có nằm trong phiếu đăng ký không
         $hasVaccine = $registration->vaccines()->where('vaccines.id', $validated['vaccine_id'])->exists();
-        if (!$hasVaccine) {
+        if (! $hasVaccine) {
             throw ValidationException::withMessages([
                 'vaccine_id' => 'Vắc xin được chọn không nằm trong danh sách đăng ký của lịch hẹn này.',
             ]);
@@ -113,13 +120,13 @@ class VaccinationWorkflowController extends Controller
                 $lot = InventoryLot::lockForUpdate()->findOrFail($validated['inventory_lot_id']);
 
                 // Kiểm tra các ràng buộc bảo mật y tế của lô vắc xin
-                if ((int)$lot->vaccine_id !== (int)$validated['vaccine_id']) {
+                if ((int) $lot->vaccine_id !== (int) $validated['vaccine_id']) {
                     throw ValidationException::withMessages([
                         'inventory_lot_id' => 'Lô vắc xin này không thuộc loại vắc xin đã chọn.',
                     ]);
                 }
 
-                if ((int)$lot->center_id !== (int)$registration->center_id) {
+                if ((int) $lot->center_id !== (int) $registration->center_id) {
                     throw ValidationException::withMessages([
                         'inventory_lot_id' => 'Lô vắc xin không thuộc chi nhánh của lịch hẹn.',
                     ]);
@@ -152,7 +159,7 @@ class VaccinationWorkflowController extends Controller
                     'user_id' => AdminContext::user()?->id,
                     'type' => 'export',
                     'quantity' => 1,
-                    'note' => 'Tiêm chủng cho lịch hẹn ' . $registration->registration_code,
+                    'note' => 'Tiêm chủng cho lịch hẹn '.$registration->registration_code,
                 ]);
 
                 // Ghi nhận liều tiêm
@@ -177,14 +184,30 @@ class VaccinationWorkflowController extends Controller
             }
 
             return redirect()->back()->with('success', 'Thực hiện tiêm thành công.');
-        } catch (\Throwable $e) {
+        } catch (ValidationException $e) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $e->getMessage(),
+                    'message' => collect($e->errors())->flatten()->first() ?: 'Thông tin thực hiện tiêm không hợp lệ.',
                 ], 422);
             }
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+
+            return redirect()->back()->withErrors($e->errors());
+        } catch (\Throwable $e) {
+            Log::error('Lỗi kỹ thuật khi thực hiện tiêm chủng.', [
+                'registration_id' => $registration->id,
+                'exception' => $e,
+            ]);
+
+            $message = 'Không thể hoàn tất việc tiêm chủng lúc này. Vui lòng thử lại.';
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message,
+                ], 422);
+            }
+
+            return redirect()->back()->withErrors(['error' => $message]);
         }
     }
 }

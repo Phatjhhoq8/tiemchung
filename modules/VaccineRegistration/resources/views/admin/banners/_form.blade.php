@@ -18,7 +18,7 @@
     <!-- Phụ đề -->
     <div class="form-group" style="grid-column: span 2;">
         <label for="subtitle" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Phụ đề / Mô tả ngắn</label>
-        <input type="text" name="subtitle" id="subtitle" value="{{ old('subtitle', $banner->subtitle) }}" placeholder="VD: Ưu đãi 7% khi mua gói vắc xin" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
+        <input type="text" name="subtitle" id="subtitle" value="{{ old('subtitle', $banner->subtitle) }}" placeholder="VD: Ưu đãi 7% khi đăng ký tiêm chủng" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
     </div>
 
     <!-- Tải lên hình ảnh Banner -->
@@ -35,7 +35,7 @@
             </div>
             <div id="image_preview_container" class="image-upload-preview-container" style="{{ $banner->image_url ? 'display: block;' : '' }}">
                 <div class="image-upload-preview-wrapper">
-                    <img id="image_preview" class="image-upload-preview" src="{{ $banner->image_url ? asset($banner->image_url) : '' }}" alt="Preview" style="max-height: 120px;">
+                    <img id="image_preview" class="image-upload-preview" src="{{ $banner->image_url ? asset($banner->image_url) : '' }}" alt="Xem trước hình ảnh" style="max-height: 120px;">
                     <button type="button" id="btn_remove_image" class="image-upload-remove-btn" title="Xóa hình ảnh">
                         <i data-lucide="x" style="width: 14px; height: 14px;"></i>
                     </button>
@@ -122,11 +122,11 @@
             if (files.length === 0) return;
             const file = files[0];
             if (!file.type.startsWith('image/')) {
-                alert('Vui lòng chỉ tải lên file hình ảnh.');
+                window.AppDialog.alert('Vui lòng chỉ tải lên tệp hình ảnh.');
                 return;
             }
             if (file.size > 2 * 1024 * 1024) {
-                alert('Dung lượng hình ảnh không được vượt quá 2MB.');
+                window.AppDialog.alert('Dung lượng hình ảnh không được vượt quá 2 MB.');
                 return;
             }
 

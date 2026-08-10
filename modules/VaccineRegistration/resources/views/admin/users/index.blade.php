@@ -21,8 +21,8 @@
             <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Quyền hạn</label>
             <select name="role" class="form-control-modern" style="background-image:none;">
                 <option value="">Tất cả</option>
-                <option value="super_admin" {{ request('role') === 'super_admin' ? 'selected' : '' }}>Admin gốc</option>
-                <option value="branch_admin" {{ request('role') === 'branch_admin' ? 'selected' : '' }}>Admin chi nhánh</option>
+                <option value="super_admin" {{ request('role') === 'super_admin' ? 'selected' : '' }}>Quản trị viên cấp cao</option>
+                <option value="branch_admin" {{ request('role') === 'branch_admin' ? 'selected' : '' }}>Quản trị viên chi nhánh</option>
             </select>
         </div>
         <div style="flex:1 1 150px;">
@@ -61,7 +61,7 @@
                         </td>
                         <td>
                             <span class="badge-modern {{ $user->role === 'super_admin' ? 'badge-modern-danger' : 'badge-modern-info' }}">
-                                {{ $user->role === 'super_admin' ? 'Admin gốc' : 'Admin chi nhánh' }}
+                                {{ $user->role === 'super_admin' ? 'Quản trị viên cấp cao' : 'Quản trị viên chi nhánh' }}
                             </span>
                         </td>
                         <td>{{ $user->center?->name ?? 'Toàn hệ thống' }}</td>
@@ -70,13 +70,17 @@
                                 {{ $user->is_active ? 'Hoạt động' : 'Đã khóa' }}
                             </span>
                         </td>
-                        <td style="text-align:center;">
-                            <div style="display:inline-flex; gap:8px;">
-                                <a href="{{ route('admin.users.edit', $user) }}" class="btn-action-sm"><i data-lucide="edit-3"></i> Sửa</a>
-                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('Xóa tài khoản này?')" style="margin:0;">
+                        <td style="text-align: center;">
+                            <div style="display:inline-flex; gap:8px; justify-content: center; width: 100%;">
+                                <a href="{{ route('admin.users.edit', $user) }}" class="btn-action-sm" title="Chỉnh sửa" style="width: 32px; height: 32px; justify-content: center; padding: 0;">
+                                    <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+                                </a>
+                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" data-confirm="Bạn có chắc chắn muốn xóa tài khoản này?" style="margin:0;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-action-sm btn-action-danger"><i data-lucide="trash-2"></i> Xóa</button>
+                                    <button type="submit" class="btn-action-sm btn-action-danger" title="Xóa" style="width: 32px; height: 32px; justify-content: center; padding: 0;">
+                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                    </button>
                                 </form>
                             </div>
                         </td>

@@ -177,7 +177,7 @@
                         
                         <div id="image_preview_container" style="{{ $article->image ? 'display: block;' : 'display: none;' }}">
                             <div style="position: relative; display: inline-block;">
-                                <img id="image_preview" src="{{ $article->image ? asset('images/vaccines/' . $article->image) : '' }}" alt="Preview" style="max-width: 100%; max-height: 150px; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                                <img id="image_preview" src="{{ $article->image ? asset('images/vaccines/' . $article->image) : '' }}" alt="Xem trước hình ảnh" style="max-width: 100%; max-height: 150px; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                                 <button type="button" id="btn_remove_image" style="position: absolute; top: -8px; right: -8px; background: #ef4444; color: #ffffff; border: none; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2);" title="Xóa hình ảnh">
                                     <i data-lucide="x" style="width: 12px; height: 12px;"></i>
                                 </button>
@@ -234,6 +234,7 @@
 
 <!-- TinyMCE 6 Core -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.jsdelivr.net/npm/tinymce-i18n@23.10.9/langs6/vi.js" onload="window.tinyMceVietnameseLoaded=true" onerror="window.tinyMceVietnameseFailed=true" referrerpolicy="origin"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -242,11 +243,21 @@
         const contentHidden = document.getElementById('content-hidden');
         
         let cellCounter = 0;
+        let tinyMceLanguageWarningShown = false;
         
         // Helper to initialize TinyMCE on a textarea ID
         function initTinyMCE(id) {
+            if (typeof tinymce === 'undefined' || !window.tinyMceVietnameseLoaded) {
+                if (!tinyMceLanguageWarningShown) {
+                    window.AppDialog.toast('Không thể tải bộ soạn thảo tiếng Việt. Bạn vẫn có thể nhập nội dung trong ô văn bản.', 'error');
+                    tinyMceLanguageWarningShown = true;
+                }
+                return;
+            }
+
             tinymce.init({
                 selector: '#' + id,
+                language: 'vi',
                 height: 260,
                 menubar: false,
                 plugins: 'lists link image charmap preview searchreplace visualblocks code help wordcount',
@@ -316,12 +327,12 @@
                         <div class="cell-image-dropzone" onclick="triggerCellFileInput('${cellId}')" style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 16px; cursor: pointer; background: #f8fafc; transition: all 0.2s;">
                             <div class="cell-image-prompt" style="${hasImg ? 'display: none;' : ''}">
                                 <i data-lucide="upload-cloud" style="width: 32px; height: 32px; color: #64748b; margin-bottom: 4px; display: inline-block;"></i>
-                                <p style="font-weight: 600; color: #475569; margin: 0 0 2px 0; font-size: 12.5px;">Click để tải ảnh lên thiết bị</p>
+                                <p style="font-weight: 600; color: #475569; margin: 0 0 2px 0; font-size: 12.5px;">Nhấn để tải ảnh lên thiết bị</p>
                                 <span style="font-size: 10.5px; color: #94a3b8;">Hỗ trợ JPG, PNG, GIF, WEBP</span>
                             </div>
                             <div class="cell-image-preview" style="${hasImg ? 'display: block;' : 'display: none;'}">
-                                <img src="${initialValue}" alt="Preview" style="max-height: 150px; border-radius: 6px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: inline-block;">
-                                <p style="font-size: 11.5px; color: #64748b; margin: 4px 0 0 0;">Click để đổi ảnh khác</p>
+                                <img src="${initialValue}" alt="Xem trước hình ảnh" style="max-height: 150px; border-radius: 6px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: inline-block;">
+                                <p style="font-size: 11.5px; color: #64748b; margin: 4px 0 0 0;">Nhấn để đổi ảnh khác</p>
                             </div>
                         </div>
                     </div>
@@ -379,16 +390,16 @@
                         prompt.style.display = 'none';
                         preview.style.display = 'block';
                     } else {
-                        alert('Upload failed.');
+                        window.AppDialog.alert('Tải ảnh lên thất bại.');
                         resetPrompt();
                     }
                 } else {
-                    alert('Upload failed.');
+                    window.AppDialog.alert('Tải ảnh lên thất bại.');
                     resetPrompt();
                 }
             };
             xhr.onerror = function() {
-                alert('Connection error.');
+                window.AppDialog.alert('Lỗi kết nối. Vui lòng thử lại.');
                 resetPrompt();
             };
             xhr.send(formData);
@@ -396,7 +407,7 @@
             function resetPrompt() {
                 prompt.innerHTML = `
                     <i data-lucide="upload-cloud" style="width: 32px; height: 32px; color: #64748b; margin-bottom: 4px; display: inline-block;"></i>
-                    <p style="font-weight: 600; color: #475569; margin: 0 0 2px 0; font-size: 12.5px;">Click để tải ảnh lên thiết bị</p>
+                    <p style="font-weight: 600; color: #475569; margin: 0 0 2px 0; font-size: 12.5px;">Nhấn để tải ảnh lên thiết bị</p>
                     <span style="font-size: 10.5px; color: #94a3b8;">Hỗ trợ JPG, PNG, GIF, WEBP</span>
                 `;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -458,8 +469,8 @@
         };
         
         // Delete cell
-        window.deleteCell = function(cellId) {
-            if (confirm('Bạn có chắc chắn muốn xóa ô này?')) {
+        window.deleteCell = async function(cellId) {
+            if (await window.AppDialog.confirm('Bạn có chắc chắn muốn xóa ô này?')) {
                 const cell = document.getElementById(cellId);
                 if (cell) {
                     try {

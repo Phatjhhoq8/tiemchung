@@ -36,10 +36,32 @@ class AdminConsultationLeadController extends Controller
             });
         }
 
+        $day = $request->input('filter_day') ?? $request->input('day');
+        $month = $request->input('filter_month') ?? $request->input('month');
+        $year = $request->input('filter_year') ?? $request->input('year');
+
+        if ($day !== null && $day !== '') {
+            $query->whereDay('consultation_leads.created_at', (int) $day);
+        }
+        if ($month !== null && $month !== '') {
+            $query->whereMonth('consultation_leads.created_at', (int) $month);
+        }
+        if ($year !== null && $year !== '') {
+            $query->whereYear('consultation_leads.created_at', (int) $year);
+        }
+
         $leads = $query->paginate(20)->withQueryString();
-        $centers = AdminContext::isSuperAdmin()
+        $isSuperAdmin = AdminContext::isSuperAdmin();
+        $centers = $isSuperAdmin
             ? Center::active()->orderBy('sort_order')->orderBy('id')->get()
             : collect();
+
+        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'html' => view('vaccine::admin.leads._table', compact('leads', 'centers', 'selectedCenterId', 'isSuperAdmin'))->render(),
+            ]);
+        }
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -48,7 +70,7 @@ class AdminConsultationLeadController extends Controller
             ]);
         }
 
-        return view('vaccine::admin.leads.index', compact('leads', 'centers', 'selectedCenterId'));
+        return view('vaccine::admin.leads.index', compact('leads', 'centers', 'selectedCenterId', 'isSuperAdmin'));
     }
 
     /**

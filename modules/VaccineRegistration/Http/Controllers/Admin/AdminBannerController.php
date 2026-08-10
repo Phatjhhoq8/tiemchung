@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Chức năng: AdminBannerController quản trị banner/slider trang chủ Medicare Cờ Đỏ.
  * Lý do tạo: Cho phép Admin thêm/sửa/xóa banner quảng bá trên slider trang chủ.
@@ -7,9 +8,9 @@
 namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Rules\SafeImageFile;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Models\Banner;
-
 use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminBannerController extends Controller
@@ -24,15 +25,15 @@ class AdminBannerController extends Controller
      */
     public function index(Request $request)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
-        
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền quản lý biểu ngữ.');
+
         $query = Banner::query();
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', '%' . $search . '%')
-                  ->orWhere('subtitle', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', '%'.$search.'%')
+                    ->orWhere('subtitle', 'like', '%'.$search.'%');
             });
         }
 
@@ -41,6 +42,7 @@ class AdminBannerController extends Controller
         }
 
         $banners = $query->ordered()->paginate(10)->withQueryString();
+
         return view('vaccine::admin.banners.index', compact('banners'));
     }
 
@@ -49,8 +51,9 @@ class AdminBannerController extends Controller
      */
     public function create()
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
-        $banner = new Banner();
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền tạo biểu ngữ.');
+        $banner = new Banner;
+
         return view('vaccine::admin.banners.create', compact('banner'));
     }
 
@@ -59,12 +62,12 @@ class AdminBannerController extends Controller
      */
     public function store(Request $request)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền tạo biểu ngữ.');
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:500',
             'image_url' => 'nullable|string|max:500',
-            'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new \App\Rules\SafeImageFile()],
+            'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new SafeImageFile],
             'link_url' => [
                 'nullable',
                 'string',
@@ -72,26 +75,26 @@ class AdminBannerController extends Controller
                 function ($attribute, $value, $fail) {
                     $lowerVal = strtolower(trim($value));
                     if (preg_match('/^\s*(javascript|data|vbscript)\s*:/i', $value) || str_contains($lowerVal, 'javascript:') || str_contains($lowerVal, 'data:')) {
-                        $fail('Đường dẫn link không hợp lệ.');
+                        $fail('Đường dẫn liên kết không hợp lệ.');
                     }
-                }
+                },
             ],
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'nullable',
         ], [
-            'title.required' => 'Tiêu đề banner không được để trống.',
+            'title.required' => 'Tiêu đề biểu ngữ không được để trống.',
         ]);
 
         // Xử lý tải lên hình ảnh từ file
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
-            $filename = 'banner_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $filename = 'banner_'.time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
             $file->move(public_path('images/banners'), $filename);
-            $validated['image_url'] = '/images/banners/' . $filename;
+            $validated['image_url'] = '/images/banners/'.$filename;
         }
 
         if (empty($validated['image_url'])) {
-            return redirect()->back()->withInput()->withErrors(['image_file' => 'Vui lòng chọn hình ảnh banner tải lên.']);
+            return redirect()->back()->withInput()->withErrors(['image_file' => 'Vui lòng chọn hình ảnh biểu ngữ để tải lên.']);
         }
 
         $validated['is_active'] = $request->has('is_active');
@@ -99,7 +102,7 @@ class AdminBannerController extends Controller
 
         Banner::create($validated);
 
-        return redirect()->route('admin.banners.index')->with('success', 'Thêm banner mới thành công.');
+        return redirect()->route('admin.banners.index')->with('success', 'Thêm biểu ngữ mới thành công.');
     }
 
     /**
@@ -107,8 +110,9 @@ class AdminBannerController extends Controller
      */
     public function edit($id)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền chỉnh sửa biểu ngữ.');
         $banner = Banner::findOrFail($id);
+
         return view('vaccine::admin.banners.edit', compact('banner'));
     }
 
@@ -117,14 +121,14 @@ class AdminBannerController extends Controller
      */
     public function update(Request $request, $id)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền chỉnh sửa biểu ngữ.');
         $banner = Banner::findOrFail($id);
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:500',
             'image_url' => 'nullable|string|max:500',
-            'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new \App\Rules\SafeImageFile()],
+            'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new SafeImageFile],
             'link_url' => [
                 'nullable',
                 'string',
@@ -132,14 +136,14 @@ class AdminBannerController extends Controller
                 function ($attribute, $value, $fail) {
                     $lowerVal = strtolower(trim($value));
                     if (preg_match('/^\s*(javascript|data|vbscript)\s*:/i', $value) || str_contains($lowerVal, 'javascript:') || str_contains($lowerVal, 'data:')) {
-                        $fail('Đường dẫn link không hợp lệ.');
+                        $fail('Đường dẫn liên kết không hợp lệ.');
                     }
-                }
+                },
             ],
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'nullable',
         ], [
-            'title.required' => 'Tiêu đề banner không được để trống.',
+            'title.required' => 'Tiêu đề biểu ngữ không được để trống.',
         ]);
 
         // Xử lý tải lên hình ảnh từ file
@@ -147,15 +151,15 @@ class AdminBannerController extends Controller
             // Xóa ảnh cũ nếu có
             if ($banner->image_url) {
                 $oldFilename = basename($banner->image_url);
-                $oldPath = public_path('images/banners/' . $oldFilename);
+                $oldPath = public_path('images/banners/'.$oldFilename);
                 if (file_exists($oldPath)) {
                     @unlink($oldPath);
                 }
             }
             $file = $request->file('image_file');
-            $filename = 'banner_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $filename = 'banner_'.time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
             $file->move(public_path('images/banners'), $filename);
-            $validated['image_url'] = '/images/banners/' . $filename;
+            $validated['image_url'] = '/images/banners/'.$filename;
         }
 
         if (empty($validated['image_url'])) {
@@ -166,7 +170,7 @@ class AdminBannerController extends Controller
 
         $banner->update($validated);
 
-        return redirect()->route('admin.banners.index')->with('success', 'Cập nhật banner thành công.');
+        return redirect()->route('admin.banners.index')->with('success', 'Cập nhật biểu ngữ thành công.');
     }
 
     /**
@@ -174,11 +178,11 @@ class AdminBannerController extends Controller
      */
     public function destroy($id)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền vô hiệu hóa biểu ngữ.');
         $banner = Banner::findOrFail($id);
         $banner->is_active = false;
         $banner->save();
 
-        return redirect()->route('admin.banners.index')->with('success', 'Vô hiệu hóa banner thành công.');
+        return redirect()->route('admin.banners.index')->with('success', 'Vô hiệu hóa biểu ngữ thành công.');
     }
 }

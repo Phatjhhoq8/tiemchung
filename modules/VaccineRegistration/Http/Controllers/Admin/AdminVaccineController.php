@@ -1,6 +1,7 @@
 <?php
+
 /**
- * Chức năng: AdminVaccineController xử lý CRUD danh mục vắc xin/gói vắc xin.
+ * Chức năng: AdminVaccineController xử lý CRUD danh mục vắc xin.
  * Lý do chỉnh sửa: Bổ sung validation cho các trường mới (sale_price, stock_status, manufacturer, dosage,
  *                   is_featured, sort_order, category) và thêm chức năng tìm kiếm/lọc theo VNVC.
  */
@@ -8,11 +9,13 @@
 namespace Modules\VaccineRegistration\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Rules\SafeImageFile;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
+use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminVaccineController extends Controller
@@ -25,12 +28,12 @@ class AdminVaccineController extends Controller
         $filters = $request->validate([
             'center_id' => 'nullable|integer|exists:centers,id',
             'search' => 'nullable|string|max:255',
-            'type' => 'nullable|in:single,package',
             'stock_status' => 'nullable|in:available,limited,out_of_stock',
             'category' => 'nullable|string|max:100',
             'featured' => 'nullable|boolean',
             'min_quantity' => 'nullable|integer|min:0',
             'max_quantity' => 'nullable|integer|min:0',
+
         ], [
             'min_quantity.integer' => 'Số lượng tối thiểu phải là số nguyên.',
             'min_quantity.min' => 'Số lượng tối thiểu không được nhỏ hơn 0.',
@@ -49,34 +52,29 @@ class AdminVaccineController extends Controller
         $query = Vaccine::forAdminCenters($selectedCenterId);
 
         // Tìm kiếm theo tên hoặc bệnh phòng ngừa
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = trim($filters['search']);
-            $query->where(function($q) use ($search) {
-                $q->where('vaccines.name', 'like', '%' . $search . '%')
-                  ->orWhere('vaccines.disease_prevention', 'like', '%' . $search . '%')
-                  ->orWhere('vaccines.category', 'like', '%' . $search . '%')
-                  ->orWhere('vaccines.manufacturer', 'like', '%' . $search . '%')
-                  ->orWhere('centers.name', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('vaccines.name', 'like', '%'.$search.'%')
+                    ->orWhere('vaccines.disease_prevention', 'like', '%'.$search.'%')
+                    ->orWhere('vaccines.category', 'like', '%'.$search.'%')
+                    ->orWhere('vaccines.manufacturer', 'like', '%'.$search.'%')
+                    ->orWhere('centers.name', 'like', '%'.$search.'%');
             });
         }
 
-        // Lọc theo phân loại (lẻ/gói)
-        if (!empty($filters['type'])) {
-            $query->where('vaccines.type', $filters['type']);
-        }
-
         // Lọc theo tình trạng kho
-        if (!empty($filters['stock_status'])) {
+        if (! empty($filters['stock_status'])) {
             $query->where('center_vaccines.stock_status', $filters['stock_status']);
         }
 
         // Lọc theo danh mục bệnh
-        if (!empty($filters['category'])) {
+        if (! empty($filters['category'])) {
             $query->where('vaccines.category', $filters['category']);
         }
 
         // Lọc vắc xin nổi bật
-        if (!empty($filters['featured'])) {
+        if (! empty($filters['featured'])) {
             $query->where('center_vaccines.is_featured', true);
         }
 
@@ -88,21 +86,31 @@ class AdminVaccineController extends Controller
             $query->where('center_vaccines.stock_quantity', '<=', $filters['max_quantity']);
         }
 
+
         $vaccines = $query->orderBy('vaccines.id')
-                          ->orderBy('centers.sort_order')
-                          ->orderBy('centers.id')
-                          ->paginate(15)
-                          ->withQueryString();
+            ->orderBy('centers.sort_order')
+            ->orderBy('centers.id')
+            ->paginate(15)
+            ->withQueryString();
 
         // Lấy danh sách danh mục để hiển thị dropdown lọc
         $categories = Vaccine::whereNotNull('category')
-                             ->where('category', '!=', '')
-                             ->distinct()
-                             ->pluck('category')
-                             ->sort()
-                             ->values();
+            ->where('category', '!=', '')
+            ->distinct()
+            ->pluck('category')
+            ->sort()
+            ->values();
 
-        return view('vaccine::admin.vaccines.index', compact('vaccines', 'categories', 'centers', 'selectedCenterId'));
+        $isSuperAdmin = AdminContext::isSuperAdmin();
+
+        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'html' => view('vaccine::admin.vaccines._table', compact('vaccines', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin'))->render(),
+            ]);
+        }
+
+        return view('vaccine::admin.vaccines.index', compact('vaccines', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin'));
     }
 
     /**
@@ -110,9 +118,9 @@ class AdminVaccineController extends Controller
      */
     public function create()
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền tạo vắc xin.');
 
-        $vaccine = new Vaccine(); // Khởi tạo đối tượng rỗng phục vụ form partial
+        $vaccine = new Vaccine; // Khởi tạo đối tượng rỗng phục vụ form partial
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
         $selectedCenterId = request()->filled('center_id')
             ? AdminContext::selectedCenterId(request()->integer('center_id'))
@@ -120,11 +128,11 @@ class AdminVaccineController extends Controller
         $isSuperAdmin = AdminContext::isSuperAdmin();
         $adminUser = AdminContext::user();
         $categories = Vaccine::whereNotNull('category')
-                             ->where('category', '!=', '')
-                             ->distinct()
-                             ->pluck('category')
-                             ->sort()
-                             ->values();
+            ->where('category', '!=', '')
+            ->distinct()
+            ->pluck('category')
+            ->sort()
+            ->values();
 
         return view('vaccine::admin.vaccines.create', compact('vaccine', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'adminUser'));
     }
@@ -134,21 +142,21 @@ class AdminVaccineController extends Controller
      */
     public function store(Request $request)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền tạo vắc xin.');
 
         $validated = $this->validateVaccine($request);
 
         // Xử lý tải lên hình ảnh từ file
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
-            $filename = 'vaccine_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $filename = 'vaccine_'.time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
             $file->move(public_path('images/vaccines'), $filename);
             $validated['image'] = $filename;
         }
 
         // Gán ảnh mặc định nếu không điền
         if (empty($validated['image'])) {
-            $validated['image'] = $validated['type'] === 'package' ? 'default_package.jpg' : 'default_vaccine.jpg';
+            $validated['image'] = 'default_vaccine.jpg';
         }
 
         // Xử lý checkbox is_featured
@@ -166,7 +174,7 @@ class AdminVaccineController extends Controller
             } elseif ($qty <= 5) {
                 $stockStatus = 'limited';
             }
-            
+
             CenterVaccine::firstOrCreate(
                 ['center_id' => $center->id, 'vaccine_id' => $vaccine->id],
                 [
@@ -188,7 +196,7 @@ class AdminVaccineController extends Controller
      */
     public function edit($id)
     {
-        abort_unless(AdminContext::isBranchAdmin() || AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isBranchAdmin() || AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền chỉnh sửa vắc xin.');
 
         if (request()->filled('center_id')) {
             AdminContext::assertCanManageCenter(request()->integer('center_id'));
@@ -214,11 +222,11 @@ class AdminVaccineController extends Controller
             $vaccine->sort_order = $centerVaccine->sort_order;
         }
         $categories = Vaccine::whereNotNull('category')
-                             ->where('category', '!=', '')
-                             ->distinct()
-                             ->pluck('category')
-                             ->sort()
-                             ->values();
+            ->where('category', '!=', '')
+            ->distinct()
+            ->pluck('category')
+            ->sort()
+            ->values();
 
         return view('vaccine::admin.vaccines.edit', compact('vaccine', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'adminUser'));
     }
@@ -228,28 +236,31 @@ class AdminVaccineController extends Controller
      */
     public function update(Request $request, $id)
     {
-        abort_unless(AdminContext::isBranchAdmin() || AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isBranchAdmin() || AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền chỉnh sửa vắc xin.');
 
         $vaccine = Vaccine::findOrFail($id);
 
-        if (!AdminContext::isSuperAdmin()) {
-            if ($request->filled('center_id') && (int)$request->input('center_id') !== (int)AdminContext::centerId()) {
+        if (! AdminContext::isSuperAdmin()) {
+            if ($request->filled('center_id') && (int) $request->input('center_id') !== (int) AdminContext::centerId()) {
                 abort(403, 'Bạn không có quyền cập nhật vắc xin của chi nhánh khác.');
             }
 
-            $masterFields = ['name', 'origin', 'category', 'description', 'disease_prevention', 'type', 'doses', 'age_group', 'manufacturer', 'dosage'];
+            $masterFields = [
+                'name', 'origin', 'category', 'description', 'disease_prevention', 'doses', 'age_group',
+                'manufacturer', 'dosage', 'administration_route', 'detailed_schedule', 'contraindications',
+                'adverse_effects', 'warnings', 'source_reference_url', 'source_review_date',
+            ];
             foreach ($masterFields as $field) {
-                if ($request->has($field) && (string)$request->input($field) !== (string)$vaccine->$field) {
-                    abort(403, 'Admin chi nhánh không được thay đổi thông tin danh mục vắc xin dùng chung.');
+                if ($request->has($field) && (string) $request->input($field) !== (string) $vaccine->$field) {
+                    abort(403, 'Quản trị viên chi nhánh không được thay đổi thông tin danh mục vắc xin dùng chung.');
                 }
             }
             if ($request->hasFile('image_file')) {
-                abort(403, 'Admin chi nhánh không được thay đổi hình ảnh vắc xin dùng chung.');
+                abort(403, 'Quản trị viên chi nhánh không được thay đổi hình ảnh vắc xin dùng chung.');
             }
 
             $request->merge([
                 'name' => $vaccine->name,
-                'type' => $vaccine->type,
                 'disease_prevention' => $vaccine->disease_prevention,
                 'age_group' => $vaccine->age_group,
                 'origin' => $vaccine->origin,
@@ -258,6 +269,13 @@ class AdminVaccineController extends Controller
                 'manufacturer' => $vaccine->manufacturer,
                 'dosage' => $vaccine->dosage,
                 'description' => $vaccine->description,
+                'administration_route' => $vaccine->administration_route,
+                'detailed_schedule' => $vaccine->detailed_schedule,
+                'contraindications' => $vaccine->contraindications,
+                'adverse_effects' => $vaccine->adverse_effects,
+                'warnings' => $vaccine->warnings,
+                'source_reference_url' => $vaccine->source_reference_url,
+                'source_review_date' => $vaccine->source_review_date?->toDateString(),
             ]);
         }
 
@@ -269,20 +287,20 @@ class AdminVaccineController extends Controller
         // Xử lý tải lên hình ảnh từ file (chỉ cho phép super_admin thay đổi ảnh)
         if (AdminContext::isSuperAdmin() && $request->hasFile('image_file')) {
             // Xóa ảnh cũ nếu không phải ảnh mặc định
-            if ($vaccine->image && !in_array($vaccine->image, ['default_package.jpg', 'default_vaccine.jpg'])) {
-                $oldPath = public_path('images/vaccines/' . $vaccine->image);
+            if ($vaccine->image && $vaccine->image !== 'default_vaccine.jpg') {
+                $oldPath = public_path('images/vaccines/'.$vaccine->image);
                 if (file_exists($oldPath)) {
                     @unlink($oldPath);
                 }
             }
             $file = $request->file('image_file');
-            $filename = 'vaccine_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $filename = 'vaccine_'.time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
             $file->move(public_path('images/vaccines'), $filename);
             $validated['image'] = $filename;
         }
 
         if (empty($validated['image'])) {
-            $validated['image'] = $vaccine->image ?: ($validated['type'] === 'package' ? 'default_package.jpg' : 'default_vaccine.jpg');
+            $validated['image'] = $vaccine->image ?: 'default_vaccine.jpg';
         }
 
         // Xử lý checkbox is_featured
@@ -303,7 +321,7 @@ class AdminVaccineController extends Controller
      */
     public function toggleFeatured($id)
     {
-        abort_unless(AdminContext::isSuperAdmin() || AdminContext::isBranchAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin() || AdminContext::isBranchAdmin(), 403, 'Bạn không có quyền thay đổi trạng thái nổi bật của vắc xin.');
 
         $validated = request()->validate(['center_id' => 'required|integer|exists:centers,id']);
         AdminContext::assertCanManageCenter((int) $validated['center_id']);
@@ -314,10 +332,11 @@ class AdminVaccineController extends Controller
             ['center_id' => $selectedCenterId, 'vaccine_id' => $vaccine->id],
             ['price' => $vaccine->price, 'sale_price' => $vaccine->sale_price, 'stock_status' => $vaccine->stock_status ?? 'available']
         );
-        $centerVaccine->is_featured = !$centerVaccine->is_featured;
+        $centerVaccine->is_featured = ! $centerVaccine->is_featured;
         $centerVaccine->save();
 
         $statusMessage = $centerVaccine->is_featured ? 'Đã bật hiển thị NỔI BẬT trên Trang chủ.' : 'Đã bỏ trạng thái NỔI BẬT.';
+
         return redirect()->back()->with('success', "Vắc xin '{$vaccine->name}': {$statusMessage}");
     }
 
@@ -326,7 +345,7 @@ class AdminVaccineController extends Controller
      */
     public function destroy($id)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền vô hiệu hóa vắc xin.');
 
         $vaccine = Vaccine::findOrFail($id);
         $vaccine->is_active = false;
@@ -341,7 +360,7 @@ class AdminVaccineController extends Controller
      */
     public function branchesStock($id)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403);
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền xem tồn kho vắc xin của tất cả chi nhánh.');
 
         $vaccine = Vaccine::findOrFail($id);
 
@@ -360,7 +379,7 @@ class AdminVaccineController extends Controller
                     'sale_price' => $centerVaccine ? $centerVaccine->sale_price : $vaccine->sale_price,
                     'stock_quantity' => $centerVaccine ? $centerVaccine->stock_quantity : 0,
                     'stock_status' => $centerVaccine ? $centerVaccine->stock_status : 'out_of_stock',
-                    'is_active' => $centerVaccine ? (bool)$centerVaccine->is_active : false,
+                    'is_active' => $centerVaccine ? (bool) $centerVaccine->is_active : false,
                 ];
             });
 
@@ -375,7 +394,7 @@ class AdminVaccineController extends Controller
      */
     private function validateVaccine(Request $request): array
     {
-        if (!$request->has('stock_quantity') && $request->has('stock_status')) {
+        if (! $request->has('stock_quantity') && $request->has('stock_status')) {
             $status = $request->input('stock_status');
             $qty = 10;
             if ($status === 'out_of_stock') {
@@ -391,7 +410,6 @@ class AdminVaccineController extends Controller
             'center_id' => 'required|exists:centers,id',
             'price' => 'required|integer|min:0',
             'sale_price' => 'nullable|integer|min:0|lt:price',
-            'type' => 'required|string|in:single,package',
             'doses' => 'required|integer|min:1',
             'stock_quantity' => 'required|integer|min:0',
             'center_is_active' => 'nullable|boolean',
@@ -402,8 +420,15 @@ class AdminVaccineController extends Controller
             'manufacturer' => 'nullable|string|max:255',
             'dosage' => 'nullable|string|max:100',
             'description' => 'nullable|string',
+            'administration_route' => 'nullable|string|max:255',
+            'detailed_schedule' => 'nullable|string|max:10000',
+            'contraindications' => 'nullable|string|max:10000',
+            'adverse_effects' => 'nullable|string|max:10000',
+            'warnings' => 'nullable|string|max:10000',
+            'source_reference_url' => 'nullable|url:http,https|max:2048',
+            'source_review_date' => 'nullable|date|before_or_equal:today',
             'image' => 'nullable|string|max:255',
-            'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new \App\Rules\SafeImageFile()],
+            'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new SafeImageFile],
             'is_featured' => 'nullable',
             'sort_order' => 'nullable|integer|min:0',
         ], [
@@ -413,8 +438,6 @@ class AdminVaccineController extends Controller
             'price.min' => 'Giá vắc xin không được nhỏ hơn 0đ.',
             'sale_price.integer' => 'Giá ưu đãi phải là số nguyên.',
             'sale_price.min' => 'Giá ưu đãi không được nhỏ hơn 0đ.',
-            'type.required' => 'Vui lòng chọn phân loại vắc xin.',
-            'type.in' => 'Phân loại không hợp lệ.',
             'doses.required' => 'Số mũi tiêm không được để trống.',
             'doses.min' => 'Số mũi tiêm phải ít nhất là 1 mũi.',
             'stock_quantity.required' => 'Vui lòng nhập số lượng tồn kho.',
@@ -459,8 +482,8 @@ class AdminVaccineController extends Controller
             ]
         );
 
-        if (!$existing || $oldPrice !== $newPrice || $oldSalePrice !== $newSalePrice) {
-            \App\Services\AuditLogger::logPriceUpdate(
+        if (! $existing || $oldPrice !== $newPrice || $oldSalePrice !== $newSalePrice) {
+            AuditLogger::logPriceUpdate(
                 resourceId: $vaccine->id,
                 oldValues: ['price' => $oldPrice, 'sale_price' => $oldSalePrice],
                 newValues: ['price' => $newPrice, 'sale_price' => $newSalePrice],

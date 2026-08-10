@@ -40,19 +40,6 @@
                 </div>
             </a>
 
-            <a href="{{ route('vaccine.index', ['type' => 'package']) }}" class="service-card-large bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-200 flex items-start gap-6 group" data-aos="fade-up" data-aos-delay="300">
-                <div class="w-16 h-16 bg-gradient-to-br from-[#eaaa00] to-amber-600 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                    <i data-lucide="package-check" class="w-8 h-8 text-white" style="color: #ffffff !important;"></i>
-                </div>
-                <div class="space-y-2 flex-1">
-                    <h3 class="font-bold text-slate-900 text-xl group-hover:text-[#c8102e] transition-colors">Gói Tiêm Trọn Gói</h3>
-                    <p class="text-sm text-slate-600 leading-relaxed">Tiết kiệm chi phí, cam kết giữ vắc xin không lo thiếu hàng hay tăng giá trong suốt phác đồ tiêm chủng.</p>
-                    <span class="inline-flex items-center gap-1.5 text-[#c8102e] font-bold text-sm group-hover:gap-2.5 transition-all">
-                        Xem các gói tiêm <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </span>
-                </div>
-            </a>
-
             <a href="{{ route('register.show') }}" onclick="openSpaRegisterModal(event)" class="service-card-large bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-200 flex items-start gap-6 group" data-aos="fade-up" data-aos-delay="400">
                 <div class="w-16 h-16 bg-gradient-to-br from-[#c8102e] to-[#a00d24] text-white rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
                     <i data-lucide="stethoscope" class="w-8 h-8 text-white" style="color: #ffffff !important;"></i>

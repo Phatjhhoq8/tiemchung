@@ -1,6 +1,6 @@
 @extends('vaccine::layouts.admin')
 
-@section('title', 'Chỉnh Sửa Chi Nhánh - Medicare Cờ Đỏ')
+@section('title', 'Chỉnh Sửa Chi Nhánh - Medicare')
 @section('page_title', 'Chỉnh Sửa Chi Nhánh Trung Tâm')
 
 @section('admin_content')

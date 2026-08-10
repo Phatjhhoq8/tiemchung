@@ -46,7 +46,6 @@ class SchedulesSlotsConcurrencyTest extends TestCase
         $this->vaccine = Vaccine::create([
             'name' => 'Vắc xin slot ' . $suffix,
             'price' => 100000,
-            'type' => 'single',
             'doses' => 1,
             'stock_status' => 'available',
             'disease_prevention' => 'Cúm',

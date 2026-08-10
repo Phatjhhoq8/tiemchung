@@ -51,7 +51,6 @@ class CustomerLoyaltyAndManualPaymentTest extends TestCase
         $this->vaccine = Vaccine::create([
             'name' => 'Vắc xin loyalty ' . $suffix,
             'price' => 100000,
-            'type' => 'single',
             'doses' => 1,
             'stock_status' => 'available',
             'disease_prevention' => 'Cúm',
@@ -103,6 +102,41 @@ class CustomerLoyaltyAndManualPaymentTest extends TestCase
             ->assertSee($registration->registration_code)
             ->assertSee('Nguyễn Văn A')
             ->assertSee($this->vaccine->name);
+    }
+
+    public function test_multi_person_order_uses_one_explicit_account_customer(): void
+    {
+        $schedule = Schedule::create(['center_id' => $this->centerA->id, 'date' => today()->addDays(6), 'is_active' => true]);
+        $slot = Slot::create(['schedule_id' => $schedule->id, 'start_at' => '10:00', 'end_at' => '11:00', 'capacity' => 5, 'reserved_count' => 0, 'is_active' => true]);
+
+        $this->withSession(['selected_center_id' => $this->centerA->id])->post(route('register.post'), [
+            'account_name' => 'Chủ hộ',
+            'account_phone' => $this->householdPhone,
+            'patients' => [
+                ['name' => 'Người A', 'phone' => '0911111111', 'dob' => '2000-01-01', 'gender' => 'Nam', 'address' => 'A', 'vaccine_ids' => [$this->vaccine->id]],
+                ['name' => 'Người B', 'phone' => '0922222222', 'dob' => '2000-01-01', 'gender' => 'Nữ', 'address' => 'B', 'vaccine_ids' => [$this->vaccine->id]],
+            ],
+            'slot_id' => $slot->id,
+            'idempotency_key' => $this->keyPrefix . 'group',
+        ])->assertRedirect(route('register.success'));
+
+        $customer = Customer::where('phone', '+84' . substr($this->householdPhone, 1))->firstOrFail();
+        $registrations = Registration::where('idempotency_key', 'like', $this->keyPrefix . 'group_%')->get();
+        $this->assertCount(2, $registrations);
+        $this->assertSame([$customer->id], $registrations->pluck('customer_id')->unique()->values()->all());
+        $this->assertSame('Chủ hộ', $customer->name);
+    }
+
+    public function test_points_earned_at_center_a_are_redeemed_at_center_b_with_phone_variant(): void
+    {
+        $first = $this->book($this->centerA, 'Người A', $this->householdPhone, $this->keyPrefix . 'earn-a');
+        $this->asAdmin($this->branchAdminA)->post(route('admin.registrations.settle', $first), ['redeem_points' => 0]);
+
+        $second = $this->book($this->centerB, 'Người B', '+84 ' . substr($this->householdPhone, 1), $this->keyPrefix . 'redeem-b');
+        $this->asAdmin($this->branchAdminB)->post(route('admin.registrations.settle', $second), ['redeem_points' => 10])->assertSessionHas('success');
+
+        $this->assertSame($first->customer_id, $second->customer_id);
+        $this->assertDatabaseHas('point_transactions', ['registration_id' => $second->id, 'center_id' => $this->centerB->id, 'points' => -10]);
     }
 
     public function test_manual_settlement_redeems_up_to_balance_and_earns_points_once(): void

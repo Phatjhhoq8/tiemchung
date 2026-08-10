@@ -22,6 +22,9 @@ class AdminScheduleController extends Controller
     {
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get(['id', 'name']);
         $selectedCenterId = AdminContext::resolveListCenterId($request);
+        if (!$selectedCenterId && $centers->isNotEmpty()) {
+            $selectedCenterId = $centers->first()->id;
+        }
 
         $pivotDate = $request->filled('date')
             ? Carbon::parse($request->input('date'))

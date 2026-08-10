@@ -10,8 +10,8 @@ class SafeImageFile implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($value && !SecurityHelper::isSafeImageFile($value)) {
-            $fail('Tập tin ảnh không hợp lệ hoặc chứa nội dung SVG không được phép.');
+        if ($value && ! SecurityHelper::isSafeImageFile($value)) {
+            $fail('Tệp ảnh không hợp lệ hoặc chứa nội dung SVG không được phép.');
         }
     }
 }

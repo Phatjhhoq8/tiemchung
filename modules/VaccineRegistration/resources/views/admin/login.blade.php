@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Nhập Quản Trị - Medicare Cờ Đỏ</title>
+    <title>Đăng Nhập Quản Trị</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -134,14 +134,18 @@
             color: #9b1c1c;
             border: 1px solid #fbd5d5;
         }
+        .alert-success {
+            background-color: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
     </style>
 </head>
 <body>
     <div class="login-card">
         <div class="login-header">
             <div class="login-logo"><i data-lucide="shield-check"></i></div>
-            <h1>Đăng Nhập Admin</h1>
-            <p>Hệ thống quản trị Medicare Cờ Đỏ</p>
+            <h1>Đăng Nhập Quản Trị</h1>
         </div>
 
         @if($errors->has('auth_failed'))
@@ -158,6 +162,13 @@
             </div>
         @endif
 
+        @if(session('success'))
+            <div class="alert alert-success">
+                <i data-lucide="circle-check"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+        @endif
+
         <form action="{{ route('admin.login') }}" method="POST">
             @csrf
             
@@ -165,7 +176,7 @@
                 <label for="username">Tên đăng nhập</label>
                 <div class="input-group">
                     <i data-lucide="user"></i>
-                    <input type="text" name="username" id="username" value="{{ old('username') }}" placeholder="Tên đăng nhập admin" required autofocus autocomplete="off">
+                    <input type="text" name="username" id="username" value="{{ old('username') }}" placeholder="Tên đăng nhập quản trị viên" required autofocus autocomplete="username">
                 </div>
             </div>
 
@@ -173,7 +184,7 @@
                 <label for="password">Mật khẩu</label>
                 <div class="input-group">
                     <i data-lucide="lock"></i>
-                    <input type="password" name="password" id="password" placeholder="Mật khẩu bảo mật" required>
+                    <input type="password" name="password" id="password" placeholder="Mật khẩu bảo mật" required autocomplete="current-password">
                 </div>
             </div>
 

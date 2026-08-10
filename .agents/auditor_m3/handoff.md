@@ -1,70 +1,105 @@
-# Forensic Audit Report — Milestone 3 (M3): R2 RBAC & Multi-branch Data Isolation
+# Forensic Integrity Audit Report: Admin Dashboard Improvements (R1, R2, R3)
 
-**Work Product**: Milestone 3 RBAC, Policies, Controllers, and Test Suites
-**Profile**: General Project (Forensic Integrity)
-**Verdict**: **CLEAN**
+**Work Product**: Medicare Vaccine Registration Admin Dashboard (`modules/VaccineRegistration/Http/Controllers/Admin/AdminDashboardController.php`, `modules/VaccineRegistration/resources/views/admin/dashboard.blade.php`, `tests/Feature/AdminDashboardTest.php`)  
+**Profile**: General Project  
+**Verdict**: CLEAN  
 
 ---
 
 ## 1. Observation
 
-### Policy Implementations (`modules/VaccineRegistration/Policies/`)
-- `VaccinePolicy.php`: `create`, `updateMasterCatalog`, and `delete` restrict execution to `$user->isSuperAdmin()`. `update` allows `$user->isSuperAdmin() || $user->isBranchAdmin()`. `viewAny` and `view` return `true`.
-- `CenterVaccinePolicy.php`: `view` and `update` require `$user->isSuperAdmin()` OR (`$user->isBranchAdmin() && (int) $user->center_id === (int) $centerVaccine->center_id`).
-- `RegistrationPolicy.php`: `view`, `update`, and `delete` check `$user->isSuperAdmin()` OR (`$user->isBranchAdmin() && (int) $user->center_id === (int) $registration->center_id`).
-- `CenterPolicy.php`, `BannerPolicy.php`, `ArticlePolicy.php`: All administrative methods (`viewAny`, `view`, `create`, `update`, `delete`) strictly enforce `$user->isSuperAdmin()`.
+### 1.1 Source Code Inspection (`AdminDashboardController.php`)
+File: `modules/VaccineRegistration/Http/Controllers/Admin/AdminDashboardController.php` (Lines 1–137)
 
-### Service Provider (`modules/VaccineRegistration/Providers/VaccineServiceProvider.php`)
-- Lines 43-48: Explicitly registers policies with Laravel Gate (`Gate::policy(...)`) for `Vaccine`, `CenterVaccine`, `Registration`, `Center`, `Banner`, and `Article`.
-- Lines 39-40: Registers `admin.auth` and `super.admin` middleware aliases with router.
-- No dummy mocks, bypass flags, or fake gates present.
+- **Requirement R1 (Dynamic Metrics)**:
+  - `$consultCount` (Lines 50–54): Calculated via dynamic Eloquent DB query `ConsultationLead::query()` filtering `whereIn('status', ['pending', 'new'])->count()`.
+  - `$importedQuantity` (Lines 56–60): Calculated via dynamic DB sum query `InventoryLot::query()->sum(DB::raw('available_quantity + reserved_quantity'))`.
+  - `$soldQuantity` (Line 62): Calculated via dynamic DB count query `(clone $registrationQuery)->where('booking_status', Registration::BOOKING_COMPLETED)->count()`.
+- **Requirement R2 (Today's Injections Widget)**:
+  - `$todayInjectionsCount` (Lines 65–67): Calculated via dynamic DB query `(clone $registrationQuery)->whereDate('injection_date', now()->toDateString())->count()`.
+- **Requirement R3 (Trends Data & Center Filtering)**:
+  - Center filtering (Lines 32–35, 51–53, 57–59): Center filter `$selectedCenterId` is conditionally applied to `$registrationQuery`, `$productQuery`, `$consultLeadQuery`, and `$inventoryQuery`.
+  - `$dailyTrends` (Lines 70–89): Dynamically queries registrations for the last 7 days grouped by `DATE(created_at)`, filling all 7 calendar dates.
+  - `$monthlyTrends` (Lines 91–111): Dynamically queries registrations for the last 6 months grouped by `DATE_FORMAT(created_at, '%Y-%m')`, filling all 6 calendar months.
 
-### Controller Enforcement (`modules/VaccineRegistration/Http/Controllers/Admin/`)
-- `AdminVaccineController.php`:
-  - `update()` method (lines 180-193) inspects `$request` parameters against `$vaccine` master catalog fields (`name`, `origin`, `category`, `description`, `disease_prevention`, `type`, `doses`, `age_group`, `manufacturer`, `dosage`, `image_file`). If a `branch_admin` attempts to change any master catalog field, it aborts with HTTP `403` ("Branch admin cannot modify master vaccine catalog fields.").
-  - `index()`, `edit()`, `toggleFeatured()` check `AdminContext::isBranchAdmin()` and cross-branch `center_id` parameters, aborting with `403` on cross-branch access.
-- `AdminRegistrationController.php`:
-  - `show()`, `updateStatus()` fetch model by ID (`Registration::findOrFail($id)`) and perform DB-backed center comparison (`if (AdminContext::isBranchAdmin() && (int) $registration->center_id !== (int) AdminContext::centerId()) { abort(403); }`).
-  - `index()`, `schedule()`, `exportCsv()` enforce `AdminContext::applyCenterScope(...)` and cross-branch `center_id` parameter checks (`abort(403)`).
-- `AdminStockController.php`:
-  - Enforces `AdminContext::isBranchAdmin()` permission checks and cross-branch `center_id` validation (`abort(403)`).
-- `AdminCenterController.php`, `AdminBannerController.php`, `AdminArticleController.php`:
-  - Protected via `super.admin` route group middleware in `web.php` and explicit `abort_unless(AdminContext::isSuperAdmin(), 403)` checks in controller actions.
+### 1.2 View Template Inspection (`dashboard.blade.php`)
+File: `modules/VaccineRegistration/resources/views/admin/dashboard.blade.php` (Lines 1–498)
 
-### Test Execution Results
-Executed test suites using `/opt/lampp/bin/php artisan test`:
-- `tests/Feature/RbacMultiBranchTest.php` (10 tests) — 100% PASSED
-- `tests/Feature/M3EmpiricalChallengerTest.php` (4 tests / 48 assertions) — 100% PASSED
-- Total: 14 tests, 73 assertions, 0 failures.
+- **Pure SVG Implementation**:
+  - Pure SVG graphics used for line and area charts (`<svg viewBox="0 0 720 270">`, `<polyline>`, `<path>`, `<circle>`, `<line>`, `<text>`) at lines 258–315 (7-day view) and lines 320–377 (6-month view). No third-party chart libraries or static dummy images.
+- **Medicare Color Palette Compliance**:
+  - Primary (Medicare Red `#c8102e`): Used for revenue polylines, action buttons, price badges (lines 95, 119, 176, 235, 261, 288, 305, 392).
+  - Secondary (Medicare Gold `#eaaa00`): Used for today's widget border/badge, node dots, highlight indicators (lines 26, 30, 93, 132, 251, 310).
+  - Accent (Medicare Navy `#004b8f`): Used for header card background, title headers, registration polylines (lines 18, 111, 143, 167, 231, 247, 291).
+- **Data Binding Integrity**:
+  - Metric values in Blade templates bind directly to controller view data (`{{ $todayInjectionsCount }}`, `{{ $totalRegistrations }}`, `{{ number_format($totalRevenue, 0, ',', '.') }}`, `{{ $pendingCount }}`, `{{ $completedCount }}`, `{{ $consultCount }}`, `{{ number_format($importedQuantity, 0, ',', '.') }}`, `{{ number_format($soldQuantity, 0, ',', '.') }}`).
+
+### 1.3 Feature Test Inspection & Execution (`AdminDashboardTest.php`)
+File: `tests/Feature/AdminDashboardTest.php` (Lines 1–299)
+
+- Test methods:
+  1. `test_admin_dashboard_loads_for_super_admin_and_branch_admin` (Line 73)
+  2. `test_dynamic_statistics_match_db_and_filter_properly_by_center_id` (Line 98)
+  3. `test_todays_injections_widget_shows_correct_count_for_todays_date` (Line 227)
+  4. `test_svg_chart_structure_renders_correctly` (Line 281)
+
+- Test Execution Output:
+  ```
+  Command: /opt/lampp/bin/php artisan test --filter AdminDashboardTest
+
+   PASS  Tests\Feature\AdminDashboardTest
+  ✓ admin dashboard loads for super admin and branch admin               0.12s  
+  ✓ dynamic statistics match db and filter properly by center id         0.05s  
+  ✓ todays injections widget shows correct count for todays date         0.02s  
+  ✓ svg chart structure renders correctly                                0.02s  
+
+  Tests:    4 passed (39 assertions)
+  Duration: 0.26s
+  ```
 
 ---
 
 ## 2. Logic Chain
 
-1. **Policy & Gate Binding**: Policies in `modules/VaccineRegistration/Policies/` implement authentic role (`isSuperAdmin()`, `isBranchAdmin()`) and DB attribute comparison (`(int)$user->center_id === (int)$record->center_id`). Binding in `VaccineServiceProvider` ensures Laravel's authorization framework evaluates these policies on resource actions.
-2. **Anti-IDOR Verification**: In `AdminRegistrationController` and `AdminVaccineController`, anti-IDOR checks evaluate authenticated user context (`AdminContext::centerId()`) against model attributes fetched from MySQL database. Access to cross-branch resources consistently yields HTTP 403.
-3. **Master Catalog Protection Verification**: In `AdminVaccineController::update`, master catalog fields sent in request payloads are compared directly against stored database values. Any attempt by a Branch Admin to alter master catalog properties triggers an immediate 403 abort, while allowed local fields (`price`, `sale_price`, `stock_status`, `is_featured`, `sort_order`) update `center_vaccines` correctly.
-4. **Empirical Verification**: Independent test suite execution (`RbacMultiBranchTest` and `M3EmpiricalChallengerTest`) confirms all 14 test cases pass with 73 assertions. No hardcoded return values or facade shortcuts were detected during static analysis or dynamic test execution.
+1. **Observation 1.1** demonstrates that all 6 required dashboard metrics (`$consultCount`, `$importedQuantity`, `$soldQuantity`, `$todayInjectionsCount`, `$dailyTrends`, `$monthlyTrends`) and center filtering (`$selectedCenterId`) are generated by genuine Eloquent/SQL queries against MySQL database tables (`consultation_leads`, `inventory_lots`, `registrations`). No hardcoded constants, facades, or fake return values exist.
+2. **Observation 1.2** verifies that the frontend view renders dynamic data bound directly to controller output using pure SVG elements (`<svg>`, `<polyline>`, `<path>`, `<circle>`) and strictly adheres to the 3-color Medicare brand hierarchy (`#c8102e`, `#eaaa00`, `#004b8f`).
+3. **Observation 1.3** confirms that the feature test suite (`AdminDashboardTest.php`) creates authentic database records across multiple test centers, verifies center scoping for both Super Admin and Branch Admin roles, asserts exact metric counts, verifies SVG rendering, and passes all 39 assertions.
+4. **Conclusion**: Because zero prohibited patterns (hardcoded test results, facade implementations, pre-populated artifacts, self-certifying tests) were found and all empirical test assertions passed, the work product is verified to be authentic and clean.
 
 ---
 
 ## 3. Caveats
 
-- No caveats. All target files were inspected and empirically verified against the M3 requirements.
+No caveats. All requirements (R1, R2, R3), source files, blade templates, and test suites were completely inspected and verified empirically via automated test execution.
 
 ---
 
 ## 4. Conclusion
 
-The Milestone 3 (M3) work products pass all forensic integrity checks. The RBAC policies, anti-IDOR checks, master catalog protection, and multi-branch data isolation are authentically implemented and fully verified.
-Verdict: **CLEAN**.
+**Final Verdict: CLEAN**
+
+The Admin Dashboard Improvements (Requirements R1, R2, R3) fully comply with integrity standards, commercial production rules, and brand guidelines:
+- Database query authenticity: Verified 100% dynamic DB queries with center scoping.
+- Visualization integrity: Pure SVG elements with Medicare brand color palette.
+- Verification test coverage: 4 test cases / 39 assertions passing.
 
 ---
 
 ## 5. Verification Method
 
 To independently verify this audit:
-```bash
-/opt/lampp/bin/php artisan test tests/Feature/RbacMultiBranchTest.php tests/Feature/M3EmpiricalChallengerTest.php
-```
-Expected output: 14 tests passed, 73 assertions.
+
+1. **Inspect Code Files**:
+   - Controller: `view_file` on `modules/VaccineRegistration/Http/Controllers/Admin/AdminDashboardController.php`
+   - View: `view_file` on `modules/VaccineRegistration/resources/views/admin/dashboard.blade.php`
+   - Test: `view_file` on `tests/Feature/AdminDashboardTest.php`
+
+2. **Execute Verification Command**:
+   ```bash
+   /opt/lampp/bin/php artisan test --filter AdminDashboardTest
+   ```
+
+3. **Invalidation Conditions**:
+   - Any test failure or assertion error during `AdminDashboardTest` execution.
+   - Any hardcoded metrics or non-query stub in `AdminDashboardController.php`.
+   - Use of non-Medicare colors or third-party chart libraries disguised as SVGs in `dashboard.blade.php`.

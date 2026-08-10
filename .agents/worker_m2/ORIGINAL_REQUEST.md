@@ -1,92 +1,48 @@
-## 2026-07-31T15:35:56Z
-
-You are teamwork_preview_worker for Milestone 2 (M2): R1 Admin Account Normalization & Security Hardening.
+## 2026-08-10T16:09:07Z
 
 Working directory: /home/hongphuoc/Desktop/thue/.agents/worker_m2
-Project root: /home/hongphuoc/Desktop/thue
+
+Task: Implement Medicare Vaccine Registration Admin Dashboard improvements (Requirements R1, R2, R3).
 
 MANDATORY INTEGRITY WARNING:
 DO NOT CHEAT. All implementations must be genuine. DO NOT hardcode test results, create dummy/facade implementations, or circumvent the intended task. A Forensic Auditor will independently verify your work. Integrity violations WILL be detected and your work WILL be rejected.
 
-Tasks to implement for M2 (R1 Requirements):
-1. **Artisan Command `php artisan admin:create`**:
-   - Create Artisan command `CreateAdminCommand` (e.g. `app/Console/Commands/CreateAdminCommand.php` or `modules/VaccineRegistration/Console/Commands/CreateAdminCommand.php`).
-   - Signature: `admin:create {--name=} {--username=} {--email=} {--password=} {--role=} {--center_id=}`.
-   - Interactive prompt when options are omitted. Validation on email/username uniqueness, password strength, role (`super_admin` or `branch_admin`), and `center_id` validation if `branch_admin`.
-   - Ensure the command is registered in Laravel Artisan commands.
+Detailed Instructions:
 
-2. **Remove Default Super Admin Auto-creation**:
-   - Edit `database/seeders/DatabaseSeeder.php`: Remove the default auto-creation of `admin/admin123` super admin account on app run / seeding.
+1. Update `modules/VaccineRegistration/Http/Controllers/Admin/AdminDashboardController.php`:
+   - **R1 Dynamic Metrics** (replace hardcoded zeros):
+     - `$consultCount`: Total unprocessed consultation requests from `consultation_leads` table where `status` is in `['pending', 'new']`, filtered by `$selectedCenterId` when set.
+     - `$importedQuantity`: Total current vaccine inventory from `inventory_lots` table (sum of `available_quantity + reserved_quantity`), filtered by `$selectedCenterId` when set.
+     - `$soldQuantity`: Total vaccines sold/completed injections from `registrations` table where `booking_status` = `'completed'`, filtered by `$selectedCenterId` when set.
+   - **R2 Today's Injections Widget**:
+     - Compute expected injections for today (`injection_date` = today's date), filtered by `$selectedCenterId` when set: `$todayInjectionsCount`.
+   - **R3 Revenue & Registrations Trends Data**:
+     - Query 7-day daily trend (last 7 days including today): dates, total paid revenue, and total registration count, filtered by `$selectedCenterId`.
+     - Query 6-month monthly trend (last 6 months including current month): months, total paid revenue, and total registration count, filtered by `$selectedCenterId`.
+     - Pass metrics, today's count, and trend datasets to view `vaccine::admin.dashboard`.
 
-3. **Schema & Model Updates for Account Lifecycle**:
-   - Update migration `modules/VaccineRegistration/Database/Migrations/2026_07_31_000004_add_admin_fields_to_users_table.php` (or add a new migration) to include:
-     - `status` (string, default `'active'`)
-     - `must_change_password` (boolean, default `false`)
-     - `password_changed_at` (timestamp, nullable)
-     - `last_login_at` (timestamp, nullable)
-     - `locked_until` (timestamp, nullable)
-     - `failed_login_count` (integer, default `0`)
-   - Update `app/Models/User.php`:
-     - Add new fields to `$fillable` and `$casts`.
-     - Add helper methods: `isLocked(): bool`, `recordSuccessfulLogin()`, `recordFailedLogin()`.
+2. Update `modules/VaccineRegistration/resources/views/admin/dashboard.blade.php`:
+   - Display dynamic `$consultCount`, `$importedQuantity`, `$soldQuantity` in stat cards.
+   - Add a prominent, beautiful widget for **Today's Injection Appointments** (`$todayInjectionsCount`) styled for medical staff tracking.
+   - Render visual SVG chart(s) for Revenue & Registration trends (7 days and 6 months toggle or dual chart view).
+   - Use pure SVG (`<svg viewBox="...">`, `<polyline>`, `<path>`, `<rect>`, `<text>`, `<circle>`, legends) combined with CSS Tailwind/Vanilla. No external JS chart libraries.
+   - Strictly follow brand color palette:
+     - Medicare Red (`#c8102e`)
+     - Medicare Gold (`#eaaa00`)
+     - Medicare Navy (`#004b8f`)
+   - Ensure text contrast compliance (e.g. white text on red/navy background; dark text `#0f172a` on white background; gold used for accents/highlights).
+   - Ensure full responsive design (mobile and PC).
 
-4. **Login Controller Audit & Hardening**:
-   - In `modules/VaccineRegistration/Http/Controllers/Admin/AdminAuthController.php`:
-     - Check if user is locked (`isLocked()`). If locked, prevent login, return HTTP 423 / 403 or error message "Tài khoản tạm thời bị khóa do đăng nhập sai quá nhiều lần." and log security event.
-     - On wrong password attempt: increment `failed_login_count`. If `failed_login_count >= 5`, set `locked_until` (e.g. 15 minutes from now) and log security warning log.
-     - On successful login: reset `failed_login_count` to 0, update `last_login_at`, log successful login security event.
-     - Add rate limiter / throttling to prevent brute-force attacks.
+3. Create automated tests `tests/Feature/AdminDashboardTest.php`:
+   - Test dashboard page loads successfully for SuperAdmin and BranchAdmin.
+   - Test dynamic statistics ($consultCount, $importedQuantity, $soldQuantity) match DB counts and filter properly by `center_id`.
+   - Test today's injections widget shows correct count for today's date.
+   - Test SVG chart structure renders correctly.
+   - Run `php artisan test --filter AdminDashboardTest` and ensure 100% passing tests.
 
-5. **Verification**:
-   - Run tests / Artisan commands to verify `php artisan admin:create` works.
-   - Test login failure locking logic.
-   - Update `CHANGELOG.md` according to project rules.
+4. Update `CHANGELOG.md`:
+   - Update top of `CHANGELOG.md` concisely in English with version and description of Dashboard improvements (R1 dynamic DB stats, R2 today's injections widget, R3 pure SVG revenue/registration chart with Medicare color theme).
 
-Deliver report in `/home/hongphuoc/Desktop/thue/.agents/worker_m2/handoff.md`.
-Send message to parent when done.
-
-## 2026-08-10T12:28:55Z
-
-You are the Implementation Worker for the Weekly Calendar Grid interface implementation task.
-Working Directory: /home/hongphuoc/Desktop/thue/.agents/worker_m2
-Handoff Reference: /home/hongphuoc/Desktop/thue/.agents/explorer_m1/handoff.md
-
-MANDATORY INTEGRITY WARNING:
-DO NOT CHEAT. All implementations must be genuine. DO NOT hardcode test results, create dummy/facade implementations, or circumvent the intended task. A Forensic Auditor will independently verify your work. Integrity violations WILL be detected and your work WILL be rejected.
-
-Follow the requirements in `/home/hongphuoc/Desktop/thue/.agents/ORIGINAL_REQUEST.md` and the exploration plan in `/home/hongphuoc/Desktop/thue/.agents/explorer_m1/handoff.md`:
-
-1. **Backend Implementation (M2)**:
-   - Modify `modules/VaccineRegistration/routes/web.php` to add routes for schedule copy (`POST /schedules/copy`), toggle day status (`POST /schedules/toggle-day`), and delete day schedule (`DELETE /schedules/day`).
-   - Modify `modules/VaccineRegistration/Http/Controllers/Admin/AdminScheduleController.php`:
-     - Update `index(Request $request)`: Resolve the 7 dates of the selected week (using Carbon, default to current week `now()->startOfWeek()`). Call `Schedule::generateFromDefaults($selectedCenterId, $weekStart, $weekEnd)`. Query 7-day schedule & slots data for `$selectedCenterId`. Return view data or JSON if AJAX/wantsJson.
-     - Implement `copySchedule(Request $request)`: Validate `center_id`, `source_date`, `target_dates`. Authorize with `AdminContext::assertCanManageCenter`.
-       - **SAFETY GUARD (`reserved_count > 0`)**: Check if any target date has slots with `reserved_count > 0` or linked `Registration` records. If yes, reject copy action for that request with a 422 validation response: `"Không thể sao chép đè lịch ngày {date} vì đã có {count} lượt đặt tiêm!"`.
-       - DB Transaction: For target dates with zero bookings (`reserved_count == 0`), delete existing slots, update/create target schedule, and clone slots from source schedule.
-     - Implement `toggleDayStatus(Request $request)`: Toggle `is_active` for a schedule date for `$centerId`.
-     - Implement `destroyDay(Request $request)`: Delete all slots/schedule for a specific date if `reserved_count == 0` (or block if `reserved_count > 0`).
-
-2. **Frontend UI Implementation (M3)**:
-   - Redesign `modules/VaccineRegistration/resources/views/admin/schedules/index.blade.php`:
-     - 7 Parallel Columns layout (Monday to Sunday) for the selected week.
-     - Top Week Navigation bar (Tuần trước, Tuần hiện tại, Tuần sau, Date Picker, Branch selector if super_admin). Display header date range.
-     - Column Headers: Day name (Thứ 2 .. Chủ nhật), date (`d/m/Y`), Open/Close toggle badge/button, Total slots capacity metric (`0/12`), "Thêm khung giờ" button, "Sao chép lịch" button, "Xóa lịch ngày" button.
-     - Slot items display time interval, capacity, status, pencil edit icon (`editSlotModal`), delete slot button.
-     - Modals: Add Slot modal, Edit/Delete Slot modal (`editSlotModal`), Copy Schedule modal (with target day checklist/date selector & confirmation warning).
-     - SPA AJAX Handling (Axios/Fetch): smooth week switching, slot CRUD, day toggle, day delete, copy schedule updates without full page reloads.
-     - Brand Colors: Medicare Red (`#c8102e`), Medicare Gold (`#eaaa00`), Medicare Navy (`#004b8f`). No unapproved icons/emojis.
-
-3. **Automated Test Suite & CHANGELOG (M4)**:
-   - Create `tests/Feature/WeeklyCalendarDashboardTest.php`:
-     - Test weekly schedule grid index returns 7 days of selected week.
-     - Test week navigation filtering.
-     - Test slot CRUD AJAX endpoints.
-     - Test day toggle status & day schedule deletion.
-     - Test copy schedule from source day to target days (success when reserved_count == 0).
-     - Test copy schedule BLOCKED with 422 validation response when target day has `reserved_count > 0`.
-     - Test Branch Admin scope checks (403 on cross-branch access).
-   - Run tests using `/opt/lampp/bin/php artisan test --filter=WeeklyCalendarDashboardTest` and `/opt/lampp/bin/php artisan test`. All tests MUST pass 100%.
-   - Update `CHANGELOG.md` at top in English according to project guidelines.
-
-4. Write your detailed handoff report to `/home/hongphuoc/Desktop/thue/.agents/worker_m2/handoff.md` and update `/home/hongphuoc/Desktop/thue/.agents/worker_m2/progress.md`.
-5. Send a message back when complete.
+5. Report results:
+   - Write handoff report to `/home/hongphuoc/Desktop/thue/.agents/worker_m2/handoff.md` with build/test results, exact file diffs, and verification steps.
+   - Send summary message to parent.

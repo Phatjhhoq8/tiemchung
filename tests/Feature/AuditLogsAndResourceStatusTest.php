@@ -103,7 +103,6 @@ class AuditLogsAndResourceStatusTest extends TestCase
             'name' => 'Vắc xin Cúm Test M5',
             'price' => 300000,
             'sale_price' => 280000,
-            'type' => 'single',
             'doses' => 1,
             'stock_status' => 'available',
             'disease_prevention' => 'Phòng bệnh cúm mùa',
@@ -117,7 +116,6 @@ class AuditLogsAndResourceStatusTest extends TestCase
             'center_id' => $this->center->id,
             'price' => 350000,
             'sale_price' => 320000,
-            'type' => 'single',
             'doses' => 1,
             'stock_status' => 'available',
             'disease_prevention' => 'Phòng bệnh cúm mùa',
@@ -135,52 +133,11 @@ class AuditLogsAndResourceStatusTest extends TestCase
     }
 
     #[Test]
-    public function test_audit_log_generated_on_stock_update()
-    {
-        $vaccine = Vaccine::create([
-            'name' => 'Vắc xin HPV Test M5',
-            'price' => 1200000,
-            'type' => 'single',
-            'doses' => 3,
-            'stock_status' => 'available',
-            'disease_prevention' => 'Phòng ung thư cổ tử cung',
-            'age_group' => '9-26 tuổi',
-            'origin' => 'Mỹ',
-            'is_active' => true,
-        ]);
-        CenterVaccine::create([
-            'center_id' => $this->center->id,
-            'vaccine_id' => $vaccine->id,
-            'price' => $vaccine->price,
-            'stock_quantity' => 0,
-            'stock_status' => 'out_of_stock',
-            'is_active' => true,
-        ]);
-
-        $response = $this->loginAs($this->branchAdmin)->post(route('admin.stock.store'), [
-            'center_id' => $this->center->id,
-            'vaccine_id' => $vaccine->id,
-            'type' => 'import',
-            'quantity' => 10,
-            'unit_price' => 1200000,
-            'note' => 'Nhập hàng đợt 1',
-        ]);
-
-        $response->assertRedirect(route('admin.stock.index', ['center_id' => $this->center->id]));
-
-        $this->assertDatabaseHas('audit_logs', [
-            'action' => 'stock_update',
-            'resource_type' => 'stock',
-        ]);
-    }
-
-    #[Test]
     public function test_audit_log_generated_on_manual_settlement_and_refund()
     {
         $vaccine = Vaccine::create([
             'name' => 'Vắc xin Phế Cầu Test M5',
             'price' => 1000000,
-            'type' => 'single',
             'doses' => 1,
             'stock_status' => 'available',
             'disease_prevention' => 'Phòng phế cầu',
@@ -249,7 +206,6 @@ class AuditLogsAndResourceStatusTest extends TestCase
         $vaccine = Vaccine::create([
             'name' => 'Vắc xin Soft Delete Test M5',
             'price' => 500000,
-            'type' => 'single',
             'doses' => 1,
             'stock_status' => 'available',
             'disease_prevention' => 'Test',
@@ -271,7 +227,6 @@ class AuditLogsAndResourceStatusTest extends TestCase
         $vaccine2 = Vaccine::create([
             'name' => 'Vắc xin Soft Delete Test 2 M5',
             'price' => 500000,
-            'type' => 'single',
             'doses' => 1,
             'stock_status' => 'available',
             'disease_prevention' => 'Test',

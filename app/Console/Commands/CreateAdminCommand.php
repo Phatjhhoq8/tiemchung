@@ -3,11 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Support\AdminPasswordPolicy;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 use Modules\VaccineRegistration\Models\Center;
 
 class CreateAdminCommand extends Command
@@ -21,7 +21,7 @@ class CreateAdminCommand extends Command
                             {--name= : Họ và tên quản trị viên}
                             {--username= : Tên đăng nhập}
                             {--email= : Địa chỉ email}
-                            {--password= : Mật khẩu}
+                            {--password= : Mật khẩu tạm (có thể lộ trong lịch sử shell; nên nhập tương tác)}
                             {--role= : Vai trò (super_admin hoặc branch_admin)}
                             {--center_id= : ID trung tâm tiêm chủng (cho branch_admin)}';
 
@@ -58,7 +58,7 @@ class CreateAdminCommand extends Command
         }
 
         if (blank($password)) {
-            $password = $this->secret('Nhập mật khẩu (tối thiểu 8 ký tự)');
+            $password = $this->secret('Nhập mật khẩu tạm (ít nhất 12 ký tự, gồm chữ hoa, chữ thường, số và ký hiệu)');
         }
 
         if (blank($role)) {
@@ -105,7 +105,7 @@ class CreateAdminCommand extends Command
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:191', Rule::unique('users', 'username')],
             'email' => ['required', 'string', 'email', 'max:191', Rule::unique('users', 'email')],
-            'password' => ['required', 'string', Password::min(8)->letters()->mixedCase()->numbers()],
+            'password' => ['required', 'string', AdminPasswordPolicy::rule()],
             'role' => ['required', 'string', Rule::in(['super_admin', 'branch_admin'])],
             'center_id' => [
                 Rule::requiredIf($role === 'branch_admin'),
@@ -120,7 +120,6 @@ class CreateAdminCommand extends Command
             'email.email' => 'Email không hợp lệ.',
             'email.unique' => 'Email đã tồn tại trên hệ thống.',
             'password.required' => 'Mật khẩu không được để trống.',
-            'password.min' => 'Mật khẩu phải chứa ít nhất 8 ký tự.',
             'role.in' => 'Vai trò không hợp lệ (phải là super_admin hoặc branch_admin).',
             'center_id.required' => 'Tài khoản Branch Admin bắt buộc phải chọn trung tâm tiêm chủng.',
             'center_id.exists' => 'Trung tâm tiêm chủng được chọn không tồn tại.',
@@ -131,6 +130,7 @@ class CreateAdminCommand extends Command
             foreach ($validator->errors()->all() as $error) {
                 $this->error(" - {$error}");
             }
+
             return Command::FAILURE;
         }
 
@@ -143,7 +143,8 @@ class CreateAdminCommand extends Command
             'center_id' => $role === 'branch_admin' ? (int) $centerId : null,
             'is_active' => true,
             'status' => 'active',
-            'must_change_password' => false,
+            'must_change_password' => true,
+            'password_changed_at' => null,
         ]);
 
         $this->info("Đã tạo thành công tài khoản admin: {$user->username} ({$user->role})");

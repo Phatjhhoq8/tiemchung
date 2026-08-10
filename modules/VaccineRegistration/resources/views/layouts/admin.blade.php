@@ -12,7 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Hệ thống Quản trị - Medicare Cờ Đỏ')</title>
+    <title>@yield('title', 'Hệ thống Quản trị - Medicare')</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -707,6 +707,88 @@
                 padding: 10px 12px;
             }
         }
+
+        /* Modern Action Dropdown Styles */
+        .action-dropdown-wrapper {
+            position: relative;
+            display: inline-block;
+            text-align: left;
+        }
+        .btn-action-trigger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+            padding: 0;
+        }
+        .btn-action-trigger:hover {
+            background-color: #f1f5f9;
+            border-color: #94a3b8;
+            color: var(--primary-color);
+        }
+        .action-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 6px);
+            z-index: 999;
+            min-width: 170px;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 6px;
+            display: none;
+            animation: dropdownSlideUp 0.15s ease-out;
+        }
+        .action-dropdown-menu.active {
+            display: block;
+        }
+        @keyframes dropdownSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .dropdown-item-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 0.8125rem;
+            font-weight: 550;
+            color: #334155;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            text-align: left;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.15s ease;
+        }
+        .dropdown-item-action:hover {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+        .dropdown-item-action.danger {
+            color: #dc2626;
+        }
+        .dropdown-item-action.danger:hover {
+            background-color: #fef2f2;
+            color: #b91c1c;
+        }
     </style>
     <!-- Dark Mode Check -->
     <script>
@@ -720,13 +802,13 @@
         <!-- Sidebar quản trị -->
         <aside class="admin-sidebar">
             <a href="{{ route('admin.dashboard') }}" class="sidebar-brand" style="display: flex; align-items: center; justify-content: center; padding: 24px 20px;">
-                <img src="{{ asset('images/logo.png') }}" alt="Medicare Logo" style="max-height: 38px; width: auto; object-fit: contain;">
+                <img src="{{ asset('images/logo.png') }}" alt="Biểu trưng Medicare" style="max-height: 38px; width: auto; object-fit: contain;">
             </a>
             
             <ul class="sidebar-menu">
                 <li class="{{ Route::currentRouteName() === 'admin.dashboard' ? 'active' : '' }}">
                     <a href="{{ route('admin.dashboard') }}">
-                        <i data-lucide="layout-dashboard"></i> Dashboard
+                        <i data-lucide="layout-dashboard"></i> Bảng điều khiển
                     </a>
                 </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.vaccines') ? 'active' : '' }}">
@@ -752,11 +834,6 @@
                 <li class="{{ (str_contains(Route::currentRouteName(), 'admin.schedules') || str_contains(Route::currentRouteName(), 'admin.default-slots')) ? 'active' : '' }}">
                     <a href="{{ route('admin.schedules.index') }}">
                         <i data-lucide="clock"></i> Khung Giờ Tiêm
-                    </a>
-                </li>
-                <li class="{{ str_contains(Route::currentRouteName(), 'admin.stock') ? 'active' : '' }}">
-                    <a href="{{ route('admin.stock.index') }}">
-                        <i data-lucide="package-plus"></i> Nhập / Xuất Kho
                     </a>
                 </li>
                 @if($isSuperAdmin ?? false)
@@ -786,11 +863,16 @@
                 </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.settings') ? 'active' : '' }}">
                     <a href="{{ route('admin.settings.index') }}">
-                        <i data-lucide="settings"></i> Cấu Hình Website
+                        <i data-lucide="settings"></i> Cấu Hình Trang Web
                     </a>
                 </li>
                 @endif
                 <li style="margin-top: 30px; border-top: 1px dashed #1b2e4c; padding-top: 10px;">
+                    <a href="{{ route('admin.password.edit') }}">
+                        <i data-lucide="key-round"></i> Đổi mật khẩu
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('home') }}">
                         <i data-lucide="arrow-left-right"></i> Xem Trang Khách
                     </a>
@@ -811,18 +893,18 @@
         <div class="admin-content">
             <header class="admin-header">
                 <div style="display: flex; align-items: center;">
-                    <button id="sidebarToggle" class="mobile-sidebar-toggle" aria-label="Toggle navigation">
+                    <button id="sidebarToggle" class="mobile-sidebar-toggle" aria-label="Bật hoặc tắt thanh điều hướng">
                         <i data-lucide="menu"></i>
                     </button>
                     <div class="admin-title">@yield('page_title', 'Bảng Điều Khiển')</div>
                 </div>
                 <div class="admin-user" style="display: flex; align-items: center; gap: 15px;">
-                    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode" style="display: none !important; background: none; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; padding: 6px; border-radius: 6px; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.2s;">
+                    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Bật hoặc tắt chế độ tối" style="display: none !important; background: none; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; padding: 6px; border-radius: 6px; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.2s;">
                         <i data-lucide="sun" class="sun-icon" style="width: 16px; height: 16px; display: none; color: #eaaa00;"></i>
                         <i data-lucide="moon" class="moon-icon" style="width: 16px; height: 16px;"></i>
                     </button>
                     <i data-lucide="circle-user"></i>
-                    <span>Xin chào, {{ $adminUser?->name ?? 'Admin' }}{{ $adminUser?->isBranchAdmin() && $adminUser?->center ? ' · ' . $adminUser->center->name : '' }}</span>
+                    <span>Xin chào, {{ $adminUser?->name ?? 'Quản trị viên' }}{{ $adminUser?->isBranchAdmin() && $adminUser?->center ? ' · ' . $adminUser->center->name : '' }}</span>
                     @if($isSuperAdmin ?? false)
                         <form method="POST" action="{{ route('admin.context.center') }}" style="margin:0;">
                             @csrf
@@ -856,6 +938,7 @@
         </div>
     </div>
 
+    @include('vaccine::partials.app-dialog')
     <!-- JS Custom -->
     <script>
         // Khởi tạo các Lucide Icons
@@ -927,6 +1010,33 @@
                     alert.remove();
                 }, 500);
             }, 3000);
+        });
+
+        // Xử lý đóng/mở Action Dropdown Menu
+        window.toggleActionMenu = function(btn, event) {
+            event.stopPropagation();
+            const wrapper = btn.closest('.action-dropdown-wrapper');
+            const menu = wrapper ? wrapper.querySelector('.action-dropdown-menu') : null;
+            
+            // Đóng tất cả các menu khác
+            document.querySelectorAll('.action-dropdown-menu').forEach(m => {
+                if (m !== menu) {
+                    m.classList.remove('active');
+                }
+            });
+            
+            if (menu) {
+                menu.classList.toggle('active');
+            }
+        };
+
+        // Click ra ngoài đóng menu
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.action-dropdown-wrapper')) {
+                document.querySelectorAll('.action-dropdown-menu').forEach(m => {
+                    m.classList.remove('active');
+                });
+            }
         });
     </script>
     @yield('scripts')

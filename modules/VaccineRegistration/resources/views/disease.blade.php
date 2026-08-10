@@ -384,7 +384,7 @@
                                 </div>
                                 <div class="vaccine-footer">
                                     <div class="vaccine-price-box">
-                                        <span style="font-size: 11px; color: var(--text-muted);">Giá tiêm lẻ:</span>
+                                        <span style="font-size: 11px; color: var(--text-muted);">Giá tiêm:</span>
                                         <span class="vaccine-price">{{ number_format($vac->price, 0, ',', '.') }} đ</span>
                                     </div>
                                     <button class="vaccine-btn-add {{ isset($cart[$vac->id]) ? 'selected' : '' }}" onclick="toggleCartFromDisease({{ $vac->id }}, this)">
@@ -411,10 +411,10 @@
                         <label>Hình thức tư vấn <span>*</span></label>
                         <div class="consult-type-toggle" style="display: inline-flex; width: 100%; background: #f1f5f9; border-radius: 30px; padding: 4px; border: 1px solid #cbd5e1; margin-top: 6px; box-sizing: border-box;">
                             <button type="button" id="btnConsultOnline" onclick="setConsultType('online')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: var(--primary-color, #c8102e); color: #ffffff; text-align: center;">
-                                Tư vấn qua điện thoại (Online)
+                                Tư vấn qua điện thoại (trực tuyến)
                             </button>
                             <button type="button" id="btnConsultOffline" onclick="setConsultType('offline')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: transparent; color: #475569; text-align: center;">
-                                Tư vấn tại trung tâm (Offline)
+                                Tư vấn tại trung tâm
                             </button>
                             <input type="hidden" name="consultType" id="consultTypeValue" value="online">
                         </div>
@@ -544,7 +544,7 @@
     // Submit form tư vấn bằng AJAX
     async function submitDiseaseConsult(event) {
         event.preventDefault();
-        if (!confirm('Bạn có thực sự muốn gửi yêu cầu tư vấn tiêm chủng này không?')) {
+        if (!await window.AppDialog.confirm('Bạn có thực sự muốn gửi yêu cầu tư vấn tiêm chủng này không?')) {
             return;
         }
         
@@ -607,7 +607,7 @@
                 lucide.createIcons();
             }
         } catch (e) {
-            alert('Có lỗi xảy ra: ' + e.message);
+            window.AppDialog.toast('Có lỗi xảy ra: ' + e.message, 'error');
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i data-lucide="send" style="width: 16px; height: 16px;"></i> <span>Gửi yêu cầu ngay</span>';
             lucide.createIcons();

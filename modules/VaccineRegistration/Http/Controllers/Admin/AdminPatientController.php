@@ -20,8 +20,8 @@ class AdminPatientController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('full_name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('identity_card', 'like', "%{$search}%");
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('identity_card', 'like', "%{$search}%");
             });
         }
 
@@ -85,8 +85,8 @@ class AdminPatientController extends Controller
 
         if (AdminContext::isBranchAdmin()) {
             $hasRegistration = $patient->registrations()->where('center_id', AdminContext::centerId())->exists();
-            if (!$hasRegistration) {
-                abort(403, 'Cross-branch access forbidden.');
+            if (! $hasRegistration) {
+                abort(403, 'Bạn không có quyền xem hồ sơ bệnh nhân thuộc chi nhánh khác.');
             }
         }
 
@@ -116,8 +116,8 @@ class AdminPatientController extends Controller
 
         if (AdminContext::isBranchAdmin()) {
             $hasRegistration = $patient->registrations()->where('center_id', AdminContext::centerId())->exists();
-            if (!$hasRegistration) {
-                abort(403, 'Cross-branch access forbidden.');
+            if (! $hasRegistration) {
+                abort(403, 'Bạn không có quyền cập nhật hồ sơ bệnh nhân thuộc chi nhánh khác.');
             }
         }
 

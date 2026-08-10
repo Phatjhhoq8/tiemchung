@@ -1,7 +1,6 @@
 <?php
 /**
- * Chức năng: Thêm cột type và doses vào bảng vaccines để phân loại vắc xin và xác định số mũi tiêm.
- * Lý do tạo: Tích hợp phân chia danh mục vắc xin lẻ / gói vắc xin và lưu phác đồ tiêm chủng từ yêu cầu bổ sung.
+ * Chức năng: Thêm số mũi tiêm theo phác đồ vào bảng vaccines.
  */
 
 use Illuminate\Database\Migrations\Migration;
@@ -16,8 +15,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('vaccines', function (Blueprint $table) {
-            $table->string('type')->default('single')->after('price'); // 'single' (lẻ) hoặc 'package' (gói)
-            $table->unsignedTinyInteger('doses')->default(1)->after('type'); // số mũi tiêm
+            $table->unsignedTinyInteger('doses')->default(1)->after('price');
         });
     }
 
@@ -26,8 +24,15 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('vaccines', function (Blueprint $table) {
-            $table->dropColumn(['type', 'doses']);
-        });
+        $columns = array_values(array_filter(
+            ['type', 'doses'],
+            fn (string $column) => Schema::hasColumn('vaccines', $column)
+        ));
+
+        if ($columns) {
+            Schema::table('vaccines', function (Blueprint $table) use ($columns) {
+                $table->dropColumn($columns);
+            });
+        }
     }
 };

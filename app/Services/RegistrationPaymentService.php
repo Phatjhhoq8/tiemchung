@@ -16,6 +16,13 @@ class RegistrationPaymentService
     public const VND_PER_REDEEMED_POINT = 100;
     public const MAX_REDEEM_PERCENT = 50;
 
+    private readonly BranchStockService $stockService;
+
+    public function __construct(?BranchStockService $stockService = null)
+    {
+        $this->stockService = $stockService ?? app(BranchStockService::class);
+    }
+
     public function quote(Customer $customer, Registration $registration): array
     {
         $balance = (int) PointTransaction::where('customer_id', $customer->id)->sum('points');
@@ -192,7 +199,10 @@ class RegistrationPaymentService
                 );
             }
 
-            $this->releaseSlot($registration);
+            if ($registration->booking_status !== Registration::BOOKING_NO_SHOW) {
+                $this->releaseSlot($registration);
+            }
+            $this->stockService->restore($registration);
 
             $registration->update([
                 'booking_status' => Registration::BOOKING_CANCELLED,
@@ -227,7 +237,10 @@ class RegistrationPaymentService
                 ]);
             }
 
-            $this->releaseSlot($registration);
+            if ($registration->booking_status !== Registration::BOOKING_NO_SHOW) {
+                $this->releaseSlot($registration);
+            }
+            $this->stockService->restore($registration);
             $registration->update([
                 'booking_status' => Registration::BOOKING_CANCELLED,
                 'status' => Registration::BOOKING_CANCELLED,
@@ -237,6 +250,34 @@ class RegistrationPaymentService
                 resourceId: $registration->id,
                 oldValues: ['booking_status' => $registration->getOriginal('booking_status')],
                 newValues: ['booking_status' => Registration::BOOKING_CANCELLED],
+                centerId: $registration->center_id,
+            );
+
+            return $registration->fresh();
+        });
+    }
+
+    public function markNoShow(int $registrationId, ?User $actor): Registration
+    {
+        return DB::transaction(function () use ($registrationId, $actor) {
+            $registration = Registration::lockForUpdate()->findOrFail($registrationId);
+            if ($registration->booking_status === Registration::BOOKING_NO_SHOW
+                || $registration->booking_status === Registration::BOOKING_CANCELLED) {
+                return $registration;
+            }
+
+            $this->releaseSlot($registration);
+            $this->stockService->restore($registration);
+            $oldStatus = $registration->booking_status;
+            $registration->update([
+                'booking_status' => Registration::BOOKING_NO_SHOW,
+                'status' => Registration::BOOKING_NO_SHOW,
+            ]);
+
+            AuditLogger::logOrderStatusUpdate(
+                resourceId: $registration->id,
+                oldValues: ['booking_status' => $oldStatus],
+                newValues: ['booking_status' => Registration::BOOKING_NO_SHOW],
                 centerId: $registration->center_id,
             );
 

@@ -114,6 +114,20 @@ button, select, input {
     outline: none;
 }
 
+/* Make input and textarea placeholders faded enough (slate gray) */
+input::placeholder,
+textarea::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+    color: #64748b !important;
+    opacity: 1 !important;
+}
+
+
 /* ==========================================================================
    HEADER & FOOTER (LAYOUT)
    ========================================================================== */
@@ -1456,28 +1470,11 @@ button, select, input {
     z-index: 10;
 }
 
-.package-badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    background-color: var(--secondary-color);
-    color: #ffffff;
-    padding: 6px 12px;
-    border-radius: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-}
-
 /* Hiệu ứng zoom hình ảnh khi hover card */
-.vaccine-card-img img, .package-card-img img {
+.vaccine-card-img img {
     transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
-.vaccine-card:hover .vaccine-card-img img,
-.package-promo-card:hover .package-card-img img {
+.vaccine-card:hover .vaccine-card-img img {
     transform: scale(1.08) !important;
 }
 
@@ -3176,8 +3173,8 @@ button, select, input {
     color: #ffffff;
 }
 
-/* Home Grid & Packages */
-.home-vaccines, .home-packages, .why-us {
+/* Home Grid */
+.home-vaccines, .why-us {
     max-width: 1200px;
     margin: 60px auto;
     padding: 0 20px;
@@ -3187,96 +3184,6 @@ button, select, input {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
 }
-.packages-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 30px;
-}
-.package-promo-card {
-    background-color: #ffffff;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 250px;
-    position: relative;
-    overflow: hidden;
-}
-.package-badge {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background-color: #fef3c7;
-    color: #d97706;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 700;
-}
-.package-body h3 {
-    font-family: 'Roboto', sans-serif;
-    font-size: 20px;
-    font-weight: 800;
-    color: #1e293b;
-    margin-bottom: 12px;
-    padding-right: 80px;
-}
-.package-desc {
-    color: #64748b;
-    font-size: 14px;
-    margin-bottom: 20px;
-}
-.package-info-row {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-size: 14px;
-    color: #475569;
-}
-.package-info-row span {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.package-info-row span i {
-    color: #c8102e;
-    width: 16px;
-    height: 16px;
-}
-.package-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 24px;
-    border-top: 1px solid var(--border-color);
-    padding-top: 20px;
-}
-.package-price span {
-    display: block;
-    font-size: 12px;
-    color: #64748b;
-}
-.package-price strong {
-    font-size: 20px;
-    color: #c8102e;
-    font-weight: 800;
-}
-.btn-select-package {
-    background-color: #c8102e;
-    color: #ffffff;
-    padding: 10px 18px;
-    border-radius: var(--radius-sm);
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 14px;
-}
-.btn-select-package:hover {
-    background-color: #a00d24;
-}
-
 /* Features Grid */
 .features-grid {
     display: grid;

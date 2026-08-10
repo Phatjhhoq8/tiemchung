@@ -277,7 +277,7 @@
     <!-- Meet Our Team Section -->
     <section class="about-section" style="border-top: 1px solid var(--border-color); padding-top: 4rem; margin-bottom: 2rem;">
         <div style="text-align: center; max-width: 700px; margin: 0 auto;" data-aos="fade-up">
-            <span class="section-subtitle">Medicare Staff</span>
+            <span class="section-subtitle">Đội ngũ Medicare</span>
             <h2 class="section-title">Đội Ngũ Bác Sĩ & Chuyên Gia</h2>
             <p style="color: var(--text-muted);">Đội ngũ nhân sự y khoa chuyên môn cao, giàu kinh nghiệm và tận tâm bảo vệ sức khỏe gia đình bạn.</p>
         </div>

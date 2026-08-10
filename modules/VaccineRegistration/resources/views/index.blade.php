@@ -175,7 +175,7 @@
             <!-- Mobile Clean Catalog Header Toolbar -->
             <div class="mobile-catalog-header-bar">
                 <div class="mobile-catalog-title">
-                    <span>{{ request('type') === 'package' ? 'Danh sách gói vắc xin' : 'Danh sách vắc xin' }}</span>
+                    <span>Danh sách vắc xin</span>
                     <small>({{ $vaccines->total() }} sản phẩm)</small>
                 </div>
                 <button type="button" class="btn-mobile-filter-pill" onclick="toggleMobileFilterBottomSheet(true)">
@@ -190,7 +190,7 @@
             <div class="catalog-toolbar">
                 <div>
                     <h2 id="vaccineSectionTitle">
-                        {{ request('type') === 'package' ? 'Danh sách gói vắc xin' : 'Danh sách vắc xin' }}
+                        Danh sách vắc xin
                         <span id="vaccineCountLabel" class="sr-only">{{ $vaccines->total() }}</span>
                     </h2>
                 </div>
@@ -201,7 +201,7 @@
                         <button type="button" data-sort="price_asc" onclick="setSortFilter('price_asc', event)" class="sort-pill {{ request('sort') === 'price_asc' ? 'active' : '' }}">Giá thấp</button>
                         <button type="button" data-sort="price_desc" onclick="setSortFilter('price_desc', event)" class="sort-pill {{ request('sort') === 'price_desc' ? 'active' : '' }}">Giá cao</button>
                     </div>
-                    <button type="button" id="btnClearFilters" onclick="resetVaccineFilters(event)" class="clear-filters-btn" style="display: {{ (request('search') || request('disease') || request('age_group') || request('origin') || request('doses') || request('type') || request('sort')) ? 'inline-flex' : 'none' }};">Xóa bộ lọc <i data-lucide="x"></i></button>
+                    <button type="button" id="btnClearFilters" onclick="resetVaccineFilters(event)" class="clear-filters-btn" style="display: {{ (request('search') || request('disease') || request('age_group') || request('origin') || request('doses') || request('sort')) ? 'inline-flex' : 'none' }};">Xóa bộ lọc <i data-lucide="x"></i></button>
                 </div>
             </div>
 
@@ -271,9 +271,9 @@
         <div style="margin-bottom: 10px;">
             <label style="font-size: 13px; font-weight: 800; color: #0f172a; display: block; margin-bottom: 8px;">Số liều theo phác đồ</label>
             <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                <button type="button" onclick="setDoseFilter('', event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ !request('doses') ? 'active' : '' }}">Tất cả</button>
+                <button type="button" onclick="setDosesFilter('', event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ !request('doses') ? 'active' : '' }}">Tất cả</button>
                 @foreach($doses as $dose)
-                    <button type="button" onclick="setDoseFilter(@js((string)$dose), event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ request('doses') == (string)$dose ? 'active' : '' }}">{{ $dose }} liều</button>
+                    <button type="button" onclick="setDosesFilter(@js((string)$dose), event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ request('doses') == (string)$dose ? 'active' : '' }}">{{ $dose }} liều</button>
                 @endforeach
             </div>
         </div>

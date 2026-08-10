@@ -9,7 +9,7 @@
 @section('content')
 <div class="news-catalog-page article-detail-page">
     <!-- Breadcrumb Standard (Sleek Modern Medical Style) -->
-    <nav class="news-breadcrumb-bar" data-aos="fade-down" aria-label="Breadcrumb">
+    <nav class="news-breadcrumb-bar" data-aos="fade-down" aria-label="Đường dẫn điều hướng">
         <ol class="breadcrumb-list">
             <li class="breadcrumb-item"><a href="{{ route('home') }}">Trang chủ</a></li>
             <li class="breadcrumb-separator"><i data-lucide="chevron-right"></i></li>

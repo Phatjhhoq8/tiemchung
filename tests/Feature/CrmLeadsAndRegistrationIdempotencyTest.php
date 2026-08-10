@@ -35,7 +35,6 @@ class CrmLeadsAndRegistrationIdempotencyTest extends TestCase
         $this->vaccine = Vaccine::create([
             'name' => 'CRM vaccine ' . $suffix,
             'price' => 150000,
-            'type' => 'single',
             'doses' => 1,
             'stock_status' => 'available',
             'disease_prevention' => 'Cúm',
@@ -48,6 +47,7 @@ class CrmLeadsAndRegistrationIdempotencyTest extends TestCase
             'vaccine_id' => $this->vaccine->id,
             'price' => 150000,
             'stock_status' => 'available',
+            'stock_quantity' => 10,
             'is_active' => true,
         ]);
         $schedule = Schedule::create([
@@ -96,5 +96,6 @@ class CrmLeadsAndRegistrationIdempotencyTest extends TestCase
 
         $this->assertSame(1, Registration::where('idempotency_key', $payload['idempotency_key'])->count());
         $this->assertSame(1, $this->slot->fresh()->reserved_count);
+        $this->assertSame(9, CenterVaccine::where('center_id', $this->center->id)->where('vaccine_id', $this->vaccine->id)->value('stock_quantity'));
     }
 }

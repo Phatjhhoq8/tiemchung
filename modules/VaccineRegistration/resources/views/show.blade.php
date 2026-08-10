@@ -9,7 +9,7 @@
 @section('content')
 <div class="news-catalog-page vaccine-detail-page">
     <!-- Breadcrumb Standard (Sleek Modern Medical Style) -->
-    <nav class="news-breadcrumb-bar" data-aos="fade-down" aria-label="Breadcrumb">
+    <nav class="news-breadcrumb-bar" data-aos="fade-down" aria-label="Đường dẫn điều hướng">
         <ol class="breadcrumb-list">
             <li class="breadcrumb-item"><a href="{{ route('home') }}">Trang chủ</a></li>
             <li class="breadcrumb-separator"><i data-lucide="chevron-right"></i></li>
@@ -24,9 +24,6 @@
         <div class="vaccine-detail-grid" style="display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 32px; align-items: start;">
             <!-- Left Media Column -->
             <div class="vaccine-detail-media" style="position: relative; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; height: 360px;">
-                <span class="news-category-badge" style="position: absolute; top: 16px; left: 16px; z-index: 2; padding: 6px 14px; font-size: 12px; background-color: {{ $vaccine->type === 'package' ? '#fff9e6' : 'var(--primary-color, #c8102e)' }}; color: {{ $vaccine->type === 'package' ? '#d49800' : '#ffffff' }}; border: {{ $vaccine->type === 'package' ? '1px solid rgba(234, 170, 0, 0.4)' : 'none' }};">
-                    {{ $vaccine->type === 'package' ? 'Gói vắc xin trọn gói' : 'Vắc xin lẻ chính hãng' }}
-                </span>
                 <img src="{{ asset('images/vaccines/' . ($vaccine->image ?: 'hexaxim.jpg')) }}" alt="{{ $vaccine->name }}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='{{ asset('images/vaccines/hexaxim.jpg') }}';">
             </div>
 
@@ -36,7 +33,7 @@
                     <h1 class="article-detail-title" style="margin-top: 0; font-size: 28px; line-height: 1.3;">{{ $vaccine->name }}</h1>
                     
                     <p style="font-size: 15px; color: #475569; line-height: 1.65; margin-bottom: 20px; text-align: justify;">
-                        {{ $vaccine->description ?: 'Vắc xin chính hãng 100% nhập khẩu bảo quản theo tiêu chuẩn Dây chuyền lạnh GSP (2 - 8°C) nghiêm ngặt tại hệ thống Trung tâm Tiêm chủng Medicare Cờ Đỏ.' }}
+                        {{ $vaccine->description ?: 'Thông tin mô tả chi tiết của sản phẩm chưa được cập nhật từ nguồn đã xác minh.' }}
                     </p>
 
                     <!-- Specs Table Grid -->
@@ -45,25 +42,33 @@
                             <span style="display: block; font-size: 11.5px; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 3px;">
                                 <i data-lucide="shield-alert" style="width: 13px; height: 13px; vertical-align: middle;"></i> Phòng ngừa bệnh
                             </span>
-                            <strong style="font-size: 14px; color: #0f172a; display: block; text-align: justify;">{{ $vaccine->disease_prevention ?: 'Cúm mùa, Bệnh truyền nhiễm' }}</strong>
+                            @if($vaccine->disease_prevention)
+                                <a href="{{ route('vaccine.index', ['disease' => $vaccine->disease_prevention]) }}" style="font-size: 14px; color: #0f172a; display: block; text-align: justify; font-weight: 700;">{{ $vaccine->disease_prevention }}</a>
+                            @else
+                                <span style="font-size: 14px; color: #64748b;">Chưa có dữ liệu xác minh</span>
+                            @endif
                         </div>
                         <div>
                             <span style="display: block; font-size: 11.5px; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 3px;">
                                 <i data-lucide="globe" style="width: 13px; height: 13px; vertical-align: middle;"></i> Nhà sản xuất (Xuất xứ)
                             </span>
-                            <strong style="font-size: 14px; color: #0f172a;">{{ $vaccine->manufacturer ?: 'Sanofi' }} ({{ $vaccine->origin ?: 'Pháp' }})</strong>
+                            @if($vaccine->manufacturer || $vaccine->origin)
+                                <strong style="font-size: 14px; color: #0f172a;">{{ collect([$vaccine->manufacturer, $vaccine->origin])->filter()->implode(' - ') }}</strong>
+                            @else
+                                <span style="font-size: 14px; color: #64748b;">Chưa có dữ liệu xác minh</span>
+                            @endif
                         </div>
                         <div>
                             <span style="display: block; font-size: 11.5px; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 3px;">
                                 <i data-lucide="users" style="width: 13px; height: 13px; vertical-align: middle;"></i> Đối tượng chỉ định
                             </span>
-                            <strong style="font-size: 14px; color: #0f172a;">{{ $vaccine->age_group ?: 'Trẻ từ 6 tháng tuổi & Người lớn' }}</strong>
+                            <strong style="font-size: 14px; color: #0f172a;">{{ $vaccine->age_group ?: 'Cần được nhân viên y tế tư vấn theo độ tuổi.' }}</strong>
                         </div>
                         <div>
                             <span style="display: block; font-size: 11.5px; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 3px;">
-                                <i data-lucide="syringe" style="width: 13px; height: 13px; vertical-align: middle;"></i> Đường tiêm & Phác đồ
+                                <i data-lucide="syringe" style="width: 13px; height: 13px; vertical-align: middle;"></i> Đường dùng
                             </span>
-                            <strong style="font-size: 14px; color: #0f172a;">Tiêm bắp ({{ $vaccine->doses ?: 1 }} mũi tiêm)</strong>
+                            <strong style="font-size: 14px; color: #0f172a;">{{ $vaccine->administration_route ?: 'Cần được xác nhận khi khám sàng lọc.' }}</strong>
                         </div>
                     </div>
                 </div>
@@ -83,9 +88,9 @@
                             <i data-lucide="arrow-left" style="width: 15px; height: 15px;"></i>
                             <span>Quay lại danh mục</span>
                         </a>
-                        <button class="btn-select-detail {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" data-id="{{ $vaccine->id }}" onclick="toggleCart({{ $vaccine->id }})" style="padding: 12px 24px; border-radius: 30px; border: none; color: #ffffff; font-weight: 800; font-size: 15px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; background-color: {{ isset($cart[$vaccine->id]) ? 'var(--secondary-color, #eaaa00)' : 'var(--primary-color, #c8102e)' }}; box-shadow: 0 4px 15px rgba(200, 16, 46, 0.22);">
+                        <button class="btn-select-detail {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" data-id="{{ $vaccine->id }}" onclick="toggleCart({{ $vaccine->id }})" {{ $vaccine->stock_quantity <= 0 ? 'disabled' : '' }} style="padding: 12px 24px; border-radius: 30px; border: none; color: #ffffff; font-weight: 800; font-size: 15px; cursor: {{ $vaccine->stock_quantity <= 0 ? 'not-allowed' : 'pointer' }}; opacity:{{ $vaccine->stock_quantity <= 0 ? '.55' : '1' }}; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; background-color: {{ isset($cart[$vaccine->id]) ? 'var(--secondary-color, #eaaa00)' : 'var(--primary-color, #c8102e)' }}; box-shadow: 0 4px 15px rgba(200, 16, 46, 0.22);">
                             <i data-lucide="{{ isset($cart[$vaccine->id]) ? 'check' : 'plus' }}" style="width: 18px; height: 18px;"></i>
-                            <span>{{ isset($cart[$vaccine->id]) ? 'Đã chọn vắc xin' : 'Đăng ký tiêm chủng' }}</span>
+                            <span>{{ $vaccine->stock_quantity <= 0 ? 'Hết hàng tại chi nhánh' : (isset($cart[$vaccine->id]) ? 'Đã chọn vắc xin' : 'Đăng ký tiêm chủng') }}</span>
                         </button>
                     </div>
                 </div>
@@ -118,15 +123,20 @@
                     1. Thông tin vắc xin & Nhà sản xuất
                 </h2>
                 <div class="article-body-content">
-                    <p style="text-align: justify;">Vắc xin <strong>{{ $vaccine->name }}</strong> là dòng vắc xin cúm tam giá thế hệ mới, được chỉ định tiêm phòng cho trẻ em từ 6 tháng tuổi trở lên và người lớn nhằm ngăn ngừa hiệu quả 3 chủng virus cúm mùa phổ biến bao gồm: 2 chủng cúm A (A/H1N1, A/H3N2) và 1 dòng cúm B (B/Victoria).</p>
-                    
-                    <p style="text-align: justify;">So với các dòng vắc xin cúm trước đây, sản phẩm đã cập nhật loại bỏ chủng cúm B/Yamagata theo đúng khuyến cáo mới nhất của Tổ chức Y tế Thế giới (WHO), do chủng virus này đã không còn lưu hành tự nhiên trên toàn cầu.</p>
+                    @if($vaccine->description)
+                        <p style="text-align: justify; white-space: pre-line;">{{ $vaccine->description }}</p>
+                    @else
+                        <p>Thông tin mô tả chi tiết của sản phẩm chưa được cập nhật từ nguồn đã xác minh.</p>
+                    @endif
 
-                    <h3 style="font-size: 17px; font-weight: 700; color: #0f172a; margin: 20px 0 10px 0;">Nhà sản xuất & Nguồn gốc</h3>
-                    <p style="text-align: justify;">Vắc xin được nghiên cứu, phát triển và sản xuất bởi Tập đoàn Dược phẩm hàng đầu thế giới <strong>{{ $vaccine->manufacturer ?: 'Sanofi' }} ({{ $vaccine->origin ?: 'Pháp' }})</strong>. Toàn bộ các lô vắc xin nhập khẩu về Việt Nam đều trải qua kiểm định nghiêm ngặt của Viện Kiểm định Quốc gia Vắc xin và Sinh phẩm Y tế trước khi đưa vào sử dụng tại hệ thống Medicare Cờ Đỏ.</p>
-
-                    <h3 style="font-size: 17px; font-weight: 700; color: #0f172a; margin: 20px 0 10px 0;">Đường tiêm & Chống chỉ định</h3>
-                    <p style="text-align: justify;">Vắc xin được sử dụng theo đường <strong>tiêm bắp (ưu tiên)</strong> hoặc tiêm dưới da. Chống chỉ định tiêm đối với người có tiền sử phản ứng quá mẫn nặng với bất kỳ thành phần nào của vắc xin, hoặc người đang có tình trạng sốt cao cấp tính (cần hoãn tiêm cho đến khi hết sốt).</p>
+                    @if($vaccine->manufacturer || $vaccine->origin || $vaccine->dosage)
+                        <h3 style="font-size: 17px; font-weight: 700; color: #0f172a; margin: 20px 0 10px 0;">Thông tin sản phẩm</h3>
+                        <ul style="padding-left: 20px; line-height: 1.8; color: #334155;">
+                            @if($vaccine->manufacturer)<li><strong>Nhà sản xuất:</strong> {{ $vaccine->manufacturer }}</li>@endif
+                            @if($vaccine->origin)<li><strong>Xuất xứ:</strong> {{ $vaccine->origin }}</li>@endif
+                            @if($vaccine->dosage)<li><strong>Quy cách:</strong> {{ $vaccine->dosage }}</li>@endif
+                        </ul>
+                    @endif
                 </div>
             </section>
 
@@ -136,13 +146,11 @@
                     2. Đối tượng chỉ định tiêm chủng
                 </h2>
                 <div class="article-body-content">
-                    <p style="text-align: justify;">Vắc xin <strong>{{ $vaccine->name }}</strong> được khuyến cáo tiêm phòng rộng rãi cho các nhóm đối tượng sau:</p>
-                    <ul style="padding-left: 20px; line-height: 1.8; color: #334155; margin-bottom: 20px;">
-                        <li style="text-align: justify;"><strong>Trẻ em từ 6 tháng tuổi trở lên</strong>: Giúp hệ miễn dịch còn non nớt của trẻ tạo kháng thể chủ động phòng ngừa các biến chứng nguy hiểm của cúm như viêm phổi, viêm tai giữa.</li>
-                        <li style="text-align: justify;"><strong>Người lớn & Người cao tuổi (trên 65 tuổi)</strong>: Giảm thiểu nguy cơ nhập viện và tử vong do biến chứng tim mạch, hô hấp khi mắc cúm.</li>
-                        <li style="text-align: justify;"><strong>Phụ nữ chuẩn bị mang thai & Đang mang thai</strong>: Bảo vệ an toàn cho cả mẹ và thai nhi khỏi nguy cơ dị tật hoặc sinh nhẹ cân do cúm mùa.</li>
-                        <li style="text-align: justify;"><strong>Người có bệnh nền mạn tính</strong>: Bệnh nhân tiểu đường, hen suyễn, bệnh tim mạch, suy giảm miễn dịch cần tiêm phòng hằng năm.</li>
-                    </ul>
+                    @if($vaccine->age_group)
+                        <p style="text-align: justify;"><strong>Độ tuổi / đối tượng ghi nhận:</strong> {{ $vaccine->age_group }}</p>
+                    @else
+                        <p>Đối tượng sử dụng chưa được cập nhật từ nguồn đã xác minh. Vui lòng khám sàng lọc để được tư vấn.</p>
+                    @endif
                 </div>
             </section>
 
@@ -152,56 +160,64 @@
                     3. Phác đồ & Lịch tiêm chi tiết
                 </h2>
                 <div class="article-body-content">
-                    <p style="text-align: justify;">Lịch tiêm vắc xin <strong>{{ $vaccine->name }}</strong> được phân chia cụ thể theo độ tuổi như sau:</p>
-                    
-                    <h3 style="font-size: 17px; font-weight: 700; color: var(--primary-color, #c8102e); margin: 20px 0 10px 0;">
-                        A. Trẻ em từ 6 tháng tuổi đến dưới 9 tuổi (Chưa từng tiêm cúm):
-                    </h3>
-                    <ul style="padding-left: 22px; margin-bottom: 20px; line-height: 1.8; color: #334155;">
-                        <li style="text-align: justify;"><strong>Mũi 1</strong>: Lần tiêm đầu tiên.</li>
-                        <li style="text-align: justify;"><strong>Mũi 2</strong>: Tiêm cách Mũi 1 tối thiểu <strong>4 tuần</strong> (28 ngày).</li>
-                        <li style="text-align: justify;"><strong>Tiêm nhắc lại</strong>: Tiêm 1 mũi hằng năm vào trước mùa dịch cúm.</li>
-                    </ul>
-
-                    <h3 style="font-size: 17px; font-weight: 700; color: var(--accent-color, #004b8f); margin: 20px 0 10px 0;">
-                        B. Trẻ từ 9 tuổi trở lên & Người lớn:
-                    </h3>
-                    <ul style="padding-left: 22px; margin-bottom: 20px; line-height: 1.8; color: #334155;">
-                        <li style="text-align: justify;"><strong>Mũi cơ bản</strong>: Tiêm <strong>1 mũi duy nhất</strong>.</li>
-                        <li style="text-align: justify;"><strong>Tiêm nhắc lại</strong>: Tiêm nhắc <strong>1 mũi hằng năm</strong> để duy trì lượng kháng thể bảo vệ cao nhất trước sự biến đổi chủng virus cúm.</li>
-                    </ul>
+                    @if($vaccine->administration_route)
+                        <p style="text-align: justify;"><strong>Đường dùng:</strong> {{ $vaccine->administration_route }}</p>
+                    @endif
+                    @if($vaccine->detailed_schedule)
+                        <p style="text-align: justify; white-space: pre-line;">{{ $vaccine->detailed_schedule }}</p>
+                    @else
+                        <p>Phác đồ chi tiết chưa được cập nhật từ nguồn đã xác minh. Lịch tiêm cần được nhân viên y tế xác nhận theo độ tuổi và lịch sử tiêm chủng.</p>
+                    @endif
                 </div>
             </section>
 
-            <!-- Section 4: Thận trọng & Thai kỳ -->
+            <!-- Section 4: Chống chỉ định và cảnh báo -->
             <section id="sec-than-trong" style="margin-bottom: 36px;">
                 <h2 style="font-size: 21px; font-weight: 800; color: #0f172a; margin-top: 0; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-color, #c8102e);">
-                    4. Thận trọng khi sử dụng & Khuyến cáo thai kỳ
+                    4. Chống chỉ định & Cảnh báo
                 </h2>
                 <div class="article-body-content">
-                    <p style="text-align: justify;"><strong>Phụ nữ mang thai & Cho con bú:</strong> Phụ nữ mang thai là đối tượng dễ gặp biến chứng nặng khi mắc cúm. Vắc xin <strong>{{ $vaccine->name }}</strong> là vắc xin bất hoạt nên an toàn sử dụng cho thai phụ ở mọi giai đoạn thai kỳ (3 tháng đầu, 3 tháng giữa và 3 tháng cuối) cũng như phụ nữ đang cho con bú. Việc tiêm phòng cho mẹ còn giúp truyền kháng thể thụ động bảo vệ trẻ sơ sinh trong 6 tháng đầu đời.</p>
-
-                    <p style="text-align: justify;"><strong>Rối loạn đông máu:</strong> Người bị giảm tiểu cầu hoặc rối loạn đông máu cần thông báo cho bác sĩ để được đánh giá cẩn thận trước khi tiêm bắp nhằm tránh nguy cơ chảy máu tại chỗ tiêm.</p>
+                    @if($vaccine->contraindications)
+                        <h3 style="font-size: 17px; font-weight: 700; color: #0f172a; margin: 0 0 10px;">Chống chỉ định</h3>
+                        <p style="text-align: justify; white-space: pre-line;">{{ $vaccine->contraindications }}</p>
+                    @endif
+                    @if($vaccine->warnings)
+                        <h3 style="font-size: 17px; font-weight: 700; color: #0f172a; margin: 20px 0 10px;">Cảnh báo và thận trọng</h3>
+                        <p style="text-align: justify; white-space: pre-line;">{{ $vaccine->warnings }}</p>
+                    @endif
+                    @if(!$vaccine->contraindications && !$vaccine->warnings)
+                        <p>Thông tin chống chỉ định và cảnh báo của sản phẩm chưa được cập nhật từ nguồn đã xác minh. Cần khai báo đầy đủ tình trạng sức khỏe khi khám sàng lọc.</p>
+                    @endif
                 </div>
             </section>
 
-            <!-- Section 5: Phản ứng sau tiêm -->
+            <!-- Section 5: Phản ứng bất lợi -->
             <section id="sec-phan-ung" style="margin-bottom: 36px;">
                 <h2 style="font-size: 21px; font-weight: 800; color: #0f172a; margin-top: 0; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-color, #c8102e);">
-                    5. Phản ứng phụ có thể xảy ra sau tiêm & Hướng dẫn theo dõi
+                    5. Phản ứng bất lợi & Theo dõi sau tiêm
                 </h2>
                 <div class="article-body-content">
-                    <p style="text-align: justify;">Tương tự như tất cả các vắc xin khác, vắc xin <strong>{{ $vaccine->name }}</strong> có thể gây ra một số phản ứng nhẹ sau tiêm. Đây là dấu hiệu bình thường phản ánh hệ miễn dịch của cơ thể đang chủ động tạo kháng thể:</p>
+                    @if($vaccine->adverse_effects)
+                        <p style="text-align: justify; white-space: pre-line;">{{ $vaccine->adverse_effects }}</p>
+                    @else
+                        <p>Thông tin phản ứng bất lợi của sản phẩm chưa được cập nhật từ nguồn đã xác minh. Vui lòng tuân thủ hướng dẫn theo dõi sau tiêm của nhân viên y tế.</p>
+                    @endif
+                </div>
+            </section>
 
-                    <ul style="padding-left: 20px; line-height: 1.8; color: #334155; margin-bottom: 20px;">
-                        <li style="text-align: justify;"><strong>Phản ứng tại chỗ tiêm</strong>: Sưng nhẹ, đỏ hoặc đau tại vị trí tiêm (tự hết sau 1-2 ngày).</li>
-                        <li style="text-align: justify;"><strong>Phản ứng toàn thân nhẹ</strong>: Sốt nhẹ, mệt mỏi, đau đầu hoặc đau cơ nhẹ. Khách hàng có thể uống thuốc hạ sốt paracetamol theo chỉ dẫn của bác sĩ nếu sốt trên 38.5°C.</li>
-                    </ul>
-
-                    <!-- Author Signature at Bottom Right -->
-                    <div class="article-author-signature">
-                        <span>Theo Bác sĩ Chuyên khoa Medicare Cờ Đỏ</span>
-                    </div>
+            <section id="sec-nguon" style="margin-bottom: 36px;">
+                <h2 style="font-size: 21px; font-weight: 800; color: #0f172a; margin-top: 0; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-color, #c8102e);">
+                    6. Nguồn tham khảo
+                </h2>
+                <div class="article-body-content">
+                    @if($vaccine->source_reference_url)
+                        <p><a href="{{ $vaccine->source_reference_url }}" target="_blank" rel="noopener noreferrer nofollow">Xem nguồn / tài liệu tham khảo của sản phẩm</a></p>
+                    @else
+                        <p>Chưa có liên kết nguồn công khai cho nội dung chuyên môn chi tiết.</p>
+                    @endif
+                    @if($vaccine->source_review_date)
+                        <p><strong>Ngày rà soát nguồn:</strong> {{ $vaccine->source_review_date->format('d/m/Y') }}</p>
+                    @endif
                 </div>
             </section>
         </main>
@@ -226,13 +242,13 @@
                             <i data-lucide="chevron-right"></i> 3. Phác đồ & Lịch tiêm
                         </a>
                         <a href="#sec-than-trong" class="toc-link-item">
-                            <i data-lucide="chevron-right"></i> 4. Thận trọng & Thai kỳ
+                            <i data-lucide="chevron-right"></i> 4. Chống chỉ định & Cảnh báo
                         </a>
                         <a href="#sec-phan-ung" class="toc-link-item">
                             <i data-lucide="chevron-right"></i> 5. Phản ứng sau tiêm
                         </a>
-                        <a href="#sec-bao-quan" class="toc-link-item">
-                            <i data-lucide="chevron-right"></i> 6. Bảo quản Dây chuyền lạnh
+                        <a href="#sec-nguon" class="toc-link-item">
+                            <i data-lucide="chevron-right"></i> 6. Nguồn tham khảo
                         </a>
                     </nav>
                 </div>
@@ -255,9 +271,9 @@
                 <div>
                     <h2>
                         <i data-lucide="package" style="width: 22px; height: 22px; color: var(--primary-color, #c8102e);"></i>
-                        Vắc Xin Liên Quan Cùng Phòng Ngừa Nhóm Bệnh
+                        Vắc Xin Tham Khảo Khác
                     </h2>
-                    <p style="text-align: justify; margin-top: 4px; color: #64748b;">Tham khảo các sản phẩm vắc xin tương tự đang có sẵn tại hệ thống Medicare Cờ Đỏ.</p>
+                    <p style="text-align: justify; margin-top: 4px; color: #64748b;">Xem các sản phẩm đang có tại chi nhánh được chọn.</p>
                 </div>
 
                 <!-- Slider Navigation Arrow Buttons (< and >) -->
@@ -288,9 +304,9 @@
                                 <a href="{{ route('vaccine.show', $relVac->id) }}" class="catalog-product-title" style="display: block; text-decoration: none; text-align: justify;">
                                     {{ $relVac->name }}
                                 </a>
-                                <button type="button" onclick="setDiseaseFilter(@js($relVac->disease_prevention), event)" class="catalog-product-disease" style="text-align: justify;">
+                                <a href="{{ route('vaccine.index', ['disease' => $relVac->disease_prevention]) }}" class="catalog-product-disease" style="display: block; text-align: justify; text-decoration: none;">
                                     {{ $relVac->disease_prevention }}
-                                </button>
+                                </a>
                                 <div class="catalog-product-meta">
                                     <span><i data-lucide="syringe"></i>{{ $relVac->doses ?: 1 }} liều</span>
                                     @if($relVac->manufacturer)

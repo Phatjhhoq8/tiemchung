@@ -12,12 +12,12 @@
     <!-- Tên Trung tâm -->
     <div class="form-group">
         <label for="name" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Tên chi nhánh trung tâm *</label>
-        <input type="text" name="name" id="name" value="{{ old('name', $center->name) }}" placeholder="Ví dụ: Medicare Cờ Đỏ (Trụ sở chính)" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
+        <input type="text" name="name" id="name" value="{{ old('name', $center->name) }}" placeholder="Ví dụ: Medicare Chi Nhánh 1" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
     </div>
 
     <div class="form-group">
         <label for="slug" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Mã chi nhánh</label>
-        <input type="text" name="slug" id="slug" value="{{ old('slug', $center->slug) }}" placeholder="Ví dụ: medicare-co-do" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
+        <input type="text" name="slug" id="slug" value="{{ old('slug', $center->slug) }}" placeholder="Ví dụ: medicare-chi-nhanh-1" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
     </div>
 
     <!-- Địa chỉ chi tiết -->
@@ -60,7 +60,7 @@
     </div>
 
     <div class="form-group">
-        <label for="map_url" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Link bản đồ / iframe src</label>
-        <textarea name="map_url" id="map_url" rows="3" placeholder="Google Maps embed src hoặc link bản đồ" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; resize: vertical;">{{ old('map_url', $center->map_url) }}</textarea>
+        <label for="map_url" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Mã nhúng hoặc đường dẫn bản đồ</label>
+        <textarea name="map_url" id="map_url" rows="3" placeholder="Mã nhúng hoặc đường dẫn Google Maps" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; resize: vertical;">{{ old('map_url', $center->map_url) }}</textarea>
     </div>
 </div>

@@ -1,7 +1,6 @@
 <?php
 /**
- * Chức năng: Model Vaccine quản lý thông tin các loại vắc xin/gói vắc xin.
- * Lý do tạo/chỉnh sửa: Bổ sung các cột type (loại vắc xin), doses (số mũi tiêm) và các scope hỗ trợ truy vấn nhanh.
+ * Chức năng: Model Vaccine quản lý thông tin vắc xin.
  */
 
 namespace Modules\VaccineRegistration\Models;
@@ -17,7 +16,6 @@ class Vaccine extends Model
         'name',
         'price',
         'sale_price',       // Giá ưu đãi (nullable)
-        'type',             // 'single' (lẻ) hoặc 'package' (gói)
         'doses',            // số mũi tiêm
         'stock_status',     // available, limited, out_of_stock
         'description',
@@ -27,6 +25,13 @@ class Vaccine extends Model
         'origin',
         'manufacturer',     // Hãng sản xuất
         'dosage',           // Quy cách đóng gói
+        'administration_route',
+        'detailed_schedule',
+        'contraindications',
+        'adverse_effects',
+        'warnings',
+        'source_reference_url',
+        'source_review_date',
         'image',
         'is_featured',      // Vắc xin nổi bật
         'sort_order',       // Thứ tự hiển thị
@@ -44,6 +49,7 @@ class Vaccine extends Model
         'price' => 'integer',
         'sort_order' => 'integer',
         'views' => 'integer',
+        'source_review_date' => 'date',
     ];
 
     protected static function booted(): void
@@ -80,22 +86,6 @@ class Vaccine extends Model
             'out_of_stock' => 'Hết hàng',
             default => 'Đầy đủ',
         };
-    }
-
-    /**
-     * Scope lọc vắc xin lẻ
-     */
-    public function scopeSingle($query)
-    {
-        return $query->where('type', 'single');
-    }
-
-    /**
-     * Scope lọc gói vắc xin
-     */
-    public function scopePackage($query)
-    {
-        return $query->where('type', 'package');
     }
 
     /**
@@ -159,7 +149,9 @@ class Vaccine extends Model
      */
     public function scopeInStock($query)
     {
-        return $query->where($this->hasCenterVaccineJoin($query) ? 'center_vaccines.stock_status' : 'vaccines.stock_status', '!=', 'out_of_stock');
+        return $this->hasCenterVaccineJoin($query)
+            ? $query->where('center_vaccines.stock_quantity', '>', 0)
+            : $query->where('vaccines.stock_status', '!=', 'out_of_stock');
     }
 
     private function hasCenterVaccineJoin($query): bool
@@ -179,7 +171,7 @@ class Vaccine extends Model
     public function registrations()
     {
         return $this->belongsToMany(Registration::class, 'registration_vaccines')
-                    ->withPivot(['quantity', 'price', 'sale_price'])
+                    ->withPivot(['quantity', 'stock_committed_quantity', 'price', 'sale_price'])
                     ->withTimestamps();
     }
 

@@ -16,7 +16,6 @@ use Modules\VaccineRegistration\Http\Controllers\Admin\AdminCenterController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSettingController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminBannerController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminUserController;
-use Modules\VaccineRegistration\Http\Controllers\Admin\AdminStockController;
 use Modules\VaccineRegistration\Http\Controllers\ConsultationLeadController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminConsultationLeadController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminScheduleController;
@@ -69,7 +68,9 @@ Route::middleware('web')->group(function () {
     Route::post('/admin/login', [AdminAuthController::class, 'login'])
         ->middleware('throttle:5,1') // Rate limit đăng nhập tối đa 5 lần mỗi phút
         ->name('admin.login');
-    Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+    Route::post('/admin/logout', [AdminAuthController::class, 'logout'])
+        ->middleware('admin.auth')
+        ->name('admin.logout');
     
     // Redirect /admin sang /admin/dashboard
     Route::get('/admin', function () {
@@ -78,6 +79,9 @@ Route::middleware('web')->group(function () {
 
     // --- Trang Quản trị (Bảo mật qua admin.auth) ---
     Route::middleware('admin.auth')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/password/change', [AdminAuthController::class, 'editPassword'])->name('password.edit');
+        Route::put('/password/change', [AdminAuthController::class, 'updatePassword'])->name('password.update');
+
         Route::post('/context/center', function (Request $request) {
             $validated = $request->validate(['center_id' => 'nullable|integer|exists:centers,id']);
             $centerId = isset($validated['center_id']) ? (int) $validated['center_id'] : null;
@@ -146,11 +150,6 @@ Route::middleware('web')->group(function () {
         Route::resource('schedules', AdminScheduleController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::post('/schedules/{schedule}/slots', [AdminScheduleController::class, 'storeSlot'])->name('schedules.slots.store');
         Route::resource('slots', AdminSlotController::class)->only(['store', 'update', 'destroy']);
-
-        // Nhập/xuất/tồn kho theo chi nhánh
-        Route::get('/stock', [AdminStockController::class, 'index'])->name('stock.index');
-        Route::get('/stock/create', [AdminStockController::class, 'create'])->name('stock.create');
-        Route::post('/stock', [AdminStockController::class, 'store'])->name('stock.store');
 
         // Quản lý lô vắc xin (Inventory Lots)
         Route::patch('/inventory-lots/{id}/status', [AdminInventoryLotController::class, 'updateStatus'])->name('inventory-lots.status');

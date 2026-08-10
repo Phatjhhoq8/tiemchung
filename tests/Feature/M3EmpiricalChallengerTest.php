@@ -92,7 +92,6 @@ class M3EmpiricalChallengerTest extends TestCase
         // Create master vaccine
         $this->vaccine = Vaccine::create([
             'name' => 'Challenger Master Vaccine',
-            'type' => 'single',
             'disease_prevention' => 'Phòng bệnh cúm mùa',
             'age_group' => 'Từ 6 tháng tuổi',
             'origin' => 'Pháp',
@@ -204,37 +203,17 @@ class M3EmpiricalChallengerTest extends TestCase
             ->get(route('admin.registrations.export.csv', ['center_id' => $this->centerB->id]))
             ->assertStatus(403);
 
-        // 1.6 View stock movements list for Branch B as Branch Admin A
-        $this->actingAsAdmin($this->branchAdminA)
-            ->get(route('admin.stock.index', ['center_id' => $this->centerB->id]))
-            ->assertStatus(403);
-
-        // 1.7 View stock create form for Branch B as Branch Admin A
-        $this->actingAsAdmin($this->branchAdminA)
-            ->get(route('admin.stock.create', ['center_id' => $this->centerB->id]))
-            ->assertStatus(403);
-
-        // 1.8 Store stock movement targeting Branch B as Branch Admin A
-        $this->actingAsAdmin($this->branchAdminA)
-            ->post(route('admin.stock.store'), [
-                'center_id' => $this->centerB->id,
-                'vaccine_id' => $this->vaccine->id,
-                'type' => 'import',
-                'quantity' => 100,
-            ])
-            ->assertStatus(403);
-
-        // 1.9 View vaccine list filtered for Branch B as Branch Admin A
+        // 1.6 View vaccine list filtered for Branch B as Branch Admin A
         $this->actingAsAdmin($this->branchAdminA)
             ->get(route('admin.vaccines.index', ['center_id' => $this->centerB->id]))
             ->assertStatus(403);
 
-        // 1.10 Edit vaccine local settings for Branch B as Branch Admin A
+        // 1.7 Edit vaccine local settings for Branch B as Branch Admin A
         $this->actingAsAdmin($this->branchAdminA)
             ->get(route('admin.vaccines.edit', ['vaccine' => $this->vaccine->id, 'center_id' => $this->centerB->id]))
             ->assertStatus(403);
 
-        // 1.11 Update vaccine local settings targeting Branch B as Branch Admin A
+        // 1.8 Update vaccine local settings targeting Branch B as Branch Admin A
         $this->actingAsAdmin($this->branchAdminA)
             ->put(route('admin.vaccines.update', $this->vaccine->id), [
                 'name' => $this->vaccine->name,
@@ -242,7 +221,6 @@ class M3EmpiricalChallengerTest extends TestCase
                 'category' => $this->vaccine->category,
                 'disease_prevention' => $this->vaccine->disease_prevention,
                 'age_group' => $this->vaccine->age_group,
-                'type' => $this->vaccine->type,
                 'doses' => $this->vaccine->doses,
                 'price' => 999999,
                 'stock_status' => 'available',
@@ -250,18 +228,14 @@ class M3EmpiricalChallengerTest extends TestCase
             ])
             ->assertStatus(403);
 
-        // 1.12 Toggle featured state for Branch B as Branch Admin A
+        // 1.9 Toggle featured state for Branch B as Branch Admin A
         $this->actingAsAdmin($this->branchAdminA)
             ->post(route('admin.vaccines.toggle-featured', ['id' => $this->vaccine->id, 'center_id' => $this->centerB->id]))
             ->assertStatus(403);
 
-        // 1.13 Verify Branch Admin A CAN access own branch resources
+        // 1.10 Verify Branch Admin A CAN access own branch resources
         $this->actingAsAdmin($this->branchAdminA)
             ->get(route('admin.registrations.show', $this->registrationA->id))
-            ->assertStatus(200);
-
-        $this->actingAsAdmin($this->branchAdminA)
-            ->get(route('admin.stock.index', ['center_id' => $this->centerA->id]))
             ->assertStatus(200);
     }
 
@@ -277,7 +251,6 @@ class M3EmpiricalChallengerTest extends TestCase
             'category' => $this->vaccine->category,
             'disease_prevention' => $this->vaccine->disease_prevention,
             'age_group' => $this->vaccine->age_group,
-            'type' => $this->vaccine->type,
             'doses' => $this->vaccine->doses,
             'manufacturer' => $this->vaccine->manufacturer,
             'dosage' => $this->vaccine->dosage,
@@ -308,48 +281,43 @@ class M3EmpiricalChallengerTest extends TestCase
             ->put(route('admin.vaccines.update', $this->vaccine->id), array_merge($basePayload, ['disease_prevention' => 'Phòng bệnh tiêu chảy']))
             ->assertStatus(403);
 
-        // 2.5 Attempt modifying 'type'
-        $this->actingAsAdmin($this->branchAdminA)
-            ->put(route('admin.vaccines.update', $this->vaccine->id), array_merge($basePayload, ['type' => 'package']))
-            ->assertStatus(403);
-
-        // 2.6 Attempt modifying 'doses'
+        // 2.5 Attempt modifying 'doses'
         $this->actingAsAdmin($this->branchAdminA)
             ->put(route('admin.vaccines.update', $this->vaccine->id), array_merge($basePayload, ['doses' => 3]))
             ->assertStatus(403);
 
-        // 2.7 Attempt modifying 'age_group'
+        // 2.6 Attempt modifying 'age_group'
         $this->actingAsAdmin($this->branchAdminA)
             ->put(route('admin.vaccines.update', $this->vaccine->id), array_merge($basePayload, ['age_group' => 'Người lớn']))
             ->assertStatus(403);
 
-        // 2.8 Attempt modifying 'manufacturer'
+        // 2.7 Attempt modifying 'manufacturer'
         $this->actingAsAdmin($this->branchAdminA)
             ->put(route('admin.vaccines.update', $this->vaccine->id), array_merge($basePayload, ['manufacturer' => 'Pfizer']))
             ->assertStatus(403);
 
-        // 2.9 Attempt modifying 'dosage'
+        // 2.8 Attempt modifying 'dosage'
         $this->actingAsAdmin($this->branchAdminA)
             ->put(route('admin.vaccines.update', $this->vaccine->id), array_merge($basePayload, ['dosage' => '1.0ml']))
             ->assertStatus(403);
 
-        // 2.10 Attempt uploading image_file
+        // 2.9 Attempt uploading image_file
         $fakeFile = UploadedFile::fake()->create('hacked.jpg', 10, 'image/jpeg');
         $this->actingAsAdmin($this->branchAdminA)
             ->put(route('admin.vaccines.update', $this->vaccine->id), array_merge($basePayload, ['image_file' => $fakeFile]))
             ->assertStatus(403);
 
-        // 2.11 Attempt master vaccine store (creation) as Branch Admin
+        // 2.10 Attempt master vaccine store (creation) as Branch Admin
         $this->actingAsAdmin($this->branchAdminA)
             ->post(route('admin.vaccines.store'), array_merge($basePayload, ['name' => 'Brand New Vaccine']))
             ->assertStatus(403);
 
-        // 2.12 Attempt master vaccine destroy (deletion) as Branch Admin
+        // 2.11 Attempt master vaccine destroy (deletion) as Branch Admin
         $this->actingAsAdmin($this->branchAdminA)
             ->delete(route('admin.vaccines.destroy', $this->vaccine->id))
             ->assertStatus(403);
 
-        // 2.13 Confirm Branch Admin CAN edit branch local fields (price, sale_price, stock_status, is_featured, sort_order)
+        // 2.12 Confirm Branch Admin CAN edit branch local fields (price, sale_price, stock_status, is_featured, sort_order)
         $validBranchUpdate = $this->actingAsAdmin($this->branchAdminA)
             ->put(route('admin.vaccines.update', $this->vaccine->id), $basePayload);
         $validBranchUpdate->assertRedirect();
@@ -378,7 +346,6 @@ class M3EmpiricalChallengerTest extends TestCase
         $storeResponse = $this->actingAsAdmin($this->superAdmin)
             ->post(route('admin.vaccines.store'), [
                 'name' => 'Master Vaccine by Super Admin',
-                'type' => 'single',
                 'disease_prevention' => 'Phòng Viêm gan B',
                 'age_group' => 'Trẻ sơ sinh',
                 'origin' => 'Hàn Quốc',
@@ -400,7 +367,6 @@ class M3EmpiricalChallengerTest extends TestCase
                 'category' => 'Bệnh hô hấp nâng cao',
                 'disease_prevention' => 'Phòng cúm mùa A/B',
                 'age_group' => 'Từ 6 tháng trở lên',
-                'type' => 'single',
                 'doses' => 1,
                 'price' => 380000,
                 'stock_status' => 'available',
@@ -440,14 +406,6 @@ class M3EmpiricalChallengerTest extends TestCase
             ->get(route('admin.registrations.index', ['center_id' => $this->centerB->id]))
             ->assertStatus(200);
 
-        // 3.7 Super Admin accesses stock for any center
-        $this->actingAsAdmin($this->superAdmin)
-            ->get(route('admin.stock.index', ['center_id' => $this->centerA->id]))
-            ->assertStatus(200);
-
-        $this->actingAsAdmin($this->superAdmin)
-            ->get(route('admin.stock.index', ['center_id' => $this->centerB->id]))
-            ->assertStatus(200);
     }
 
     /**
