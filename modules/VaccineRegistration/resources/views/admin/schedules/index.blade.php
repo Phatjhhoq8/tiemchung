@@ -135,11 +135,15 @@
         border: none;
         background: none;
         padding: 4px 10px;
-        border-radius: 20px;
+        border-radius: 6px;
         font-size: 0.75rem;
         font-weight: 700;
         cursor: pointer;
         transition: all 0.2s ease;
+        height: 26px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
     .day-status-btn.active {
         background: #e6f4ea;
@@ -165,39 +169,45 @@
         border-top: 1px dashed var(--border-color);
     }
     .btn-day-action {
-        padding: 5px 8px;
+        height: 30px;
+        padding: 0 8px;
         font-size: 0.75rem;
         font-weight: 600;
         border-radius: 6px;
         border: 1px solid #cbd5e1;
         background: #ffffff;
-        color: var(--text-primary);
+        color: #334155;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 4px;
         transition: all 0.2s ease;
+        box-sizing: border-box;
     }
     .btn-day-action:hover {
         background: #f1f5f9;
         border-color: #94a3b8;
+        color: #004b8f;
     }
     .btn-day-action.btn-copy {
-        color: var(--accent-color);
-        border-color: rgba(0, 75, 143, 0.3);
+        color: #004b8f;
+        border-color: #93c5fd;
+        background: #eff6ff;
     }
     .btn-day-action.btn-copy:hover {
-        background: #e8f0fe;
+        background: #dbeafe;
+        border-color: #60a5fa;
     }
     .btn-day-action.btn-delete-day {
-        color: var(--primary-color);
+        color: #c8102e;
         border-color: #fca5a5;
         background: #fff5f5;
         grid-column: span 2;
     }
     .btn-day-action.btn-delete-day:hover {
-        background: var(--primary-color);
+        background: #c8102e;
+        border-color: #a00d24;
         color: #ffffff;
     }
     .day-slots-body {

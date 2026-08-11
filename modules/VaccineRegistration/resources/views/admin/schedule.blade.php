@@ -5,39 +5,46 @@
 
 @section('admin_content')
 <div class="card-modern">
-    @if($isSuperAdmin ?? false)
-        <form method="GET" action="{{ route('admin.schedule') }}" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:24px;">
-            <input type="hidden" name="week" value="{{ $startOfWeek->toDateString() }}">
-            <div style="flex:1 1 260px;">
-                <label class="form-label-modern" for="schedule_center_id">Chi nhánh</label>
-                <select class="form-control-modern" id="schedule_center_id" name="center_id">
-                    <option value="" {{ $selectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
-                    @foreach($centers as $center)
-                        <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
-                    @endforeach
-                </select>
+    <!-- Top Week Navigation Bar (Separated Display & Controls) -->
+    <div class="week-nav-bar" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; background: #ffffff; padding: 14px 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); margin-bottom: 24px;">
+        <!-- Left: Display Info & Branch Filter -->
+        <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+            <div class="week-range-title" style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #004b8f; background: #eff6ff; padding: 6px 14px; border-radius: 8px; border: 1px solid #bfdbfe;">
+                <i data-lucide="calendar" style="width: 17px; height: 17px; color: #004b8f;"></i>
+                <span>Tuần từ {{ $startOfWeek->format('d/m/Y') }} đến {{ $startOfWeek->copy()->endOfWeek()->format('d/m/Y') }}</span>
             </div>
-            <button type="submit" class="btn-modern btn-modern-primary">Lọc</button>
-        </form>
-    @endif
 
-    <!-- Điều hướng tuần -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <a href="{{ route('admin.schedule', ['week' => $startOfWeek->copy()->subWeek()->toDateString()]) }}" class="btn-modern btn-modern-secondary" style="padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 4px;">
-                <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i> Tuần trước
-            </a>
-            <a href="{{ route('admin.schedule') }}" class="btn-modern btn-modern-secondary" style="padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px;">
-                Tuần hiện tại
-            </a>
-            <a href="{{ route('admin.schedule', ['week' => $startOfWeek->copy()->addWeek()->toDateString()]) }}" class="btn-modern btn-modern-secondary" style="padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 4px;">
-                Tuần sau <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
-            </a>
+            @if($isSuperAdmin ?? false)
+                <form id="scheduleCenterForm" method="GET" action="{{ route('admin.schedule') }}" style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <input type="hidden" name="week" value="{{ $startOfWeek->toDateString() }}">
+                    <label class="form-label-modern" for="schedule_center_id" style="margin: 0; font-size: 0.8125rem;">Chi nhánh:</label>
+                    <select class="form-control-modern" id="schedule_center_id" name="center_id" style="width: auto; height: 38px; padding: 0 12px; font-size: 0.875rem;" onchange="this.form.submit()">
+                        <option value="" {{ $selectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
+                        @foreach($centers as $center)
+                            <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
+                        @endforeach
+                    </select>
+                </form>
+            @endif
         </div>
-        
-        <div style="font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--accent-color, #c8102e);">
-            <i data-lucide="calendar-range" style="vertical-align: middle; display: inline-block; margin-right: 6px; width: 20px; height: 20px;"></i>
-            Tuần từ {{ $startOfWeek->format('d/m/Y') }} đến {{ $startOfWeek->copy()->endOfWeek()->format('d/m/Y') }}
+
+        <!-- Right: Segmented Week Navigation Buttons & Date Picker -->
+        <div class="week-nav-controls" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: auto;">
+            <div style="display: inline-flex; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; background: #ffffff;">
+                <a href="{{ route('admin.schedule', ['week' => $startOfWeek->copy()->subWeek()->toDateString(), 'center_id' => $selectedCenterId]) }}" class="week-nav-btn" style="border: none; border-right: 1px solid #cbd5e1; border-radius: 0; height: 38px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: 13.5px; font-weight: 600; color: #1e293b; background: #f8fafc;">
+                    <i data-lucide="chevron-left" style="width:15px; height:15px;"></i>
+                    <span>Tuần trước</span>
+                </a>
+                <a href="{{ route('admin.schedule', ['center_id' => $selectedCenterId]) }}" class="week-nav-btn-current" style="border: none; border-right: 1px solid #cbd5e1; border-radius: 0; height: 38px; padding: 0 16px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: 13.5px; font-weight: 700; color: #004b8f; background: #eff6ff;">
+                    <span>Tuần hiện tại</span>
+                </a>
+                <a href="{{ route('admin.schedule', ['week' => $startOfWeek->copy()->addWeek()->toDateString(), 'center_id' => $selectedCenterId]) }}" class="week-nav-btn" style="border: none; border-radius: 0; height: 38px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: 13.5px; font-weight: 600; color: #1e293b; background: #f8fafc;">
+                    <span>Tuần sau</span>
+                    <i data-lucide="chevron-right" style="width:15px; height:15px;"></i>
+                </a>
+            </div>
+
+            <input type="date" id="scheduleWeekDatePicker" class="form-control-modern" value="{{ $startOfWeek->toDateString() }}" style="width: auto; height: 38px; padding: 0 10px; font-size: 0.85rem;" title="Chọn ngày trong tuần" onchange="window.location.href='{{ route('admin.schedule') }}?week=' + this.value + '{{ $selectedCenterId ? '&center_id='.$selectedCenterId : '' }}'">
         </div>
     </div>
 
@@ -61,10 +68,10 @@
                         <span style="font-family: var(--font-display); font-weight: 800; font-size: 16px;">{{ $day['day_name'] }}</span>
                         <span style="font-size: 14px; opacity: 0.85; font-weight: 500;">({{ $day['date'] }})</span>
                         @if($isToday)
-                            <span style="background: #eaaa00; color: #340711; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">Hôm nay</span>
+                            <span style="background: #eaaa00; color: #340711; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">Hôm nay</span>
                         @endif
                     </div>
-                    <span style="font-family: var(--font-display); font-weight: 700; font-size: 13.5px; background: {{ $isToday ? 'rgba(255,255,255,0.2)' : ($hasItems ? 'rgba(200,16,46,0.1)' : '#e2e8f0') }}; color: {{ $isToday ? '#ffffff' : ($hasItems ? 'var(--primary-color)' : '#64748b') }}; padding: 4px 12px; border-radius: 20px;">
+                    <span style="font-family: var(--font-display); font-weight: 700; font-size: 13px; background: {{ $isToday ? 'rgba(255,255,255,0.2)' : ($hasItems ? 'rgba(200,16,46,0.1)' : '#e2e8f0') }}; color: {{ $isToday ? '#ffffff' : ($hasItems ? 'var(--primary-color)' : '#64748b') }}; padding: 4px 10px; border-radius: 6px;">
                         {{ $day['items']->count() }} lịch hẹn
                     </span>
                 </div>

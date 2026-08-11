@@ -1,5 +1,13 @@
 # Release Notes
 
+## [v6.5.0] - 2026-08-11
+
+### Comprehensive UI/UX Standardization Across All Schedule Views
+
+* **System-wide Button Cluster & Toolbar Standardization**:
+  - **Unified `/admin/schedule` Toolbar**: Redesigned top navigation bar on Weekly Appointment Schedule to match `/admin/schedules` with left-aligned week info display badge + branch selector, and right-aligned segmented navigation controls (`Tuần trước`, `Tuần hiện tại`, `Tuần sau`) + DatePicker.
+  - **Standardized Day Cards & Action Toolbars**: Harmonized all sub-buttons (`Mở cửa`/`Đóng cửa`, `+ Thêm giờ`, `Sao chép`, `Xóa lịch ngày`) across weekly calendar cards with unified `6px` border-radius, 30px height, clean typography, and Medicare brand palette.
+
 ## [v6.4.9] - 2026-08-11
 
 ### Refined Filter Bar UX & Removal of Cluttered Dropdowns
