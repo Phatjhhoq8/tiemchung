@@ -1,5 +1,29 @@
 # Release Notes
 
+## [v6.4.1] - 2026-08-11
+
+### Added & Improved
+
+* **Global Admin Medicare Custom DatePicker & Full Category CRUD Management**:
+  - **Global Auto-Init DatePicker**: Added auto-initializer in `layouts/admin.blade.php` that automatically binds all `<input type="date">` filter elements across all admin list views (registrations, leads, customers, etc.) to the Medicare Custom DatePicker component, eliminating native OS popovers system-wide.
+  - **Category CRUD & Pinned Right Actions**: Added `Sửa` (edit name) and `Xóa` (delete category) action buttons pinned strictly to the far right edge of each dropdown item row.
+  - **Medicare Custom Category Edit Modal**: Replaced standard browser `prompt()` popups with a dedicated clean Medicare Edit Modal (`#cat_edit_modal`), allowing admins to seamlessly rename categories via AJAX and auto-update active option labels.
+  - **Vaccine Deletion Warning Confirmation Modal**: When deleting a category, checks if vaccines are currently assigned. If vaccines exist, displays a clean modal listing affected vaccines and asking for explicit user confirmation before clearing category fields.
+
+## [v6.4.0] - 2026-08-11
+
+### Improved & Fixed
+
+* **Admin Vaccine Form - UI Layout, SPA Interaction & Dynamic Discount %**:
+  - **Flat Card Layout**: Cleaned up double card nesting on `admin/vaccines/edit.blade.php` and `create.blade.php`, removing redundant outer card borders and padding lamination. Removed verbose inline subcaptions from field labels for a clean, professional interface.
+  - **Dynamic Discount % Tool**: Added `% Giảm giá` input field alongside Sale Price in `_form.blade.php`. Entering `0%` automatically detects no discount and clears the Sale Price field. Entering a discount percentage calculates the exact un-rounded Sale Price (`price * (1 - discount%)`). Manually editing Sale Price displays a plain text notice under the `sale_price` field (`Mức giảm hiện tại xấp xỉ X%. Gợi ý mức giảm nguyên: Z%`) formatted with 1-decimal actual percentage and `Math.floor` integer percentage suggestion without icons or button borders.
+  - **SPA Branch Selection AJAX**: Replaced full-page reloads (`window.location.href`) on branch dropdown change (`center_id`) with AJAX fetching (`/admin/vaccines/{id}/center-data`), preserving unsaved form inputs while dynamically updating branch-specific price and inventory state.
+  - **Searchable Category Dropdown**: Upgraded the `Nhóm bệnh` (Category) field from a raw text input to a modern searchable select dropdown component with real-time filtering, arrow indicator, and custom category creation support (`+ Thêm mới`).
+  - **Standardized Form Select Dropdowns**: Standardized all form select fields (`center_id`, `center_is_active`) to use the exact same modern CSS dropdown component (arrow indicator, smooth option highlight, shadow elevation) without the custom creation option, ensuring 100% design consistency across all form controls.
+  - **Minimalist Zero-Emoji Admin UI & Global Select/Date Standardization**: Stripped out all decorative emojis and icon clutter across Datepicker popups, field triggers, and form dropdowns. Standardized all `<select>` controls globally in `layouts/admin.blade.php` with a sleek SVG chevron arrow and Medicare Red focus highlights (`#c8102e`), while refining the DatePicker component to pure minimalist text formatting (`dd/mm/yyyy`, `Tháng 8, 2026`, `Hôm nay`, `Xóa`).
+  - **Database Migration & Schedules 500 Fix**: Executed pending migrations for `default_slots` table across development and test MySQL databases, eliminating 500 internal server error on `/admin/schedules` page.
+  - **Validation & Translation**: Added Vietnamese error message for `sale_price.lt` rule and handled disabled inputs safely during form submission.
+
 ## [v6.3.2] - 2026-08-10
 
 ### Removed

@@ -129,7 +129,7 @@ class AdminDashboardTest extends TestCase
         ]);
 
         // Setup Inventory Lots
-        $vaccine = Vaccine::first() ?? Vaccine::create(['name' => 'Test Vac', 'code' => 'VACTEST']);
+        $vaccine = Vaccine::first() ?? Vaccine::create(['name' => 'Test Vac', 'price' => 100000, 'disease_prevention' => 'Test', 'origin' => 'Mỹ', 'age_group' => 'Mọi lứa tuổi', 'doses' => 1]);
         InventoryLot::create([
             'vaccine_id' => $vaccine->id,
             'center_id' => $this->centerA->id,

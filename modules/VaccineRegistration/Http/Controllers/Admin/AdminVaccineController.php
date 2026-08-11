@@ -33,6 +33,7 @@ class AdminVaccineController extends Controller
             'featured' => 'nullable|boolean',
             'min_quantity' => 'nullable|integer|min:0',
             'max_quantity' => 'nullable|integer|min:0',
+            'filter_day' => 'nullable|integer|between:1,31',
 
         ], [
             'min_quantity.integer' => 'Số lượng tối thiểu phải là số nguyên.',
@@ -385,6 +386,40 @@ class AdminVaccineController extends Controller
     }
 
     /**
+     * Lấy dữ liệu vắc xin theo chi nhánh được chọn (JSON cho SPA Form).
+     */
+    public function getCenterData(Request $request, $id)
+    {
+        abort_unless(AdminContext::isBranchAdmin() || AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền xem thông tin vắc xin.');
+
+        $centerId = $request->integer('center_id');
+        if ($centerId) {
+            AdminContext::assertCanManageCenter($centerId);
+        } else {
+            $centerId = AdminContext::selectedCenterId();
+        }
+
+        $vaccine = Vaccine::findOrFail($id);
+        $centerVaccine = CenterVaccine::where('center_id', $centerId)
+            ->where('vaccine_id', $vaccine->id)
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'center_id' => $centerId,
+                'price' => $centerVaccine ? $centerVaccine->price : $vaccine->price,
+                'sale_price' => $centerVaccine ? $centerVaccine->sale_price : $vaccine->sale_price,
+                'stock_quantity' => $centerVaccine ? $centerVaccine->stock_quantity : 0,
+                'stock_status' => $centerVaccine ? $centerVaccine->stock_status : 'available',
+                'center_is_active' => $centerVaccine ? (int) $centerVaccine->is_active : 1,
+                'is_featured' => $centerVaccine ? (bool) $centerVaccine->is_featured : false,
+                'sort_order' => $centerVaccine ? $centerVaccine->sort_order : 0,
+            ],
+        ]);
+    }
+
+    /**
      * Xóa vắc xin (Soft deactivation).
      */
     public function destroy($id)
@@ -436,6 +471,7 @@ class AdminVaccineController extends Controller
             });
 
         return response()->json([
+            'success' => true,
             'vaccine_name' => $vaccine->name,
             'branches' => $branchesStock,
         ]);
@@ -446,7 +482,17 @@ class AdminVaccineController extends Controller
      */
     private function validateVaccine(Request $request): array
     {
-        if (! $request->has('stock_quantity') && $request->has('stock_status')) {
+        // Tự động đồng bộ stock_status dựa trên stock_quantity nếu không chọn
+        if (! $request->has('stock_status') && $request->has('stock_quantity')) {
+            $qty = (int) $request->input('stock_quantity');
+            $status = 'available';
+            if ($qty === 0) {
+                $status = 'out_of_stock';
+            } elseif ($qty <= 5) {
+                $status = 'limited';
+            }
+            $request->merge(['stock_status' => $status]);
+        } elseif ($request->has('stock_status') && ! $request->has('stock_quantity')) {
             $status = $request->input('stock_status');
             $qty = 10;
             if ($status === 'out_of_stock') {
@@ -490,6 +536,7 @@ class AdminVaccineController extends Controller
             'price.min' => 'Giá vắc xin không được nhỏ hơn 0đ.',
             'sale_price.integer' => 'Giá ưu đãi phải là số nguyên.',
             'sale_price.min' => 'Giá ưu đãi không được nhỏ hơn 0đ.',
+            'sale_price.lt' => 'Giá ưu đãi phải nhỏ hơn giá gốc vắc xin.',
             'doses.required' => 'Số mũi tiêm không được để trống.',
             'doses.min' => 'Số mũi tiêm phải ít nhất là 1 mũi.',
             'stock_quantity.required' => 'Vui lòng nhập số lượng tồn kho.',
@@ -542,5 +589,86 @@ class AdminVaccineController extends Controller
                 centerId: $centerId
             );
         }
+    }
+
+    /**
+     * Kiểm tra số lượng vắc xin đang dùng nhóm bệnh trước khi xóa.
+     */
+    public function checkCategoryDelete(Request $request)
+    {
+        $request->validate([
+            'category' => 'required|string|max:100',
+        ]);
+
+        $category = trim($request->input('category'));
+        $vaccines = Vaccine::where('category', $category)->select(['id', 'name'])->get();
+
+        return response()->json([
+            'category' => $category,
+            'has_vaccines' => $vaccines->count() > 0,
+            'vaccine_count' => $vaccines->count(),
+            'vaccine_names' => $vaccines->pluck('name')->toArray(),
+        ]);
+    }
+
+    /**
+     * Cập nhật tên nhóm bệnh trên toàn bộ vắc xin liên quan.
+     */
+    public function updateCategory(Request $request)
+    {
+        $request->validate([
+            'old_name' => 'required|string|max:100',
+            'new_name' => 'required|string|max:100',
+        ]);
+
+        $oldName = trim($request->input('old_name'));
+        $newName = trim($request->input('new_name'));
+
+        $count = Vaccine::where('category', $oldName)->update(['category' => $newName]);
+
+        AuditLogger::log(
+            'admin.category_updated',
+            'category',
+            $oldName,
+            ['name' => $oldName],
+            ['name' => $newName, 'updated_vaccines' => $count]
+        );
+
+        $categories = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category');
+
+        return response()->json([
+            'message' => "Đã cập nhật nhóm bệnh '{$oldName}' thành '{$newName}'.",
+            'updated_count' => $count,
+            'categories' => $categories,
+        ]);
+    }
+
+    /**
+     * Xóa nhóm bệnh (chuyển category của các vắc xin liên quan thành null).
+     */
+    public function destroyCategory(Request $request)
+    {
+        $request->validate([
+            'category' => 'required|string|max:100',
+        ]);
+
+        $category = trim($request->input('category'));
+        $count = Vaccine::where('category', $category)->update(['category' => null]);
+
+        AuditLogger::log(
+            'admin.category_deleted',
+            'category',
+            $category,
+            ['name' => $category, 'affected_vaccines' => $count],
+            null
+        );
+
+        $categories = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category');
+
+        return response()->json([
+            'message' => "Đã xóa nhóm bệnh '{$category}'.",
+            'affected_count' => $count,
+            'categories' => $categories,
+        ]);
     }
 }

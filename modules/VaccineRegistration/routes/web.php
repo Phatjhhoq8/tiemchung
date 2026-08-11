@@ -123,12 +123,16 @@ Route::middleware('web')->group(function () {
         Route::get('/leads/{id}', [AdminConsultationLeadController::class, 'show'])->name('leads.show');
         Route::patch('/leads/{id}/status', [AdminConsultationLeadController::class, 'updateStatus'])->name('leads.status');
 
-        // Quản lý Vắc xin
+        // Quản lý Vắc xin & Nhóm bệnh
         Route::get('/vaccin', function () {
             return redirect()->route('admin.vaccines.index');
         });
+        Route::post('/categories/check-delete', [AdminVaccineController::class, 'checkCategoryDelete'])->name('categories.check-delete');
+        Route::put('/categories/update', [AdminVaccineController::class, 'updateCategory'])->name('categories.update');
+        Route::delete('/categories/destroy', [AdminVaccineController::class, 'destroyCategory'])->name('categories.destroy');
         Route::post('/vaccines/{id}/toggle-featured', [AdminVaccineController::class, 'toggleFeatured'])->name('vaccines.toggle-featured');
         Route::get('/vaccines/{id}/branches-stock', [AdminVaccineController::class, 'branchesStock'])->name('vaccines.branches-stock');
+        Route::get('/vaccines/{id}/center-data', [AdminVaccineController::class, 'getCenterData'])->name('vaccines.center-data');
         Route::resource('vaccines', AdminVaccineController::class)->except(['show']);
 
         // Quản lý Đăng ký tiêm chủng
