@@ -1,5 +1,14 @@
 # Release Notes
 
+## [v6.5.5] - 2026-08-11
+
+### Robust Safeguards for Cart Drawer and SPA Register Modal Event Handlers
+
+* **Fixed JavaScript Initialization and Event Binding**:
+  - **Resolved Unclosed Block & Missing Export Reference (`public/js/app.js`)**: Fixed block closure in global script scope and removed discontinued `setSpaConsultType` reference preventing script execution.
+  - **Safeguarded Empty `<select>` Dropdowns (`public/js/app.js`, `layouts/admin.blade.php`)**: Added safe optional chaining in `initGlobalMedicareCustomDropdowns()` to gracefully handle empty `<select>` option lists without throwing `TypeError`.
+  - **Verified Smooth Cart Drawer & SPA Modal Interactions**: Confirmed zero console errors, instant header cart drawer toggling, and seamless SPA register modal opening.
+
 ## [v6.5.4] - 2026-08-11
 
 ### System-Wide Custom Select & Datepicker Standardization Across Client & Admin Pages

@@ -1507,9 +1507,9 @@
                 function renderOptions() {
                     popup.innerHTML = '';
                     updateState();
-                    const options = Array.from(selectEl.options);
-                    const selectedOpt = selectEl.options[selectEl.selectedIndex] || options[0];
-                    if (selectedOpt) {
+                    const options = Array.from(selectEl.options || []);
+                    const selectedOpt = (selectEl.options && selectEl.selectedIndex >= 0) ? selectEl.options[selectEl.selectedIndex] : (options[0] || null);
+                    if (selectedOpt && selectedOpt.textContent) {
                         labelSpan.textContent = selectedOpt.textContent.trim();
                     } else {
                         labelSpan.textContent = '';
