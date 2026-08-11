@@ -51,10 +51,6 @@ class AdminRegistrationController extends Controller
             $query->whereDate('injection_date', '>=', $request->input('injection_date_from'));
         }
 
-        if ($request->filled('injection_date_to')) {
-            $query->whereDate('injection_date', '<=', $request->input('injection_date_to'));
-        }
-
         $day = $request->input('filter_day') ?? $request->input('day');
         $month = $request->input('filter_month') ?? $request->input('month');
         $year = $request->input('filter_year') ?? $request->input('year');
@@ -68,6 +64,8 @@ class AdminRegistrationController extends Controller
         if ($year !== null && $year !== '') {
             $query->whereYear('injection_date', (int) $year);
         }
+
+
 
         $registrations = $query->latest('id')->paginate(20)->withQueryString();
         $isSuperAdmin = AdminContext::isSuperAdmin();

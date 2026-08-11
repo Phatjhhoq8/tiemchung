@@ -26,42 +26,8 @@
             </select>
         </div>
 
-        @php
-            $selectedDay = request('filter_day') ?? request('day');
-            $selectedMonth = request('filter_month') ?? request('month');
-            $selectedYear = request('filter_year') ?? request('year');
-            $currentYear = (int) date('Y');
-        @endphp
-        <div style="flex: 0 1 100px;">
-            <label class="form-label-modern" for="filter_day" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Ngày</label>
-            <select class="form-control-modern" id="filter_day" name="filter_day">
-                <option value="">Tất cả</option>
-                @for($d = 1; $d <= 31; $d++)
-                    <option value="{{ $d }}" {{ (string)$selectedDay === (string)$d ? 'selected' : '' }}>Ngày {{ $d }}</option>
-                @endfor
-            </select>
-        </div>
-        <div style="flex: 0 1 110px;">
-            <label class="form-label-modern" for="filter_month" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Tháng</label>
-            <select class="form-control-modern" id="filter_month" name="filter_month">
-                <option value="">Tất cả</option>
-                @for($m = 1; $m <= 12; $m++)
-                    <option value="{{ $m }}" {{ (string)$selectedMonth === (string)$m ? 'selected' : '' }}>Tháng {{ $m }}</option>
-                @endfor
-            </select>
-        </div>
-        <div style="flex: 0 1 100px;">
-            <label class="form-label-modern" for="filter_year" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Năm</label>
-            <select class="form-control-modern" id="filter_year" name="filter_year">
-                <option value="">Tất cả</option>
-                @for($y = $currentYear + 1; $y >= 2023; $y--)
-                    <option value="{{ $y }}" {{ (string)$selectedYear === (string)$y ? 'selected' : '' }}>{{ $y }}</option>
-                @endfor
-            </select>
-        </div>
-
         <button type="submit" class="btn-modern btn-modern-primary" style="height: 42px;">Lọc</button>
-        @if(request()->hasAny(['search', 'is_active', 'filter_day', 'day', 'filter_month', 'month', 'filter_year', 'year']))
+        @if(request()->hasAny(['search', 'is_active']))
             <a href="{{ route('admin.centers.index') }}" class="btn-modern btn-modern-secondary" style="height: 42px; display: inline-flex; align-items: center; text-decoration: none;">Xóa lọc</a>
         @endif
     </form>

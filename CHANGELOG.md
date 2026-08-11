@@ -1,5 +1,13 @@
 # Release Notes
 
+## [v6.4.9] - 2026-08-11
+
+### Refined Filter Bar UX & Removal of Cluttered Dropdowns
+
+* **Replaced Cluttered 3-Select Dropdowns (`NGÀY`, `THÁNG`, `NĂM`) with Medicare DatePickers**:
+  - **Removed Redundant Select Elements**: Eliminated the outdated 3-dropdown selects (`filter_day`, `filter_month`, `filter_year`) across Admin Registrations, Customers, Consultation Leads, and Centers views.
+  - **Streamlined Date Range Filtering**: Implemented intuitive `Từ ngày` (`from_date`) and `Đến ngày` (`to_date`) Medicare DatePickers, eliminating invalid calendar combinations (e.g. Feb 31st) while retaining full backward compatibility in all Admin Controllers.
+
 ## [v6.4.8] - 2026-08-11
 
 ### UX & Layout Separation Upgrade

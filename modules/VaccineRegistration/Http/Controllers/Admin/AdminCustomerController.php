@@ -39,6 +39,13 @@ class AdminCustomerController extends Controller
             });
         }
 
+        if ($request->filled('from_date')) {
+            $query->whereDate('customers.created_at', '>=', $request->input('from_date'));
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('customers.created_at', '<=', $request->input('to_date'));
+        }
+
         $day = $request->input('filter_day') ?? $request->input('day');
         $month = $request->input('filter_month') ?? $request->input('month');
         $year = $request->input('filter_year') ?? $request->input('year');
