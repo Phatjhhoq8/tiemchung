@@ -48,7 +48,7 @@
                     <th>Quyền</th>
                     <th>Chi nhánh</th>
                     <th>Trạng thái</th>
-                    <th style="text-align:center; width:180px;">Hành động</th>
+                    <th style="text-align: right; width: 160px;">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -70,17 +70,13 @@
                                 {{ $user->is_active ? 'Hoạt động' : 'Đã khóa' }}
                             </span>
                         </td>
-                        <td style="text-align: center;">
-                            <div style="display:inline-flex; gap:8px; justify-content: center; width: 100%;">
-                                <a href="{{ route('admin.users.edit', $user) }}" class="btn-action-sm" title="Chỉnh sửa" style="width: 32px; height: 32px; justify-content: center; padding: 0;">
-                                    <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
-                                </a>
-                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" data-confirm="Bạn có chắc chắn muốn xóa tài khoản này?" style="margin:0;">
+                        <td style="text-align: right; white-space: nowrap;">
+                            <div style="display: inline-flex; gap: 6px; justify-content: flex-end;">
+                                <a href="{{ route('admin.users.edit', $user) }}" class="btn-action-sm">Sửa</a>
+                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" data-confirm="Bạn có chắc chắn muốn xóa tài khoản này?" style="margin: 0;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-action-sm btn-action-danger" title="Xóa" style="width: 32px; height: 32px; justify-content: center; padding: 0;">
-                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
-                                    </button>
+                                    <button type="submit" class="btn-action-sm btn-action-danger">Xóa</button>
                                 </form>
                             </div>
                         </td>

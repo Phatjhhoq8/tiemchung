@@ -56,8 +56,8 @@
                     <th style="width: 130px; text-align: center;">Hình ảnh</th>
                     <th>Tiêu đề bài viết</th>
                     <th style="width: 180px;">Chuyên mục</th>
-                    <th style="width: 140px; text-align: center;">Trạng thái</th>
-                    <th style="width: 180px; text-align: center;">Thao tác</th>
+                    <th style="text-align: center; width: 140px;">Trạng thái</th>
+                    <th style="text-align: right; width: 160px;">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -80,17 +80,13 @@
                                 <span class="badge-modern badge-modern-danger">Ẩn</span>
                             @endif
                         </td>
-                        <td style="text-align: center;">
-                            <div style="display: inline-flex; gap: 8px; justify-content: center; align-items: center; width: 100%;">
-                                <a href="{{ route('admin.articles.edit', $article->id) }}" class="btn-action-sm" title="Chỉnh sửa" style="width: 32px; height: 32px; justify-content: center; padding: 0;">
-                                    <i data-lucide="edit-2" style="width: 13px; height: 13px;"></i>
-                                </a>
+                        <td style="text-align: right; white-space: nowrap;">
+                            <div style="display: inline-flex; gap: 6px; justify-content: flex-end;">
+                                <a href="{{ route('admin.articles.edit', $article->id) }}" class="btn-action-sm">Sửa</a>
                                 <form action="{{ route('admin.articles.destroy', $article->id) }}" method="POST" data-confirm="Bạn có chắc chắn muốn xóa bài viết này?" style="margin: 0;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-action-sm btn-action-danger" title="Xóa" style="width: 32px; height: 32px; justify-content: center; padding: 0;">
-                                        <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
-                                    </button>
+                                    <button type="submit" class="btn-action-sm btn-action-danger">Xóa</button>
                                 </form>
                             </div>
                         </td>

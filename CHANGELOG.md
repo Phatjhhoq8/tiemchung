@@ -1,5 +1,13 @@
 # Release Notes
 
+## [v6.5.1] - 2026-08-11
+
+### System-wide Admin Action Button Clusters Standardization
+
+* **Harmonized Action Columns Across All Admin Tables**:
+  - **Standardized Right-Aligned Table Action Columns**: Re-aligned `Thao tác` action columns across all admin tables (`admin/registrations/_table`, `admin/leads/_table`, `admin/customers/_table`, `admin/centers/_table`, `admin/banners/index`, `admin/articles/index`, `admin/users/index`, `admin/audit-logs/index`) strictly to the right boundary with `text-align: right; white-space: nowrap;`.
+  - **Consistent Button Sizing & Palette**: Unified all row action buttons (`Chi tiết`, `Sửa`, `Xóa`) to 30px height, 6px border-radius, clean 12px font size, and brand-approved Medicare colors (Medicare Navy `#004b8f` for primary actions, Medicare Red `#c8102e` for delete/danger actions).
+
 ## [v6.5.0] - 2026-08-11
 
 ### Comprehensive UI/UX Standardization Across All Schedule Views

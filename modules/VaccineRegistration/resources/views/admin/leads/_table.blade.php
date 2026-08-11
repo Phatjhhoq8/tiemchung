@@ -30,7 +30,7 @@
                     <th>Trung tâm</th>
                     <th>Trạng thái</th>
                     <th>Thời gian</th>
-                    <th>Hành động</th>
+                    <th style="text-align: right;">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -53,8 +53,8 @@
                             @endif
                         </td>
                         <td>{{ $lead->created_at->format('H:i d/m/Y') }}</td>
-                        <td>
-                            <a href="{{ route('admin.leads.show', $lead->id) }}" class="btn-modern btn-modern-secondary" style="padding: 4px 12px; font-size: 12px;">Xem</a>
+                        <td style="text-align: right; white-space: nowrap;">
+                            <a href="{{ route('admin.leads.show', $lead->id) }}" class="btn-action-sm">Xem chi tiết</a>
                         </td>
                     </tr>
                 @endforeach

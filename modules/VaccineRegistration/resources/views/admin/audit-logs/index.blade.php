@@ -81,7 +81,7 @@
                     <th>Hành động</th>
                     <th>Tài nguyên</th>
                     <th>IP</th>
-                    <th style="text-align:center;">Chi tiết</th>
+                    <th style="text-align: right;">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -101,10 +101,8 @@
                             <small style="display:block; color:var(--text-muted);">ID: {{ $auditLog->resource_id }}</small>
                         </td>
                         <td>{{ $auditLog->ip_address ?? '-' }}</td>
-                        <td style="text-align:center;">
-                            <a class="btn-action-sm" href="{{ route('admin.audit-logs.show', $auditLog) }}" title="Xem chi tiết">
-                                <i data-lucide="eye" style="width:14px; height:14px;"></i> Xem
-                            </a>
+                        <td style="text-align: right; white-space: nowrap;">
+                            <a class="btn-action-sm" href="{{ route('admin.audit-logs.show', $auditLog) }}">Chi tiết</a>
                         </td>
                     </tr>
                 @empty

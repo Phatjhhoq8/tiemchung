@@ -10,7 +10,7 @@
                     <th>Khách hàng</th>
                     <th>Số điện thoại</th>
                     <th>Số dư điểm</th>
-                    <th>Thao tác</th>
+                    <th style="text-align: right;">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -19,7 +19,7 @@
                         <td style="font-weight:700;">{{ $customer->name }}</td>
                         <td>{{ \Modules\VaccineRegistration\Support\PhoneNormalizer::display($customer->phone) }}</td>
                         <td style="font-weight:700; color:var(--primary-color);">{{ number_format((int) $customer->point_transactions_sum_points) }} điểm</td>
-                        <td><a class="btn-action-sm" href="{{ route('admin.customers.show', $customer) }}">Chi tiết</a></td>
+                        <td style="text-align: right; white-space: nowrap;"><a class="btn-action-sm" href="{{ route('admin.customers.show', $customer) }}">Chi tiết</a></td>
                     </tr>
                 @endforeach
             </tbody>

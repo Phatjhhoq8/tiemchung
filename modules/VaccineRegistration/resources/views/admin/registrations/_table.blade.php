@@ -3,7 +3,7 @@
 @else
     <div class="table-responsive-modern">
         <table class="table-modern">
-            <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Chi nhánh</th><th>Khung giờ</th><th>Tổng tiền</th><th>Lịch hẹn</th><th>Thanh toán</th><th></th></tr></thead>
+            <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Chi nhánh</th><th>Khung giờ</th><th>Tổng tiền</th><th>Lịch hẹn</th><th>Thanh toán</th><th style="text-align: right;">Thao tác</th></tr></thead>
             <tbody>
                 @foreach($registrations as $registration)
                     <tr>
@@ -14,7 +14,7 @@
                         <td>{{ number_format($registration->total_price) }} đ</td>
                         <td>{{ $registration->bookingStatusLabel() }}</td>
                         <td>{{ $registration->paymentStatusLabel() }}</td>
-                        <td><a class="btn-action-sm" href="{{ route('admin.registrations.show', $registration) }}">Chi tiết</a></td>
+                        <td style="text-align: right; white-space: nowrap;"><a class="btn-action-sm" href="{{ route('admin.registrations.show', $registration) }}">Chi tiết</a></td>
                     </tr>
                 @endforeach
             </tbody>
