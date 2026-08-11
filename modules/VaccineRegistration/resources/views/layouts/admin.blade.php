@@ -1377,7 +1377,20 @@
 
         // ===== GLOBAL MEDICARE CUSTOM DROPDOWN INITIALIZER =====
         function initGlobalMedicareCustomDropdowns() {
-            document.querySelectorAll('select:not(.medicare-select-processed):not(.no-custom-select)').forEach(selectEl => {
+            document.querySelectorAll('select:not(.no-custom-select)').forEach(selectEl => {
+                if (selectEl.classList.contains('medicare-select-processed')) {
+                    const oldWrapper = selectEl.closest('.medicare-select-wrapper');
+                    if (oldWrapper && selectEl.updateMedicareCustomSelect) {
+                        selectEl.updateMedicareCustomSelect();
+                        return;
+                    }
+                    if (oldWrapper) {
+                        oldWrapper.parentNode.insertBefore(selectEl, oldWrapper);
+                        oldWrapper.remove();
+                        selectEl.classList.remove('medicare-select-processed');
+                    }
+                }
+
                 selectEl.classList.add('medicare-select-processed');
                 
                 selectEl.style.display = 'none';
@@ -1393,7 +1406,7 @@
 
                 const trigger = document.createElement('div');
                 trigger.className = selectEl.className || 'form-control-modern';
-                trigger.style.cursor = 'pointer';
+                trigger.style.cursor = selectEl.disabled ? 'not-allowed' : 'pointer';
                 trigger.style.display = 'flex';
                 trigger.style.alignItems = 'center';
                 trigger.style.justifyContent = 'space-between';
@@ -1465,6 +1478,16 @@
                 popup.style.userSelect = 'none';
                 wrapper.appendChild(popup);
 
+                function updateState() {
+                    if (selectEl.disabled) {
+                        trigger.style.backgroundColor = '#f1f5f9';
+                        trigger.style.cursor = 'not-allowed';
+                    } else {
+                        trigger.style.backgroundColor = '#ffffff';
+                        trigger.style.cursor = 'pointer';
+                    }
+                }
+
                 function updateAlignment() {
                     const text = labelSpan.textContent ? labelSpan.textContent.trim() : '';
                     const isLongText = text.length > 14 || (trigger.offsetWidth && trigger.offsetWidth > 170);
@@ -1483,10 +1506,13 @@
 
                 function renderOptions() {
                     popup.innerHTML = '';
+                    updateState();
                     const options = Array.from(selectEl.options);
                     const selectedOpt = selectEl.options[selectEl.selectedIndex] || options[0];
                     if (selectedOpt) {
                         labelSpan.textContent = selectedOpt.textContent.trim();
+                    } else {
+                        labelSpan.textContent = '';
                     }
                     updateAlignment();
 
@@ -1529,24 +1555,25 @@
                     });
                 }
 
+                selectEl.updateMedicareCustomSelect = renderOptions;
                 renderOptions();
 
-                if (selectEl.disabled) return;
-
                 trigger.addEventListener('click', function(e) {
+                    if (selectEl.disabled) return;
                     e.stopPropagation();
                     const isExpanded = popup.style.display === 'block';
                     document.querySelectorAll('.medicare-select-wrapper div[style*="position: absolute"]').forEach(p => {
                         p.style.display = 'none';
                     });
-                    document.querySelectorAll('.medicare-datepicker-wrapper div[style*="position: absolute"]').forEach(p => {
-                        p.style.display = 'none';
+                    document.querySelectorAll('.medicare-select-arrow-icon').forEach(icon => {
+                        icon.style.transform = 'rotate(0deg)';
                     });
 
-                    if (!isExpanded) {
-                        popup.style.display = 'block';
-                        arrowSvg.style.transform = 'rotate(180deg)';
+                    popup.style.display = isExpanded ? 'none' : 'block';
+                    arrowSvg.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
 
+                    if (!isExpanded) {
+                        renderOptions();
                         const triggerRect = trigger.getBoundingClientRect();
                         const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
 
@@ -1557,9 +1584,6 @@
                             popup.style.left = '0';
                             popup.style.right = 'auto';
                         }
-                    } else {
-                        popup.style.display = 'none';
-                        arrowSvg.style.transform = 'rotate(0deg)';
                     }
                 });
 

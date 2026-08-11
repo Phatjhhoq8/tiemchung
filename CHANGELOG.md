@@ -1,5 +1,13 @@
 # Release Notes
 
+## [v6.5.4] - 2026-08-11
+
+### System-Wide Custom Select & Datepicker Standardization Across Client & Admin Pages
+
+* **Comprehensive Dropdown & Datepicker Component Refactoring**:
+  - **Dynamic Re-rendering for Client & Admin Dropdowns (`public/js/app.js`, `layouts/admin.blade.php`)**: Enhanced `initGlobalMedicareCustomDropdowns()` and `initGlobalMedicareDatePickers()` to automatically convert all native `<select>` dropdowns and `<input type="date">` fields into floating Medicare custom card components with 8px rounded option cards, soft Medicare red highlight for active options, animated arrow indicators, and dynamic re-rendering capability when option lists update asynchronously.
+  - **Zero Browser Native Popups**: Replaced all native browser select popups and `mm/dd/yyyy` datepickers across both public client forms (`/register`, SPA Modal, `/vaccines`, `/disease`) and admin control panels (`/admin/registrations`, `/admin/centers`, `/admin/leads`, `/admin/users`, `/admin/audit-logs`).
+
 ## [v6.5.3] - 2026-08-11
 
 ### Precise Button & Tab Centering Across SPA Modal & Public Lookup Forms
