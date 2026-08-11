@@ -3619,6 +3619,7 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
     font-size: 14px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     transition: all 0.2s;
     box-shadow: 0 4px 12px rgba(200, 16, 46, 0.15);

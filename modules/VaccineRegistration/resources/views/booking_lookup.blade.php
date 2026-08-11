@@ -20,7 +20,7 @@
                 <input id="registration_code" name="registration_code" type="text" value="{{ old('registration_code', $registration_code ?? '') }}" placeholder="Nhập để xem đầy đủ thông tin" style="min-height: 46px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 14px; font-size: 1rem; width: 100%;">
             </div>
             <div style="align-self: flex-end; width: clamp(100px, 100%, 150px); min-height: 46px;">
-                <button type="submit" class="btn-primary-header" style="min-height: 46px; border: 0; cursor: pointer; width: 100%; border-radius: 8px;"><i data-lucide="search" style="width: 17px; height: 17px;"></i> Tra cứu</button>
+                <button type="submit" class="btn-primary-header" style="min-height: 46px; border: 0; cursor: pointer; width: 100%; border-radius: 8px; justify-content: center;"><i data-lucide="search" style="width: 17px; height: 17px;"></i> Tra cứu</button>
             </div>
         </form>
 

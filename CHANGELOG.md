@@ -1,5 +1,13 @@
 # Release Notes
 
+## [v6.5.3] - 2026-08-11
+
+### Precise Button & Tab Centering Across SPA Modal & Public Lookup Forms
+
+* **Centered All Form Action Buttons & SPA Navigation Tabs**:
+  - **SPA Register Modal Alignment (`public/js/app.js`, `register.blade.php`)**: Center-aligned modal navigation tabs (`1. Đăng ký tiêm chủng...` / `2. Gửi yêu cầu...`), the `+ Thêm người tiêm khác` action button, and the `Hoàn tất đặt lịch` checkout submit button.
+  - **Public Booking Lookup Form (`booking_lookup.blade.php`, `public/css/style.css`)**: Centered icon and label inside `.btn-primary-header` button with `justify-content: center;`.
+
 ## [v6.5.2] - 2026-08-11
 
 ### Full Expansion of Button & Form Element Standardization to Public User Pages

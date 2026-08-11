@@ -875,7 +875,7 @@ function renderSpaRegisterForm(data) {
     });
 
     body.innerHTML = `
-        <div style="display: flex; gap: 24px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: center; gap: 24px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px;">
             <button type="button" onclick="switchSpaModalTab('register')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: var(--primary-color, #c8102e); border-bottom: 3px solid var(--primary-color, #c8102e); transition: all 0.2s; margin-bottom: -2px;">
                 1. Đăng ký tiêm chủng (vắc xin đã chọn)
             </button>
@@ -893,9 +893,9 @@ function renderSpaRegisterForm(data) {
                     <!-- Patients List Container -->
                     <div id="spaPatientsContainer" style="display: flex; flex-direction: column; gap: 20px;"></div>
 
-                    <!-- Add Patient Action Button -->
-                    <div style="display: flex; justify-content: flex-start; margin-top: 4px; margin-bottom: 8px;">
-                        <button type="button" onclick="addSpaPatientField()" style="background: none; border: 1.5px dashed var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13.5px; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                    <!-- Add Patient Action Button (Centered) -->
+                    <div style="display: flex; justify-content: center; margin-top: 4px; margin-bottom: 8px;">
+                        <button type="button" onclick="addSpaPatientField()" style="background: none; border: 1.5px dashed var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13.5px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             Thêm người tiêm khác
                         </button>
@@ -956,8 +956,9 @@ function renderSpaRegisterForm(data) {
                     </div>
                     ${data.schedules.length === 0 ? '<small style="color: #b91c1c; text-align: left; margin-top: 2px; display: block;">Chi nhánh hiện chưa mở lịch tiêm. Vui lòng chọn chi nhánh khác.</small>' : ''}
 
-                    <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
-                        <button type="submit" id="spaSubmitBtn" style="background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px;">
+                    <!-- Submit Button (Centered) -->
+                    <div style="display: flex; justify-content: center; margin-top: 14px;">
+                        <button type="submit" id="spaSubmitBtn" style="background: var(--primary-color, #c8102e); color: #fff; border: none; padding: 12px 32px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14.5px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 220px;">
                             Hoàn tất đặt lịch
                         </button>
                     </div>

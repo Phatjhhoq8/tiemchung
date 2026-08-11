@@ -260,9 +260,9 @@
                     <!-- Patients List Container -->
                     <div id="patientsContainer" style="display: flex; flex-direction: column; gap: 20px;"></div>
 
-                    <!-- Add Patient Action Button -->
-                    <div style="display: flex; justify-content: flex-start; margin-top: 10px; margin-bottom: 24px;">
-                        <button type="button" onclick="addPatientField()" style="background: none; border: 1.5px dashed var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13.5px; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                    <!-- Add Patient Action Button (Centered) -->
+                    <div style="display: flex; justify-content: center; margin-top: 10px; margin-bottom: 24px;">
+                        <button type="button" onclick="addPatientField()" style="background: none; border: 1.5px dashed var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13.5px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             Thêm người tiêm khác
                         </button>
