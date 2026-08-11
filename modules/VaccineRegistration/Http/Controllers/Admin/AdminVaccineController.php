@@ -50,48 +50,92 @@ class AdminVaccineController extends Controller
 
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
         $selectedCenterId = AdminContext::resolveListCenterId($request);
-        $query = Vaccine::forAdminCenters($selectedCenterId);
 
-        // Tìm kiếm theo tên hoặc bệnh phòng ngừa
-        if (! empty($filters['search'])) {
-            $search = trim($filters['search']);
-            $query->where(function ($q) use ($search) {
-                $q->where('vaccines.name', 'like', '%'.$search.'%')
-                    ->orWhere('vaccines.disease_prevention', 'like', '%'.$search.'%')
-                    ->orWhere('vaccines.category', 'like', '%'.$search.'%')
-                    ->orWhere('vaccines.manufacturer', 'like', '%'.$search.'%')
-                    ->orWhere('centers.name', 'like', '%'.$search.'%');
-            });
+        if ($selectedCenterId) {
+            $query = Vaccine::forAdminCenters($selectedCenterId);
+
+            // Tìm kiếm theo tên hoặc bệnh phòng ngừa
+            if (! empty($filters['search'])) {
+                $search = trim($filters['search']);
+                $query->where(function ($q) use ($search) {
+                    $q->where('vaccines.name', 'like', '%'.$search.'%')
+                        ->orWhere('vaccines.disease_prevention', 'like', '%'.$search.'%')
+                        ->orWhere('vaccines.category', 'like', '%'.$search.'%')
+                        ->orWhere('vaccines.manufacturer', 'like', '%'.$search.'%')
+                        ->orWhere('centers.name', 'like', '%'.$search.'%');
+                });
+            }
+
+            // Lọc theo tình trạng kho
+            if (! empty($filters['stock_status'])) {
+                $query->where('center_vaccines.stock_status', $filters['stock_status']);
+            }
+
+            // Lọc theo danh mục bệnh
+            if (! empty($filters['category'])) {
+                $query->where('vaccines.category', $filters['category']);
+            }
+
+            // Lọc vắc xin nổi bật
+            if (! empty($filters['featured'])) {
+                $query->where('center_vaccines.is_featured', true);
+            }
+
+            if (isset($filters['min_quantity']) && $filters['min_quantity'] !== null) {
+                $query->where('center_vaccines.stock_quantity', '>=', $filters['min_quantity']);
+            }
+
+            if (isset($filters['max_quantity']) && $filters['max_quantity'] !== null) {
+                $query->where('center_vaccines.stock_quantity', '<=', $filters['max_quantity']);
+            }
+
+            $vaccines = $query->orderBy('vaccines.id')
+                ->orderBy('centers.sort_order')
+                ->orderBy('centers.id')
+                ->paginate(15)
+                ->withQueryString();
+        } else {
+            $query = Vaccine::query()
+                ->where('vaccines.is_active', true)
+                ->withSum(['centerVaccines as stock_quantity' => function ($q) {
+                    $q->whereHas('center', fn ($c) => $c->where('is_active', true));
+                }], 'stock_quantity');
+
+            // Tìm kiếm theo tên hoặc bệnh phòng ngừa
+            if (! empty($filters['search'])) {
+                $search = trim($filters['search']);
+                $query->where(function ($q) use ($search) {
+                    $q->where('vaccines.name', 'like', '%'.$search.'%')
+                        ->orWhere('vaccines.disease_prevention', 'like', '%'.$search.'%')
+                        ->orWhere('vaccines.category', 'like', '%'.$search.'%')
+                        ->orWhere('vaccines.manufacturer', 'like', '%'.$search.'%');
+                });
+            }
+
+            // Lọc theo danh mục bệnh
+            if (! empty($filters['category'])) {
+                $query->where('vaccines.category', $filters['category']);
+            }
+
+            // Lọc vắc xin nổi bật
+            if (! empty($filters['featured'])) {
+                $query->where('vaccines.is_featured', true);
+            }
+
+            if (isset($filters['min_quantity']) && $filters['min_quantity'] !== null) {
+                $minQty = (int) $filters['min_quantity'];
+                $query->whereRaw('(SELECT COALESCE(SUM(cv.stock_quantity), 0) FROM center_vaccines cv JOIN centers c ON c.id = cv.center_id WHERE cv.vaccine_id = vaccines.id AND c.is_active = 1) >= ' . $minQty);
+            }
+
+            if (isset($filters['max_quantity']) && $filters['max_quantity'] !== null) {
+                $maxQty = (int) $filters['max_quantity'];
+                $query->whereRaw('(SELECT COALESCE(SUM(cv.stock_quantity), 0) FROM center_vaccines cv JOIN centers c ON c.id = cv.center_id WHERE cv.vaccine_id = vaccines.id AND c.is_active = 1) <= ' . $maxQty);
+            }
+
+            $vaccines = $query->orderBy('vaccines.id')
+                ->paginate(15)
+                ->withQueryString();
         }
-
-        // Lọc theo tình trạng kho
-        if (! empty($filters['stock_status'])) {
-            $query->where('center_vaccines.stock_status', $filters['stock_status']);
-        }
-
-        // Lọc theo danh mục bệnh
-        if (! empty($filters['category'])) {
-            $query->where('vaccines.category', $filters['category']);
-        }
-
-        // Lọc vắc xin nổi bật
-        if (! empty($filters['featured'])) {
-            $query->where('center_vaccines.is_featured', true);
-        }
-
-        if (isset($filters['min_quantity']) && $filters['min_quantity'] !== null) {
-            $query->where('center_vaccines.stock_quantity', '>=', $filters['min_quantity']);
-        }
-
-        if (isset($filters['max_quantity']) && $filters['max_quantity'] !== null) {
-            $query->where('center_vaccines.stock_quantity', '<=', $filters['max_quantity']);
-        }
-
-        $vaccines = $query->orderBy('vaccines.id')
-            ->orderBy('centers.sort_order')
-            ->orderBy('centers.id')
-            ->paginate(15)
-            ->withQueryString();
 
         // Lấy danh sách danh mục để hiển thị dropdown lọc
         $categories = Vaccine::whereNotNull('category')

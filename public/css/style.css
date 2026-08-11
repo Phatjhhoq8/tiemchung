@@ -5314,3 +5314,29 @@ div.section-badge,
     color: var(--primary-color, #c8102e);
     flex-shrink: 0;
 }
+
+/* Hide ugly default browser scrollbars for SPA Modals & Custom Popups */
+.spa-modal-overlay,
+.spa-modal-card,
+#spaRegisterBody,
+#spaRegisterModal,
+#vaccineDetailModal,
+#modalDetailContent,
+.medicare-select-popup,
+.medicare-datepicker-popup {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.spa-modal-overlay::-webkit-scrollbar,
+.spa-modal-card::-webkit-scrollbar,
+#spaRegisterBody::-webkit-scrollbar,
+#spaRegisterModal::-webkit-scrollbar,
+#vaccineDetailModal::-webkit-scrollbar,
+#modalDetailContent::-webkit-scrollbar,
+.medicare-select-popup::-webkit-scrollbar,
+.medicare-datepicker-popup::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}

@@ -12,30 +12,30 @@ use Modules\VaccineRegistration\Models\Slot;
 
 class RegistrationPaymentService
 {
-    public const VND_PER_EARNED_POINT = 10000;
-    public const VND_PER_REDEEMED_POINT = 100;
-    public const MAX_REDEEM_PERCENT = 50;
-
     private readonly BranchStockService $stockService;
+    private readonly LoyaltyService $loyaltyService;
 
-    public function __construct(?BranchStockService $stockService = null)
-    {
+    public function __construct(
+        ?BranchStockService $stockService = null,
+        ?LoyaltyService $loyaltyService = null
+    ) {
         $this->stockService = $stockService ?? app(BranchStockService::class);
+        $this->loyaltyService = $loyaltyService ?? app(LoyaltyService::class);
+    }
+
+    public function getLoyaltySettings(?int $centerId = null): array
+    {
+        return $this->loyaltyService->getLoyaltySettings($centerId);
+    }
+
+    public function calculateAvailablePoints(Customer $customer): int
+    {
+        return $this->loyaltyService->calculateAvailablePoints($customer);
     }
 
     public function quote(Customer $customer, Registration $registration): array
     {
-        $balance = (int) PointTransaction::where('customer_id', $customer->id)->sum('points');
-        $maximumPoints = intdiv(
-            (int) floor(((int) $registration->total_price * self::MAX_REDEEM_PERCENT) / 100),
-            self::VND_PER_REDEEMED_POINT
-        );
-
-        return [
-            'balance' => $balance,
-            'maximum_points' => $maximumPoints,
-            'available_points' => min(max(0, $balance), $maximumPoints),
-        ];
+        return $this->loyaltyService->quote($customer, $registration);
     }
 
     public function settle(int $registrationId, int $redeemPoints, ?User $actor): Registration
@@ -66,46 +66,34 @@ class RegistrationPaymentService
                 ]);
             }
 
-            $quote = $this->quote($customer, $registration);
+            // Đọc snapshot settings một lần duy nhất tại đây như phản hồi số 2
+            $settings = $this->loyaltyService->getLoyaltySettings($registration->center_id);
+
+            $quote = $this->loyaltyService->quote($customer, $registration, $settings);
             if ($redeemPoints < 0 || $redeemPoints > $quote['available_points']) {
                 throw ValidationException::withMessages([
-                    'redeem_points' => 'Số điểm sử dụng vượt quá số dư hoặc giới hạn 50% của đơn.',
+                    'redeem_points' => 'Số điểm sử dụng vượt quá số dư hoặc giới hạn tối đa của đơn.',
                 ]);
             }
 
-            $discount = $redeemPoints * self::VND_PER_REDEEMED_POINT;
+            $discount = 0;
+            if ($settings['enabled'] && $redeemPoints > 0) {
+                if ($settings['redeem_value_type'] === 'percent') {
+                    $bps = (int)$settings['redeem_percent_bps_per_point'];
+                    $discount = (int) floor($registration->total_price * ($bps * $redeemPoints) / 10000);
+                } else {
+                    $vndVal = (int)$settings['redeem_vnd_per_point'];
+                    $discount = (int) ($redeemPoints * $vndVal);
+                }
+            }
+
             $netPaid = (int) $registration->total_price - $discount;
-            $earnedPoints = intdiv($netPaid, self::VND_PER_EARNED_POINT);
 
-            if ($redeemPoints > 0) {
-                PointTransaction::firstOrCreate(
-                    ['source_key' => "registration:{$registration->id}:redeem"],
-                    [
-                        'customer_id' => $customer->id,
-                        'registration_id' => $registration->id,
-                        'center_id' => $registration->center_id,
-                        'created_by' => $actor?->id,
-                        'type' => PointTransaction::REDEEM,
-                        'points' => -$redeemPoints,
-                        'note' => 'Dùng điểm cho đơn ' . $registration->registration_code,
-                    ]
-                );
-            }
+            // Thực hiện giao dịch tiêu dùng điểm (Redeem)
+            $redeemTx = $this->loyaltyService->redeem($customer, $registration, $redeemPoints, $settings, $actor);
 
-            if ($earnedPoints > 0) {
-                PointTransaction::firstOrCreate(
-                    ['source_key' => "registration:{$registration->id}:earn"],
-                    [
-                        'customer_id' => $customer->id,
-                        'registration_id' => $registration->id,
-                        'center_id' => $registration->center_id,
-                        'created_by' => $actor?->id,
-                        'type' => PointTransaction::EARN,
-                        'points' => $earnedPoints,
-                        'note' => 'Tích điểm từ đơn ' . $registration->registration_code,
-                    ]
-                );
-            }
+            // Thực hiện giao dịch tích điểm (Earn)
+            $earnTx = $this->loyaltyService->earn($registration, $netPaid, $settings, $actor);
 
             $oldValues = [
                 'booking_status' => $registration->booking_status,
@@ -134,7 +122,7 @@ class RegistrationPaymentService
                 newValues: [
                     'payment_status' => Registration::PAYMENT_PAID,
                     'redeemed_points' => $redeemPoints,
-                    'earned_points' => $earnedPoints,
+                    'earned_points' => $earnTx ? $earnTx->points : 0,
                     'points_discount_amount' => $discount,
                 ],
                 centerId: $registration->center_id,
@@ -167,37 +155,9 @@ class RegistrationPaymentService
                 ]);
             }
 
-            $earned = PointTransaction::where('source_key', "registration:{$registration->id}:earn")->first();
-            if ($earned) {
-                PointTransaction::firstOrCreate(
-                    ['source_key' => "registration:{$registration->id}:earn-reversal"],
-                    [
-                        'customer_id' => $customer->id,
-                        'registration_id' => $registration->id,
-                        'center_id' => $registration->center_id,
-                        'created_by' => $actor?->id,
-                        'type' => PointTransaction::EARN_REVERSAL,
-                        'points' => -$earned->points,
-                        'note' => 'Thu hồi điểm do hoàn đơn ' . $registration->registration_code,
-                    ]
-                );
-            }
-
-            $redeemed = PointTransaction::where('source_key', "registration:{$registration->id}:redeem")->first();
-            if ($redeemed) {
-                PointTransaction::firstOrCreate(
-                    ['source_key' => "registration:{$registration->id}:redeem-refund"],
-                    [
-                        'customer_id' => $customer->id,
-                        'registration_id' => $registration->id,
-                        'center_id' => $registration->center_id,
-                        'created_by' => $actor?->id,
-                        'type' => PointTransaction::REDEEM_REFUND,
-                        'points' => abs($redeemed->points),
-                        'note' => 'Hoàn lại điểm đã dùng cho đơn ' . $registration->registration_code,
-                    ]
-                );
-            }
+            // Gọi các method đảo điểm và khôi phục điểm theo đúng allocations từ LoyaltyService
+            $reversalTx = $this->loyaltyService->earnReversal($registration, $actor);
+            $refundTx = $this->loyaltyService->refund($registration, $actor);
 
             if ($registration->booking_status !== Registration::BOOKING_NO_SHOW) {
                 $this->releaseSlot($registration);

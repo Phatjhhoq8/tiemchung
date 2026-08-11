@@ -18,7 +18,7 @@
                     <tr>
                         <td style="font-weight:700;">{{ $customer->name }}</td>
                         <td>{{ \Modules\VaccineRegistration\Support\PhoneNormalizer::display($customer->phone) }}</td>
-                        <td style="font-weight:700; color:var(--primary-color);">{{ number_format((int) $customer->point_transactions_sum_points) }} điểm</td>
+                        <td style="font-weight:700; color:var(--primary-color);">{{ number_format($customer->pointBalance()) }} điểm</td>
                         <td style="text-align: right; white-space: nowrap;"><a class="btn-action-sm" href="{{ route('admin.customers.show', $customer) }}">Chi tiết</a></td>
                     </tr>
                 @endforeach

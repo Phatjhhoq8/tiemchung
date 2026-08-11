@@ -67,7 +67,7 @@
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
         <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">
             Danh sách Vắc xin 
-            <span style="font-size: 14px; font-weight: 400; color: var(--text-muted);">({{ $vaccines->total() }} {{ ($isSuperAdmin ?? false) && $selectedCenterId === null ? 'bản ghi theo chi nhánh' : 'sản phẩm' }})</span>
+            <span style="font-size: 14px; font-weight: 400; color: var(--text-muted);">({{ $vaccines->total() }} {{ !empty($selectedCenterId) ? 'sản phẩm tại chi nhánh' : 'vắc xin toàn hệ thống' }})</span>
         </h2>
         @if($isSuperAdmin ?? false)
             <a href="{{ route('admin.vaccines.create', $selectedCenterId ? ['center_id' => $selectedCenterId] : []) }}" class="btn-modern btn-modern-primary">

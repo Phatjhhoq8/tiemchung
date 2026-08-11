@@ -17,7 +17,7 @@
             </div>
             <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 4px;">
                 <label for="registration_code" style="font-size: .85rem; font-weight: 700; color: #475569;">Mã đặt lịch (Không bắt buộc)</label>
-                <input id="registration_code" name="registration_code" type="text" value="{{ old('registration_code', $registration_code ?? '') }}" placeholder="Nhập để xem đầy đủ thông tin" style="min-height: 46px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 14px; font-size: 1rem; width: 100%;">
+                <input id="registration_code" name="registration_code" type="text" value="{{ old('registration_code', $registration_code ?? '') }}" placeholder="Nhập để xem đích danh 1 lịch hẹn" style="min-height: 46px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 14px; font-size: 1rem; width: 100%;">
             </div>
             <div style="align-self: flex-end; width: clamp(100px, 100%, 150px); min-height: 46px;">
                 <button type="submit" class="btn-primary-header" style="min-height: 46px; border: 0; cursor: pointer; width: 100%; border-radius: 8px; justify-content: center;"><i data-lucide="search" style="width: 17px; height: 17px;"></i> Tra cứu</button>
@@ -30,21 +30,84 @@
     </section>
 
     @if($lookedUp && $registrations->isEmpty())
-        <div style="margin-top: 1.5rem; padding: 1.25rem; border: 1px solid #fde68a; border-radius: 8px; background: #fffbeb; color: #92400e;">
-            Chưa tìm thấy lịch hẹn với số điện thoại này. Vui lòng kiểm tra lại số đã dùng khi đặt lịch hoặc liên hệ chi nhánh để được hỗ trợ.
+        <div style="margin-top: 1.5rem; padding: 1.25rem; border: 1px solid #fde68a; border-radius: 12px; background: #fffbeb; color: #92400e; display: flex; align-items: center; gap: 10px;">
+            <i data-lucide="alert-circle" style="width: 22px; height: 22px; flex-shrink: 0; color: #d97706;"></i>
+            <div>
+                @if(!empty($registration_code))
+                    Không tìm thấy lịch hẹn khớp với mã <strong>{{ $registration_code }}</strong> và số điện thoại này. Vui lòng kiểm tra lại mã hoặc để trống ô mã để tra cứu toàn bộ lịch hẹn.
+                @else
+                    Chưa tìm thấy lịch hẹn với số điện thoại này. Vui lòng kiểm tra lại số đã dùng khi đặt lịch hoặc liên hệ chi nhánh để được hỗ trợ.
+                @endif
+            </div>
         </div>
     @endif
 
     @if($registrations->isNotEmpty())
-        <section style="margin-top: 1.75rem;">
-            <h2 style="margin: 0 0 1rem; color: #0f172a; font-size: 1.3rem;">Lịch hẹn và lịch sử đăng ký ({{ $registrations->count() }})</h2>
-            <div style="display: grid; gap: 1rem;">
+        <section style="margin-top: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 1.25rem;">
+                <div>
+                    <h2 style="margin: 0; color: #0f172a; font-size: 1.35rem; font-weight: 800;">
+                        @if(!empty($registration_code))
+                            Chi tiết lịch hẹn (Khớp mã: {{ $registration_code }})
+                        @else
+                            Danh sách lịch hẹn đã đăng ký ({{ $registrations->count() }})
+                        @endif
+                    </h2>
+                    @if(empty($registration_code))
+                        <p style="margin: 4px 0 0; color: #64748b; font-size: 0.9rem;">Thông tin cá nhân được bảo vệ. Nhập Mã đặt lịch vào ô tìm kiếm để mở khóa chi tiết.</p>
+                    @endif
+                </div>
+            </div>
+
+            @if(empty($registration_code) && $registrations->count() > 1)
+                <!-- Interactive Filter & Search Bar for multi-booking lists -->
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);">
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+                        <!-- Real-time text search -->
+                        <div style="position: relative; flex: 1 1 240px;">
+                            <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #94a3b8; pointer-events: none;"></i>
+                            <input type="text" id="lookupQuickSearch" placeholder="Lọc theo tên người tiêm, chi nhánh..." oninput="filterLookupCards()" style="width: 100%; padding: 8px 12px 8px 36px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; outline: none; box-sizing: border-box;">
+                        </div>
+
+                        <!-- Status filter pills -->
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="statusFilterPills">
+                            <button type="button" class="lookup-pill active" onclick="setLookupStatusFilter('all', this)" style="padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; border: 1px solid var(--primary-color, #c8102e); background: var(--primary-color, #c8102e); color: #fff; cursor: pointer; transition: all 0.2s;">
+                                Tất cả ({{ $registrations->count() }})
+                            </button>
+                            <button type="button" class="lookup-pill" onclick="setLookupStatusFilter('pending', this)" style="padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid #cbd5e1; background: #fff; color: #475569; cursor: pointer; transition: all 0.2s;">
+                                Chờ xác nhận
+                            </button>
+                            <button type="button" class="lookup-pill" onclick="setLookupStatusFilter('confirmed', this)" style="padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid #cbd5e1; background: #fff; color: #475569; cursor: pointer; transition: all 0.2s;">
+                                Đã xác nhận
+                            </button>
+                            <button type="button" class="lookup-pill" onclick="setLookupStatusFilter('completed', this)" style="padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid #cbd5e1; background: #fff; color: #475569; cursor: pointer; transition: all 0.2s;">
+                                Đã hoàn tất
+                            </button>
+                            <button type="button" class="lookup-pill" onclick="setLookupStatusFilter('cancelled', this)" style="padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid #cbd5e1; background: #fff; color: #475569; cursor: pointer; transition: all 0.2s;">
+                                Đã hủy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <div style="display: grid; gap: 1rem;" id="lookupCardsContainer">
                 @foreach($registrations as $registration)
-                    <article style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; background: #ffffff; box-shadow: 0 4px 16px rgba(15, 23, 42, .04);">
+                    <article class="lookup-result-card" 
+                             data-status="{{ $registration->booking_status }}" 
+                             data-search="{{ mb_strtolower($registration->patient_name . ' ' . $registration->center_name . ' ' . $registration->registration_code, 'UTF-8') }}"
+                             style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; background: #ffffff; box-shadow: 0 4px 16px rgba(15, 23, 42, .04); transition: all 0.2s;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
                             <div>
-                                <strong style="color: #0f172a; font-size: 1.05rem;">{{ $registration->display_name }}</strong>
-                                <div style="margin-top: 4px; color: #64748b; font-size: .9rem;">Mã phiếu: {{ $registration->display_code }}</div>
+                                <strong style="color: #0f172a; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                                    {{ $registration->display_name }}
+                                    @if(!$registration->is_masked)
+                                        <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; background: #ecfdf5; color: #059669; font-size: 11.5px; font-weight: 700;">
+                                            <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i> Khớp mã xác thực
+                                        </span>
+                                    @endif
+                                </strong>
+                                <div style="margin-top: 4px; color: #64748b; font-size: .9rem;">Mã phiếu: <strong>{{ $registration->display_code }}</strong></div>
                             </div>
                             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                                 <span style="padding: 5px 10px; border-radius: 6px; background: #fef2f2; color: #b91c1c; font-size: .82rem; font-weight: 700;">{{ $registration->bookingStatusLabel() }}</span>
@@ -73,14 +136,77 @@
                                 </button>
                             </div>
                         @elseif($registration->is_masked && $registration->payment_status === \Modules\VaccineRegistration\Models\Registration::PAYMENT_UNPAID && $registration->booking_status !== \Modules\VaccineRegistration\Models\Registration::BOOKING_CANCELLED)
-                            <div style="margin-top: 1rem; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 10px; background: #f8fafc; color: #475569; font-size: .85rem;">
-                                💡 Nhập **Mã đặt lịch** trong form tra cứu phía trên để xem chi tiết đầy đủ và sử dụng mã QR thanh toán.
+                            <div style="margin-top: 1rem; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; color: #475569; font-size: .85rem; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <span>💡 Nhập <strong>Mã đặt lịch</strong> trong ô tìm kiếm để xem chi tiết đầy đủ tên và bảng giá.</span>
+                                <button type="button" onclick="focusLookupCodeInput()" style="background: none; border: none; color: var(--primary-color); font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: underline;">
+                                    Điền mã tra cứu
+                                </button>
                             </div>
                         @endif
                     </article>
                 @endforeach
             </div>
+
+            <div id="lookupNoResultsMsg" style="display: none; margin-top: 1rem; padding: 1.5rem; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; text-align: center; color: #64748b; font-size: 14px;">
+                Không có lịch hẹn nào phù hợp với bộ lọc đã chọn.
+            </div>
         </section>
     @endif
 </div>
+
+<script>
+    let currentLookupStatus = 'all';
+
+    function setLookupStatusFilter(status, btn) {
+        currentLookupStatus = status;
+        document.querySelectorAll('.lookup-pill').forEach(p => {
+            p.style.background = '#fff';
+            p.style.color = '#475569';
+            p.style.borderColor = '#cbd5e1';
+            p.style.fontWeight = '600';
+        });
+        btn.style.background = 'var(--primary-color, #c8102e)';
+        btn.style.color = '#fff';
+        btn.style.borderColor = 'var(--primary-color, #c8102e)';
+        btn.style.fontWeight = '700';
+
+        filterLookupCards();
+    }
+
+    function filterLookupCards() {
+        const query = (document.getElementById('lookupQuickSearch')?.value || '').trim().toLowerCase();
+        const cards = document.querySelectorAll('.lookup-result-card');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const cardStatus = card.dataset.status || '';
+            const cardSearch = card.dataset.search || '';
+
+            const matchesStatus = currentLookupStatus === 'all' || cardStatus === currentLookupStatus;
+            const matchesQuery = !query || cardSearch.includes(query);
+
+            if (matchesStatus && matchesQuery) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        const noResults = document.getElementById('lookupNoResultsMsg');
+        if (noResults) {
+            noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+    }
+
+    function focusLookupCodeInput() {
+        const codeInput = document.getElementById('registration_code');
+        if (codeInput) {
+            codeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            codeInput.focus();
+            codeInput.style.borderColor = 'var(--primary-color, #c8102e)';
+            codeInput.style.boxShadow = '0 0 0 3px rgba(200, 16, 46, 0.15)';
+        }
+    }
+</script>
 @endsection

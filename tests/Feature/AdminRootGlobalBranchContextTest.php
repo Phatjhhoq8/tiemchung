@@ -107,20 +107,33 @@ class AdminRootGlobalBranchContextTest extends TestCase
         $response->assertViewHas('vaccines', function ($vaccines) {
             $rows = collect($vaccines->items())->where('id', $this->vaccine->id);
 
-            return $rows->count() === 2
-                && $rows->pluck('center_id')->map(fn ($id) => (int) $id)->sort()->values()->all()
-                    === collect([$this->centerA->id, $this->centerB->id])->sort()->values()->all();
+            return $rows->count() === 1
+                && (int) $rows->first()->stock_quantity === 15;
+        });
+
+        $branchResponse = $this->actingAsAdmin($this->superAdmin)->get(route('admin.vaccines.index', [
+            'center_id' => $this->centerA->id,
+            'search' => $this->vaccine->name,
+        ]));
+
+        $branchResponse->assertOk()->assertViewHas('vaccines', function ($vaccines) {
+            $rows = collect($vaccines->items())->where('id', $this->vaccine->id);
+
+            return $rows->count() === 1
+                && (int) $rows->first()->center_id === $this->centerA->id
+                && (int) $rows->first()->stock_quantity === 12;
         });
     }
 
     public function test_vaccine_quantity_range_filters_each_branch_row(): void
     {
-        $minimumResponse = $this->actingAsAdmin($this->superAdmin)->get(route('admin.vaccines.index', [
+        $branchResponseA = $this->actingAsAdmin($this->superAdmin)->get(route('admin.vaccines.index', [
+            'center_id' => $this->centerA->id,
             'search' => $this->vaccine->name,
             'min_quantity' => 10,
         ]));
 
-        $minimumResponse->assertOk()->assertViewHas('vaccines', function ($vaccines) {
+        $branchResponseA->assertOk()->assertViewHas('vaccines', function ($vaccines) {
             $rows = collect($vaccines->items());
 
             return $rows->count() === 1
@@ -128,27 +141,40 @@ class AdminRootGlobalBranchContextTest extends TestCase
                 && (int) $rows->first()->stock_quantity === 12;
         });
 
-        $maximumResponse = $this->actingAsAdmin($this->superAdmin)->get(route('admin.vaccines.index', [
+        $branchResponseB = $this->actingAsAdmin($this->superAdmin)->get(route('admin.vaccines.index', [
+            'center_id' => $this->centerB->id,
             'search' => $this->vaccine->name,
             'max_quantity' => 3,
         ]));
 
-        $maximumResponse->assertOk()->assertViewHas('vaccines', function ($vaccines) {
+        $branchResponseB->assertOk()->assertViewHas('vaccines', function ($vaccines) {
             $rows = collect($vaccines->items());
 
             return $rows->count() === 1
                 && (int) $rows->first()->center_id === $this->centerB->id
                 && (int) $rows->first()->stock_quantity === 3;
         });
+
+        $allBranchesResponse = $this->actingAsAdmin($this->superAdmin)->get(route('admin.vaccines.index', [
+            'search' => $this->vaccine->name,
+            'min_quantity' => 15,
+        ]));
+
+        $allBranchesResponse->assertOk()->assertViewHas('vaccines', function ($vaccines) {
+            $rows = collect($vaccines->items());
+            return $rows->count() === 1
+                && (int) $rows->first()->stock_quantity === 15;
+        });
     }
 
     public function test_root_all_view_includes_vaccine_temporarily_disabled_at_a_branch(): void
     {
-        CenterVaccine::where('center_id', $this->centerB->id)
+        CenterVaccine::where('center_id' , $this->centerB->id)
             ->where('vaccine_id', $this->vaccine->id)
             ->update(['is_active' => false]);
 
         $response = $this->actingAsAdmin($this->superAdmin)->get(route('admin.vaccines.index', [
+            'center_id' => $this->centerB->id,
             'search' => $this->vaccine->name,
         ]));
 

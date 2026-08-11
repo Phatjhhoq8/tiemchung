@@ -333,6 +333,34 @@ class AuditLogsAndResourceStatusTest extends TestCase
     }
 
     #[Test]
+    public function test_toggle_status_can_deactivate_and_reactivate_center()
+    {
+        $center = Center::create([
+            'name' => 'Chi Nhánh Toggle Test',
+            'slug' => 'chi-nhanh-toggle-test-'.uniqid(),
+            'address' => '789 Đường Toggle',
+            'phone' => '0987654321',
+            'is_active' => true,
+        ]);
+
+        // 1. Tạm dừng (Deactivate)
+        $response = $this->loginAs($this->superAdmin)->post(route('admin.centers.toggle-status', $center->id));
+        $response->assertRedirect(route('admin.centers.index'));
+        $this->assertDatabaseHas('centers', [
+            'id' => $center->id,
+            'is_active' => false,
+        ]);
+
+        // 2. Bật lại (Reactivate)
+        $response = $this->loginAs($this->superAdmin)->post(route('admin.centers.toggle-status', $center->id));
+        $response->assertRedirect(route('admin.centers.index'));
+        $this->assertDatabaseHas('centers', [
+            'id' => $center->id,
+            'is_active' => true,
+        ]);
+    }
+
+    #[Test]
     public function test_soft_deactivation_on_user()
     {
         $user = User::create([

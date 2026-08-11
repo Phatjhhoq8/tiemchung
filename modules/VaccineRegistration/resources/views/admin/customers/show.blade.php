@@ -20,11 +20,16 @@
     @if($isSuperAdmin ?? false)
         <div class="card-modern">
             <h3 style="margin-top:0;">Điều chỉnh điểm</h3>
-            <form method="POST" action="{{ route('admin.customers.points.adjust', $customer) }}" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+            <form id="pointsAdjustForm" method="POST" action="{{ route('admin.customers.points.adjust', $customer) }}" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
                 @csrf
+                <input type="hidden" name="idempotency_key" value="{{ (string) \Illuminate\Support\Str::uuid() }}">
                 <div>
                     <label class="form-label-modern" for="points">Điểm cộng/trừ</label>
                     <input class="form-control-modern" id="points" type="number" name="points" required>
+                </div>
+                <div id="expiry_date_container" style="display:none;">
+                    <label class="form-label-modern" for="expiry_date">Ngày hết hạn (tùy chọn)</label>
+                    <input class="form-control-modern" id="expiry_date" type="date" name="expiry_date">
                 </div>
                 <div style="flex:1 1 280px;">
                     <label class="form-label-modern" for="note">Lý do</label>
@@ -33,6 +38,28 @@
                 <button class="btn-modern btn-modern-primary" type="submit">Lưu điều chỉnh</button>
             </form>
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const pointsInput = document.getElementById('points');
+                const expiryContainer = document.getElementById('expiry_date_container');
+                const expiryInput = document.getElementById('expiry_date');
+
+                if (pointsInput && expiryContainer) {
+                    pointsInput.addEventListener('input', function() {
+                        const val = parseInt(this.value) || 0;
+                        if (val > 0) {
+                            expiryContainer.style.display = 'block';
+                        } else {
+                            expiryContainer.style.display = 'none';
+                            if (expiryInput) {
+                                expiryInput.value = '';
+                            }
+                        }
+                    });
+                }
+            });
+        </script>
     @endif
 
     <div class="card-modern">
@@ -42,7 +69,7 @@
         @else
             <div class="table-responsive-modern">
                 <table class="table-modern">
-                    <thead><tr><th>Thời gian</th><th>Loại</th><th>Chi nhánh</th><th>Điểm</th><th>Ghi chú</th></tr></thead>
+                    <thead><tr><th>Thời gian</th><th>Loại</th><th>Chi nhánh</th><th>Điểm</th><th>Hạn dùng</th><th>Ghi chú</th></tr></thead>
                     <tbody>
                         @foreach($transactions as $transaction)
                             <tr>
@@ -50,6 +77,7 @@
                                 <td>{{ $transaction->typeLabel() }}</td>
                                 <td>{{ $transaction->center?->name ?? 'Hệ thống' }}</td>
                                 <td style="font-weight:700; color:{{ $transaction->points >= 0 ? 'var(--primary-color)' : '#b91c1c' }};">{{ $transaction->points > 0 ? '+' : '' }}{{ number_format($transaction->points) }}</td>
+                                <td>{{ $transaction->expired_at ? $transaction->expired_at->format('d/m/Y') : 'Vô hạn' }}</td>
                                 <td>{{ $transaction->note }}</td>
                             </tr>
                         @endforeach

@@ -456,18 +456,26 @@ class VaccineController extends Controller
 
         $code = trim((string) $request->input('registration_code'));
 
-        $registrations = Registration::query()
+        $query = Registration::query()
             ->with(['vaccines:id,name', 'slot.schedule'])
             ->where(function ($query) use ($phone) {
                 $query->where('patient_phone', $phone)
                     ->orWhereHas('customer', fn ($customerQuery) => $customerQuery->where('phone', $phone));
-            })
-            ->orderByDesc('injection_date')
+            });
+
+        if (! empty($code)) {
+            $query->where(function ($q) use ($code) {
+                $q->where('registration_code', $code)
+                    ->orWhere('registration_code', 'like', '%'.$code.'%');
+            });
+        }
+
+        $registrations = $query->orderByDesc('injection_date')
             ->orderByDesc('id')
             ->get();
 
         $registrations->each(function ($reg) use ($code) {
-            if (! empty($code) && strtolower($reg->registration_code) === strtolower($code)) {
+            if (! empty($code) && (strtolower($reg->registration_code) === strtolower($code) || str_contains(strtolower($reg->registration_code), strtolower($code)))) {
                 $reg->is_masked = false;
                 $reg->display_name = $reg->patient_name;
                 $reg->display_code = $reg->registration_code;

@@ -528,6 +528,16 @@
             border-color: #fca5a5;
             color: #a00d24;
         }
+        .btn-action-sm.btn-action-success {
+            border-color: #dcfce7;
+            background-color: #f0fdf4;
+            color: #16a34a;
+        }
+        .btn-action-sm.btn-action-success:hover {
+            background-color: #dcfce7;
+            border-color: #86efac;
+            color: #15803d;
+        }
 
         /* 6. Badge System */
         .badge-modern {
@@ -876,6 +886,11 @@
                         <i data-lucide="clock"></i> Khung Giờ Tiêm
                     </a>
                 </li>
+                <li class="{{ str_contains(Route::currentRouteName(), 'admin.settings.loyalty') ? 'active' : '' }}">
+                    <a href="{{ route('admin.settings.loyalty') }}">
+                        <i data-lucide="coins"></i> Cấu Hình Tích Điểm
+                    </a>
+                </li>
                 @if($isSuperAdmin ?? false)
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.centers') ? 'active' : '' }}">
                     <a href="{{ route('admin.centers.index') }}">
@@ -901,9 +916,14 @@
                         <i data-lucide="newspaper"></i> Quản lý Bài Viết
                     </a>
                 </li>
-                <li class="{{ str_contains(Route::currentRouteName(), 'admin.settings') ? 'active' : '' }}">
+                <li class="{{ Route::currentRouteName() === 'admin.settings.index' ? 'active' : '' }}">
                     <a href="{{ route('admin.settings.index') }}">
                         <i data-lucide="settings"></i> Cấu Hình Trang Web
+                    </a>
+                </li>
+                <li class="{{ Route::currentRouteName() === 'admin.live-editor' ? 'active' : '' }}">
+                    <a href="{{ route('admin.live-editor') }}">
+                        <i data-lucide="layout-template"></i> Chỉnh Sửa Trực Quan (Live)
                     </a>
                 </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.audit-logs') ? 'active' : '' }}">
@@ -1086,7 +1106,13 @@
 
         // ===== GLOBAL MEDICARE CUSTOM DATEPICKER INITIALIZER =====
         function initGlobalMedicareDatePickers() {
-            document.querySelectorAll('input[type="date"]:not(.medicare-dp-processed)').forEach(inputEl => {
+            document.querySelectorAll('input[type="date"]').forEach(inputEl => {
+                if (inputEl.classList.contains('medicare-dp-processed')) {
+                    if (typeof inputEl.updateMedicareDisplay === 'function') {
+                        inputEl.updateMedicareDisplay();
+                    }
+                    return;
+                }
                 inputEl.classList.add('medicare-dp-processed');
                 
                 inputEl.style.display = 'none';
@@ -1102,12 +1128,15 @@
                 
                 const trigger = document.createElement('div');
                 trigger.className = 'form-control-modern';
-                trigger.style.cursor = 'pointer';
                 trigger.style.display = 'flex';
                 trigger.style.alignItems = 'center';
                 trigger.style.justifyContent = 'space-between';
-                trigger.style.userSelect = 'none';
                 trigger.style.gap = '8px';
+                trigger.style.padding = '0 12px';
+                trigger.style.height = '42px';
+                trigger.style.boxSizing = 'border-box';
+                trigger.style.background = '#ffffff';
+                trigger.style.transition = 'border-color 0.2s, box-shadow 0.2s';
                 if (inputEl.disabled) {
                     trigger.style.backgroundColor = '#f1f5f9';
                     trigger.style.cursor = 'not-allowed';
@@ -1123,41 +1152,71 @@
                         const match = inlineStyle.match(/width:\s*([^;]+)/);
                         if (match) trigger.style.width = match[1];
                     }
-                    if (inlineStyle.includes('padding:')) {
-                        const match = inlineStyle.match(/padding:\s*([^;]+)/);
-                        if (match) trigger.style.padding = match[1];
-                    }
                 }
 
-                const displaySpan = document.createElement('span');
-                displaySpan.style.whiteSpace = 'nowrap';
+                const textInput = document.createElement('input');
+                textInput.type = 'text';
+                textInput.className = 'medicare-datepicker-input';
+                textInput.placeholder = 'dd/mm/yyyy';
+                textInput.maxLength = 10;
+                textInput.autocomplete = 'off';
+                textInput.style.border = 'none';
+                textInput.style.outline = 'none';
+                textInput.style.background = 'transparent';
+                textInput.style.width = '100%';
+                textInput.style.fontSize = '14px';
+                textInput.style.color = '#0f172a';
+                textInput.style.fontWeight = '500';
+                textInput.style.padding = '0';
+                textInput.style.margin = '0';
+                textInput.style.boxSizing = 'border-box';
+                textInput.style.fontFamily = 'inherit';
+                if (inputEl.disabled) {
+                    textInput.disabled = true;
+                    textInput.style.cursor = 'not-allowed';
+                }
+
+                textInput.addEventListener('focus', function() {
+                    trigger.style.borderColor = '#c8102e';
+                    trigger.style.boxShadow = '0 0 0 3px rgba(200, 16, 46, 0.15)';
+                });
+                textInput.addEventListener('blur', function() {
+                    trigger.style.borderColor = '#cbd5e1';
+                    trigger.style.boxShadow = 'none';
+                });
                 
                 function updateDisplay() {
                     const val = inputEl.value;
                     if (val) {
                         const parts = val.split('-');
                         if (parts.length === 3) {
-                            displaySpan.textContent = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                            displaySpan.style.color = 'var(--text-primary)';
-                            displaySpan.style.fontWeight = '500';
+                            textInput.value = `${parts[2]}/${parts[1]}/${parts[0]}`;
                         } else {
-                            displaySpan.textContent = val;
+                            textInput.value = val;
                         }
                     } else {
-                        displaySpan.textContent = 'mm/dd/yyyy';
-                        displaySpan.style.color = '#94a3b8';
-                        displaySpan.style.fontWeight = 'normal';
+                        textInput.value = '';
                     }
                 }
+                inputEl.updateMedicareDisplay = updateDisplay;
                 updateDisplay();
 
-                const iconSvg = document.createElement('div');
-                iconSvg.style.display = 'flex';
-                iconSvg.style.alignItems = 'center';
-                iconSvg.innerHTML = '<svg style="width: 15px; height: 15px; color: #94a3b8; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
+                const iconBtn = document.createElement('button');
+                iconBtn.type = 'button';
+                iconBtn.tabIndex = -1;
+                iconBtn.className = 'medicare-datepicker-icon-btn';
+                iconBtn.style.display = 'flex';
+                iconBtn.style.alignItems = 'center';
+                iconBtn.style.justifyContent = 'center';
+                iconBtn.style.background = 'none';
+                iconBtn.style.border = 'none';
+                iconBtn.style.padding = '2px';
+                iconBtn.style.cursor = inputEl.disabled ? 'not-allowed' : 'pointer';
+                iconBtn.style.flexShrink = '0';
+                iconBtn.innerHTML = '<svg style="width: 16px; height: 16px; color: #94a3b8; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
 
-                trigger.appendChild(displaySpan);
-                trigger.appendChild(iconSvg);
+                trigger.appendChild(textInput);
+                trigger.appendChild(iconBtn);
                 wrapper.appendChild(trigger);
 
                 if (inputEl.disabled) return;
@@ -1307,16 +1366,100 @@
                     updateDisplay();
                     popup.style.display = 'none';
                     inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
                 }
 
-                trigger.addEventListener('click', function(e) {
-                    e.stopPropagation();
+                // Direct Keyboard Input Handling & Auto-Masking
+                textInput.addEventListener('input', function(e) {
+                    let val = textInput.value.replace(/[^0-9\/]/g, '');
+                    if (e.inputType !== 'deleteContentBackward' && e.inputType !== 'deleteContentForward') {
+                        const digits = val.replace(/\D/g, '');
+                        if (digits.length >= 5) {
+                            val = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4, 8);
+                        } else if (digits.length >= 3) {
+                            val = digits.slice(0, 2) + '/' + digits.slice(2, 4);
+                        } else if (digits.length >= 2 && !val.includes('/')) {
+                            val = digits.slice(0, 2) + '/';
+                        }
+                    }
+                    textInput.value = val;
+
+                    const parts = val.split('/');
+                    if (parts.length === 3 && parts[2].length === 4) {
+                        const d = parseInt(parts[0], 10);
+                        const m = parseInt(parts[1], 10);
+                        const y = parseInt(parts[2], 10);
+                        if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1900 && y <= 2100) {
+                            const testDate = new Date(y, m - 1, d);
+                            if (testDate.getFullYear() === y && testDate.getMonth() === m - 1 && testDate.getDate() === d) {
+                                const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                                if (inputEl.value !== iso) {
+                                    inputEl.value = iso;
+                                    inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                                    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                                }
+                                viewYear = y;
+                                viewMonth = m - 1;
+                                renderGdp();
+                            }
+                        }
+                    } else if (val === '') {
+                        if (inputEl.value !== '') {
+                            inputEl.value = '';
+                            inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                            inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    }
+                });
+
+                textInput.addEventListener('blur', function() {
+                    const val = textInput.value.trim();
+                    if (!val) {
+                        if (inputEl.value !== '') {
+                            inputEl.value = '';
+                            inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                            inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        return;
+                    }
+                    const parts = val.split('/');
+                    if (parts.length === 3 && parts[2].length === 4) {
+                        const d = parseInt(parts[0], 10);
+                        const m = parseInt(parts[1], 10);
+                        const y = parseInt(parts[2], 10);
+                        if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1900 && y <= 2100) {
+                            const testDate = new Date(y, m - 1, d);
+                            if (testDate.getFullYear() === y && testDate.getMonth() === m - 1 && testDate.getDate() === d) {
+                                const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                                inputEl.value = iso;
+                                inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                                inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                                return;
+                            }
+                        }
+                    }
+                    updateDisplay();
+                });
+
+                function togglePopup() {
                     const isExpanded = popup.style.display === 'block';
                     document.querySelectorAll('.medicare-datepicker-wrapper div[style*="position: absolute"]').forEach(p => p.style.display = 'none');
                     popup.style.display = isExpanded ? 'none' : 'block';
                     if (!isExpanded) {
                         const triggerRect = trigger.getBoundingClientRect();
                         const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+                        const scrollable = trigger.closest('.admin-main') || trigger.closest('.admin-modal-body');
+                        const containerRect = scrollable ? scrollable.getBoundingClientRect() : { bottom: window.innerHeight, top: 0 };
+                        const spaceBelow = containerRect.bottom - triggerRect.bottom;
+                        const spaceAbove = triggerRect.top - containerRect.top;
+
+                        if (spaceBelow < 280 && spaceAbove > spaceBelow) {
+                            popup.style.top = 'auto';
+                            popup.style.bottom = 'calc(100% + 4px)';
+                        } else {
+                            popup.style.bottom = 'auto';
+                            popup.style.top = 'calc(100% + 4px)';
+                        }
 
                         if (triggerRect.left + 290 > viewportWidth) {
                             popup.style.left = 'auto';
@@ -1334,6 +1477,19 @@
                             }
                         }
                         renderGdp();
+                    }
+                }
+
+                iconBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    togglePopup();
+                });
+
+                trigger.addEventListener('click', function(e) {
+                    if (e.target !== textInput && e.target !== iconBtn && !iconBtn.contains(e.target)) {
+                        e.stopPropagation();
+                        textInput.focus();
+                        togglePopup();
                     }
                 });
 
@@ -1443,37 +1599,44 @@
                 labelSpan.style.fontWeight = '500';
                 labelSpan.style.color = 'var(--text-primary)';
                 labelSpan.style.textAlign = 'left';
-                labelSpan.style.flex = '1';
+                labelSpan.style.flex = '1 1 auto';
+                labelSpan.style.minWidth = '0';
 
                 const arrowSvg = document.createElement('div');
                 arrowSvg.className = 'medicare-select-arrow-icon';
                 arrowSvg.style.display = 'flex';
                 arrowSvg.style.alignItems = 'center';
+                arrowSvg.style.justifyContent = 'center';
                 arrowSvg.style.transition = 'transform 0.2s ease';
                 arrowSvg.style.marginLeft = 'auto';
                 arrowSvg.style.flexShrink = '0';
-                arrowSvg.innerHTML = '<svg style="width: 15px; height: 15px; color: #64748b; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+                arrowSvg.style.width = '18px';
+                arrowSvg.style.height = '18px';
+                arrowSvg.style.minWidth = '18px';
+                arrowSvg.innerHTML = '<svg style="width: 16px; height: 16px; min-width: 16px; color: #64748b; display: block;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
 
                 trigger.appendChild(labelSpan);
                 trigger.appendChild(arrowSvg);
                 wrapper.appendChild(trigger);
 
                 const popup = document.createElement('div');
+                popup.className = 'medicare-select-popup';
                 popup.style.display = 'none';
                 popup.style.position = 'absolute';
                 popup.style.top = 'calc(100% + 4px)';
                 popup.style.left = '0';
+                popup.style.width = '100%';
                 popup.style.minWidth = '100%';
-                popup.style.width = 'max-content';
-                popup.style.maxWidth = '320px';
                 popup.style.background = '#ffffff';
-                popup.style.border = '1px solid #cbd5e1';
+                popup.style.border = '1px solid #e2e8f0';
                 popup.style.borderRadius = '12px';
-                popup.style.boxShadow = '0 15px 30px -5px rgba(0,0,0,0.15)';
+                popup.style.boxShadow = '0 12px 30px rgba(15, 23, 42, 0.12)';
                 popup.style.zIndex = '1050';
                 popup.style.padding = '6px';
-                popup.style.maxHeight = '260px';
+                popup.style.maxHeight = '240px';
                 popup.style.overflowY = 'auto';
+                popup.style.scrollbarWidth = 'none';
+                popup.style.msOverflowStyle = 'none';
                 popup.style.boxSizing = 'border-box';
                 popup.style.userSelect = 'none';
                 wrapper.appendChild(popup);
@@ -1489,19 +1652,11 @@
                 }
 
                 function updateAlignment() {
-                    const text = labelSpan.textContent ? labelSpan.textContent.trim() : '';
-                    const isLongText = text.length > 14 || (trigger.offsetWidth && trigger.offsetWidth > 170);
-                    if (isLongText) {
-                        trigger.style.justifyContent = 'space-between';
-                        labelSpan.style.textAlign = 'left';
-                        labelSpan.style.flex = '1';
-                        arrowSvg.style.marginLeft = 'auto';
-                    } else {
-                        trigger.style.justifyContent = 'center';
-                        labelSpan.style.textAlign = 'center';
-                        labelSpan.style.flex = '0 1 auto';
-                        arrowSvg.style.marginLeft = '0';
-                    }
+                    trigger.style.justifyContent = 'space-between';
+                    labelSpan.style.textAlign = 'left';
+                    labelSpan.style.flex = '1 1 auto';
+                    labelSpan.style.minWidth = '0';
+                    arrowSvg.style.marginLeft = 'auto';
                 }
 
                 function renderOptions() {
@@ -1519,24 +1674,27 @@
                     options.forEach(opt => {
                         const item = document.createElement('div');
                         item.className = 'medicare-select-item';
-                        item.style.padding = '8px 12px';
+                        item.style.padding = '9px 12px';
                         item.style.borderRadius = '8px';
                         item.style.cursor = 'pointer';
                         item.style.fontSize = '13.5px';
+                        item.style.lineHeight = '1.4';
                         item.style.transition = 'all 0.15s ease';
                         item.style.marginBottom = '2px';
+                        item.style.textAlign = 'left';
+                        item.style.wordBreak = 'break-word';
                         item.textContent = opt.textContent.trim();
 
                         const isSelected = opt.selected;
                         if (isSelected) {
-                            item.style.background = '#fee2e2';
+                            item.style.background = 'rgba(200, 16, 46, 0.08)';
                             item.style.color = '#c8102e';
                             item.style.fontWeight = '700';
                         } else {
                             item.style.background = 'transparent';
                             item.style.color = '#1e293b';
                             item.style.fontWeight = '500';
-                            item.addEventListener('mouseenter', () => { item.style.background = '#f1f5f9'; });
+                            item.addEventListener('mouseenter', () => { item.style.background = '#f8fafc'; });
                             item.addEventListener('mouseleave', () => { item.style.background = 'transparent'; });
                         }
 
@@ -1576,6 +1734,18 @@
                         renderOptions();
                         const triggerRect = trigger.getBoundingClientRect();
                         const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+                        const scrollable = trigger.closest('.admin-main') || trigger.closest('.admin-modal-body');
+                        const containerRect = scrollable ? scrollable.getBoundingClientRect() : { bottom: window.innerHeight, top: 0 };
+                        const spaceBelow = containerRect.bottom - triggerRect.bottom;
+                        const spaceAbove = triggerRect.top - containerRect.top;
+
+                        if (spaceBelow < 220 && spaceAbove > spaceBelow) {
+                            popup.style.top = 'auto';
+                            popup.style.bottom = 'calc(100% + 4px)';
+                        } else {
+                            popup.style.bottom = 'auto';
+                            popup.style.top = 'calc(100% + 4px)';
+                        }
 
                         if (triggerRect.left + 240 > viewportWidth) {
                             popup.style.left = 'auto';
@@ -1603,6 +1773,38 @@
                 });
             }
         });
+
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            if (!form || form.tagName !== 'FORM') return;
+
+            // If already submitting, block duplicate submission
+            if (form.dataset.submitting === 'true') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+
+            form.dataset.submitting = 'true';
+
+            // Disable submit buttons and show loading state
+            const submitBtns = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+            submitBtns.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.7';
+                btn.style.cursor = 'not-allowed';
+            });
+
+            // Re-enable after 8 seconds as safety timeout (e.g. if navigation is cancelled)
+            setTimeout(() => {
+                delete form.dataset.submitting;
+                submitBtns.forEach(btn => {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                });
+            }, 8000);
+        }, true);
 
         document.addEventListener('DOMContentLoaded', function() {
             initGlobalMedicareDatePickers();

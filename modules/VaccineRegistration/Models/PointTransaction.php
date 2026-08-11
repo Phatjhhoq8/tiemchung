@@ -27,10 +27,12 @@ class PointTransaction extends Model
         'points',
         'source_key',
         'note',
+        'expired_at',
     ];
 
     protected $casts = [
         'points' => 'integer',
+        'expired_at' => 'datetime',
     ];
 
     public function customer(): BelongsTo

@@ -92,7 +92,7 @@ class AdminCustomerController extends Controller
             ->when($selectedCenterId, fn ($query) => $query->where('center_id', $selectedCenterId))
             ->latest('id')
             ->paginate(20, ['*'], 'points_page');
-        $pointBalance = (int) $customer->pointTransactions()->sum('points');
+        $pointBalance = $customer->pointBalance();
 
         return view('vaccine::admin.customers.show', compact('customer', 'registrations', 'transactions', 'pointBalance', 'selectedCenterId'));
     }
@@ -104,27 +104,38 @@ class AdminCustomerController extends Controller
         $validated = $request->validate([
             'points' => 'required|integer|not_in:0',
             'note' => 'required|string|max:255',
+            'idempotency_key' => 'nullable|string|max:100',
+            'expiry_date' => 'nullable|date|after_or_equal:today',
         ]);
 
-        DB::transaction(function () use ($id, $validated) {
-            $customer = Customer::lockForUpdate()->findOrFail($id);
-            $transaction = PointTransaction::create([
-                'customer_id' => $customer->id,
-                'created_by' => AdminContext::user()?->id,
-                'type' => PointTransaction::ADJUSTMENT,
-                'points' => (int) $validated['points'],
-                'source_key' => 'adjustment:'.$customer->id.':'.Str::uuid(),
-                'note' => $validated['note'],
-            ]);
+        $idempotencyKey = $validated['idempotency_key'] ?? $request->input('idempotency_key');
+        $customer = Customer::findOrFail($id);
+        $sourceKey = 'adjustment:' . $customer->id . ':' . ($idempotencyKey ?: (string) Str::uuid());
 
+        $loyaltyService = app(\App\Services\LoyaltyService::class);
+
+        $transaction = $loyaltyService->adjustPoints(
+            $customer,
+            (int) $validated['points'],
+            $validated['note'],
+            $validated['expiry_date'] ?? null,
+            AdminContext::user(),
+            $sourceKey
+        );
+
+        if ($transaction->wasRecentlyCreated) {
             AuditLogger::log(
                 action: 'points_adjusted',
                 resourceType: 'customer',
                 resourceId: $customer->id,
-                newValues: ['points' => $transaction->points, 'note' => $transaction->note],
+                newValues: [
+                    'points' => $transaction->points,
+                    'note' => $transaction->note,
+                    'expired_at' => $transaction->expired_at ? $transaction->expired_at->toDateTimeString() : null
+                ],
                 actorId: AdminContext::user()?->id,
             );
-        });
+        }
 
         return back()->with('success', 'Đã điều chỉnh điểm khách hàng.');
     }

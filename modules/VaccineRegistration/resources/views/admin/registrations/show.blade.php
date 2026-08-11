@@ -57,7 +57,15 @@
                 <div style="flex:1 1 230px;">
                     <label class="form-label-modern" for="redeem_points">Điểm khách muốn dùng</label>
                     <input class="form-control-modern" id="redeem_points" type="number" name="redeem_points" min="0" max="{{ $pointQuote['available_points'] ?? 0 }}" value="{{ old('redeem_points', 0) }}">
-                    <small style="display:block; margin-top:5px; color:var(--text-muted);">Số dư toàn hệ thống: {{ number_format($pointQuote['balance'] ?? 0) }} điểm. Có thể dùng tối đa {{ number_format($pointQuote['available_points'] ?? 0) }} điểm (50% đơn).</small>
+                    <small style="display:block; margin-top:5px; color:var(--text-muted);">
+                        Số dư toàn hệ thống: {{ number_format($pointQuote['balance'] ?? 0) }} điểm. 
+                        Có thể dùng tối đa {{ number_format($pointQuote['available_points'] ?? 0) }} điểm 
+                        ({{ $loyaltySettings['max_redeem_percent'] }}% đơn 
+                        @if(isset($loyaltySettings['max_redeem_amount']) && (int)$loyaltySettings['max_redeem_amount'] > 0)
+                            , tối đa {{ number_format($loyaltySettings['max_redeem_amount']) }} đ
+                        @endif
+                        ).
+                    </small>
                 </div>
                 <button type="submit" class="btn-modern btn-modern-primary">Xác nhận thanh toán</button>
             </form>

@@ -1,4 +1,195 @@
-# Release Notes
+## [v6.5.25] - 2026-08-12
+
+### Refined Loyalty Service, FIFO Ledger Allocations & Strict Settings Validation
+
+* **Loyalty Service Integration (`RegistrationPaymentService.php`, `AdminCustomerController.php`, `Customer.php`, `_table.blade.php`)**:
+  - Refactored payment settling, refunding, and quoting to delegate completely to `LoyaltyService`.
+  - Replaced raw point sums with allocation-aware balance calculation to hide expired points and prevent invalid usage.
+* **Atomic Settings Transactions (`AdminLoyaltySettingController.php`)**:
+  - Wrapped settings updates, resets, and synchronization logic inside database transactions to ensure database consistency.
+* **BPS Redemption Schema (`loyalty.blade.php`, `registrations/show.blade.php`)**:
+  - Implemented separate inputs for VND and percent-based BPS (Basis Points) point redemption settings.
+  - Dynamically calculated maximum percent/amount discount limitations for branch checkouts.
+* **Comprehensive Testing (`LoyaltyPointsDynamicConfigTest.php`)**:
+  - Added new integration test cases for FIFO lot consumption, refunds restoring original point lots, earn reversals on spent points, and BPS rounding.
+
+## [v6.5.24] - 2026-08-12
+
+### Dynamic Loyalty Point Configurations & FIFO Expiration
+
+* **Dynamic Configurations (`RegistrationPaymentService.php`, `AdminLoyaltySettingController.php`, `loyalty.blade.php`)**:
+  - Replaced hardcoded point rules with dynamic DB configurations stored as a JSON object under the `loyalty_settings` key.
+  - Added options for minimum order amounts to earn/redeem points, adjustable redemption types (fixed VND value or invoice percentage), and custom expiry months.
+  - Implemented Shopee-style membership tiers (Bronze, Silver, Gold, Diamond) based on historic point balance and active promotional campaigns.
+  - Implemented birthday multiplier for patients matching their birth date with the injection date.
+  - Applied additive calculation logic for active multipliers: `1.0 + SUM(Multiplier_i - 1.0)`.
+* **Hierarchical Configurations & Sync Mechanism (`RegistrationPaymentService.php`, `AdminLoyaltySettingController.php`, `loyalty.blade.php`, `routes/web.php`, `layouts/admin.blade.php`)**:
+  - Allowed branch-specific configurations stored as `loyalty_settings_center_{id}` with system-wide settings fallback.
+  - Exposed the Loyalty configuration panel to Branch Administrators.
+  - Implemented a sync warning banner notifying branch admins of global configuration updates.
+  - Designed a synchronization modal allowing partial (basic settings, redemption, tiers, campaigns, or birthday) or full sync from the system settings.
+* **FIFO Expiration Queue (`RegistrationPaymentService.php`, `PointTransaction.php`)**:
+  - Added an `expired_at` column to the `point_transactions` table.
+  - Developed a FIFO point allocation algorithm that consumes oldest points first and excludes expired points when calculating available point balance.
+* **Point Adjustments with Expiry Dates (`AdminCustomerController.php`, `admin/customers/show.blade.php`)**:
+  - Enhanced manual point adjustment form to dynamically display an "Expiry Date" field when adding points, and hide it when deducting points.
+  - Added the Expiry Date column to the admin client points history list.
+
+## [v6.5.23] - 2026-08-12
+
+### Visual Live Editor Integration & Web Configuration Synchronization
+
+* **Visual Live Page Customizer (`AdminLiveEditorController.php`, `admin/live_editor.blade.php`, `admin/live_editor_modals.blade.php`, `routes/web.php`, `layouts/admin.blade.php`)**:
+  - Ported the Live Editor feature from the `hongphuoc` branch to `master` under secure `super.admin` access.
+  - Added a responsive, modern sidebar link for the Visual Live Editor.
+* **Synchronized Web Settings & Headquarters Address (`AdminSettingController.php`, `admin/settings/index.blade.php`)**:
+  - Integrated the "Headquarters Address" (`address`) configuration field into the admin settings view and controller.
+  - Kept settings routes protected under `super.admin` middleware and controller-level check blocks to maintain security compliance.
+
+## [v6.5.22] - 2026-08-12
+
+### Master All-Branches Aggregated Vaccine View & Pricing Segregation
+
+* **Consolidated Multi-Branch View (`AdminVaccineController.php`, `admin/vaccines/_table.blade.php`, `admin/vaccines/index.blade.php`)**:
+  - **Single Master Vaccine Row**: When selecting "Tất cả chi nhánh" in admin vaccine management, each vaccine is presented as exactly 1 row (instead of repeating across all branches).
+  - **Aggregated Total Inventory**: Calculates and displays the total system-wide stock (`SUM(stock_quantity)`) across all active branches.
+  - **Dynamic Price Segregation**: Replaces single price with "Theo từng chi nhánh" badge when viewing across all branches, while displaying branch-specific prices and promo rates when filtering by a specific branch.
+
+## [v6.5.21] - 2026-08-12
+
+### Refined Quick Navigation Branch Card Subtitle
+
+* **Refined Homepage Action Toolbar (`partials/home/quick_booking.blade.php`)**:
+  - Replaced long verbose concatenation of all branch names with a concise, professional subtitle ("Xem địa chỉ & bản đồ chỉ đường") consistent with other quick navigation cards.
+
+## [v6.5.20] - 2026-08-12
+
+### Exact Booking Code Lookup & Multi-Record Filter Toolbar
+
+* **Exact Code Matching (`VaccineController.php`)**:
+  - When a `registration_code` is entered along with the phone number, the query strictly targets and displays only that exact booking record, unmasked with full appointment details.
+* **Interactive Multi-Booking Filter & Search Bar (`booking_lookup.blade.php`)**:
+  - When querying by phone number alone, added a real-time filter bar with an instant text search box (patient name, center, code) and status pills (`Tất cả`, `Chờ xác nhận`, `Đã xác nhận`, `Đã hoàn tất`, `Đã hủy`), allowing users to easily narrow down results without clutter.
+
+## [v6.5.19] - 2026-08-12
+
+### System-Wide Multi-Click Prevention & Idempotent Transaction Guards
+
+* **Global Double-Submit Prevention (`layouts/admin.blade.php`, `public/js/app.js`)**:
+  - **Form Submission Lock**: Intercepts all administrative and public forms; immediately locks the form (`data-submitting="true"`), disables submit buttons, and prevents rapid consecutive clicks from sending duplicate requests.
+  - **SPA Booking & Consultation Guards**: Added `isSpaBookingSubmitting` and `isSpaConsultSubmitting` state locks preventing multiple submissions during active API requests.
+* **Backend Idempotency for Points & Payments (`AdminCustomerController.php`, `RegistrationPaymentService.php`)**:
+  - **Idempotent Points Adjustment**: Implemented `idempotency_key` and unique `source_key` enforcement via `PointTransaction::firstOrCreate()` to guarantee that rapid repeat requests for the same adjustment only execute once.
+  - **Cleaned Test Data**: Removed duplicate adjustment records from rapid clicks.
+
+## [v6.5.18] - 2026-08-12
+
+### Form State Preservation When Switching Branches in SPA Booking Modal
+
+* **Seamless Field Retention on Center Change (`public/js/app.js`)**:
+  - **Full Patient & Guardian State Persistence**: Captures all entered patient records (Name, Phone, DOB, Gender, Address, Vaccine selections) and Guardian info before updating the center session.
+  - **Automatic Form Restoration**: Re-applies all preserved values into their respective form fields, custom datepickers, custom dropdowns, and vaccine checkboxes after re-rendering the new branch's schedule and pricing.
+
+## [v6.5.17] - 2026-08-12
+
+### Reactive Time-Slot Dropdown Synchronization & Booking Submission Flow Guard
+
+* **Reactive Dropdown Re-rendering (`public/js/app.js`)**:
+  - **Slot Dropdown Update Sync**: Hooked `slotSelect.updateMedicareCustomSelect()` into `changeSpaDateFilter` so selecting a vaccination date immediately unlocks and populates the custom Time-Slot dropdown with available hourly slots.
+  - **Robust Pre-submission Validation**: Added strict client-side guards for slot selection, patient information (name, phone, dob, address), minor guardian requirements, and phone format checks before sending the booking payload to `/register`.
+
+## [v6.5.16] - 2026-08-11
+
+### Smart Direction-Aware Auto-Flipping for Dropdowns & DatePickers
+
+* **Adaptive Dropdown Positioning (`public/js/app.js`, `layouts/admin.blade.php`, `partials/modal-register.blade.php`)**:
+  - **Dynamic Direction Auto-Flipping**: Automatically detects available container/viewport height (`spaceBelow < 220px`); opens popups upwards (`bottom: calc(100% + 4px)`) when near the bottom of the modal, completely preventing dropdown menus from being clipped or obscured by modal boundaries.
+  - **Modal Content Bottom Padding**: Increased bottom padding to `80px` in `#spaRegisterBody` ensuring lower form inputs have ample breathing room.
+
+## [v6.5.15] - 2026-08-11
+
+### Refined Custom Dropdown Alignment, Arrow Sizing & Popup Scrollbars
+
+* **Standardized Custom Dropdown Styling (`public/js/app.js`, `public/css/style.css`, `layouts/admin.blade.php`)**:
+  - **Fixed Chevron Arrow Distortion**: Added `flex-shrink: 0; min-width: 18px;` and `min-width: 0;` on the text label to prevent long option text from crushing the dropdown arrow icon.
+  - **Suppressed Native Popup Scrollbars**: Applied `scrollbar-width: none;` and `::-webkit-scrollbar { display: none; }` on `.medicare-select-popup` for a clean, modern scroll experience.
+  - **Refined Selection Highlighting**: Styled active items with soft brand tint (`rgba(200, 16, 46, 0.08)`) and Medicare Red text (`#c8102e`), while aligning text cleanly with `justify-content: space-between`.
+
+## [v6.5.14] - 2026-08-11
+
+### Removed Default Browser Scrollbars from SPA Registration Modal
+
+* **Hidden Native Scrollbars (`public/css/style.css`, `partials/modal-register.blade.php`)**:
+  - **Applied Seamless Scrollbar Suppression**: Added `scrollbar-width: none;` and `::-webkit-scrollbar { display: none; }` across `.spa-modal-overlay`, `.spa-modal-card`, and `#spaRegisterBody`.
+  - **Maintained Fluid Scrolling**: Preserved smooth mouse wheel, trackpad, and touch scrolling while eliminating the unsightly browser scrollbar thumb and track.
+
+## [v6.5.13] - 2026-08-11
+
+### Simplified Phone Validation to Strict 10-Digit Starting with 0 Rule
+
+* **Simplified Vietnamese Phone Format Rule (`public/js/app.js`)**:
+  - **10-Digit Zero-Prefix Requirement (`/^0[0-9]{9}$/`)**: Refactored `validatePhoneNumberField` to strictly validate that the input contains exactly 10 numeric digits starting with `0`.
+  - **Immediate Real-Time Feedback**: Automatically warns if the phone does not meet the 10-digit starting with 0 requirement on blur or submit.
+
+## [v6.5.12] - 2026-08-11
+
+### Definitive JavaScript Syntax Repair & Unconditional Script Initialization
+
+* **Complete Script Syntax Closure & Top-Level Execution (`public/js/app.js`)**:
+  - **Closed Nested Loop Block**: Added the missing closing brace in `submitSpaRegistrationForm` patient validation loop that previously broke JavaScript parsing at page load.
+  - **Removed Conditional Guard Blockers**: Removed outer script wrapper to allow all functions (`toggleCart`, `toggleCartDrawer`, `initGlobalMedicareDatePickers`, `validatePhoneNumberField`) to initialize unconditionally at top-level scope.
+  - **Verified Function Availability**: Confirmed via standalone node validation that `window.toggleCart` and `window.toggleCartDrawer` are 100% executable and reactive.
+
+## [v6.5.11] - 2026-08-11
+
+### Global Scope Export Consolidation for Cart & Vaccine Selection Handlers
+
+* **Comprehensive Window Scope Exports (`public/js/app.js`)**:
+  - **Exposed Core User Action Handlers**: Fully registered `toggleCart`, `toggleCartDrawer`, `toggleHeaderCartDropdown`, `clearCartUI`, `setCartSelection`, and modal controllers directly onto `window`.
+  - **Guaranteed Inline HTML Event Binding**: Ensures all `onclick="toggleCart(id)"` handlers in vaccine cards, catalog grid, and detail views execute immediately without scope isolation issues.
+
+## [v6.5.10] - 2026-08-11
+
+### Resolved Script Syntax Closure to Restore Cart & Vaccine Selection Handlers
+
+* **Restored JavaScript Execution (`public/js/app.js`)**:
+  - **Fixed Unclosed Block Closure**: Resolved missing block terminator in `public/js/app.js`, restoring complete JavaScript execution across the frontend.
+  - **Verified Cart & Booking Interactions**: Re-enabled instant cart drawer toggling, vaccine checkbox selection, and SPA registration modal flows.
+
+## [v6.5.9] - 2026-08-11
+
+### Instant Real-Time Phone Validation on Blur (`focusout`) & Input
+
+* **Live Client-Side Vietnamese Phone Number Validation (`public/js/app.js`, `register.blade.php`)**:
+  - **Instant Blur Validation (`validatePhoneNumberField`)**: Added global event listener to automatically validate phone format (`10 digits`, starting with `03, 05, 07, 08, 09, 02` or `+84/84`) as soon as the user finishes typing and clicks outside (`blur` / `focusout`).
+  - **Visual Error Indicators & Live Recovery**: Highlights invalid phone inputs with a red border (`#ef4444`) and inline warning message; automatically restores neutral/green states on user input or valid entry.
+  - **Comprehensive Form Guard**: Embedded phone format pre-checks before submission in both public registration form and SPA drawer modal.
+
+## [v6.5.8] - 2026-08-11
+
+### Fixed Tab Navigation Layout Shift in SPA Registration Modal
+
+* **Standardized Tab Container & Label Alignment (`public/js/app.js`)**:
+  - **Identical Centered Container**: Unified tab bar header layout with `justify-content: center;` across both registration (`renderSpaRegisterForm`) and consultation views (`renderSpaConsultForm`), eliminating horizontal position jumping.
+  - **Consistent Tab Naming & Fixed Whitespace**: Standardized Tab 2 label to `"2. Tư vấn Y khoa qua Zalo Official"` and applied `white-space: nowrap;` across all tab buttons to ensure zero layout shifting during tab switching.
+
+## [v6.5.7] - 2026-08-11
+
+### Direct Keyboard Input & Auto-Masking Support for DatePicker Component
+
+* **Keyboard Typing & Visual Calendar Picker Hybrid (`public/js/app.js`, `layouts/admin.blade.php`, `register.blade.php`)**:
+  - **Direct Keyboard Input (`medicare-datepicker-input`)**: Replaced non-editable trigger span with an interactive text input (`dd/mm/yyyy`), allowing users to type dates directly using keyboard or numbers.
+  - **Smart Input Masking & Auto-Formatting**: Automatically inserts slashes (`/`) as users type digits, parses valid `DD/MM/YYYY` dates, and synchronizes with underlying hidden ISO date inputs (`YYYY-MM-DD`).
+  - **Seamless Popup Calendar Synchronization**: Clicking the calendar icon or trigger still displays the popup calendar, and choosing dates updates the text box and triggers input/change events for real-time age verification and form submission.
+
+## [v6.5.6] - 2026-08-11
+
+### Center Management Active Status Toggle & Reactivation Feature
+
+* **Reactivation & Status Toggling for Centers (`admin/centers`)**:
+  - **Center Toggle Status Action & Endpoint**: Added `POST /admin/centers/{id}/toggle-status` route and `AdminCenterController::toggleStatus` method to support both pausing (`Tạm dừng` / `Ngừng`) and reactivating (`Bật lại`) branches.
+  - **Dynamic Action Button Display in Center Table**: Updated [admin/centers/_table.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/admin/centers/_table.blade.php) to display the red `Ngừng` action button for active centers and the green `Bật lại` action button (`.btn-action-sm.btn-action-success`) for suspended/inactive centers.
+  - **CSS Styling & Automated Feature Tests**: Added `.btn-action-sm.btn-action-success` styling in [layouts/admin.blade.php](file:///c:/Users/Admin/Desktop/tiemchung/modules/VaccineRegistration/resources/views/layouts/admin.blade.php) and verified complete deactivation and reactivation flow via automated feature test `test_toggle_status_can_deactivate_and_reactivate_center`.
 
 ## [v6.5.5] - 2026-08-11
 

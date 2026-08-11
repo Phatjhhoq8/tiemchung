@@ -87,8 +87,9 @@ class AdminRegistrationController extends Controller
     {
         $registration = $this->visibleRegistration($id, ['vaccines', 'customer', 'slot.schedule']);
         $pointQuote = $registration->customer ? $paymentService->quote($registration->customer, $registration) : null;
+        $loyaltySettings = $paymentService->getLoyaltySettings($registration->center_id);
 
-        return view('vaccine::admin.registrations.show', compact('registration', 'pointQuote'));
+        return view('vaccine::admin.registrations.show', compact('registration', 'pointQuote', 'loyaltySettings'));
     }
 
     public function create(Request $request)

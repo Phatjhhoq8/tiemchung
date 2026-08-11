@@ -15,28 +15,32 @@
             <thead>
                 <tr>
                     <th style="width: 45px; text-align: center;">#</th>
-                    @if($isSuperAdmin ?? false)
+                    @if(!empty($selectedCenterId))
                         <th style="width: 170px;">Chi nhánh</th>
                     @endif
                     <th>Tên Vắc Xin & Chi Tiết</th>
                     <th>Nhóm bệnh</th>
                     <th style="width: 120px;">Nguồn gốc</th>
                     <th style="width: 90px; text-align: center;">Mũi tiêm</th>
-                    <th style="width: 120px;">Giá</th>
-                    <th style="width: 120px;">Giá ưu đãi</th>
-                    <th style="width: 140px; text-align: center;">Tồn kho / Trạng thái</th>
-                    <th style="width: 280px; text-align: center;">Hành động</th>
+                    @if(!empty($selectedCenterId))
+                        <th style="width: 120px;">Giá</th>
+                        <th style="width: 120px;">Giá ưu đãi</th>
+                    @else
+                        <th style="width: 140px; text-align: center;">Đơn giá</th>
+                    @endif
+                    <th style="width: 150px; text-align: center;">Tồn kho / Trạng thái</th>
+                    <th style="width: 140px; text-align: center;">Hành động</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($vaccines as $index => $vac)
-                    @php($rowCenterId = (int) $vac->center_id)
+                    @php($rowCenterId = !empty($selectedCenterId) ? (int) $vac->center_id : null)
                     <tr>
                         <td style="text-align: center; color: var(--text-light); font-weight: 600;">
                             {{ $vaccines->firstItem() + $index }}
                         </td>
 
-                        @if($isSuperAdmin ?? false)
+                        @if(!empty($selectedCenterId))
                             <td>
                                 <span class="category-tag-modern">{{ $vac->center_name }}</span>
                             </td>
@@ -68,33 +72,50 @@
                         <td style="font-weight: 500;">{{ $vac->origin ?: '—' }}</td>
                         <td style="text-align: center; font-weight: 700; color: var(--text-primary);">{{ $vac->doses }}</td>
 
-                        <td style="font-weight: 600; white-space: nowrap;
-                            @if($vac->hasSalePrice()) text-decoration: line-through; color: var(--text-light); font-size: 12.5px;
-                            @else color: var(--primary-color); font-size: 14.5px; @endif">
-                            {{ number_format($vac->price, 0, ',', '.') }} đ
-                        </td>
+                        @if(!empty($selectedCenterId))
+                            <td style="font-weight: 600; white-space: nowrap;
+                                @if($vac->hasSalePrice()) text-decoration: line-through; color: var(--text-light); font-size: 12.5px;
+                                @else color: var(--primary-color); font-size: 14.5px; @endif">
+                                {{ number_format($vac->price, 0, ',', '.') }} đ
+                            </td>
 
-                        <td style="font-weight: 700; white-space: nowrap;">
-                            @if($vac->hasSalePrice())
-                                <span style="color: #dc2626; font-size: 14.5px;">{{ number_format($vac->sale_price, 0, ',', '.') }} đ</span>
-                            @else
-                                <span style="color: var(--text-light);">—</span>
-                            @endif
-                        </td>
+                            <td style="font-weight: 700; white-space: nowrap;">
+                                @if($vac->hasSalePrice())
+                                    <span style="color: #dc2626; font-size: 14.5px;">{{ number_format($vac->sale_price, 0, ',', '.') }} đ</span>
+                                @else
+                                    <span style="color: var(--text-light);">—</span>
+                                @endif
+                            </td>
+                        @else
+                            <td style="text-align: center; color: var(--text-muted); font-size: 12.5px;">
+                                <span title="Giá được thiết lập riêng theo từng chi nhánh" style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 600; border: 1px solid #e2e8f0; font-size: 11.5px; white-space: nowrap; color: #475569;">
+                                    Theo từng chi nhánh
+                                </span>
+                            </td>
+                        @endif
 
                         <td style="text-align: center;">
-                            @if(!$vac->center_is_active)
-                                <span class="badge-modern badge-modern-secondary">Tạm ngưng</span>
+                            @if(!empty($selectedCenterId))
+                                @if(!$vac->center_is_active)
+                                    <span class="badge-modern badge-modern-secondary">Tạm ngưng</span>
+                                @else
+                                    <div style="font-size: 16px; font-weight: 800; color: {{ (int) $vac->stock_quantity <= 5 ? '#b91c1c' : '#15803d' }};">
+                                        {{ number_format((int) $vac->stock_quantity) }}
+                                    </div>
+                                    <span class="badge-modern
+                                        @if($vac->stock_status === 'available') badge-modern-success
+                                        @elseif($vac->stock_status === 'limited') badge-modern-warning
+                                        @else badge-modern-danger @endif" style="font-size: 11px; padding: 2px 8px; margin-top: 4px; display: inline-block;">
+                                        {{ $vac->getStockLabel() }}
+                                    </span>
+                                @endif
                             @else
-                                <div style="font-size: 16px; font-weight: 800; color: {{ (int) $vac->stock_quantity <= 5 ? '#b91c1c' : '#15803d' }};">
-                                    {{ number_format((int) $vac->stock_quantity) }}
+                                <div style="font-size: 16px; font-weight: 800; color: {{ (int) ($vac->stock_quantity ?? 0) <= 0 ? '#b91c1c' : '#15803d' }};">
+                                    {{ number_format((int) ($vac->stock_quantity ?? 0)) }}
                                 </div>
-                                <span class="badge-modern
-                                    @if($vac->stock_status === 'available') badge-modern-success
-                                    @elseif($vac->stock_status === 'limited') badge-modern-warning
-                                    @else badge-modern-danger @endif" style="font-size: 11px; padding: 2px 8px; margin-top: 4px; display: inline-block;">
-                                    {{ $vac->getStockLabel() }}
-                                </span>
+                                <small style="display: block; color: #64748b; font-size: 11px; margin-top: 2px; font-weight: 600;">
+                                    Tổng hệ thống
+                                </small>
                             @endif
                         </td>
 
@@ -107,7 +128,9 @@
                                 <div class="action-dropdown-menu">
                                     <form action="{{ route('admin.vaccines.toggle-featured', $vac->id) }}" method="POST" style="margin: 0;">
                                         @csrf
-                                        <input type="hidden" name="center_id" value="{{ $rowCenterId }}">
+                                        @if($rowCenterId)
+                                            <input type="hidden" name="center_id" value="{{ $rowCenterId }}">
+                                        @endif
                                         <button type="submit" class="dropdown-item-action">
                                             @if($vac->is_featured)
                                                 <i data-lucide="star-off" style="width: 14px; height: 14px; color: #d97706;"></i> Bỏ nổi bật
@@ -123,7 +146,7 @@
                                     </button>
                                     @endif
 
-                                    <a href="{{ route('admin.vaccines.edit', ['vaccine' => $vac->id, 'center_id' => $rowCenterId]) }}" class="dropdown-item-action">
+                                    <a href="{{ route('admin.vaccines.edit', $rowCenterId ? ['vaccine' => $vac->id, 'center_id' => $rowCenterId] : ['vaccine' => $vac->id]) }}" class="dropdown-item-action">
                                         <i data-lucide="edit-2" style="width: 14px; height: 14px; color: #64748b;"></i> Sửa
                                     </a>
 

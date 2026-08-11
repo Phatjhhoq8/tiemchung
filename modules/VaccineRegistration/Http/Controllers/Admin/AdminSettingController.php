@@ -31,6 +31,7 @@ class AdminSettingController extends Controller
             'hotline' => Setting::get('hotline', '0938 60 38 39'),
             'hotline_2' => Setting::get('hotline_2', '0932 477 184'),
             'email' => Setting::get('email', 'cskh@medicarecodo.vn'),
+            'address' => Setting::get('address', 'Ấp Thới Hòa, Thị trấn Cờ Đỏ, Huyện Cờ Đỏ, TP. Cần Thơ'),
             'footer_text' => Setting::get('footer_text', '© 2026 Medicare. Hệ thống tiêm chủng uy tín.'),
         ];
 
@@ -47,12 +48,14 @@ class AdminSettingController extends Controller
             'hotline' => 'required|string|max:50',
             'hotline_2' => 'nullable|string|max:50',
             'email' => 'required|email|max:255',
+            'address' => 'required|string|max:500',
             'footer_text' => 'required|string|max:500',
         ], [
             'site_name.required' => 'Tên trang web không được để trống.',
             'hotline.required' => 'Số điện thoại đường dây nóng không được để trống.',
             'email.required' => 'Địa chỉ thư điện tử không được để trống.',
             'email.email' => 'Địa chỉ thư điện tử không đúng định dạng.',
+            'address.required' => 'Địa chỉ trụ sở chính không được để trống.',
             'footer_text.required' => 'Nội dung chân trang không được để trống.',
         ]);
 

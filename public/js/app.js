@@ -1,18 +1,14 @@
-if (window.__MEDICARE_APP_INITIALIZED__) {
-    console.warn('JavaScript của ứng dụng Medicare đã được khởi tạo trước đó.');
-} else {
-    window.__MEDICARE_APP_INITIALIZED__ = true;
-
 if (typeof window.lucide === 'undefined') {
     window.lucide = {
         createIcons: () => console.warn('Thư viện Lucide không được tải thành công từ CDN.')
     };
 }
 
-const getCsrfToken = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+const getCsrfToken = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || window.Laravel?.csrfToken || '';
 const getAbsoluteUrl = (path) => {
-    const base = window.Laravel?.baseUrl || '';
-    return base + (base && !path.startsWith('/') ? '/' : '') + path;
+    if (!path) return '/';
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    return path.startsWith('/') ? path : '/' + path;
 };
 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
     '&': '&amp;',
@@ -713,11 +709,11 @@ async function renderSpaConsultForm() {
 
     const hasCart = window.lastCartData && window.lastCartData.success;
     const tabHtml = hasCart ? `
-        <div style="display: flex; gap: 24px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px;">
-            <button type="button" onclick="switchSpaModalTab('register')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; margin-bottom: -2px;">
+        <div style="display: flex; justify-content: center; gap: 24px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px;">
+            <button type="button" onclick="switchSpaModalTab('register')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; margin-bottom: -2px; white-space: nowrap;">
                 1. Đăng ký tiêm chủng (vắc xin đã chọn)
             </button>
-            <button type="button" onclick="switchSpaModalTab('consult')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: var(--primary-color, #c8102e); border-bottom: 3px solid var(--primary-color, #c8102e); transition: all 0.2s; margin-bottom: -2px;">
+            <button type="button" onclick="switchSpaModalTab('consult')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: var(--primary-color, #c8102e); border-bottom: 3px solid var(--primary-color, #c8102e); transition: all 0.2s; margin-bottom: -2px; white-space: nowrap;">
                 2. Tư vấn Y khoa qua Zalo Official
             </button>
         </div>
@@ -777,8 +773,11 @@ async function renderSpaConsultForm() {
     if (window.lucide) window.lucide.createIcons();
 }
 
+let isSpaConsultSubmitting = false;
+
 async function submitSpaConsult(event) {
     if (event) event.preventDefault();
+    if (isSpaConsultSubmitting) return;
     const form = document.getElementById('spaConsultForm');
     const submitBtn = document.getElementById('btnSubmitSpaConsult');
     if (!form || !submitBtn) return;
@@ -787,6 +786,8 @@ async function submitSpaConsult(event) {
         return;
     }
 
+    if (isSpaConsultSubmitting) return;
+    isSpaConsultSubmitting = true;
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent"></i> Đang gửi...';
 
@@ -831,6 +832,7 @@ async function submitSpaConsult(event) {
         console.error(err);
         showToast(err.message || 'Có lỗi xảy ra khi gửi yêu cầu.', 'error');
     } finally {
+        isSpaConsultSubmitting = false;
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i data-lucide="send" style="width:16px;height:16px;"></i> Gửi yêu cầu';
         if (window.lucide) window.lucide.createIcons();
@@ -876,11 +878,11 @@ function renderSpaRegisterForm(data) {
 
     body.innerHTML = `
         <div style="display: flex; justify-content: center; gap: 24px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px;">
-            <button type="button" onclick="switchSpaModalTab('register')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: var(--primary-color, #c8102e); border-bottom: 3px solid var(--primary-color, #c8102e); transition: all 0.2s; margin-bottom: -2px;">
+            <button type="button" onclick="switchSpaModalTab('register')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: var(--primary-color, #c8102e); border-bottom: 3px solid var(--primary-color, #c8102e); transition: all 0.2s; margin-bottom: -2px; white-space: nowrap;">
                 1. Đăng ký tiêm chủng (vắc xin đã chọn)
             </button>
-            <button type="button" onclick="switchSpaModalTab('consult')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; margin-bottom: -2px;">
-                2. Gửi yêu cầu tư vấn nhanh
+            <button type="button" onclick="switchSpaModalTab('consult')" style="border: none; background: none; font-size: 15.5px; font-weight: 700; padding: 12px 6px; cursor: pointer; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; margin-bottom: -2px; white-space: nowrap;">
+                2. Tư vấn Y khoa qua Zalo Official
             </button>
         </div>
 
@@ -991,9 +993,27 @@ async function changeSpaRegisterCenter(centerId) {
     const body = document.getElementById('spaRegisterBody');
     if (!body) return;
 
-    // Preserve user inputs
-    const patientName = document.getElementById('spa_patient_name')?.value || '';
-    const patientPhone = document.getElementById('spa_patient_phone')?.value || '';
+    // 1. Preserve all existing patient blocks and input states
+    const form = document.getElementById('spaFormRegisterSubmit');
+    const savedPatients = [];
+    if (form) {
+        form.querySelectorAll('.spa-patient-block').forEach(block => {
+            const checkedVacIds = [];
+            block.querySelectorAll('.spa-patient-vaccine-checkbox:checked').forEach(cb => {
+                checkedVacIds.push(cb.value);
+            });
+            savedPatients.push({
+                name: block.querySelector('.spa-patient-name')?.value || '',
+                phone: block.querySelector('.spa-patient-phone')?.value || '',
+                dob: block.querySelector('.spa-patient-dob')?.value || '',
+                gender: block.querySelector('.spa-patient-gender')?.value || 'Nam',
+                address: block.querySelector('.spa-patient-address')?.value || '',
+                vaccineIds: checkedVacIds
+            });
+        });
+    }
+    const savedGuardianName = document.getElementById('spa_guardian_name')?.value || '';
+    const savedGuardianPhone = document.getElementById('spa_guardian_phone')?.value || '';
 
     // Apply transient loading overlay style rather than wiping the screen
     const grid = document.querySelector('.spa-register-grid');
@@ -1033,11 +1053,58 @@ async function changeSpaRegisterCenter(centerId) {
             // Redraw form layout
             renderSpaRegisterForm(data);
 
-            // Restore inputs back to the first patient block
-            const nameInput = document.querySelector('.spa-patient-name');
-            const phoneInput = document.querySelector('.spa-patient-phone');
-            if (nameInput) nameInput.value = patientName;
-            if (phoneInput) phoneInput.value = patientPhone;
+            // Restore all preserved patient inputs and vaccine states
+            if (savedPatients.length > 0) {
+                const container = document.getElementById('spaPatientsContainer');
+                if (container) container.innerHTML = '';
+                window.spaPatientCount = 0;
+
+                savedPatients.forEach((savedPat, idx) => {
+                    addSpaPatientField();
+                    const block = document.getElementById(`spaPatientBlock_${idx}`);
+                    if (block) {
+                        const nameInput = block.querySelector('.spa-patient-name');
+                        const phoneInput = block.querySelector('.spa-patient-phone');
+                        const dobInput = block.querySelector('.spa-patient-dob');
+                        const genderInput = block.querySelector('.spa-patient-gender');
+                        const addressInput = block.querySelector('.spa-patient-address');
+
+                        if (nameInput) nameInput.value = savedPat.name;
+                        if (phoneInput) phoneInput.value = savedPat.phone;
+                        if (dobInput) {
+                            dobInput.value = savedPat.dob;
+                            if (typeof dobInput.updateMedicareDisplay === 'function') {
+                                dobInput.updateMedicareDisplay();
+                            }
+                        }
+                        if (genderInput) {
+                            genderInput.value = savedPat.gender;
+                            if (typeof genderInput.updateMedicareCustomSelect === 'function') {
+                                genderInput.updateMedicareCustomSelect();
+                            }
+                        }
+                        if (addressInput) addressInput.value = savedPat.address;
+
+                        if (savedPat.vaccineIds && savedPat.vaccineIds.length > 0) {
+                            block.querySelectorAll('.spa-patient-vaccine-checkbox').forEach(cb => {
+                                cb.checked = savedPat.vaccineIds.includes(cb.value) && !cb.disabled;
+                            });
+                        }
+                    }
+                });
+                checkSpaPatientAge();
+                recalculateSpaRegisterPrices();
+            }
+
+            // Restore guardian inputs if present
+            if (savedGuardianName) {
+                const gName = document.getElementById('spa_guardian_name');
+                if (gName) gName.value = savedGuardianName;
+            }
+            if (savedGuardianPhone) {
+                const gPhone = document.getElementById('spa_guardian_phone');
+                if (gPhone) gPhone.value = savedGuardianPhone;
+            }
         } else {
             throw new Error(data.message || 'Lọc chi nhánh thất bại.');
         }
@@ -1189,6 +1256,9 @@ function changeSpaDateFilter(selectedDate) {
         slotSelect.disabled = true;
         slotSelect.style.background = '#f8fafc';
         slotSelect.style.cursor = 'not-allowed';
+        if (typeof slotSelect.updateMedicareCustomSelect === 'function') {
+            slotSelect.updateMedicareCustomSelect();
+        }
         return;
     }
 
@@ -1196,17 +1266,23 @@ function changeSpaDateFilter(selectedDate) {
     const daySchedule = schedules.find(s => (s.date || '').substring(0, 10) === selectedDate);
     
     let options = '<option value="">-- Chọn khung giờ tiêm --</option>';
-    if (daySchedule && daySchedule.slots) {
+    if (daySchedule && daySchedule.slots && daySchedule.slots.length > 0) {
         daySchedule.slots.forEach(slot => {
             const remaining = Math.max(0, slot.capacity - slot.reserved_count);
             options += `<option value="${slot.id}">${slot.start_at} - ${slot.end_at} (còn ${remaining} chỗ)</option>`;
         });
+    } else {
+        options = '<option value="">-- Ngày này không có khung giờ trống --</option>';
     }
 
     slotSelect.innerHTML = options;
     slotSelect.disabled = false;
     slotSelect.style.background = '#fff';
     slotSelect.style.cursor = 'pointer';
+
+    if (typeof slotSelect.updateMedicareCustomSelect === 'function') {
+        slotSelect.updateMedicareCustomSelect();
+    }
 }
 
 function recalculateSpaRegisterPrices() {
@@ -1223,7 +1299,7 @@ function recalculateSpaRegisterPrices() {
 
     checkedCheckboxes.forEach(cb => {
         const id = cb.value;
-        const cartItem = window.lastCartData.cart[id];
+        const cartItem = window.lastCartData?.cart?.[id];
         if (cartItem) {
             total += Number(cartItem.price);
             if (!itemsMap[id]) {
@@ -1255,8 +1331,11 @@ function recalculateSpaRegisterPrices() {
     }
 }
 
+let isSpaBookingSubmitting = false;
+
 async function submitSpaRegistrationForm(event) {
     if (event) event.preventDefault();
+    if (isSpaBookingSubmitting) return;
     const form = document.getElementById('spaFormRegisterSubmit');
     const errEl = document.getElementById('spaFormErrorAlert');
     const submitBtn = document.getElementById('spaSubmitBtn');
@@ -1265,7 +1344,17 @@ async function submitSpaRegistrationForm(event) {
     errEl.style.display = 'none';
     errEl.textContent = '';
 
-    // Validate that each patient block has at least one vaccine checked
+    // 1. Validate slot_id selection
+    const slotSelect = document.getElementById('spa_slot_id');
+    const slotIdVal = slotSelect ? Number(slotSelect.value) : 0;
+    if (!slotIdVal || isNaN(slotIdVal) || slotIdVal <= 0) {
+        errEl.textContent = 'Vui lòng chọn ngày và khung giờ tiêm chủng.';
+        errEl.style.display = 'block';
+        errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+    }
+
+    // 2. Validate that each patient block has inputs filled and at least one vaccine checked
     const blocks = form.querySelectorAll('.spa-patient-block');
     if (blocks.length === 0) {
         errEl.textContent = 'Vui lòng thêm ít nhất một người tiêm.';
@@ -1275,12 +1364,78 @@ async function submitSpaRegistrationForm(event) {
 
     for (let i = 0; i < blocks.length; i++) {
         const block = blocks[i];
+        const nameVal = block.querySelector('.spa-patient-name')?.value?.trim();
+        const phoneVal = block.querySelector('.spa-patient-phone')?.value?.trim();
+        const dobVal = block.querySelector('.spa-patient-dob')?.value?.trim();
+        const addressVal = block.querySelector('.spa-patient-address')?.value?.trim();
         const checked = block.querySelectorAll('.spa-patient-vaccine-checkbox:checked');
+
+        if (!nameVal) {
+            errEl.textContent = `Vui lòng nhập họ và tên cho Người tiêm #${i + 1}.`;
+            errEl.style.display = 'block';
+            block.querySelector('.spa-patient-name')?.focus();
+            return;
+        }
+        if (!phoneVal) {
+            errEl.textContent = `Vui lòng nhập số điện thoại cho Người tiêm #${i + 1}.`;
+            errEl.style.display = 'block';
+            block.querySelector('.spa-patient-phone')?.focus();
+            return;
+        }
+        if (!dobVal) {
+            errEl.textContent = `Vui lòng chọn ngày sinh cho Người tiêm #${i + 1}.`;
+            errEl.style.display = 'block';
+            block.querySelector('.spa-patient-dob')?.focus();
+            return;
+        }
+        if (!addressVal) {
+            errEl.textContent = `Vui lòng nhập địa chỉ thường trú cho Người tiêm #${i + 1}.`;
+            errEl.style.display = 'block';
+            block.querySelector('.spa-patient-address')?.focus();
+            return;
+        }
         if (checked.length === 0) {
             errEl.textContent = `Vui lòng chọn ít nhất một loại vắc xin cho Người tiêm #${i + 1}.`;
             errEl.style.display = 'block';
             return;
         }
+    }
+
+    // 3. Guardian validation if minor section is shown
+    const guardianSec = document.getElementById('spaGuardianSection');
+    if (guardianSec && guardianSec.style.display !== 'none') {
+        const gName = document.getElementById('spa_guardian_name')?.value?.trim();
+        const gPhone = document.getElementById('spa_guardian_phone')?.value?.trim();
+        if (!gName) {
+            errEl.textContent = 'Vui lòng nhập họ tên người giám hộ (dành cho người tiêm dưới 15 tuổi).';
+            errEl.style.display = 'block';
+            document.getElementById('spa_guardian_name')?.focus();
+            return;
+        }
+        if (!gPhone) {
+            errEl.textContent = 'Vui lòng nhập số điện thoại người giám hộ.';
+            errEl.style.display = 'block';
+            document.getElementById('spa_guardian_phone')?.focus();
+            return;
+        }
+    }
+
+    // 4. Validate all phone inputs format (10 digits starting with 0)
+    let firstInvalidPhone = null;
+    form.querySelectorAll('input[type="tel"], .spa-patient-phone, #spa_guardian_phone').forEach(pInput => {
+        if (pInput.offsetParent !== null && (pInput.value.trim() || pInput.hasAttribute('required'))) {
+            const isValid = validatePhoneNumberField(pInput);
+            if (!isValid && !firstInvalidPhone) {
+                firstInvalidPhone = pInput;
+            }
+        }
+    });
+
+    if (firstInvalidPhone) {
+        firstInvalidPhone.focus();
+        errEl.textContent = 'Vui lòng kiểm tra lại số điện thoại không hợp lệ (gồm 10 số, ví dụ: 0912345678).';
+        errEl.style.display = 'block';
+        return;
     }
 
     showConfirmDialog({
@@ -1289,6 +1444,8 @@ async function submitSpaRegistrationForm(event) {
         confirmText: 'Xác nhận',
         cancelText: 'Hủy',
         onConfirm: async () => {
+            if (isSpaBookingSubmitting) return;
+            isSpaBookingSubmitting = true;
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent"></i> Đang gửi...';
             showToast('Đang gửi yêu cầu đặt lịch, vui lòng đợi trong giây lát...', 'info');
@@ -1298,11 +1455,11 @@ async function submitSpaRegistrationForm(event) {
                 const patients = [];
 
                 blocks.forEach((block, index) => {
-                    const name = block.querySelector('.spa-patient-name')?.value || '';
-                    const phone = block.querySelector('.spa-patient-phone')?.value || '';
-                    const dob = block.querySelector('.spa-patient-dob')?.value || '';
+                    const name = block.querySelector('.spa-patient-name')?.value?.trim() || '';
+                    const phone = block.querySelector('.spa-patient-phone')?.value?.trim() || '';
+                    const dob = block.querySelector('.spa-patient-dob')?.value?.trim() || '';
                     const gender = block.querySelector('.spa-patient-gender')?.value || 'Khác';
-                    const address = block.querySelector('.spa-patient-address')?.value || '';
+                    const address = block.querySelector('.spa-patient-address')?.value?.trim() || '';
                     const checkedVacIds = [];
                     block.querySelectorAll('.spa-patient-vaccine-checkbox:checked').forEach(cb => {
                         checkedVacIds.push(Number(cb.value));
@@ -1320,7 +1477,7 @@ async function submitSpaRegistrationForm(event) {
 
                 const payload = {
                     patients: patients,
-                    slot_id: Number(formData.get('slot_id')),
+                    slot_id: slotIdVal,
                     guardian_name: formData.get('guardian_name') || null,
                     guardian_phone: formData.get('guardian_phone') || null,
                     payment_method: 'Tại trung tâm',
@@ -1360,6 +1517,7 @@ async function submitSpaRegistrationForm(event) {
                 errEl.style.display = 'block';
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Hoàn tất đặt lịch';
+                isSpaBookingSubmitting = false;
             }
         }
     });
@@ -1409,19 +1567,15 @@ async function openSpaConsultationModal(event) {
         window.addEventListener('popstate', () => window.location.reload());
     }
 
-    // Expose functions globally to window so HTML onclick inline events can invoke them
-    window.toggleCart = toggleCart;
-    window.toggleCartDrawer = toggleCartDrawer;
-    window.toggleHeaderCartDropdown = toggleHeaderCartDropdown;
-    window.clearCartUI = clearCartUI;
-    window.openVaccineDetailModal = openVaccineDetailModal;
-    window.closeVaccineDetailModal = closeVaccineDetailModal;
-    window.setAgeGroupFilter = setAgeGroupFilter;
-    window.setDiseaseFilter = setDiseaseFilter;
-    window.setOriginFilter = setOriginFilter;
 // ===== GLOBAL MEDICARE CUSTOM DATEPICKER INITIALIZER =====
 function initGlobalMedicareDatePickers() {
-    document.querySelectorAll('input[type="date"]:not(.medicare-dp-processed)').forEach(inputEl => {
+    document.querySelectorAll('input[type="date"]').forEach(inputEl => {
+        if (inputEl.classList.contains('medicare-dp-processed')) {
+            if (typeof inputEl.updateMedicareDisplay === 'function') {
+                inputEl.updateMedicareDisplay();
+            }
+            return;
+        }
         inputEl.classList.add('medicare-dp-processed');
         
         inputEl.style.display = 'none';
@@ -1437,53 +1591,86 @@ function initGlobalMedicareDatePickers() {
         
         const trigger = document.createElement('div');
         trigger.className = 'medicare-datepicker-trigger';
-        trigger.style.cursor = 'pointer';
         trigger.style.display = 'flex';
         trigger.style.alignItems = 'center';
         trigger.style.justifyContent = 'space-between';
-        trigger.style.userSelect = 'none';
         trigger.style.gap = '8px';
-        trigger.style.padding = '10px 12px';
+        trigger.style.padding = '8px 12px';
         trigger.style.border = '1px solid #cbd5e1';
         trigger.style.borderRadius = '8px';
         trigger.style.fontSize = '14px';
         trigger.style.height = '42px';
         trigger.style.background = '#ffffff';
         trigger.style.boxSizing = 'border-box';
+        trigger.style.transition = 'border-color 0.2s, box-shadow 0.2s';
         if (inputEl.disabled) {
             trigger.style.backgroundColor = '#f1f5f9';
             trigger.style.cursor = 'not-allowed';
         }
 
-        const displaySpan = document.createElement('span');
-        displaySpan.style.whiteSpace = 'nowrap';
-        
+        const textInput = document.createElement('input');
+        textInput.type = 'text';
+        textInput.className = 'medicare-datepicker-input';
+        textInput.placeholder = 'dd/mm/yyyy';
+        textInput.maxLength = 10;
+        textInput.autocomplete = 'off';
+        textInput.style.border = 'none';
+        textInput.style.outline = 'none';
+        textInput.style.background = 'transparent';
+        textInput.style.width = '100%';
+        textInput.style.fontSize = '14px';
+        textInput.style.color = '#0f172a';
+        textInput.style.fontWeight = '500';
+        textInput.style.padding = '0';
+        textInput.style.margin = '0';
+        textInput.style.boxSizing = 'border-box';
+        textInput.style.fontFamily = 'inherit';
+        if (inputEl.disabled) {
+            textInput.disabled = true;
+            textInput.style.cursor = 'not-allowed';
+        }
+
+        textInput.addEventListener('focus', function() {
+            trigger.style.borderColor = '#c8102e';
+            trigger.style.boxShadow = '0 0 0 3px rgba(200, 16, 46, 0.15)';
+        });
+        textInput.addEventListener('blur', function() {
+            trigger.style.borderColor = '#cbd5e1';
+            trigger.style.boxShadow = 'none';
+        });
+
         function updateDisplay() {
             const val = inputEl.value;
             if (val) {
                 const parts = val.split('-');
                 if (parts.length === 3) {
-                    displaySpan.textContent = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                    displaySpan.style.color = '#0f172a';
-                    displaySpan.style.fontWeight = '500';
+                    textInput.value = `${parts[2]}/${parts[1]}/${parts[0]}`;
                 } else {
-                    displaySpan.textContent = val;
+                    textInput.value = val;
                 }
             } else {
-                displaySpan.textContent = 'dd/mm/yyyy';
-                displaySpan.style.color = '#94a3b8';
-                displaySpan.style.fontWeight = 'normal';
+                textInput.value = '';
             }
         }
+        inputEl.updateMedicareDisplay = updateDisplay;
         updateDisplay();
 
-        const iconSvg = document.createElement('div');
-        iconSvg.style.display = 'flex';
-        iconSvg.style.alignItems = 'center';
-        iconSvg.innerHTML = '<svg style="width: 15px; height: 15px; color: #64748b; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
+        const iconBtn = document.createElement('button');
+        iconBtn.type = 'button';
+        iconBtn.tabIndex = -1;
+        iconBtn.className = 'medicare-datepicker-icon-btn';
+        iconBtn.style.display = 'flex';
+        iconBtn.style.alignItems = 'center';
+        iconBtn.style.justifyContent = 'center';
+        iconBtn.style.background = 'none';
+        iconBtn.style.border = 'none';
+        iconBtn.style.padding = '2px';
+        iconBtn.style.cursor = inputEl.disabled ? 'not-allowed' : 'pointer';
+        iconBtn.style.flexShrink = '0';
+        iconBtn.innerHTML = '<svg style="width: 16px; height: 16px; color: #64748b; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
 
-        trigger.appendChild(displaySpan);
-        trigger.appendChild(iconSvg);
+        trigger.appendChild(textInput);
+        trigger.appendChild(iconBtn);
         wrapper.appendChild(trigger);
 
         if (inputEl.disabled) return;
@@ -1633,16 +1820,100 @@ function initGlobalMedicareDatePickers() {
             updateDisplay();
             popup.style.display = 'none';
             inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+            inputEl.dispatchEvent(new Event('input', { bubbles: true }));
         }
 
-        trigger.addEventListener('click', function(e) {
-            e.stopPropagation();
+        // Direct Keyboard Input Handling & Auto-Masking
+        textInput.addEventListener('input', function(e) {
+            let val = textInput.value.replace(/[^0-9\/]/g, '');
+            if (e.inputType !== 'deleteContentBackward' && e.inputType !== 'deleteContentForward') {
+                const digits = val.replace(/\D/g, '');
+                if (digits.length >= 5) {
+                    val = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4, 8);
+                } else if (digits.length >= 3) {
+                    val = digits.slice(0, 2) + '/' + digits.slice(2, 4);
+                } else if (digits.length >= 2 && !val.includes('/')) {
+                    val = digits.slice(0, 2) + '/';
+                }
+            }
+            textInput.value = val;
+
+            const parts = val.split('/');
+            if (parts.length === 3 && parts[2].length === 4) {
+                const d = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10);
+                const y = parseInt(parts[2], 10);
+                if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1900 && y <= 2100) {
+                    const testDate = new Date(y, m - 1, d);
+                    if (testDate.getFullYear() === y && testDate.getMonth() === m - 1 && testDate.getDate() === d) {
+                        const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                        if (inputEl.value !== iso) {
+                            inputEl.value = iso;
+                            inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                            inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        viewYear = y;
+                        viewMonth = m - 1;
+                        renderGdp();
+                    }
+                }
+            } else if (val === '') {
+                if (inputEl.value !== '') {
+                    inputEl.value = '';
+                    inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+        });
+
+        textInput.addEventListener('blur', function() {
+            const val = textInput.value.trim();
+            if (!val) {
+                if (inputEl.value !== '') {
+                    inputEl.value = '';
+                    inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                return;
+            }
+            const parts = val.split('/');
+            if (parts.length === 3 && parts[2].length === 4) {
+                const d = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10);
+                const y = parseInt(parts[2], 10);
+                if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1900 && y <= 2100) {
+                    const testDate = new Date(y, m - 1, d);
+                    if (testDate.getFullYear() === y && testDate.getMonth() === m - 1 && testDate.getDate() === d) {
+                        const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                        inputEl.value = iso;
+                        inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                        return;
+                    }
+                }
+            }
+            updateDisplay();
+        });
+
+        function togglePopup() {
             const isExpanded = popup.style.display === 'block';
             document.querySelectorAll('.medicare-datepicker-wrapper div[style*="position: absolute"]').forEach(p => p.style.display = 'none');
             popup.style.display = isExpanded ? 'none' : 'block';
             if (!isExpanded) {
                 const triggerRect = trigger.getBoundingClientRect();
                 const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+                const modalBody = trigger.closest('#spaRegisterBody') || trigger.closest('.spa-modal-card');
+                const containerRect = modalBody ? modalBody.getBoundingClientRect() : { bottom: window.innerHeight, top: 0 };
+                const spaceBelow = containerRect.bottom - triggerRect.bottom;
+                const spaceAbove = triggerRect.top - containerRect.top;
+
+                if (spaceBelow < 280 && spaceAbove > spaceBelow) {
+                    popup.style.top = 'auto';
+                    popup.style.bottom = 'calc(100% + 4px)';
+                } else {
+                    popup.style.bottom = 'auto';
+                    popup.style.top = 'calc(100% + 4px)';
+                }
 
                 if (triggerRect.left + 290 > viewportWidth) {
                     popup.style.left = 'auto';
@@ -1660,6 +1931,19 @@ function initGlobalMedicareDatePickers() {
                     }
                 }
                 renderGdp();
+            }
+        }
+
+        iconBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            togglePopup();
+        });
+
+        trigger.addEventListener('click', function(e) {
+            if (e.target !== textInput && e.target !== iconBtn && !iconBtn.contains(e.target)) {
+                e.stopPropagation();
+                textInput.focus();
+                togglePopup();
             }
         });
 
@@ -1755,37 +2039,44 @@ function initGlobalMedicareCustomDropdowns() {
         labelSpan.style.fontWeight = '500';
         labelSpan.style.color = '#0f172a';
         labelSpan.style.textAlign = 'left';
-        labelSpan.style.flex = '1';
+        labelSpan.style.flex = '1 1 auto';
+        labelSpan.style.minWidth = '0';
 
         const arrowSvg = document.createElement('div');
         arrowSvg.className = 'medicare-select-arrow-icon';
         arrowSvg.style.display = 'flex';
         arrowSvg.style.alignItems = 'center';
+        arrowSvg.style.justifyContent = 'center';
         arrowSvg.style.transition = 'transform 0.2s ease';
         arrowSvg.style.marginLeft = 'auto';
         arrowSvg.style.flexShrink = '0';
-        arrowSvg.innerHTML = '<svg style="width: 15px; height: 15px; color: #64748b; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+        arrowSvg.style.width = '18px';
+        arrowSvg.style.height = '18px';
+        arrowSvg.style.minWidth = '18px';
+        arrowSvg.innerHTML = '<svg style="width: 16px; height: 16px; min-width: 16px; color: #64748b; display: block;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
 
         trigger.appendChild(labelSpan);
         trigger.appendChild(arrowSvg);
         wrapper.appendChild(trigger);
 
         const popup = document.createElement('div');
+        popup.className = 'medicare-select-popup';
         popup.style.display = 'none';
         popup.style.position = 'absolute';
         popup.style.top = 'calc(100% + 4px)';
         popup.style.left = '0';
+        popup.style.width = '100%';
         popup.style.minWidth = '100%';
-        popup.style.width = 'max-content';
-        popup.style.maxWidth = '340px';
         popup.style.background = '#ffffff';
-        popup.style.border = '1px solid #cbd5e1';
+        popup.style.border = '1px solid #e2e8f0';
         popup.style.borderRadius = '12px';
-        popup.style.boxShadow = '0 15px 30px -5px rgba(0,0,0,0.15)';
+        popup.style.boxShadow = '0 12px 30px rgba(15, 23, 42, 0.12)';
         popup.style.zIndex = '1050';
         popup.style.padding = '6px';
-        popup.style.maxHeight = '260px';
+        popup.style.maxHeight = '240px';
         popup.style.overflowY = 'auto';
+        popup.style.scrollbarWidth = 'none';
+        popup.style.msOverflowStyle = 'none';
         popup.style.boxSizing = 'border-box';
         popup.style.userSelect = 'none';
         wrapper.appendChild(popup);
@@ -1801,19 +2092,11 @@ function initGlobalMedicareCustomDropdowns() {
         }
 
         function updateAlignment() {
-            const text = labelSpan.textContent ? labelSpan.textContent.trim() : '';
-            const isLongText = text.length > 14 || (trigger.offsetWidth && trigger.offsetWidth > 170);
-            if (isLongText) {
-                trigger.style.justifyContent = 'space-between';
-                labelSpan.style.textAlign = 'left';
-                labelSpan.style.flex = '1';
-                arrowSvg.style.marginLeft = 'auto';
-            } else {
-                trigger.style.justifyContent = 'center';
-                labelSpan.style.textAlign = 'center';
-                labelSpan.style.flex = '0 1 auto';
-                arrowSvg.style.marginLeft = '0';
-            }
+            trigger.style.justifyContent = 'space-between';
+            labelSpan.style.textAlign = 'left';
+            labelSpan.style.flex = '1 1 auto';
+            labelSpan.style.minWidth = '0';
+            arrowSvg.style.marginLeft = 'auto';
         }
 
         function renderOptions() {
@@ -1831,24 +2114,27 @@ function initGlobalMedicareCustomDropdowns() {
             options.forEach(opt => {
                 const item = document.createElement('div');
                 item.className = 'medicare-select-item';
-                item.style.padding = '8px 12px';
+                item.style.padding = '9px 12px';
                 item.style.borderRadius = '8px';
                 item.style.cursor = 'pointer';
                 item.style.fontSize = '13.5px';
+                item.style.lineHeight = '1.4';
                 item.style.transition = 'all 0.15s ease';
                 item.style.marginBottom = '2px';
+                item.style.textAlign = 'left';
+                item.style.wordBreak = 'break-word';
                 item.textContent = opt.textContent.trim();
 
                 const isSelected = opt.selected;
                 if (isSelected) {
-                    item.style.background = '#fee2e2';
+                    item.style.background = 'rgba(200, 16, 46, 0.08)';
                     item.style.color = '#c8102e';
                     item.style.fontWeight = '700';
                 } else {
                     item.style.background = 'transparent';
                     item.style.color = '#1e293b';
                     item.style.fontWeight = '500';
-                    item.addEventListener('mouseenter', () => { item.style.background = '#f1f5f9'; });
+                    item.addEventListener('mouseenter', () => { item.style.background = '#f8fafc'; });
                     item.addEventListener('mouseleave', () => { item.style.background = 'transparent'; });
                 }
 
@@ -1888,8 +2174,20 @@ function initGlobalMedicareCustomDropdowns() {
                 renderOptions();
                 const triggerRect = trigger.getBoundingClientRect();
                 const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+                const modalBody = trigger.closest('#spaRegisterBody') || trigger.closest('.spa-modal-card');
+                const containerRect = modalBody ? modalBody.getBoundingClientRect() : { bottom: window.innerHeight, top: 0 };
+                const spaceBelow = containerRect.bottom - triggerRect.bottom;
+                const spaceAbove = triggerRect.top - containerRect.top;
 
-                if (triggerRect.left + 240 > viewportWidth) {
+                if (spaceBelow < 220 && spaceAbove > spaceBelow) {
+                    popup.style.top = 'auto';
+                    popup.style.bottom = 'calc(100% + 4px)';
+                } else {
+                    popup.style.bottom = 'auto';
+                    popup.style.top = 'calc(100% + 4px)';
+                }
+
+                if (triggerRect.left + 280 > viewportWidth) {
                     popup.style.left = 'auto';
                     popup.style.right = '0';
                 } else {
@@ -1901,6 +2199,107 @@ function initGlobalMedicareCustomDropdowns() {
     });
 }
 
+// ===== INSTANT VIETNAMESE PHONE VALIDATOR (ON BLUR & INPUT) =====
+function validatePhoneNumberField(inputEl) {
+    if (!inputEl) return true;
+    const rawVal = inputEl.value.trim();
+    const isRequired = inputEl.hasAttribute('required') || inputEl.required;
+
+    // Find or create error element
+    let errorEl = inputEl.parentNode.querySelector('.phone-validation-error');
+
+    if (!rawVal) {
+        if (isRequired) {
+            inputEl.style.borderColor = '#ef4444';
+            inputEl.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.12)';
+            if (!errorEl) {
+                errorEl = document.createElement('div');
+                errorEl.className = 'phone-validation-error';
+                errorEl.style.color = '#ef4444';
+                errorEl.style.fontSize = '12px';
+                errorEl.style.fontWeight = '600';
+                errorEl.style.marginTop = '4px';
+                errorEl.style.textAlign = 'left';
+                errorEl.style.display = 'flex';
+                errorEl.style.alignItems = 'center';
+                errorEl.style.gap = '4px';
+                inputEl.parentNode.appendChild(errorEl);
+            }
+            errorEl.textContent = 'Vui lòng nhập số điện thoại liên hệ.';
+            return false;
+        } else {
+            inputEl.style.borderColor = '#cbd5e1';
+            inputEl.style.boxShadow = 'none';
+            if (errorEl) errorEl.remove();
+            return true;
+        }
+    }
+
+    const clean = rawVal.replace(/[\s\.\-\(\)]/g, '');
+    const phoneRegex = /^0[0-9]{9}$/;
+
+    if (!phoneRegex.test(clean)) {
+        inputEl.style.borderColor = '#ef4444';
+        inputEl.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.12)';
+        if (!errorEl) {
+            errorEl = document.createElement('div');
+            errorEl.className = 'phone-validation-error';
+            errorEl.style.color = '#ef4444';
+            errorEl.style.fontSize = '12px';
+            errorEl.style.fontWeight = '600';
+            errorEl.style.marginTop = '4px';
+            errorEl.style.textAlign = 'left';
+            errorEl.style.display = 'flex';
+            errorEl.style.alignItems = 'center';
+            errorEl.style.gap = '4px';
+            inputEl.parentNode.appendChild(errorEl);
+        }
+        errorEl.textContent = 'Số điện thoại không hợp lệ (gồm 10 số, ví dụ: 0912345678).';
+        return false;
+    } else {
+        inputEl.style.borderColor = '#10b981';
+        inputEl.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.12)';
+        if (errorEl) errorEl.remove();
+        setTimeout(() => {
+            if (inputEl.style.borderColor === 'rgb(16, 185, 129)' || inputEl.style.borderColor === '#10b981') {
+                inputEl.style.borderColor = '#cbd5e1';
+                inputEl.style.boxShadow = 'none';
+            }
+        }, 1500);
+        return true;
+    }
+}
+
+// Global Event Delegation for Phone Blur & Input
+document.addEventListener('focusout', function(e) {
+    const target = e.target;
+    if (target && target.tagName === 'INPUT' && (
+        target.type === 'tel' ||
+        (target.name && target.name.toLowerCase().includes('phone')) ||
+        (target.id && target.id.toLowerCase().includes('phone')) ||
+        target.classList.contains('spa-patient-phone') ||
+        target.classList.contains('patient-phone-input')
+    )) {
+        validatePhoneNumberField(target);
+    }
+}, true);
+
+document.addEventListener('input', function(e) {
+    const target = e.target;
+    if (target && target.tagName === 'INPUT' && (
+        target.type === 'tel' ||
+        (target.name && target.name.toLowerCase().includes('phone')) ||
+        (target.id && target.id.toLowerCase().includes('phone')) ||
+        target.classList.contains('spa-patient-phone') ||
+        target.classList.contains('patient-phone-input')
+    )) {
+        const errorEl = target.parentNode.querySelector('.phone-validation-error');
+        if (errorEl) {
+            validatePhoneNumberField(target);
+        }
+    }
+}, true);
+
 // Global click listener to dismiss active Medicare popups
 document.addEventListener('click', () => {
     document.querySelectorAll('.medicare-select-wrapper div[style*="position: absolute"]').forEach(p => p.style.display = 'none');
@@ -1909,8 +2308,18 @@ document.addEventListener('click', () => {
 });
 
 if (typeof window !== 'undefined') {
-    window.initGlobalMedicareDatePickers = initGlobalMedicareDatePickers;
-    window.initGlobalMedicareCustomDropdowns = initGlobalMedicareCustomDropdowns;
+    window.showToast = showToast;
+    window.showConfirmDialog = showConfirmDialog;
+    window.toggleCartDrawer = toggleCartDrawer;
+    window.toggleHeaderCartDropdown = toggleHeaderCartDropdown;
+    window.setCartSelection = setCartSelection;
+    window.toggleCart = toggleCart;
+    window.clearCartUI = clearCartUI;
+    window.openVaccineDetailModal = openVaccineDetailModal;
+    window.closeVaccineDetailModal = closeVaccineDetailModal;
+    window.setAgeGroupFilter = setAgeGroupFilter;
+    window.setDiseaseFilter = setDiseaseFilter;
+    window.setOriginFilter = setOriginFilter;
     window.setDosesFilter = setDosesFilter;
     window.setSortFilter = setSortFilter;
     window.resetVaccineFilters = resetVaccineFilters;
@@ -1938,13 +2347,21 @@ if (typeof window !== 'undefined') {
     window.addSpaPatientField = addSpaPatientField;
     window.removeSpaPatientField = removeSpaPatientField;
     window.checkSpaPatientAge = checkSpaPatientAge;
-    window.showConfirmDialog = showConfirmDialog;
+    window.initGlobalMedicareDatePickers = initGlobalMedicareDatePickers;
+    window.initGlobalMedicareCustomDropdowns = initGlobalMedicareCustomDropdowns;
+    window.validatePhoneNumberField = validatePhoneNumberField;
 }
 
-// Initial Page Load: Run initializers on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
+// Initial Page Load: Run initializers on DOMContentLoaded or immediately if already ready
+function initializeMedicareApp() {
     initDynamicTOC();
     initGlobalMedicareDatePickers();
     initGlobalMedicareCustomDropdowns();
-});
+    renderIcons();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeMedicareApp);
+} else {
+    initializeMedicareApp();
 }

@@ -17,9 +17,11 @@ use Modules\VaccineRegistration\Http\Controllers\Admin\AdminCustomerController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminDashboardController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminDefaultSlotController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminInventoryLotController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminLiveEditorController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminPatientController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminRegistrationController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminScheduleController;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminLoyaltySettingController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSettingController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminSlotController;
 use Modules\VaccineRegistration\Http\Controllers\Admin\AdminUserController;
@@ -173,12 +175,29 @@ Route::middleware('web')->group(function () {
         Route::patch('/inventory-lots/{id}/status', [AdminInventoryLotController::class, 'updateStatus'])->name('inventory-lots.status');
         Route::resource('inventory-lots', AdminInventoryLotController::class)->except(['create', 'edit', 'show']);
 
+        // Cấu hình tích điểm (Dành cho cả Super Admin và Branch Admin)
+        Route::get('/settings/loyalty', [AdminLoyaltySettingController::class, 'index'])->name('settings.loyalty');
+        Route::post('/settings/loyalty', [AdminLoyaltySettingController::class, 'update'])->name('settings.loyalty.update');
+        Route::post('/settings/loyalty/sync', [AdminLoyaltySettingController::class, 'syncSettings'])->name('settings.loyalty.sync');
+        Route::post('/settings/loyalty/reject-sync', [AdminLoyaltySettingController::class, 'rejectSync'])->name('settings.loyalty.reject-sync');
+
         Route::middleware('super.admin')->group(function () {
+            // Trình Chỉnh Sửa Trực Quan Xem Trước (Visual Live Page Customizer)
+            Route::get('/live-editor', [AdminLiveEditorController::class, 'index'])->name('live-editor');
+            Route::post('/live-editor/banner', [AdminLiveEditorController::class, 'updateBanner'])->name('live-editor.banner');
+            Route::post('/live-editor/vaccine', [AdminLiveEditorController::class, 'updateVaccine'])->name('live-editor.vaccine');
+            Route::post('/live-editor/settings', [AdminLiveEditorController::class, 'updateSettings'])->name('live-editor.settings');
+
+            // Quản lý Cấu hình động (Settings)
+            Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
+            Route::post('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
+
             // Tra cứu nhật ký hệ thống (chỉ đọc)
             Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit-logs.index');
             Route::get('/audit-logs/{auditLog}', [AdminAuditLogController::class, 'show'])->name('audit-logs.show');
 
             // Quản lý Trung tâm
+            Route::post('/centers/{id}/toggle-status', [AdminCenterController::class, 'toggleStatus'])->name('centers.toggle-status');
             Route::resource('centers', AdminCenterController::class)->except(['show']);
 
             // Quản lý tài khoản chi nhánh
@@ -190,10 +209,6 @@ Route::middleware('web')->group(function () {
             // Quản lý Bài viết / Tin tức y tế (Mục 10)
             Route::post('/articles/upload-image', [AdminArticleController::class, 'uploadEditorImage'])->name('articles.upload-image');
             Route::resource('articles', AdminArticleController::class)->except(['show']);
-
-            // Quản lý Cấu hình động (Settings)
-            Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
-            Route::post('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
         });
     });
 });

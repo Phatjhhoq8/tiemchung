@@ -471,6 +471,8 @@
         container.insertAdjacentHTML('beforeend', blockHtml);
         patientCount++;
         recalculateRegisterPrices();
+        if (typeof initGlobalMedicareDatePickers === 'function') initGlobalMedicareDatePickers();
+        if (typeof initGlobalMedicareCustomDropdowns === 'function') initGlobalMedicareCustomDropdowns();
     }
 
     function removePatientField(index) {
@@ -532,6 +534,23 @@
         const patientBlocks = document.querySelectorAll('.patient-form-block');
         if (patientBlocks.length === 0) {
             showToast('Vui lòng thêm ít nhất một người tiêm.', 'error');
+            return false;
+        }
+
+        // Validate all visible phone number fields
+        let firstInvalidPhone = null;
+        document.querySelectorAll('#publicRegisterForm input[type="tel"], #publicRegisterForm input[name*="phone"]').forEach(pInput => {
+            if (pInput.offsetParent !== null && typeof validatePhoneNumberField === 'function') {
+                const isValid = validatePhoneNumberField(pInput);
+                if (!isValid && !firstInvalidPhone) {
+                    firstInvalidPhone = pInput;
+                }
+            }
+        });
+
+        if (firstInvalidPhone) {
+            firstInvalidPhone.focus();
+            showToast('Vui lòng kiểm tra lại số điện thoại không hợp lệ.', 'error');
             return false;
         }
         

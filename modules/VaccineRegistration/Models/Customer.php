@@ -42,6 +42,6 @@ class Customer extends Model
 
     public function pointBalance(): int
     {
-        return (int) $this->pointTransactions()->sum('points');
+        return app(\App\Services\LoyaltyService::class)->calculateAvailablePoints($this);
     }
 }

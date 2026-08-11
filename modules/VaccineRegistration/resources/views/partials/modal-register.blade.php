@@ -12,6 +12,21 @@
         gap: 14px;
         box-sizing: border-box;
     }
+    #spaRegisterBody,
+    #spaRegisterModal,
+    .spa-modal-card,
+    .spa-modal-overlay {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+    #spaRegisterBody::-webkit-scrollbar,
+    #spaRegisterModal::-webkit-scrollbar,
+    .spa-modal-card::-webkit-scrollbar,
+    .spa-modal-overlay::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
     @media (max-width: 960px) {
         .spa-register-grid {
             grid-template-columns: 1fr !important;
@@ -29,7 +44,7 @@
         }
     }
 </style>
-<div id="spaRegisterModal" class="spa-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(5px); z-index: 999999; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
+<div id="spaRegisterModal" class="spa-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(5px); z-index: 999999; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none;">
     <div class="spa-modal-card" style="background: var(--bg-card, #ffffff); border-radius: 16px; max-width: 900px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.3); overflow: hidden; position: relative; animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid var(--border-color, #e2e8f0); max-height: 90vh; display: flex; flex-direction: column;">
         
         <!-- Header Modal -->
@@ -49,7 +64,7 @@
         </div>
 
         <!-- Body Scrollable Content -->
-        <div id="spaRegisterBody" style="padding: 28px; overflow-y: auto; overflow-x: hidden; flex-grow: 1;">
+        <div id="spaRegisterBody" style="padding: 28px 28px 80px 28px; overflow-y: auto; overflow-x: hidden; flex-grow: 1; scrollbar-width: none; -ms-overflow-style: none;">
             <!-- Form loader / content inserted by JS -->
             <div style="text-align: center; padding: 40px;">
                 <i data-lucide="loader-2" style="width: 36px; height: 36px; color: var(--primary-color); animation: spin 1s linear infinite;"></i>

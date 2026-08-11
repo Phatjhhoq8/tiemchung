@@ -214,6 +214,37 @@ class AdminCenterController extends Controller
     }
 
     /**
+     * Chuyển đổi trạng thái hoạt động của trung tâm (Tạm dừng / Bật lại).
+     */
+    public function toggleStatus($id)
+    {
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền quản lý trung tâm tiêm chủng.');
+
+        $center = Center::findOrFail($id);
+        $oldActive = (bool) $center->is_active;
+        $newActive = ! $oldActive;
+        $center->is_active = $newActive;
+        $center->save();
+
+        if (! $newActive) {
+            CenterVaccine::where('center_id', $center->id)->update(['is_active' => false]);
+        }
+
+        AuditLogger::log(
+            $newActive ? 'center.activated' : 'center.deactivated',
+            'center',
+            $center->id,
+            ['is_active' => $oldActive],
+            ['is_active' => $newActive],
+            $center->id
+        );
+
+        $msg = $newActive ? 'Kích hoạt lại trung tâm tiêm chủng thành công.' : 'Tạm dừng trung tâm tiêm chủng thành công.';
+
+        return redirect()->route('admin.centers.index')->with('success', $msg);
+    }
+
+    /**
      * Xóa trung tâm (Soft deactivation).
      */
     public function destroy($id)
@@ -233,6 +264,6 @@ class AdminCenterController extends Controller
             $center->id
         );
 
-        return redirect()->route('admin.centers.index')->with('success', 'Vô hiệu hóa trung tâm tiêm chủng thành công.');
+        return redirect()->route('admin.centers.index')->with('success', 'Tạm dừng trung tâm tiêm chủng thành công.');
     }
 }

@@ -86,13 +86,39 @@ class SettingSeeder extends Seeder
                     'zalo' => '0909001122',
                 ],
             ], JSON_UNESCAPED_UNICODE),
+            'loyalty_settings' => json_encode([
+                'enabled' => true,
+                'vnd_per_earned_point' => 10000,
+                'min_order_value_to_earn' => 0,
+                'min_order_value_to_redeem' => 0,
+                'point_expiry_months' => 0,
+                'redeem_value_type' => 'vnd',
+                'redeem_vnd_per_point' => 100,
+                'redeem_percent_bps_per_point' => 10,
+                'max_redeem_percent' => 50,
+                'max_redeem_amount' => null,
+                'birthday_multiplier' => 1.0,
+                'tiers' => [
+                    ['name' => 'Bạc', 'min_points' => 100, 'multiplier' => 1.1],
+                    ['name' => 'Vàng', 'min_points' => 500, 'multiplier' => 1.2],
+                    ['name' => 'Kim Cương', 'min_points' => 1000, 'multiplier' => 1.5]
+                ],
+                'campaigns' => []
+            ], JSON_UNESCAPED_UNICODE),
         ];
 
         foreach ($settings as $key => $value) {
-            Setting::updateOrCreate(
-                ['key' => $key],
-                ['value' => $value]
-            );
+            if ($key === 'loyalty_settings') {
+                Setting::firstOrCreate(
+                    ['key' => $key],
+                    ['value' => $value]
+                );
+            } else {
+                Setting::updateOrCreate(
+                    ['key' => $key],
+                    ['value' => $value]
+                );
+            }
         }
     }
 }
