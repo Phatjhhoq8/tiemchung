@@ -1,5 +1,21 @@
 # Release Notes
 
+## [v6.4.3] - 2026-08-11
+
+### Improved & Fixed
+
+* **Public Booking & Cart Auto-Open UI UX Upgrade**:
+  - **Stock Inventory Initialization**: Updated default stock quantity seeding to 100 for all branch vaccines in migration, preventing out-of-stock lockouts on booking checkout (`/register`).
+  - **Cart Dropdown Auto-Open Interaction**: Added auto-triggering logic in `public/js/app.js` and `disease.blade.php` to immediately open the header cart dropdown whenever a user clicks "Chọn tiêm", giving users instant visual confirmation of items added to their cart.
+  - **Robust Public Checkout Submission**: Optimized `handlePublicRegisterSubmit` in `register.blade.php` to ensure reliable form submission regardless of browser dialog settings.
+
+## [v6.4.2] - 2026-08-11
+
+### Fixed
+
+* **Admin UI - Smart Boundary Collision Detection for DatePicker Popups**:
+  - **Dynamic Right Edge Alignment**: Added real-time viewport boundary detection (`triggerRect.left + 290 > viewportWidth`) in `layouts/admin.blade.php`. When a date picker input is situated on the far right edge of the screen (such as `/admin/schedules`), the DatePicker popup automatically aligns right (`right: 0; left: auto`), preventing popup clipping and ensuring 100% full visibility of month navigation arrows, calendar grids, and action buttons (*Xóa*, *Hôm nay*).
+
 ## [v6.4.1] - 2026-08-11
 
 ### Added & Improved

@@ -1314,6 +1314,17 @@
                     document.querySelectorAll('.medicare-datepicker-wrapper div[style*="position: absolute"]').forEach(p => p.style.display = 'none');
                     popup.style.display = isExpanded ? 'none' : 'block';
                     if (!isExpanded) {
+                        const triggerRect = trigger.getBoundingClientRect();
+                        const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+
+                        if (triggerRect.left + 290 > viewportWidth) {
+                            popup.style.left = 'auto';
+                            popup.style.right = '0';
+                        } else {
+                            popup.style.left = '0';
+                            popup.style.right = 'auto';
+                        }
+
                         if (inputEl.value) {
                             const parts = inputEl.value.split('-');
                             if (parts.length === 3) {

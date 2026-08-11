@@ -37,7 +37,7 @@ return new class extends Migration
                         'vaccine_id' => $vaccine->id,
                         'price' => $vaccine->price,
                         'sale_price' => $vaccine->sale_price ?? null,
-                        'stock_quantity' => 0,
+                        'stock_quantity' => 100,
                         'stock_status' => $vaccine->stock_status ?? 'available',
                         'is_active' => true,
                         'is_featured' => (bool) ($vaccine->is_featured ?? false),
