@@ -1374,8 +1374,188 @@
             });
         }
 
+        // ===== GLOBAL MEDICARE CUSTOM DROPDOWN INITIALIZER =====
+        function initGlobalMedicareCustomDropdowns() {
+            document.querySelectorAll('select:not(.medicare-select-processed):not(.no-custom-select)').forEach(selectEl => {
+                selectEl.classList.add('medicare-select-processed');
+                
+                selectEl.style.display = 'none';
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = 'medicare-select-wrapper';
+                wrapper.style.position = 'relative';
+                wrapper.style.display = selectEl.style.display === 'none' ? 'inline-block' : 'block';
+                if (selectEl.style.width) wrapper.style.width = selectEl.style.width;
+
+                selectEl.parentNode.insertBefore(wrapper, selectEl);
+                wrapper.appendChild(selectEl);
+
+                const trigger = document.createElement('div');
+                trigger.className = selectEl.className || 'form-control-modern';
+                trigger.style.cursor = 'pointer';
+                trigger.style.display = 'flex';
+                trigger.style.alignItems = 'center';
+                trigger.style.justifyContent = 'space-between';
+                trigger.style.userSelect = 'none';
+                trigger.style.gap = '8px';
+                trigger.style.backgroundImage = 'none';
+                if (selectEl.disabled) {
+                    trigger.style.backgroundColor = '#f1f5f9';
+                    trigger.style.cursor = 'not-allowed';
+                }
+
+                if (selectEl.getAttribute('style')) {
+                    const inlineStyle = selectEl.getAttribute('style');
+                    if (inlineStyle.includes('width:')) {
+                        const match = inlineStyle.match(/width:\s*([^;]+)/);
+                        if (match) trigger.style.width = match[1];
+                    }
+                    if (inlineStyle.includes('padding:')) {
+                        const match = inlineStyle.match(/padding:\s*([^;]+)/);
+                        if (match) trigger.style.padding = match[1];
+                    }
+                }
+
+                const labelSpan = document.createElement('span');
+                labelSpan.style.whiteSpace = 'nowrap';
+                labelSpan.style.overflow = 'hidden';
+                labelSpan.style.textOverflow = 'ellipsis';
+                labelSpan.style.fontSize = '13.5px';
+                labelSpan.style.fontWeight = '500';
+                labelSpan.style.color = 'var(--text-primary)';
+
+                const arrowSvg = document.createElement('div');
+                arrowSvg.className = 'medicare-select-arrow-icon';
+                arrowSvg.style.display = 'flex';
+                arrowSvg.style.alignItems = 'center';
+                arrowSvg.style.transition = 'transform 0.2s ease';
+                arrowSvg.innerHTML = '<svg style="width: 15px; height: 15px; color: #64748b; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+
+                trigger.appendChild(labelSpan);
+                trigger.appendChild(arrowSvg);
+                wrapper.appendChild(trigger);
+
+                const popup = document.createElement('div');
+                popup.style.display = 'none';
+                popup.style.position = 'absolute';
+                popup.style.top = 'calc(100% + 4px)';
+                popup.style.left = '0';
+                popup.style.minWidth = '100%';
+                popup.style.width = 'max-content';
+                popup.style.maxWidth = '320px';
+                popup.style.background = '#ffffff';
+                popup.style.border = '1px solid #cbd5e1';
+                popup.style.borderRadius = '12px';
+                popup.style.boxShadow = '0 15px 30px -5px rgba(0,0,0,0.15)';
+                popup.style.zIndex = '1050';
+                popup.style.padding = '6px';
+                popup.style.maxHeight = '260px';
+                popup.style.overflowY = 'auto';
+                popup.style.boxSizing = 'border-box';
+                popup.style.userSelect = 'none';
+                wrapper.appendChild(popup);
+
+                function renderOptions() {
+                    popup.innerHTML = '';
+                    const options = Array.from(selectEl.options);
+                    const selectedOpt = selectEl.options[selectEl.selectedIndex] || options[0];
+                    if (selectedOpt) {
+                        labelSpan.textContent = selectedOpt.textContent.trim();
+                    }
+
+                    options.forEach(opt => {
+                        const item = document.createElement('div');
+                        item.className = 'medicare-select-item';
+                        item.style.padding = '8px 12px';
+                        item.style.borderRadius = '8px';
+                        item.style.cursor = 'pointer';
+                        item.style.fontSize = '13.5px';
+                        item.style.transition = 'all 0.15s ease';
+                        item.style.marginBottom = '2px';
+                        item.textContent = opt.textContent.trim();
+
+                        const isSelected = opt.selected;
+                        if (isSelected) {
+                            item.style.background = '#fee2e2';
+                            item.style.color = '#c8102e';
+                            item.style.fontWeight = '700';
+                        } else {
+                            item.style.background = 'transparent';
+                            item.style.color = '#1e293b';
+                            item.style.fontWeight = '500';
+                            item.addEventListener('mouseenter', () => { item.style.background = '#f1f5f9'; });
+                            item.addEventListener('mouseleave', () => { item.style.background = 'transparent'; });
+                        }
+
+                        item.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            selectEl.value = opt.value;
+                            labelSpan.textContent = opt.textContent.trim();
+                            popup.style.display = 'none';
+                            arrowSvg.style.transform = 'rotate(0deg)';
+                            renderOptions();
+                            selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+                            if (selectEl.onchange) selectEl.onchange();
+                        });
+
+                        popup.appendChild(item);
+                    });
+                }
+
+                renderOptions();
+
+                if (selectEl.disabled) return;
+
+                trigger.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const isExpanded = popup.style.display === 'block';
+                    document.querySelectorAll('.medicare-select-wrapper div[style*="position: absolute"]').forEach(p => {
+                        p.style.display = 'none';
+                    });
+                    document.querySelectorAll('.medicare-datepicker-wrapper div[style*="position: absolute"]').forEach(p => {
+                        p.style.display = 'none';
+                    });
+
+                    if (!isExpanded) {
+                        popup.style.display = 'block';
+                        arrowSvg.style.transform = 'rotate(180deg)';
+
+                        const triggerRect = trigger.getBoundingClientRect();
+                        const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+
+                        if (triggerRect.left + 240 > viewportWidth) {
+                            popup.style.left = 'auto';
+                            popup.style.right = '0';
+                        } else {
+                            popup.style.left = '0';
+                            popup.style.right = 'auto';
+                        }
+                    } else {
+                        popup.style.display = 'none';
+                        arrowSvg.style.transform = 'rotate(0deg)';
+                    }
+                });
+
+                selectEl.addEventListener('change', function() {
+                    renderOptions();
+                });
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.medicare-select-wrapper')) {
+                document.querySelectorAll('.medicare-select-wrapper div[style*="position: absolute"]').forEach(p => {
+                    p.style.display = 'none';
+                });
+                document.querySelectorAll('.medicare-select-arrow-icon').forEach(a => {
+                    a.style.transform = 'rotate(0deg)';
+                });
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             initGlobalMedicareDatePickers();
+            initGlobalMedicareCustomDropdowns();
         });
     </script>
     @yield('scripts')

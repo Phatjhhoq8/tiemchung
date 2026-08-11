@@ -1,5 +1,14 @@
 # Release Notes
 
+## [v6.4.5] - 2026-08-11
+
+### Feature & Component Upgrade
+
+* **Global Medicare Custom Select Dropdown Component (`initGlobalMedicareCustomDropdowns`)**:
+  - **Eliminated OS Native Select Menus**: Built a global auto-initializer in `layouts/admin.blade.php` that transforms all native `<select>` tags across every admin view into custom Medicare floating dropdown components.
+  - **Identical Brand Design Alignment**: Formatted expanded option popups with white background `#ffffff`, `12px` rounded corners, soft shadow (`0 15px 30px -5px rgba(0,0,0,0.15)`), Medicare Red (`#c8102e`) active state highlighting on `#fee2e2`, smooth Chevron rotation, and custom scrollbar.
+  - **Full AJAX & Form Filter Integration**: Bound click events to seamlessly update hidden select element values and trigger native `change` events for 100% compatibility with AJAX filter tables.
+
 ## [v6.4.4] - 2026-08-11
 
 ### Improved & Standardized

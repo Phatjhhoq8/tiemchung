@@ -96,6 +96,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (typeof initGlobalMedicareDatePickers === 'function') {
                     initGlobalMedicareDatePickers();
                 }
+                if (typeof initGlobalMedicareCustomDropdowns === 'function') {
+                    initGlobalMedicareCustomDropdowns();
+                }
             }
         } catch (err) {
             if (err.name !== 'AbortError') {
