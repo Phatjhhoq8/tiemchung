@@ -29,14 +29,14 @@
         </div>
         <div class="form-group-modern" style="margin-bottom:0;">
             <label class="form-label-modern" for="role">Quyền *</label>
-            <select class="form-control-modern" id="role" name="role" required style="background-image:none;" onchange="toggleCenterSelect()">
+            <select class="form-control-modern" id="role" name="role" required onchange="toggleCenterSelect()">
                 <option value="branch_admin" {{ old('role', $user->role) === 'branch_admin' ? 'selected' : '' }}>Quản trị viên chi nhánh</option>
                 <option value="super_admin" {{ old('role', $user->role) === 'super_admin' ? 'selected' : '' }}>Quản trị viên cấp cao</option>
             </select>
         </div>
         <div class="form-group-modern" style="margin-bottom:0;" id="centerField">
             <label class="form-label-modern" for="center_id">Chi nhánh *</label>
-            <select class="form-control-modern" id="center_id" name="center_id" style="background-image:none;">
+            <select class="form-control-modern" id="center_id" name="center_id">
                 <option value="">-- Chọn chi nhánh --</option>
                 @foreach($centers as $center)
                     <option value="{{ $center->id }}" {{ (string) old('center_id', $user->center_id) === (string) $center->id ? 'selected' : '' }}>{{ $center->name }} - {{ $center->phone }}</option>

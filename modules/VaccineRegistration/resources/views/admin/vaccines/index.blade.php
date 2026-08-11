@@ -90,7 +90,7 @@
         @if(isset($centers) && ($isSuperAdmin ?? false))
         <div class="filter-group-select">
             <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Chi nhánh</label>
-            <select name="center_id" class="form-control-modern" style="background-image: none;">
+            <select name="center_id" class="form-control-modern">
                 <option value="" {{ $selectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
                 @foreach($centers as $center)
                     <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
@@ -115,7 +115,7 @@
         @if(isset($categories) && $categories->count())
         <div class="filter-group-select">
             <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Nhóm bệnh</label>
-            <select name="category" class="form-control-modern" style="background-image: none;">
+            <select name="category" class="form-control-modern">
                 <option value="">Tất cả</option>
                 @foreach($categories as $cat)
                     <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>{{ $cat }}</option>

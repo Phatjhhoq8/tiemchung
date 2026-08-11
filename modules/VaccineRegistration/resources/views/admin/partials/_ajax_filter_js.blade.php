@@ -93,6 +93,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (window.lucide && typeof window.lucide.createIcons === 'function') {
                     window.lucide.createIcons();
                 }
+                if (typeof initGlobalMedicareDatePickers === 'function') {
+                    initGlobalMedicareDatePickers();
+                }
             }
         } catch (err) {
             if (err.name !== 'AbortError') {

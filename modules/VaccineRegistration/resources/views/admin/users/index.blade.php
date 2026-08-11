@@ -19,7 +19,7 @@
         </div>
         <div style="flex:1 1 150px;">
             <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Quyền hạn</label>
-            <select name="role" class="form-control-modern" style="background-image:none;">
+            <select name="role" class="form-control-modern">
                 <option value="">Tất cả</option>
                 <option value="super_admin" {{ request('role') === 'super_admin' ? 'selected' : '' }}>Quản trị viên cấp cao</option>
                 <option value="branch_admin" {{ request('role') === 'branch_admin' ? 'selected' : '' }}>Quản trị viên chi nhánh</option>
@@ -27,7 +27,7 @@
         </div>
         <div style="flex:1 1 150px;">
             <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Trạng thái</label>
-            <select name="is_active" class="form-control-modern" style="background-image:none;">
+            <select name="is_active" class="form-control-modern">
                 <option value="">Tất cả</option>
                 <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Hoạt động</option>
                 <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Đã khóa</option>

@@ -1,5 +1,14 @@
 # Release Notes
 
+## [v6.4.4] - 2026-08-11
+
+### Improved & Standardized
+
+* **System-wide Dropdown & DatePicker Standardization**:
+  - **Global Select Arrow Restoration**: Removed legacy inline `style="background-image: none;"` overrides across all admin views (`vaccines`, `leads`, `registrations`, `customers`, `centers`, `banners`, `articles`, `users`, `dashboard`), restoring sleek custom Medicare Chevron Down SVG indicators.
+  - **Auto-Reinit DatePickers on AJAX Updates**: Added `initGlobalMedicareDatePickers()` call inside `_ajax_filter_js.blade.php` to instantly process any dynamically updated filter controls without full page reloads.
+  - **Zero Emoji Compliance**: Ensured 100% adherence to Rule 9 with clean, professional, non-cluttered admin UI styling.
+
 ## [v6.4.3] - 2026-08-11
 
 ### Improved & Fixed

@@ -11,7 +11,7 @@
             @if($isSuperAdmin ?? false)
             <div style="width: 200px;">
                 <label for="center_id" class="form-label-modern">Chi nhánh</label>
-                <select name="center_id" id="center_id" class="form-control-modern" style="background-image: none;">
+                <select name="center_id" id="center_id" class="form-control-modern">
                     <option value="" {{ $selectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
                     @foreach($centers as $center)
                         <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
@@ -29,7 +29,7 @@
             <!-- Trạng thái -->
             <div style="width: 170px;">
                 <label for="status" class="form-label-modern">Trạng thái</label>
-                <select name="status" id="status" class="form-control-modern" style="background-image: none;">
+                <select name="status" id="status" class="form-control-modern">
                     <option value="">-- Tất cả --</option>
                     <option value="new" {{ request('status') === 'new' ? 'selected' : '' }}>Mới</option>
                     <option value="contacted" {{ request('status') === 'contacted' ? 'selected' : '' }}>Đã liên hệ</option>
@@ -46,7 +46,7 @@
             @endphp
             <div style="width: 100px;">
                 <label class="form-label-modern" for="filter_day">Ngày</label>
-                <select class="form-control-modern" id="filter_day" name="filter_day" style="background-image:none;">
+                <select class="form-control-modern" id="filter_day" name="filter_day">
                     <option value="">Tất cả</option>
                     @for($d = 1; $d <= 31; $d++)
                         <option value="{{ $d }}" {{ (string)$selectedDay === (string)$d ? 'selected' : '' }}>Ngày {{ $d }}</option>
@@ -55,7 +55,7 @@
             </div>
             <div style="width: 110px;">
                 <label class="form-label-modern" for="filter_month">Tháng</label>
-                <select class="form-control-modern" id="filter_month" name="filter_month" style="background-image:none;">
+                <select class="form-control-modern" id="filter_month" name="filter_month">
                     <option value="">Tất cả</option>
                     @for($m = 1; $m <= 12; $m++)
                         <option value="{{ $m }}" {{ (string)$selectedMonth === (string)$m ? 'selected' : '' }}>Tháng {{ $m }}</option>
@@ -64,7 +64,7 @@
             </div>
             <div style="width: 100px;">
                 <label class="form-label-modern" for="filter_year">Năm</label>
-                <select class="form-control-modern" id="filter_year" name="filter_year" style="background-image:none;">
+                <select class="form-control-modern" id="filter_year" name="filter_year">
                     <option value="">Tất cả</option>
                     @for($y = $currentYear + 1; $y >= 2023; $y--)
                         <option value="{{ $y }}" {{ (string)$selectedYear === (string)$y ? 'selected' : '' }}>{{ $y }}</option>

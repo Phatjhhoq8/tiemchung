@@ -30,7 +30,7 @@
         </div>
         <div style="flex:1 1 150px;">
             <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Trạng thái</label>
-            <select name="is_published" class="form-control-modern" style="background-image:none;">
+            <select name="is_published" class="form-control-modern">
                 <option value="">Tất cả</option>
                 <option value="1" {{ request('is_published') === '1' ? 'selected' : '' }}>Hiển thị</option>
                 <option value="0" {{ request('is_published') === '0' ? 'selected' : '' }}>Ẩn</option>

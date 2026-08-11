@@ -19,7 +19,7 @@
         </div>
         <div style="flex:1 1 130px;">
             <label class="form-label-modern" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Trạng thái</label>
-            <select name="is_active" class="form-control-modern" style="background-image:none;">
+            <select name="is_active" class="form-control-modern">
                 <option value="">Tất cả</option>
                 <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Hoạt động</option>
                 <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Tạm dừng</option>
@@ -34,7 +34,7 @@
         @endphp
         <div style="flex: 0 1 100px;">
             <label class="form-label-modern" for="filter_day" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Ngày</label>
-            <select class="form-control-modern" id="filter_day" name="filter_day" style="background-image:none;">
+            <select class="form-control-modern" id="filter_day" name="filter_day">
                 <option value="">Tất cả</option>
                 @for($d = 1; $d <= 31; $d++)
                     <option value="{{ $d }}" {{ (string)$selectedDay === (string)$d ? 'selected' : '' }}>Ngày {{ $d }}</option>
@@ -43,7 +43,7 @@
         </div>
         <div style="flex: 0 1 110px;">
             <label class="form-label-modern" for="filter_month" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Tháng</label>
-            <select class="form-control-modern" id="filter_month" name="filter_month" style="background-image:none;">
+            <select class="form-control-modern" id="filter_month" name="filter_month">
                 <option value="">Tất cả</option>
                 @for($m = 1; $m <= 12; $m++)
                     <option value="{{ $m }}" {{ (string)$selectedMonth === (string)$m ? 'selected' : '' }}>Tháng {{ $m }}</option>
@@ -52,7 +52,7 @@
         </div>
         <div style="flex: 0 1 100px;">
             <label class="form-label-modern" for="filter_year" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Năm</label>
-            <select class="form-control-modern" id="filter_year" name="filter_year" style="background-image:none;">
+            <select class="form-control-modern" id="filter_year" name="filter_year">
                 <option value="">Tất cả</option>
                 @for($y = $currentYear + 1; $y >= 2023; $y--)
                     <option value="{{ $y }}" {{ (string)$selectedYear === (string)$y ? 'selected' : '' }}>{{ $y }}</option>
