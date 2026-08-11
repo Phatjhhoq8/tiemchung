@@ -1,5 +1,13 @@
 # Release Notes
 
+## [v6.4.6] - 2026-08-11
+
+### Refined Alignment & UX
+
+* **Smart Auto-Alignment for Custom Select Triggers**:
+  - **Centered Default for Short Labels**: Configured `initGlobalMedicareCustomDropdowns` in `layouts/admin.blade.php` to center-align text and chevron icons for short options (such as "Tất cả", "Ngày 1", "Tháng 8", "Mới"), providing a clean, balanced pill button appearance.
+  - **Automatic Dynamic Left-Alignment for Long Labels**: Automatically detects long text strings (or constrained containers) and transitions to left-aligned text with ellipsis truncation (`text-overflow: ellipsis`) and right-pinned arrow (`margin-left: auto`), preventing text overlap or layout overflow.
+
 ## [v6.4.5] - 2026-08-11
 
 ### Feature & Component Upgrade

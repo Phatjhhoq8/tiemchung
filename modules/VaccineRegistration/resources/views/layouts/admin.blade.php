@@ -1398,6 +1398,7 @@
                 trigger.style.justifyContent = 'space-between';
                 trigger.style.userSelect = 'none';
                 trigger.style.gap = '8px';
+                trigger.style.textAlign = 'left';
                 trigger.style.backgroundImage = 'none';
                 if (selectEl.disabled) {
                     trigger.style.backgroundColor = '#f1f5f9';
@@ -1423,12 +1424,16 @@
                 labelSpan.style.fontSize = '13.5px';
                 labelSpan.style.fontWeight = '500';
                 labelSpan.style.color = 'var(--text-primary)';
+                labelSpan.style.textAlign = 'left';
+                labelSpan.style.flex = '1';
 
                 const arrowSvg = document.createElement('div');
                 arrowSvg.className = 'medicare-select-arrow-icon';
                 arrowSvg.style.display = 'flex';
                 arrowSvg.style.alignItems = 'center';
                 arrowSvg.style.transition = 'transform 0.2s ease';
+                arrowSvg.style.marginLeft = 'auto';
+                arrowSvg.style.flexShrink = '0';
                 arrowSvg.innerHTML = '<svg style="width: 15px; height: 15px; color: #64748b; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
 
                 trigger.appendChild(labelSpan);
@@ -1455,6 +1460,22 @@
                 popup.style.userSelect = 'none';
                 wrapper.appendChild(popup);
 
+                function updateAlignment() {
+                    const text = labelSpan.textContent ? labelSpan.textContent.trim() : '';
+                    const isLongText = text.length > 14 || (trigger.offsetWidth && trigger.offsetWidth > 170);
+                    if (isLongText) {
+                        trigger.style.justifyContent = 'space-between';
+                        labelSpan.style.textAlign = 'left';
+                        labelSpan.style.flex = '1';
+                        arrowSvg.style.marginLeft = 'auto';
+                    } else {
+                        trigger.style.justifyContent = 'center';
+                        labelSpan.style.textAlign = 'center';
+                        labelSpan.style.flex = '0 1 auto';
+                        arrowSvg.style.marginLeft = '0';
+                    }
+                }
+
                 function renderOptions() {
                     popup.innerHTML = '';
                     const options = Array.from(selectEl.options);
@@ -1462,6 +1483,7 @@
                     if (selectedOpt) {
                         labelSpan.textContent = selectedOpt.textContent.trim();
                     }
+                    updateAlignment();
 
                     options.forEach(opt => {
                         const item = document.createElement('div');
