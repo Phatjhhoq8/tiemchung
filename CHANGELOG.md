@@ -1,5 +1,13 @@
 # Release Notes
 
+## [v6.5.2] - 2026-08-11
+
+### Full Expansion of Button & Form Element Standardization to Public User Pages
+
+* **Standardized All Public Client Forms & Buttons**:
+  - **Checkout & Consultation Forms (`register.blade.php`, `contact.blade.php`)**: Unified all form submit buttons, action toggles, and consultation form elements to clean `8px` border-radius, `42px-46px` heights, and brand-approved Medicare Red `#c8102e` & Navy `#004b8f`.
+  - **Booking Lookup (`booking_lookup.blade.php`) & Modal Forms (`modal-register.blade.php`)**: Harmonized all search/lookup inputs, submit buttons, and status badges to `8px`/`6px` border-radius, eliminating outdated pill shapes and irregular offsets.
+
 ## [v6.5.1] - 2026-08-11
 
 ### System-wide Admin Action Button Clusters Standardization

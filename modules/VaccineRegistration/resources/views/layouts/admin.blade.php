@@ -384,23 +384,20 @@
             transition: all 0.2s ease;
             box-sizing: border-box;
         }
-        .form-control-modern:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.12);
-        }
-
         input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
         select,
         textarea,
-        .form-control {
-            border-color: #e5b8c0 !important;
-            border-radius: 10px !important;
+        .form-control,
+        .form-control-modern {
+            border-color: #cbd5e1 !important;
+            border-radius: 8px !important;
         }
 
         input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
         select:focus,
         textarea:focus,
-        .form-control:focus {
+        .form-control:focus,
+        .form-control-modern:focus {
             border-color: var(--primary-color) !important;
             box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.12) !important;
         }
@@ -1118,6 +1115,10 @@
                 
                 if (inputEl.getAttribute('style')) {
                     const inlineStyle = inputEl.getAttribute('style');
+                    if (inlineStyle.includes('height:')) {
+                        const match = inlineStyle.match(/height:\s*([^;]+)/);
+                        if (match) trigger.style.height = match[1];
+                    }
                     if (inlineStyle.includes('width:')) {
                         const match = inlineStyle.match(/width:\s*([^;]+)/);
                         if (match) trigger.style.width = match[1];
@@ -1407,6 +1408,10 @@
 
                 if (selectEl.getAttribute('style')) {
                     const inlineStyle = selectEl.getAttribute('style');
+                    if (inlineStyle.includes('height:')) {
+                        const match = inlineStyle.match(/height:\s*([^;]+)/);
+                        if (match) trigger.style.height = match[1];
+                    }
                     if (inlineStyle.includes('width:')) {
                         const match = inlineStyle.match(/width:\s*([^;]+)/);
                         if (match) trigger.style.width = match[1];

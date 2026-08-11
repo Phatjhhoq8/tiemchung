@@ -13,14 +13,14 @@
             @csrf
             <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 4px;">
                 <label for="phone" style="font-size: .85rem; font-weight: 700; color: #475569;">Số điện thoại (Bắt buộc)</label>
-                <input id="phone" name="phone" type="tel" value="{{ old('phone', $phone ? \Modules\VaccineRegistration\Support\PhoneNormalizer::display($phone) : '') }}" inputmode="tel" autocomplete="tel" placeholder="Ví dụ: 0912345678" required style="min-height: 46px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0 14px; font-size: 1rem; width: 100%;">
+                <input id="phone" name="phone" type="tel" value="{{ old('phone', $phone ? \Modules\VaccineRegistration\Support\PhoneNormalizer::display($phone) : '') }}" inputmode="tel" autocomplete="tel" placeholder="Ví dụ: 0912345678" required style="min-height: 46px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 14px; font-size: 1rem; width: 100%;">
             </div>
             <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 4px;">
                 <label for="registration_code" style="font-size: .85rem; font-weight: 700; color: #475569;">Mã đặt lịch (Không bắt buộc)</label>
-                <input id="registration_code" name="registration_code" type="text" value="{{ old('registration_code', $registration_code ?? '') }}" placeholder="Nhập để xem đầy đủ thông tin" style="min-height: 46px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0 14px; font-size: 1rem; width: 100%;">
+                <input id="registration_code" name="registration_code" type="text" value="{{ old('registration_code', $registration_code ?? '') }}" placeholder="Nhập để xem đầy đủ thông tin" style="min-height: 46px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 14px; font-size: 1rem; width: 100%;">
             </div>
             <div style="align-self: flex-end; width: clamp(100px, 100%, 150px); min-height: 46px;">
-                <button type="submit" class="btn-primary-header" style="min-height: 46px; border: 0; cursor: pointer; width: 100%;"><i data-lucide="search" style="width: 17px; height: 17px;"></i> Tra cứu</button>
+                <button type="submit" class="btn-primary-header" style="min-height: 46px; border: 0; cursor: pointer; width: 100%; border-radius: 8px;"><i data-lucide="search" style="width: 17px; height: 17px;"></i> Tra cứu</button>
             </div>
         </form>
 
@@ -30,7 +30,7 @@
     </section>
 
     @if($lookedUp && $registrations->isEmpty())
-        <div style="margin-top: 1.5rem; padding: 1.25rem; border: 1px solid #fde68a; border-radius: 12px; background: #fffbeb; color: #92400e;">
+        <div style="margin-top: 1.5rem; padding: 1.25rem; border: 1px solid #fde68a; border-radius: 8px; background: #fffbeb; color: #92400e;">
             Chưa tìm thấy lịch hẹn với số điện thoại này. Vui lòng kiểm tra lại số đã dùng khi đặt lịch hoặc liên hệ chi nhánh để được hỗ trợ.
         </div>
     @endif
@@ -40,15 +40,15 @@
             <h2 style="margin: 0 0 1rem; color: #0f172a; font-size: 1.3rem;">Lịch hẹn và lịch sử đăng ký ({{ $registrations->count() }})</h2>
             <div style="display: grid; gap: 1rem;">
                 @foreach($registrations as $registration)
-                    <article style="border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; background: #ffffff; box-shadow: 0 4px 16px rgba(15, 23, 42, .04);">
+                    <article style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; background: #ffffff; box-shadow: 0 4px 16px rgba(15, 23, 42, .04);">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
                             <div>
                                 <strong style="color: #0f172a; font-size: 1.05rem;">{{ $registration->display_name }}</strong>
                                 <div style="margin-top: 4px; color: #64748b; font-size: .9rem;">Mã phiếu: {{ $registration->display_code }}</div>
                             </div>
                             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                <span style="padding: 5px 10px; border-radius: 999px; background: #fef2f2; color: #b91c1c; font-size: .82rem; font-weight: 700;">{{ $registration->bookingStatusLabel() }}</span>
-                                <span style="padding: 5px 10px; border-radius: 999px; background: #eff6ff; color: #1d4ed8; font-size: .82rem; font-weight: 700;">{{ $registration->paymentStatusLabel() }}</span>
+                                <span style="padding: 5px 10px; border-radius: 6px; background: #fef2f2; color: #b91c1c; font-size: .82rem; font-weight: 700;">{{ $registration->bookingStatusLabel() }}</span>
+                                <span style="padding: 5px 10px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; font-size: .82rem; font-weight: 700;">{{ $registration->paymentStatusLabel() }}</span>
                             </div>
                         </div>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .75rem 1.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f1f5f9; color: #475569; font-size: .93rem;">

@@ -53,11 +53,11 @@
                             @csrf
                             <div style="display: flex; flex-direction: column; gap: 6px;">
                                 <label style="font-size: 13.5px; font-weight: 600; color: #334155; text-align: justify;">Hình thức tư vấn <span style="color:#ef4444;">*</span></label>
-                                <div style="display: inline-flex; width: 100%; background: #f1f5f9; border-radius: 30px; padding: 4px; border: 1px solid #cbd5e1; box-sizing: border-box;">
-                                    <button type="button" id="btnConsultOnline" onclick="setConsultType('online')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: var(--primary-color, #c8102e); color: #ffffff; text-align: center;">
+                                <div style="display: inline-flex; width: 100%; background: #f1f5f9; border-radius: 8px; padding: 4px; border: 1px solid #cbd5e1; box-sizing: border-box;">
+                                    <button type="button" id="btnConsultOnline" onclick="setConsultType('online')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: var(--primary-color, #c8102e); color: #ffffff; text-align: center;">
                                         Tư vấn qua điện thoại (trực tuyến)
                                     </button>
-                                    <button type="button" id="btnConsultOffline" onclick="setConsultType('offline')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: transparent; color: #475569; text-align: center;">
+                                    <button type="button" id="btnConsultOffline" onclick="setConsultType('offline')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: transparent; color: #475569; text-align: center;">
                                         Tư vấn tại trung tâm
                                     </button>
                                     <input type="hidden" name="consultType" id="consultTypeValue" value="online">

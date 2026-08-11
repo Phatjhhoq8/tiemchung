@@ -50,7 +50,7 @@
             @endphp
             <div style="background: var(--bg-card); border: 2px solid {{ $isSelected ? 'var(--primary-color)' : '#e2e8f0' }}; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 16px rgba(200, 16, 46, 0.08);">
                 <div style="padding: 28px;">
-                    <span style="background-color: {{ $isSelected ? 'var(--primary-color)' : '#64748b' }}; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; margin-bottom: 16px;">
+                    <span style="background-color: {{ $isSelected ? 'var(--primary-color)' : '#64748b' }}; color: #ffffff; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; margin-bottom: 16px;">
                         {{ $isSelected ? 'Đang chọn' : 'Chi nhánh Medicare' }}
                     </span>
                     <h3 style="font-size: 22px; font-weight: 800; color: #1e293b; margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
