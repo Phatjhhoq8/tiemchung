@@ -1,5 +1,15 @@
 # Release Notes
 
+## [v6.4.2] - 2026-08-12
+
+### Added & Restored
+
+* **Restore Website Live Editor for Super Admin**:
+  - Restored the deleted [AdminLiveEditorController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/Admin/AdminLiveEditorController.php) and its corresponding blade templates [live_editor.blade.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/live_editor.blade.php) and [live_editor_modals.blade.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/admin/live_editor_modals.blade.php).
+  - Registered all live editor routes under the `super.admin` middleware group in [web.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/routes/web.php) to restrict access strictly to Super Administrators.
+  - Added the **"Chỉnh Sửa Trực Quan (Live)"** link back to the admin sidebar layout [layouts/admin.blade.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/layouts/admin.blade.php) under the Super Admin check block.
+  - Integrated `$isPreviewMode` checking in [HomeController.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/Http/Controllers/HomeController.php) to load draft homepage configuration dynamically and display the Preview mode simulator banner in [home.blade.php](file:///home/hongphuoc/Desktop/thue/modules/VaccineRegistration/resources/views/home.blade.php).
+
 ## [v6.4.1] - 2026-08-11
 
 ### Added & Improved

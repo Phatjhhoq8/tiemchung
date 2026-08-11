@@ -894,6 +894,11 @@
                 </li>
                 @endif
                 @if($isSuperAdmin ?? false)
+                <li class="{{ Route::currentRouteName() === 'admin.live-editor' ? 'active' : '' }}">
+                    <a href="{{ route('admin.live-editor') }}">
+                        <i data-lucide="layout-template"></i> Chỉnh Sửa Trực Quan (Live)
+                    </a>
+                </li>
                 <li class="{{ str_contains(Route::currentRouteName(), 'admin.banners') ? 'active' : '' }}">
                     <a href="{{ route('admin.banners.index') }}">
                         <i data-lucide="image"></i> Quản lý Banner

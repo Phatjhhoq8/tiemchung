@@ -11,6 +11,7 @@ use Modules\VaccineRegistration\Models\Banner;
 use Modules\VaccineRegistration\Models\Vaccine;
 use Modules\VaccineRegistration\Models\Article;
 use Modules\VaccineRegistration\Models\Setting;
+use Modules\VaccineRegistration\Http\Controllers\Admin\AdminLiveEditorController;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Support\CenterContext;
 
@@ -59,9 +60,13 @@ class HomeController extends Controller
         // Lấy 4 bài viết tin tức / kiến thức y tế mới nhất từ CSDL (1 bài lớn + 3 bài nhỏ)
         $articles = Article::where('is_published', true)->latest()->take(4)->get();
 
-        $layoutConfig = $this->publishedLayoutConfig();
+        // Kiểm tra xem có đang ở chế độ xem thử giả lập hay không
+        $isPreviewMode = request()->has('preview') && session('admin_logged_in') === true;
+        $layoutConfig = $isPreviewMode
+            ? AdminLiveEditorController::getLayoutConfig(true)
+            : $this->publishedLayoutConfig();
 
-        return view('vaccine::home', compact('banners', 'featuredVaccines', 'campaignVaccines', 'articles', 'layoutConfig', 'currentCenter', 'activeCenters'));
+        return view('vaccine::home', compact('banners', 'featuredVaccines', 'campaignVaccines', 'articles', 'layoutConfig', 'currentCenter', 'activeCenters', 'isPreviewMode'));
     }
 
     private function publishedLayoutConfig(): array
