@@ -1,5 +1,13 @@
 # Release Notes
 
+## [v6.4.8] - 2026-08-11
+
+### UX & Layout Separation Upgrade
+
+* **Complete Separation of Schedule Information Display & Navigation Filter Controls (`/admin/schedules`)**:
+  - **Left-aligned Info Display Section**: Positioned `Tuần từ 10/08/2026 - 16/08/2026` title badge prominently on the left alongside the branch selector and settings button, clearly indicating the active viewing context.
+  - **Right-aligned Navigation Control Group**: Grouped navigation action controls (`Tuần trước`, `Tuần hiện tại`, `Tuần sau`) into a seamless segmented button bar pinned to the right edge alongside the date jump picker, creating an intuitive 2-column flex layout.
+
 ## [v6.4.7] - 2026-08-11
 
 ### UI Redesign & Standardization

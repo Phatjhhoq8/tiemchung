@@ -349,17 +349,19 @@
         @endif
     </div>
 
-    <!-- Top Week Navigation Bar -->
-    <div class="week-nav-bar">
+    <!-- Top Week Navigation Bar (Separated Display & Controls) -->
+    <div class="week-nav-bar" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+        <!-- Left: Display Info & Branch Filter -->
         <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-            <a href="{{ route('admin.default-slots.index', ['center_id' => $selectedCenterId]) }}" class="btn-modern btn-modern-secondary" style="padding: 8px 14px; font-size: 0.8125rem;">
-                <i data-lucide="settings"></i> Cấu hình khung giờ mặc định
-            </a>
+            <div class="week-range-title" style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #004b8f; background: #eff6ff; padding: 6px 14px; border-radius: 8px; border: 1px solid #bfdbfe;">
+                <i data-lucide="calendar" style="width: 17px; height: 17px; color: #004b8f;"></i>
+                <span>Tuần từ {{ $headerRange }}</span>
+            </div>
 
             @if($isSuperAdmin ?? false)
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <label class="form-label-modern" style="margin: 0; font-size: 0.8125rem;">Chi nhánh:</label>
-                    <select id="centerSelect" class="form-control-modern" style="width: auto; padding: 6px 12px; font-size: 0.875rem;">
+                    <select id="centerSelect" class="form-control-modern" style="width: auto; height: 38px; padding: 0 12px; font-size: 0.875rem;">
                         @foreach($centers as $center)
                             <option value="{{ $center->id }}" {{ (string)$selectedCenterId === (string)$center->id ? 'selected' : '' }}>
                                 {{ $center->name }}
@@ -368,27 +370,27 @@
                     </select>
                 </div>
             @endif
+
+            <a href="{{ route('admin.default-slots.index', ['center_id' => $selectedCenterId]) }}" class="week-nav-btn">
+                <i data-lucide="settings" style="width:15px; height:15px;"></i> Cấu hình khung giờ mặc định
+            </a>
         </div>
 
-        <div class="week-nav-controls">
-            <a href="{{ route('admin.schedules.index', ['date' => $prevWeekDate, 'center_id' => $selectedCenterId]) }}" class="week-nav-btn">
-                <i data-lucide="chevron-left" style="width:15px; height:15px;"></i>
-                <span>Tuần trước</span>
-            </a>
-
-            <div class="week-range-badge">
-                <i data-lucide="calendar" style="width:16px; height:16px; color:#004b8f;"></i>
-                <span>{{ $headerRange }}</span>
+        <!-- Right: Segmented Week Navigation Buttons & Date Picker -->
+        <div class="week-nav-controls" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: auto;">
+            <div style="display: inline-flex; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; background: #ffffff;">
+                <a href="{{ route('admin.schedules.index', ['date' => $prevWeekDate, 'center_id' => $selectedCenterId]) }}" class="week-nav-btn" style="border: none; border-right: 1px solid #cbd5e1; border-radius: 0;">
+                    <i data-lucide="chevron-left" style="width:15px; height:15px;"></i>
+                    <span>Tuần trước</span>
+                </a>
+                <a href="{{ route('admin.schedules.index', ['date' => $currentWeekDate, 'center_id' => $selectedCenterId]) }}" class="week-nav-btn-current" style="border: none; border-right: 1px solid #cbd5e1; border-radius: 0;">
+                    <span>Tuần hiện tại</span>
+                </a>
+                <a href="{{ route('admin.schedules.index', ['date' => $nextWeekDate, 'center_id' => $selectedCenterId]) }}" class="week-nav-btn" style="border: none; border-radius: 0;">
+                    <span>Tuần sau</span>
+                    <i data-lucide="chevron-right" style="width:15px; height:15px;"></i>
+                </a>
             </div>
-
-            <a href="{{ route('admin.schedules.index', ['date' => $currentWeekDate, 'center_id' => $selectedCenterId]) }}" class="week-nav-btn-current">
-                <span>Tuần hiện tại</span>
-            </a>
-
-            <a href="{{ route('admin.schedules.index', ['date' => $nextWeekDate, 'center_id' => $selectedCenterId]) }}" class="week-nav-btn">
-                <span>Tuần sau</span>
-                <i data-lucide="chevron-right" style="width:15px; height:15px;"></i>
-            </a>
 
             <input type="date" id="weekDatePicker" class="form-control-modern" value="{{ $weekStart->toDateString() }}" style="width: auto; height: 38px; padding: 0 10px; font-size: 0.85rem;" title="Chọn ngày trong tuần">
         </div>
