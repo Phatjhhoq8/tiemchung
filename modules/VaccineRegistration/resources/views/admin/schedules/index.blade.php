@@ -21,21 +21,68 @@
     .week-nav-controls {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         flex-wrap: wrap;
     }
-    .week-range-badge {
-        font-family: var(--font-display);
-        font-weight: 700;
-        font-size: 1rem;
-        color: var(--accent-color);
-        background: #e8f0fe;
-        padding: 8px 16px;
-        border-radius: 30px;
+    .week-nav-btn {
+        height: 38px;
+        padding: 0 14px;
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        color: #1e293b;
+        font-size: 13.5px;
+        font-weight: 600;
         display: inline-flex;
         align-items: center;
+        justify-content: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: all 0.15s ease;
+        box-sizing: border-box;
+    }
+    .week-nav-btn:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+        color: #004b8f;
+    }
+    .week-nav-btn-current {
+        height: 38px;
+        padding: 0 16px;
+        border-radius: 8px;
+        background: #eff6ff;
+        border: 1px solid #93c5fd;
+        color: #004b8f;
+        font-size: 13.5px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: all 0.15s ease;
+        box-sizing: border-box;
+    }
+    .week-nav-btn-current:hover {
+        background: #dbeafe;
+        border-color: #60a5fa;
+    }
+    .week-range-badge {
+        height: 38px;
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 14px;
+        color: #004b8f;
+        background: #ffffff;
+        padding: 0 16px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         gap: 8px;
-        border: 1px solid rgba(0, 75, 143, 0.2);
+        border: 1px solid #cbd5e1;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        box-sizing: border-box;
     }
     .weekly-grid-wrapper {
         display: grid;
@@ -324,24 +371,26 @@
         </div>
 
         <div class="week-nav-controls">
-            <a href="{{ route('admin.schedules.index', ['date' => $prevWeekDate, 'center_id' => $selectedCenterId]) }}" class="btn-modern btn-modern-secondary" style="padding: 8px 14px; font-size: 0.8125rem;">
-                &laquo; Tuần trước
+            <a href="{{ route('admin.schedules.index', ['date' => $prevWeekDate, 'center_id' => $selectedCenterId]) }}" class="week-nav-btn">
+                <i data-lucide="chevron-left" style="width:15px; height:15px;"></i>
+                <span>Tuần trước</span>
             </a>
 
             <div class="week-range-badge">
-                <i data-lucide="calendar" style="width:16px; height:16px;"></i>
+                <i data-lucide="calendar" style="width:16px; height:16px; color:#004b8f;"></i>
                 <span>{{ $headerRange }}</span>
             </div>
 
-            <a href="{{ route('admin.schedules.index', ['date' => $currentWeekDate, 'center_id' => $selectedCenterId]) }}" class="btn-modern btn-modern-secondary" style="padding: 8px 14px; font-size: 0.8125rem; font-weight:700;">
-                Tuần hiện tại
+            <a href="{{ route('admin.schedules.index', ['date' => $currentWeekDate, 'center_id' => $selectedCenterId]) }}" class="week-nav-btn-current">
+                <span>Tuần hiện tại</span>
             </a>
 
-            <a href="{{ route('admin.schedules.index', ['date' => $nextWeekDate, 'center_id' => $selectedCenterId]) }}" class="btn-modern btn-modern-secondary" style="padding: 8px 14px; font-size: 0.8125rem;">
-                Tuần sau &raquo;
+            <a href="{{ route('admin.schedules.index', ['date' => $nextWeekDate, 'center_id' => $selectedCenterId]) }}" class="week-nav-btn">
+                <span>Tuần sau</span>
+                <i data-lucide="chevron-right" style="width:15px; height:15px;"></i>
             </a>
 
-            <input type="date" id="weekDatePicker" class="form-control-modern" value="{{ $weekStart->toDateString() }}" style="width: auto; padding: 6px 10px; font-size: 0.85rem;" title="Chọn ngày trong tuần">
+            <input type="date" id="weekDatePicker" class="form-control-modern" value="{{ $weekStart->toDateString() }}" style="width: auto; height: 38px; padding: 0 10px; font-size: 0.85rem;" title="Chọn ngày trong tuần">
         </div>
     </div>
 

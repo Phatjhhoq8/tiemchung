@@ -1,5 +1,13 @@
 # Release Notes
 
+## [v6.4.7] - 2026-08-11
+
+### UI Redesign & Standardization
+
+* **Schedule Navigation Control Group Redesign (`/admin/schedules`)**:
+  - **Unified Height & Border Radius**: Standardized all week navigation buttons (`Tuần trước`, `Tuần hiện tại`, `Tuần sau`), week range badge (`10/08/2026 – 16/08/2026`), and DatePicker control to a clean `38px` height and `8px` rounded corners.
+  - **Harmonious Palette & Iconography**: Formatted active `Tuần hiện tại` button with Medicare Navy tint (`#eff6ff`, border `#93c5fd`, text `#004b8f`), replaced raw text arrows with SVG Lucide `chevron-left` and `chevron-right` icons, and centered elements along a single horizontal axis.
+
 ## [v6.4.6] - 2026-08-11
 
 ### Refined Alignment & UX
