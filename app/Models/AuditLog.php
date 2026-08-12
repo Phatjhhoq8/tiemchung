@@ -95,6 +95,11 @@ class AuditLog extends Model
             'user.created' => 'Tạo tài khoản quản trị',
             'user.updated' => 'Cập nhật tài khoản',
             'user.deleted' => 'Xóa tài khoản',
+            'admin_user.created' => 'Tạo tài khoản quản trị',
+            'admin_user.updated' => 'Cập nhật tài khoản quản trị',
+            'admin_user.deleted' => 'Xóa tài khoản quản trị',
+            'auth.password_changed' => 'Đổi mật khẩu tài khoản',
+            'publish_settings' => 'Xuất bản cấu hình trang web',
 
             // Nội dung
             'article.created' => 'Đăng bài viết mới',
