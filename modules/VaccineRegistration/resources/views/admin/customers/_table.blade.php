@@ -7,6 +7,7 @@
         <table class="table-modern">
             <thead>
                 <tr>
+                    <th style="width: 50px; text-align: center;">STT</th>
                     <th>Khách hàng</th>
                     <th>Số điện thoại</th>
                     <th>Số dư điểm</th>
@@ -16,6 +17,7 @@
             <tbody>
                 @foreach($customers as $customer)
                     <tr>
+                        <td style="text-align: center; color:var(--text-muted); font-weight:600;">{{ $customers->firstItem() ? ($customers->firstItem() + $loop->index) : $loop->iteration }}</td>
                         <td style="font-weight:700;">{{ $customer->name }}</td>
                         <td>{{ \Modules\VaccineRegistration\Support\PhoneNormalizer::display($customer->phone) }}</td>
                         <td style="font-weight:700; color:var(--primary-color);">{{ number_format($customer->pointBalance()) }} điểm</td>

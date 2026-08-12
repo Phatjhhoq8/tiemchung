@@ -52,23 +52,28 @@
         <table class="table-modern">
             <thead>
                 <tr>
+                    <th style="width: 70px; text-align: center;">STT</th>
                     <th style="width: 80px; text-align: center;">#ID</th>
                     <th style="width: 130px; text-align: center;">Hình ảnh</th>
                     <th>Tiêu đề bài viết</th>
                     <th style="width: 180px;">Chuyên mục</th>
-                    <th style="text-align: center; width: 140px;">Trạng thái</th>
-                    <th style="text-align: right; width: 160px;">Thao tác</th>
+                    <th style="text-align: center; width: 130px;">Trạng thái</th>
+                    <th style="text-align: right; width: 200px;">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($articles as $article)
                     <tr>
+                        <td style="text-align: center; font-weight: 700; color: var(--text-muted);">
+                            {{ $articles->firstItem() + $loop->index }}
+                        </td>
                         <td style="text-align: center; font-weight: 700; color: var(--text-muted);">#{{ $article->id }}</td>
                         <td style="text-align: center;">
                             <img src="{{ asset('images/vaccines/' . ($article->image ?: 'default_vaccine.jpg')) }}" alt="{{ $article->title }}" style="width: 90px; height: 60px; object-fit: cover; border-radius: 6px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
                         </td>
                         <td>
                             <strong style="color: var(--text-primary); display: block;">{{ $article->title }}</strong>
+                            <span style="font-size: 12px; color: var(--text-muted);">Lượt xem: {{ number_format($article->views ?? 0) }}</span>
                         </td>
                         <td>
                             <span class="badge-modern badge-modern-info">{{ $article->category }}</span>
@@ -77,27 +82,46 @@
                             @if($article->is_published)
                                 <span class="badge-modern badge-modern-success">Hiển thị</span>
                             @else
-                                <span class="badge-modern badge-modern-danger">Ẩn</span>
+                                <span class="badge-modern badge-modern-danger">Đang ẩn</span>
                             @endif
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
-                            <div style="display: inline-flex; gap: 6px; justify-content: flex-end;">
+                            <div style="display: inline-flex; gap: 6px; justify-content: flex-end; align-items: center;">
+                                {{-- Nút Ẩn / Hiện (Ẩn mềm) --}}
+                                <form action="{{ route('admin.articles.toggle-status', $article->id) }}" method="POST" style="margin: 0;">
+                                    @csrf
+                                    @if($article->is_published)
+                                        <button type="submit" class="btn-action-sm btn-action-warning" title="Bấm để ẩn bài viết khỏi trang chủ (Ẩn mềm)">Ẩn</button>
+                                    @else
+                                        <button type="submit" class="btn-action-sm btn-action-success" title="Bấm để hiển thị lại bài viết lên trang chủ">Hiện</button>
+                                    @endif
+                                </form>
+
+                                {{-- Nút Chỉnh sửa --}}
                                 <a href="{{ route('admin.articles.edit', $article->id) }}" class="btn-action-sm">Sửa</a>
-                                <form action="{{ route('admin.articles.destroy', $article->id) }}" method="POST" data-confirm="Bạn có chắc chắn muốn xóa bài viết này?" style="margin: 0;">
+
+                                {{-- Nút Xóa cứng (Xóa vĩnh viễn) --}}
+                                <form action="{{ route('admin.articles.destroy', $article->id) }}" method="POST" data-confirm="CẢNH BÁO: Hành động này sẽ XÓA VĨNH VIỄN bài viết khỏi hệ thống và không thể khôi phục. Bạn có chắc chắn muốn xóa cứng?" style="margin: 0;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-action-sm btn-action-danger">Xóa</button>
+                                    <button type="submit" class="btn-action-sm btn-action-danger" title="Xóa vĩnh viễn bài viết khỏi CSDL">Xóa</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" style="padding: 40px; text-align: center; color: var(--text-light);">Chưa có bài viết nào. Hãy bấm "Thêm bài viết mới" để tạo bài viết đầu tiên.</td>
+                        <td colspan="7" style="padding: 40px; text-align: center; color: var(--text-light);">Chưa có bài viết nào. Hãy bấm "Thêm bài viết mới" để tạo bài viết đầu tiên.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+
+    @if($articles->hasPages())
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+            {{ $articles->links() }}
+        </div>
+    @endif
 </div>
 @endsection

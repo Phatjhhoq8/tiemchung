@@ -204,10 +204,12 @@ Route::middleware('web')->group(function () {
             Route::resource('users', AdminUserController::class)->except(['show']);
 
             // Quản lý Banner trang chủ
+            Route::post('/banners/{id}/toggle-status', [AdminBannerController::class, 'toggleStatus'])->name('banners.toggle-status');
             Route::resource('banners', AdminBannerController::class)->except(['show']);
 
             // Quản lý Bài viết / Tin tức y tế (Mục 10)
             Route::post('/articles/upload-image', [AdminArticleController::class, 'uploadEditorImage'])->name('articles.upload-image');
+            Route::post('/articles/{id}/toggle-status', [AdminArticleController::class, 'toggleStatus'])->name('articles.toggle-status');
             Route::resource('articles', AdminArticleController::class)->except(['show']);
         });
     });

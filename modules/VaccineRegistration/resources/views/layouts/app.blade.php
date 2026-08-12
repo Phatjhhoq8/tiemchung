@@ -737,7 +737,12 @@
                         HỆ THỐNG CHI NHÁNH TIÊM CHỦNG MEDICARE CẦN THƠ
                     </div>
                     <div class="footer-branch-list">
-                        @foreach($activeCenters as $center)
+                        @php
+                            $totalCenters = $activeCenters->count();
+                            $displayCenters = $totalCenters > 4 ? $activeCenters->take(3) : $activeCenters->take(4);
+                        @endphp
+
+                        @foreach($displayCenters as $center)
                         <div class="footer-branch-item">
                             <h4>
                                 {{ $center->name }}
@@ -765,28 +770,62 @@
                             </div>
                         </div>
                         @endforeach
+
+                        @if($totalCenters > 4)
+                        <a href="{{ route('contact') }}" class="footer-branch-item footer-branch-more-card" style="text-decoration: none;">
+                            <h4>
+                                HỆ THỐNG TẤT CẢ CHI NHÁNH
+                            </h4>
+                            <div class="footer-branch-info">
+                                <p><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Tra cứu địa chỉ, bản đồ và hướng dẫn chỉ đường toàn bộ các trung tâm tiêm chủng Medicare.</p>
+                                <div class="footer-branch-meta">
+                                    <span><i data-lucide="phone" style="width: 14px; height: 14px;"></i> Hotline tư vấn toàn hệ thống: <strong>0938 60 38 39</strong></span>
+                                    <span><i data-lucide="clock" style="width: 14px; height: 14px;"></i> 7:00 – 17:00 (Tất cả các ngày trong tuần kể cả Thứ 7, Chủ Nhật & Ngày Lễ)</span>
+                                </div>
+                            </div>
+                            <div class="footer-branch-item-actions">
+                                <span class="footer-branch-link-map">
+                                    <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Tra cứu bản đồ
+                                </span>
+                                <span class="footer-branch-link-book">Xem tất cả chi nhánh →</span>
+                            </div>
+                        </a>
+                        @endif
                     </div>
                 </div>
 
                 <div class="footer-right-col">
+                    <div class="footer-policy-links">
+                        <a href="{{ route('about') }}">Giới thiệu</a>
+                        <span>•</span>
+                        <a href="{{ route('vaccine.index') }}">Danh mục sản phẩm</a>
+                        <span>•</span>
+                        <a href="{{ route('news.index') }}">Tin tức</a>
+                        <span>•</span>
+                        <a href="{{ route('booking.lookup') }}">Tra cứu lịch hẹn</a>
+                    </div>
                     <div class="footer-legal-panel">
-                        <div class="footer-policy-links">
-                            <a href="{{ route('about') }}">Chính sách bảo mật</a>
-                            <span>•</span>
-                            <a href="{{ route('vaccine.index') }}">Chính sách thanh toán</a>
-                            <span>•</span>
-                            <a href="{{ route('booking.lookup') }}">Tra cứu lịch hẹn</a>
-                            <span>•</span>
-                            <a href="{{ route('contact') }}">Điều khoản sử dụng</a>
-                        </div>
                         <div class="footer-company-details">
                             <h3>CÔNG TY CỔ PHẦN VẮC XIN MEDICARE</h3>
-                            <p>Giấy chứng nhận ĐKKD số 0107631488 do Sở Kế hoạch và Đầu tư TP. Cần Thơ cấp ngày 11/11/2016</p>
-                            @foreach($activeCenters as $center)
-                                <p><strong>{{ $center->name }}:</strong> {{ $center->address }}</p>
-                            @endforeach
-                            <p><strong>Email:</strong> {{ $email }} | <strong>Số điện thoại:</strong> {{ $hotline }}</p>
-                            <p>Chịu trách nhiệm nội dung: Ban Giám Đốc HỆ THỐNG TIÊM CHỦNG MEDICARE</p>
+                            <div class="footer-legal-item">
+                                <i data-lucide="shield-check" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
+                                <span>Giấy chứng nhận ĐKKD số <strong>0107631488</strong> do Sở KH&ĐT TP. Cần Thơ cấp ngày 11/11/2016</span>
+                            </div>
+                            <div class="footer-legal-item">
+                                <i data-lucide="building" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
+                                <span>Trụ sở: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Thuận, Xã Cờ Đỏ, TP. Cần Thơ</span>
+                            </div>
+                            <div class="footer-legal-item">
+                                <i data-lucide="mail" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
+                                <span>Email liên hệ: <a href="mailto:{{ $email }}" style="color: #ffffff; text-decoration: underline;">{{ $email }}</a></span>
+                            </div>
+                            <div class="footer-legal-item">
+                                <i data-lucide="phone-call" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
+                                <span>Tổng đài Hotline: <a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}" style="color: var(--secondary-color); font-weight: 700; text-decoration: none;">{{ $hotline }}</a></span>
+                            </div>
+                            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.12); font-size: 0.8rem; color: #94a3b8; line-height: 1.5;">
+                                Chịu trách nhiệm nội dung: Ban Giám Đốc HỆ THỐNG TIÊM CHỦNG MEDICARE
+                            </div>
                         </div>
                     </div>
                 </div>

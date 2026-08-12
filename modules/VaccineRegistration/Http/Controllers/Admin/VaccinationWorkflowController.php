@@ -23,6 +23,17 @@ class VaccinationWorkflowController extends Controller
     {
         $registration = Registration::findOrFail($id);
 
+        if ($registration->payment_status !== Registration::PAYMENT_PAID) {
+            $msg = 'Bệnh nhân chưa hoàn tất thanh toán hóa đơn. Không thể thực hiện quy trình lâm sàng.';
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $msg,
+                ], 422);
+            }
+            return redirect()->back()->withErrors(['payment_status' => $msg]);
+        }
+
         if (AdminContext::isBranchAdmin() && (int) $registration->center_id !== (int) AdminContext::centerId()) {
             abort(403, 'Bạn không có quyền tiếp nhận bệnh nhân thuộc chi nhánh khác.');
         }
@@ -59,6 +70,17 @@ class VaccinationWorkflowController extends Controller
     public function screening(Request $request, $id)
     {
         $registration = Registration::findOrFail($id);
+
+        if ($registration->payment_status !== Registration::PAYMENT_PAID) {
+            $msg = 'Bệnh nhân chưa hoàn tất thanh toán hóa đơn. Không thể thực hiện quy trình lâm sàng.';
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $msg,
+                ], 422);
+            }
+            return redirect()->back()->withErrors(['payment_status' => $msg]);
+        }
 
         if (AdminContext::isBranchAdmin() && (int) $registration->center_id !== (int) AdminContext::centerId()) {
             abort(403, 'Bạn không có quyền khám sàng lọc cho bệnh nhân thuộc chi nhánh khác.');
@@ -101,6 +123,17 @@ class VaccinationWorkflowController extends Controller
     public function administer(Request $request, $id)
     {
         $registration = Registration::findOrFail($id);
+
+        if ($registration->payment_status !== Registration::PAYMENT_PAID) {
+            $msg = 'Bệnh nhân chưa hoàn tất thanh toán hóa đơn. Không thể thực hiện quy trình lâm sàng.';
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $msg,
+                ], 422);
+            }
+            return redirect()->back()->withErrors(['payment_status' => $msg]);
+        }
 
         if (AdminContext::isBranchAdmin() && (int) $registration->center_id !== (int) AdminContext::centerId()) {
             abort(403, 'Bạn không có quyền thực hiện tiêm cho bệnh nhân thuộc chi nhánh khác.');

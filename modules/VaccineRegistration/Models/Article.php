@@ -35,16 +35,6 @@ class Article extends Model
         'views' => 'integer',
     ];
 
-    protected static function booted(): void
-    {
-        static::deleting(function (Article $article) {
-            $article->is_active = false;
-            $article->is_published = false;
-            $article->save();
-            return false; // Prevent hard deletion
-        });
-    }
-
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

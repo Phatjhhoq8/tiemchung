@@ -157,27 +157,11 @@
 
 <!-- ================= 1. TAB TRANG CHỦ ================= -->
 @if($currentPage === 'home')
-    <!-- Khung 1: Hero Banner Slider -->
-    <div class="live-edit-frame" onclick="openBannerModal()">
-        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Hero Banner Slider</div>
-        <div style="padding: 24px; background: #ffffff; border-radius: 10px;">
-            <h4 style="margin: 0 0 12px 0; color: #475569; font-size: 13px; text-transform: uppercase; font-weight: 700;">[Khung 1: Hero Banner Slider Trang Chủ]</h4>
-            @php $firstBanner = $banners->first(); @endphp
-            <div style="position: relative; height: 180px; border-radius: 12px; overflow: hidden; background: #000;">
-                <img src="{{ asset($firstBanner ? $firstBanner->image_url : 'images/banners/banner_family.jpg') }}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
-                <div style="position: absolute; bottom: 20px; left: 20px; color: #fff;">
-                    <h3 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 800;">{{ $firstBanner->title ?? 'Hệ Thống Tiêm Chủng Medicare' }}</h3>
-                    <p style="margin: 0; font-size: 13px; opacity: 0.9;">{{ $firstBanner->subtitle ?? 'Chăm sóc sức khỏe gia đình' }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Khung 2: Thanh 4 Ô Tiện Ích Thao Tác Nhanh (Quick Action Toolbar) -->
+    <!-- Khung 1: Thanh 4 Ô Tiện Ích Thao Tác Nhanh (Quick Action Toolbar) -->
     <div class="live-edit-frame" onclick="openSettingModal('quick_toolbar', 'Thanh 4 Tiện Ích Nhanh', ['quick_t1_title', 'quick_t1_sub', 'quick_t2_title', 'quick_t2_sub'])">
-        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 2: Bảng 4 Tiện Ích Nhanh</div>
+        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 1: Bảng 4 Tiện Ích Nhanh</div>
         <div style="padding: 24px; background: #ffffff; border-radius: 10px;">
-            <h4 style="margin: 0 0 14px 0; color: #475569; font-size: 13px; text-transform: uppercase; font-weight: 700;">[Khung 2: Thanh Bảng 4 Tiện Ích Nhanh Nổi Bật]</h4>
+            <h4 style="margin: 0 0 14px 0; color: #475569; font-size: 13px; text-transform: uppercase; font-weight: 700;">[Khung 1: Thanh Bảng 4 Tiện Ích Nhanh Nổi Bật]</h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
                 <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
                     <strong style="color: var(--primary-color); font-size: 13.5px;">1. Đặt Mua Vắc Xin Online</strong>

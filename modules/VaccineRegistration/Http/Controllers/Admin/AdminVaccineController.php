@@ -147,14 +147,35 @@ class AdminVaccineController extends Controller
 
         $isSuperAdmin = AdminContext::isSuperAdmin();
 
+        // Lấy nhu cầu đặt lịch tiêm (20:30 cutoff rule: hôm nay hoặc ngày mai)
+        $now = now();
+        $isAfterCutoff = $now->format('H:i') >= '20:30';
+        $targetDate = $isAfterCutoff ? $now->copy()->addDay()->toDateString() : $now->toDateString();
+        $targetDateLabel = $isAfterCutoff ? 'Ngày mai' : 'Hôm nay';
+
+        $demandsQuery = \Illuminate\Support\Facades\DB::table('registration_vaccines')
+            ->join('registrations', 'registrations.id', '=', 'registration_vaccines.registration_id')
+            ->whereDate('registrations.injection_date', $targetDate)
+            ->where('registrations.booking_status', '!=', \Modules\VaccineRegistration\Models\Registration::BOOKING_CANCELLED);
+
+        if ($selectedCenterId) {
+            $demandsQuery->where('registrations.center_id', $selectedCenterId);
+        }
+
+        $scheduledDemands = $demandsQuery
+            ->selectRaw('registration_vaccines.vaccine_id, SUM(COALESCE(registration_vaccines.quantity, 1)) as total_required')
+            ->groupBy('registration_vaccines.vaccine_id')
+            ->pluck('total_required', 'vaccine_id')
+            ->toArray();
+
         if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
                 'success' => true,
-                'html' => view('vaccine::admin.vaccines._table', compact('vaccines', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin'))->render(),
+                'html' => view('vaccine::admin.vaccines._table', compact('vaccines', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'scheduledDemands', 'targetDateLabel'))->render(),
             ]);
         }
 
-        return view('vaccine::admin.vaccines.index', compact('vaccines', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin'));
+        return view('vaccine::admin.vaccines.index', compact('vaccines', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'scheduledDemands', 'targetDateLabel'));
     }
 
     /**
@@ -204,7 +225,7 @@ class AdminVaccineController extends Controller
         }
 
         // Xử lý checkbox is_featured
-        $validated['is_featured'] = $request->has('is_featured');
+        $validated['is_featured'] = $request->boolean('is_featured');
 
         $selectedCenterId = (int) AdminContext::selectedCenterId((int) $validated['center_id']);
         unset($validated['center_id']);
@@ -227,6 +248,7 @@ class AdminVaccineController extends Controller
                     'stock_quantity' => $qty,
                     'stock_status' => $stockStatus,
                     'is_active' => $center->id === $selectedCenterId,
+                    'is_featured' => (bool) $validated['is_featured'],
                 ]
             );
         });
@@ -258,6 +280,9 @@ class AdminVaccineController extends Controller
         $selectedCenterId = request()->filled('center_id')
             ? AdminContext::selectedCenterId(request()->integer('center_id'))
             : AdminContext::selectedCenterId();
+        if (!$selectedCenterId && $centers->isNotEmpty()) {
+            $selectedCenterId = $centers->first()->id;
+        }
         $isSuperAdmin = AdminContext::isSuperAdmin();
         $adminUser = AdminContext::user();
         $centerVaccine = $selectedCenterId
@@ -368,12 +393,15 @@ class AdminVaccineController extends Controller
         }
 
         // Xử lý checkbox is_featured
-        $validated['is_featured'] = $request->has('is_featured');
+        $validated['is_featured'] = $request->boolean('is_featured');
 
         if (AdminContext::isSuperAdmin()) {
             $masterData = $validated;
-            unset($masterData['price'], $masterData['sale_price'], $masterData['stock_quantity'], $masterData['stock_status'], $masterData['center_is_active'], $masterData['is_featured'], $masterData['sort_order']);
+            unset($masterData['stock_quantity'], $masterData['center_is_active']);
             $vaccine->update($masterData);
+
+            // Đồng bộ trạng thái nổi bật cho toàn bộ các chi nhánh
+            CenterVaccine::where('vaccine_id', $vaccine->id)->update(['is_featured' => (bool) $validated['is_featured']]);
         }
         $this->syncCenterVaccine($vaccine, $selectedCenterId, $validated);
         $freshVaccine = $vaccine->fresh();
@@ -404,27 +432,56 @@ class AdminVaccineController extends Controller
     {
         abort_unless(AdminContext::isSuperAdmin() || AdminContext::isBranchAdmin(), 403, 'Bạn không có quyền thay đổi trạng thái nổi bật của vắc xin.');
 
-        $validated = request()->validate(['center_id' => 'required|integer|exists:centers,id']);
-        AdminContext::assertCanManageCenter((int) $validated['center_id']);
-
         $vaccine = Vaccine::findOrFail($id);
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) $validated['center_id']);
-        $centerVaccine = CenterVaccine::firstOrCreate(
-            ['center_id' => $selectedCenterId, 'vaccine_id' => $vaccine->id],
-            ['price' => $vaccine->price, 'sale_price' => $vaccine->sale_price, 'stock_status' => $vaccine->stock_status ?? 'available']
-        );
-        $centerVaccine->is_featured = ! $centerVaccine->is_featured;
-        $centerVaccine->save();
-        AuditLogger::log(
-            'vaccine.featured_changed',
-            'vaccine',
-            $vaccine->id,
-            ['is_featured' => ! $centerVaccine->is_featured],
-            ['is_featured' => $centerVaccine->is_featured],
-            $selectedCenterId
-        );
+        $isSuperAdmin = AdminContext::isSuperAdmin();
 
-        $statusMessage = $centerVaccine->is_featured ? 'Đã bật hiển thị NỔI BẬT trên Trang chủ.' : 'Đã bỏ trạng thái NỔI BẬT.';
+        if (request()->filled('center_id')) {
+            $validated = request()->validate(['center_id' => 'required|integer|exists:centers,id']);
+            AdminContext::assertCanManageCenter((int) $validated['center_id']);
+            $selectedCenterId = (int) AdminContext::selectedCenterId((int) $validated['center_id']);
+
+            $centerVaccine = CenterVaccine::firstOrCreate(
+                ['center_id' => $selectedCenterId, 'vaccine_id' => $vaccine->id],
+                ['price' => $vaccine->price, 'sale_price' => $vaccine->sale_price, 'stock_status' => $vaccine->stock_status ?? 'available']
+            );
+            $newFeatured = ! $centerVaccine->is_featured;
+            $centerVaccine->is_featured = $newFeatured;
+            $centerVaccine->save();
+
+            if ($isSuperAdmin) {
+                $vaccine->is_featured = $newFeatured;
+                $vaccine->save();
+                CenterVaccine::where('vaccine_id', $vaccine->id)->update(['is_featured' => $newFeatured]);
+            }
+
+            AuditLogger::log(
+                'vaccine.featured_changed',
+                'vaccine',
+                $vaccine->id,
+                ['is_featured' => ! $newFeatured],
+                ['is_featured' => $newFeatured],
+                $selectedCenterId
+            );
+        } else {
+            abort_unless($isSuperAdmin, 403, 'Quản trị viên chi nhánh phải chỉ định chi nhánh cụ thể.');
+
+            $newFeatured = ! $vaccine->is_featured;
+            $vaccine->is_featured = $newFeatured;
+            $vaccine->save();
+
+            CenterVaccine::where('vaccine_id', $vaccine->id)->update(['is_featured' => $newFeatured]);
+
+            AuditLogger::log(
+                'vaccine.featured_changed',
+                'vaccine',
+                $vaccine->id,
+                ['is_featured' => ! $newFeatured],
+                ['is_featured' => $newFeatured],
+                null
+            );
+        }
+
+        $statusMessage = $newFeatured ? 'Đã bật hiển thị NỔI BẬT trên Trang chủ.' : 'Đã bỏ trạng thái NỔI BẬT.';
 
         return redirect()->back()->with('success', "Vắc xin '{$vaccine->name}': {$statusMessage}");
     }
@@ -495,21 +552,45 @@ class AdminVaccineController extends Controller
 
         $vaccine = Vaccine::findOrFail($id);
 
+        $now = now();
+        $isAfterCutoff = $now->format('H:i') >= '20:30';
+        $targetDate = $isAfterCutoff ? $now->copy()->addDay()->toDateString() : $now->toDateString();
+
+        $branchDemands = \Illuminate\Support\Facades\DB::table('registration_vaccines')
+            ->join('registrations', 'registrations.id', '=', 'registration_vaccines.registration_id')
+            ->where('registration_vaccines.vaccine_id', $vaccine->id)
+            ->whereDate('registrations.injection_date', $targetDate)
+            ->where('registrations.booking_status', '!=', \Modules\VaccineRegistration\Models\Registration::BOOKING_CANCELLED)
+            ->selectRaw('registrations.center_id, SUM(COALESCE(registration_vaccines.quantity, 1)) as branch_required')
+            ->groupBy('registrations.center_id')
+            ->pluck('branch_required', 'center_id')
+            ->toArray();
+
         $branchesStock = Center::active()
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
-            ->map(function ($center) use ($vaccine) {
+            ->map(function ($center) use ($vaccine, $branchDemands) {
                 $centerVaccine = CenterVaccine::where('center_id', $center->id)
                     ->where('vaccine_id', $vaccine->id)
                     ->first();
+
+                $stockQty = $centerVaccine ? (int) $centerVaccine->stock_quantity : 0;
+                $reqQty = (int) ($branchDemands[$center->id] ?? 0);
+
+                if ($reqQty > 0) {
+                    $stockStatus = ($stockQty >= $reqQty) ? 'available' : 'out_of_stock';
+                } else {
+                    $stockStatus = ($stockQty > 0) ? 'available' : 'out_of_stock';
+                }
 
                 return [
                     'center_name' => $center->name,
                     'price' => $centerVaccine ? $centerVaccine->price : $vaccine->price,
                     'sale_price' => $centerVaccine ? $centerVaccine->sale_price : $vaccine->sale_price,
-                    'stock_quantity' => $centerVaccine ? $centerVaccine->stock_quantity : 0,
-                    'stock_status' => $centerVaccine ? $centerVaccine->stock_status : 'out_of_stock',
+                    'stock_quantity' => $stockQty,
+                    'required_quantity' => $reqQty,
+                    'stock_status' => $stockStatus,
                     'is_active' => $centerVaccine ? (bool) $centerVaccine->is_active : false,
                 ];
             });
@@ -526,6 +607,28 @@ class AdminVaccineController extends Controller
      */
     private function validateVaccine(Request $request): array
     {
+        // Gán default center_id nếu SuperAdmin không gửi hoặc ở chế độ toàn hệ thống
+        if (! $request->filled('center_id') && AdminContext::isSuperAdmin()) {
+            $defaultCenter = Center::active()->orderBy('sort_order')->orderBy('id')->first();
+            if ($defaultCenter) {
+                $request->merge(['center_id' => $defaultCenter->id]);
+            }
+        }
+
+        // Chuẩn hóa sale_price: nếu rỗng, <= 0 hoặc >= price (không giảm giá) thì tự động chuyển về null
+        if ($request->has('sale_price')) {
+            $rawSale = $request->input('sale_price');
+            $rawPrice = $request->input('price');
+            if ($rawSale === '' || $rawSale === null || (int) $rawSale <= 0 || (is_numeric($rawPrice) && (int) $rawSale >= (int) $rawPrice)) {
+                $request->merge(['sale_price' => null]);
+            }
+        }
+
+        // Chuẩn hóa source_review_date: nếu rỗng thì set null
+        if ($request->has('source_review_date') && empty($request->input('source_review_date'))) {
+            $request->merge(['source_review_date' => null]);
+        }
+
         // Tự động đồng bộ stock_status dựa trên stock_quantity nếu không chọn
         if (! $request->has('stock_status') && $request->has('stock_quantity')) {
             $qty = (int) $request->input('stock_quantity');
@@ -551,7 +654,7 @@ class AdminVaccineController extends Controller
             'name' => 'required|string|max:255',
             'center_id' => 'required|exists:centers,id',
             'price' => 'required|integer|min:0',
-            'sale_price' => 'nullable|integer|min:0|lt:price',
+            'sale_price' => 'nullable|integer|min:1|lt:price',
             'doses' => 'required|integer|min:1',
             'stock_quantity' => 'required|integer|min:0',
             'center_is_active' => 'nullable|boolean',
@@ -579,7 +682,7 @@ class AdminVaccineController extends Controller
             'price.integer' => 'Giá vắc xin phải là số nguyên.',
             'price.min' => 'Giá vắc xin không được nhỏ hơn 0đ.',
             'sale_price.integer' => 'Giá ưu đãi phải là số nguyên.',
-            'sale_price.min' => 'Giá ưu đãi không được nhỏ hơn 0đ.',
+            'sale_price.min' => 'Giá ưu đãi phải lớn hơn 0đ.',
             'sale_price.lt' => 'Giá ưu đãi phải nhỏ hơn giá gốc vắc xin.',
             'doses.required' => 'Số mũi tiêm không được để trống.',
             'doses.min' => 'Số mũi tiêm phải ít nhất là 1 mũi.',

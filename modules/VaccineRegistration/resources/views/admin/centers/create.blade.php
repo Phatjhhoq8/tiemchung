@@ -18,7 +18,7 @@
         @include('vaccine::admin.centers._form')
 
         <div style="border-top: 1px solid #e2e8f0; padding-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
-            <a href="{{ route('admin.centers.index') }}" class="btn-secondary" style="padding: 12px 24px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; text-decoration: none; color: #475569; font-weight: 600;">Hủy bộ</a>
+            <a href="{{ route('admin.centers.index') }}" class="btn-secondary" style="padding: 12px 24px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; text-decoration: none; color: #475569; font-weight: 600;">Hủy bỏ</a>
             <button type="submit" class="btn-primary" style="padding: 12px 28px; border-radius: 8px; border: none; color: #ffffff; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
                 <i data-lucide="save"></i> Lưu chi nhánh
             </button>

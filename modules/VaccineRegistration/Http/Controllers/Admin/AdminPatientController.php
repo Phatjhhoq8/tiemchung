@@ -16,9 +16,18 @@ class AdminPatientController extends Controller
     public function index(Request $request)
     {
         $query = Patient::query();
+        $search = trim((string) $request->input('search'));
+        $selectedCenterId = AdminContext::resolveListCenterId($request);
 
-        if ($request->filled('search')) {
-            $search = $request->input('search');
+        if ($selectedCenterId) {
+            $query->whereHas('registrations', fn ($q) => $q->where('center_id', $selectedCenterId));
+        }
+
+        if (AdminContext::isBranchAdmin()) {
+            $query->whereHas('registrations', fn ($q) => $q->where('center_id', AdminContext::centerId()));
+        }
+
+        if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('full_name', 'like', "%{$search}%")
                     ->orWhere('phone', 'like', "%{$search}%")
@@ -26,27 +35,31 @@ class AdminPatientController extends Controller
             });
         }
 
-        if (AdminContext::isBranchAdmin()) {
-            $query->whereHas('registrations', fn ($q) => $q->where('center_id', AdminContext::centerId()));
+        if ($request->filled('from_date')) {
+            $query->whereDate('patients.created_at', '>=', $request->input('from_date'));
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('patients.created_at', '<=', $request->input('to_date'));
         }
 
-        $patients = $query->withCount(['registrations', 'administeredDoses'])->latest()->paginate(15);
+        $patients = $query->withCount(['registrations', 'administeredDoses'])
+            ->latest('id')
+            ->paginate(15)
+            ->withQueryString();
 
-        if ($request->wantsJson() || $request->ajax()) {
+        $isSuperAdmin = AdminContext::isSuperAdmin();
+        $adminCenters = $isSuperAdmin
+            ? \Modules\VaccineRegistration\Models\Center::active()->orderBy('sort_order')->orderBy('id')->get(['id', 'name'])
+            : collect();
+
+        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
                 'success' => true,
-                'data' => $patients,
+                'html' => view('vaccine::admin.patients._table', compact('patients', 'search', 'selectedCenterId', 'isSuperAdmin', 'adminCenters'))->render(),
             ]);
         }
 
-        if (view()->exists('vaccine::admin.patients.index')) {
-            return view('vaccine::admin.patients.index', compact('patients'));
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $patients,
-        ]);
+        return view('vaccine::admin.patients.index', compact('patients', 'search', 'selectedCenterId', 'isSuperAdmin', 'adminCenters'));
     }
 
     /**

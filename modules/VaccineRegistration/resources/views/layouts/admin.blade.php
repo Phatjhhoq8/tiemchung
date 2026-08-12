@@ -5,6 +5,74 @@
         ? \Modules\VaccineRegistration\Models\Center::active()->orderBy('sort_order')->orderBy('id')->get(['id', 'name'])
         : collect());
     $adminSelectedCenterId = $adminSelectedCenterId ?? \Modules\VaccineRegistration\Support\AdminContext::selectedCenterId();
+
+    // Logic gom nhóm route cho thanh điều hướng
+    $currentRoute = Route::currentRouteName();
+    
+    // Nhóm 1: Tiêm chủng & Lịch trình
+    $groupVaccine = [
+        'admin.vaccines.index', 'admin.vaccines.create', 'admin.vaccines.edit',
+        'admin.schedules.index', 'admin.default-slots.index',
+        'admin.schedule'
+    ];
+    
+    // Nhóm 2: Đăng ký & Khách hàng
+    $groupCustomer = [
+        'admin.registrations.index', 'admin.registrations.show', 'admin.registrations.create',
+        'admin.patients.index', 'admin.patients.show',
+        'admin.customers.index', 'admin.customers.show'
+    ];
+    
+    // Nhóm 3: Nội dung Website
+    $groupWebsite = [
+        'admin.articles.index', 'admin.articles.create', 'admin.articles.edit',
+        'admin.banners.index', 'admin.banners.create', 'admin.banners.edit',
+        'admin.live-editor'
+    ];
+    
+    // Nhóm 4: Hệ thống & Thiết lập
+    $groupSystem = [
+        'admin.settings.loyalty',
+        'admin.centers.index', 'admin.centers.create', 'admin.centers.edit',
+        'admin.users.index', 'admin.users.create', 'admin.users.edit',
+        'admin.audit-logs.index', 'admin.audit-logs.show'
+    ];
+    
+    $activeGroup = null;
+    $subNavigation = [];
+    
+    if (in_array($currentRoute, $groupVaccine)) {
+        $activeGroup = 'vaccine';
+        $subNavigation = [
+            ['route' => 'admin.vaccines.index', 'label' => 'Quản lý Vắc Xin', 'icon' => 'syringe'],
+            ['route' => 'admin.schedules.index', 'label' => 'Khung Giờ Tiêm', 'icon' => 'clock'],
+            ['route' => 'admin.schedule', 'label' => 'Lịch Hẹn Tuần', 'icon' => 'calendar'],
+        ];
+    } elseif (in_array($currentRoute, $groupCustomer)) {
+        $activeGroup = 'customer';
+        $subNavigation = [
+            ['route' => 'admin.registrations.index', 'label' => 'Đơn Đăng Ký', 'icon' => 'clipboard-list'],
+            ['route' => 'admin.patients.index', 'label' => 'Hồ Sơ Bệnh Nhân', 'icon' => 'contact'],
+            ['route' => 'admin.customers.index', 'label' => 'Khách Hàng & Điểm', 'icon' => 'users'],
+        ];
+    } elseif (in_array($currentRoute, $groupWebsite) && $isSuperAdmin) {
+        $activeGroup = 'website';
+        $subNavigation = [
+            ['route' => 'admin.articles.index', 'label' => 'Quản lý Bài Viết', 'icon' => 'newspaper'],
+            ['route' => 'admin.banners.index', 'label' => 'Quản lý Banner', 'icon' => 'image'],
+            ['route' => 'admin.live-editor', 'label' => 'Chỉnh Sửa Trực Quan', 'icon' => 'layout-template'],
+        ];
+    } elseif (in_array($currentRoute, $groupSystem)) {
+        $activeGroup = 'system';
+        $subNavigation = [];
+        
+        $subNavigation[] = ['route' => 'admin.settings.loyalty', 'label' => 'Cấu Hình Tích Điểm', 'icon' => 'coins'];
+        if ($isSuperAdmin) {
+            $subNavigation[] = ['route' => 'admin.centers.index', 'label' => 'Quản lý Trung Tâm', 'icon' => 'map-pinned'];
+            $subNavigation[] = ['route' => 'admin.users.index', 'label' => 'Tài Khoản Chi Nhánh', 'icon' => 'users'];
+            $subNavigation[] = ['route' => 'admin.audit-logs.index', 'label' => 'Nhật Ký Hệ Thống', 'icon' => 'scroll-text'];
+        }
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="vi">
@@ -22,6 +90,10 @@
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Cropper.js (Image Cropper Library) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     
     <!-- Custom CSS -->
     @php
@@ -327,6 +399,11 @@
             box-shadow: var(--shadow-sm);
             background: #ffffff;
         }
+        @media (min-width: 1024px) {
+            .table-responsive-modern {
+                overflow: visible !important;
+            }
+        }
         .table-modern {
             width: 100%;
             min-width: 850px;
@@ -537,6 +614,16 @@
             background-color: #dcfce7;
             border-color: #86efac;
             color: #15803d;
+        }
+        .btn-action-sm.btn-action-warning {
+            border-color: #fef3c7;
+            background-color: #fffbeb;
+            color: #d97706;
+        }
+        .btn-action-sm.btn-action-warning:hover {
+            background-color: #fef3c7;
+            border-color: #fcd34d;
+            color: #b45309;
         }
 
         /* 6. Badge System */
@@ -801,6 +888,10 @@
         .action-dropdown-menu.active {
             display: block;
         }
+        .action-dropdown-menu.dropup {
+            bottom: calc(100% + 6px) !important;
+            top: auto !important;
+        }
         @keyframes dropdownSlideUp {
             from {
                 opacity: 0;
@@ -839,6 +930,62 @@
             background-color: #fef2f2;
             color: #b91c1c;
         }
+
+        /* ==========================================================================
+           SUB-NAVIGATION SYSTEM
+           ========================================================================== */
+        .admin-sub-nav-wrapper {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            padding: 0 20px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-sm);
+        }
+        .admin-sub-nav {
+            display: flex;
+            gap: 28px;
+            overflow-x: auto;
+            scrollbar-width: none; /* Firefox */
+        }
+        .admin-sub-nav::-webkit-scrollbar {
+            display: none; /* Safari and Chrome */
+        }
+        .sub-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 4px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-bottom: 3px solid transparent;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+        .sub-nav-item:hover {
+            color: var(--primary-color);
+        }
+        .sub-nav-item.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        .sub-nav-item i {
+            width: 18px;
+            height: 18px;
+            opacity: 0.85;
+            transition: transform 0.2s ease;
+        }
+        .sub-nav-item:hover i {
+            transform: translateY(-1px);
+            opacity: 1;
+        }
+        .sub-nav-item.active i {
+            opacity: 1;
+            color: var(--primary-color);
+        }
     </style>
     <!-- Dark Mode Check -->
     <script>
@@ -861,77 +1008,28 @@
                         <i data-lucide="layout-dashboard"></i> Bảng điều khiển
                     </a>
                 </li>
-                <li class="{{ str_contains(Route::currentRouteName(), 'admin.vaccines') ? 'active' : '' }}">
+                <li class="{{ $activeGroup === 'vaccine' ? 'active' : '' }}">
                     <a href="{{ route('admin.vaccines.index') }}">
-                        <i data-lucide="syringe"></i> Quản lý Vắc Xin
+                        <i data-lucide="syringe"></i> Tiêm Chủng & Lịch Trình
                     </a>
                 </li>
-                <li class="{{ str_contains(Route::currentRouteName(), 'admin.registrations') ? 'active' : '' }}">
+                <li class="{{ $activeGroup === 'customer' ? 'active' : '' }}">
                     <a href="{{ route('admin.registrations.index') }}">
-                        <i data-lucide="clipboard-list"></i> Đơn Đăng Ký
-                    </a>
-                </li>
-                <li class="{{ str_contains(Route::currentRouteName(), 'admin.customers') ? 'active' : '' }}">
-                    <a href="{{ route('admin.customers.index') }}">
-                        <i data-lucide="users"></i> Khách Hàng & Điểm
-                    </a>
-                </li>
-                <li class="{{ Route::currentRouteName() === 'admin.schedule' ? 'active' : '' }}">
-                    <a href="{{ route('admin.schedule') }}">
-                        <i data-lucide="calendar"></i> Lịch Hẹn Tuần
-                    </a>
-                </li>
-                <li class="{{ (str_contains(Route::currentRouteName(), 'admin.schedules') || str_contains(Route::currentRouteName(), 'admin.default-slots')) ? 'active' : '' }}">
-                    <a href="{{ route('admin.schedules.index') }}">
-                        <i data-lucide="clock"></i> Khung Giờ Tiêm
-                    </a>
-                </li>
-                <li class="{{ str_contains(Route::currentRouteName(), 'admin.settings.loyalty') ? 'active' : '' }}">
-                    <a href="{{ route('admin.settings.loyalty') }}">
-                        <i data-lucide="coins"></i> Cấu Hình Tích Điểm
+                        <i data-lucide="clipboard-list"></i> Đăng Ký & Khách Hàng
                     </a>
                 </li>
                 @if($isSuperAdmin ?? false)
-                <li class="{{ str_contains(Route::currentRouteName(), 'admin.centers') ? 'active' : '' }}">
-                    <a href="{{ route('admin.centers.index') }}">
-                        <i data-lucide="map-pinned"></i> Quản lý Trung Tâm
-                    </a>
-                </li>
-                @endif
-                @if($isSuperAdmin ?? false)
-                <li class="{{ str_contains(Route::currentRouteName(), 'admin.users') ? 'active' : '' }}">
-                    <a href="{{ route('admin.users.index') }}">
-                        <i data-lucide="users"></i> Tài Khoản Chi Nhánh
-                    </a>
-                </li>
-                @endif
-                @if($isSuperAdmin ?? false)
-                <li class="{{ str_contains(Route::currentRouteName(), 'admin.banners') ? 'active' : '' }}">
-                    <a href="{{ route('admin.banners.index') }}">
-                        <i data-lucide="image"></i> Quản lý Banner
-                    </a>
-                </li>
-                <li class="{{ str_contains(Route::currentRouteName(), 'admin.articles') ? 'active' : '' }}">
+                <li class="{{ $activeGroup === 'website' ? 'active' : '' }}">
                     <a href="{{ route('admin.articles.index') }}">
-                        <i data-lucide="newspaper"></i> Quản lý Bài Viết
-                    </a>
-                </li>
-                <li class="{{ Route::currentRouteName() === 'admin.settings.index' ? 'active' : '' }}">
-                    <a href="{{ route('admin.settings.index') }}">
-                        <i data-lucide="settings"></i> Cấu Hình Trang Web
-                    </a>
-                </li>
-                <li class="{{ Route::currentRouteName() === 'admin.live-editor' ? 'active' : '' }}">
-                    <a href="{{ route('admin.live-editor') }}">
-                        <i data-lucide="layout-template"></i> Chỉnh Sửa Trực Quan (Live)
-                    </a>
-                </li>
-                <li class="{{ str_contains(Route::currentRouteName(), 'admin.audit-logs') ? 'active' : '' }}">
-                    <a href="{{ route('admin.audit-logs.index') }}">
-                        <i data-lucide="scroll-text"></i> Nhật Ký Hệ Thống
+                        <i data-lucide="newspaper"></i> Nội Dung Website
                     </a>
                 </li>
                 @endif
+                <li class="{{ $activeGroup === 'system' ? 'active' : '' }}">
+                    <a href="{{ route('admin.settings.loyalty') }}">
+                        <i data-lucide="settings"></i> Hệ Thống & Thiết Lập
+                    </a>
+                </li>
                 <li style="margin-top: 30px; border-top: 1px dashed #1b2e4c; padding-top: 10px;">
                     <a href="{{ route('admin.password.edit') }}">
                         <i data-lucide="key-round"></i> Đổi mật khẩu
@@ -985,6 +1083,34 @@
             </header>
             
             <div class="admin-body">
+                @if(!empty($subNavigation) && count($subNavigation) > 1)
+                    <div class="admin-sub-nav-wrapper">
+                        <div class="admin-sub-nav">
+                            @foreach($subNavigation as $item)
+                                @php
+                                    $isItemActive = false;
+                                    if ($currentRoute === $item['route']) {
+                                        $isItemActive = true;
+                                    } else {
+                                        $itemPrefix = str_replace('.index', '', $item['route']);
+                                        if ($item['route'] === 'admin.settings.index') {
+                                            $isItemActive = ($currentRoute === 'admin.settings.index' || $currentRoute === 'admin.settings.update');
+                                        } elseif ($item['route'] === 'admin.schedules.index') {
+                                            $isItemActive = (str_starts_with($currentRoute, 'admin.schedules.') || str_starts_with($currentRoute, 'admin.default-slots.'));
+                                        } else {
+                                            $isItemActive = str_starts_with($currentRoute, $itemPrefix . '.');
+                                        }
+                                    }
+                                @endphp
+                                <a href="{{ route($item['route']) }}" class="sub-nav-item {{ $isItemActive ? 'active' : '' }}">
+                                    <i data-lucide="{{ $item['icon'] }}"></i>
+                                    <span>{{ $item['label'] }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 @if(session('success'))
                     <div class="alert alert-success" style="margin-bottom: 24px; padding: 16px; border-radius: 8px; background-color: #def7ec; color: #03543f; border: 1px solid #bcf0da; display: flex; align-items: center; gap: 8px;">
                         <i data-lucide="check-circle-2"></i>
@@ -1091,7 +1217,17 @@
             });
             
             if (menu) {
-                menu.classList.toggle('active');
+                const isActive = menu.classList.toggle('active');
+                if (isActive) {
+                    const rect = btn.getBoundingClientRect();
+                    const viewportHeight = window.innerHeight;
+                    // If near bottom of the viewport (less than 180px available), display upwards
+                    if (rect.bottom > viewportHeight - 180) {
+                        menu.classList.add('dropup');
+                    } else {
+                        menu.classList.remove('dropup');
+                    }
+                }
             }
         };
 
@@ -1778,6 +1914,12 @@
             const form = e.target;
             if (!form || form.tagName !== 'FORM') return;
 
+            // If the form has a custom confirm prompt but has not been confirmed yet,
+            // let AppDialog handle it and do not block or disable buttons yet.
+            if (form.hasAttribute('data-confirm') && form.dataset.appDialogConfirmed !== 'true') {
+                return;
+            }
+
             // If already submitting, block duplicate submission
             if (form.dataset.submitting === 'true') {
                 e.preventDefault();
@@ -1787,13 +1929,15 @@
 
             form.dataset.submitting = 'true';
 
-            // Disable submit buttons and show loading state
+            // Disable submit buttons asynchronously to avoid canceling the submit action
             const submitBtns = form.querySelectorAll('button[type="submit"], input[type="submit"]');
-            submitBtns.forEach(btn => {
-                btn.disabled = true;
-                btn.style.opacity = '0.7';
-                btn.style.cursor = 'not-allowed';
-            });
+            setTimeout(() => {
+                submitBtns.forEach(btn => {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.7';
+                    btn.style.cursor = 'not-allowed';
+                });
+            }, 0);
 
             // Re-enable after 8 seconds as safety timeout (e.g. if navigation is cancelled)
             setTimeout(() => {
@@ -1811,6 +1955,7 @@
             initGlobalMedicareCustomDropdowns();
         });
     </script>
+    @include('vaccine::admin.partials._image_cropper_modal')
     @yield('scripts')
 </body>
 </html>

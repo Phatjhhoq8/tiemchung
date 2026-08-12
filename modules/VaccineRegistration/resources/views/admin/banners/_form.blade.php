@@ -34,10 +34,15 @@
                 <span style="font-size: 11px; color: var(--text-light);">Hỗ trợ: JPG, PNG, GIF, WEBP (Tối đa 2MB)</span>
             </div>
             <div id="image_preview_container" class="image-upload-preview-container" style="{{ $banner->image_url ? 'display: block;' : '' }}">
-                <div class="image-upload-preview-wrapper">
-                    <img id="image_preview" class="image-upload-preview" src="{{ $banner->image_url ? asset($banner->image_url) : '' }}" alt="Xem trước hình ảnh" style="max-height: 120px;">
+                <div class="image-upload-preview-wrapper" style="text-align: center;">
+                    <img id="image_preview" class="image-upload-preview" src="{{ $banner->image_url ? asset($banner->image_url) : '' }}" alt="Xem trước hình ảnh" style="max-height: 140px; border-radius: 8px;">
                     <button type="button" id="btn_remove_image" class="image-upload-remove-btn" title="Xóa hình ảnh">
                         <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                    </button>
+                </div>
+                <div style="text-align: center; margin-top: 6px;">
+                    <button type="button" id="btn_recrop_image" class="btn-recrop-trigger" style="display: none;">
+                        <i data-lucide="crop"></i> Cắt lại hình ảnh
                     </button>
                 </div>
             </div>
@@ -75,18 +80,22 @@
         const previewContainer = document.getElementById('image_preview_container');
         const previewImg = document.getElementById('image_preview');
         const removeBtn = document.getElementById('btn_remove_image');
+        const recropBtn = document.getElementById('btn_recrop_image');
+        let currentRawFile = null;
 
         if (!dropzone) return;
 
         // Click to choose file
         dropzone.addEventListener('click', function(e) {
-            if (e.target.closest('#btn_remove_image')) return;
+            if (e.target.closest('#btn_remove_image') || e.target.closest('#btn_recrop_image')) return;
             fileInput.click();
         });
 
         // File input change
         fileInput.addEventListener('change', function() {
-            handleFiles(this.files);
+            if (this.files && this.files.length > 0) {
+                handleFiles(this.files);
+            }
         });
 
         // Drag & Drop events
@@ -114,33 +123,81 @@
         dropzone.addEventListener('drop', function(e) {
             const dt = e.dataTransfer;
             const files = dt.files;
-            handleFiles(files);
-            fileInput.files = files; // Update file input files
+            if (files && files.length > 0) {
+                handleFiles(files);
+            }
         });
 
         function handleFiles(files) {
             if (files.length === 0) return;
             const file = files[0];
             if (!file.type.startsWith('image/')) {
-                window.AppDialog.alert('Vui lòng chỉ tải lên tệp hình ảnh.');
+                window.AppDialog ? window.AppDialog.alert('Vui lòng chỉ tải lên tệp hình ảnh.') : alert('Vui lòng chỉ tải lên tệp hình ảnh.');
                 return;
             }
-            if (file.size > 2 * 1024 * 1024) {
-                window.AppDialog.alert('Dung lượng hình ảnh không được vượt quá 2 MB.');
+            if (file.size > 5 * 1024 * 1024) {
+                window.AppDialog ? window.AppDialog.alert('Dung lượng hình ảnh không được vượt quá 5 MB.') : alert('Dung lượng hình ảnh không được vượt quá 5 MB.');
                 return;
             }
 
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onloadend = function() {
-                previewImg.src = reader.result;
-                promptBlock.style.display = 'none';
-                previewContainer.style.display = 'block';
-                hiddenInput.value = ''; // Reset hidden value because a new file is uploaded
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
+            currentRawFile = file;
+
+            // Mở Modal Cắt Ảnh
+            if (typeof window.openMedicareCropperModal === 'function') {
+                window.openMedicareCropperModal({
+                    file: file,
+                    defaultRatio: 16 / 9,
+                    ratioName: '16:9',
+                    onCropComplete: function(croppedBlob, croppedDataUrl, croppedFile) {
+                        // Gán File đã cắt vào input file bằng DataTransfer
+                        const dt = new DataTransfer();
+                        dt.items.add(croppedFile);
+                        fileInput.files = dt.files;
+
+                        // Cập nhật xem trước
+                        previewImg.src = croppedDataUrl;
+                        promptBlock.style.display = 'none';
+                        previewContainer.style.display = 'block';
+                        if (recropBtn) recropBtn.style.display = 'inline-flex';
+                        hiddenInput.value = '';
+
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                    }
+                });
+            } else {
+                // Fallback nếu modal chưa load
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onloadend = function() {
+                    previewImg.src = reader.result;
+                    promptBlock.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                    hiddenInput.value = '';
+                };
             }
+        }
+
+        // Nút cắt lại ảnh
+        if (recropBtn) {
+            recropBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (currentRawFile && typeof window.openMedicareCropperModal === 'function') {
+                    window.openMedicareCropperModal({
+                        file: currentRawFile,
+                        defaultRatio: 16 / 9,
+                        ratioName: '16:9',
+                        onCropComplete: function(croppedBlob, croppedDataUrl, croppedFile) {
+                            const dt = new DataTransfer();
+                            dt.items.add(croppedFile);
+                            fileInput.files = dt.files;
+                            previewImg.src = croppedDataUrl;
+                        }
+                    });
+                }
+            });
         }
 
         // Remove image action
@@ -150,7 +207,9 @@
             fileInput.value = '';
             hiddenInput.value = '';
             previewImg.src = '';
+            currentRawFile = null;
             previewContainer.style.display = 'none';
+            if (recropBtn) recropBtn.style.display = 'none';
             promptBlock.style.display = 'block';
         });
     });

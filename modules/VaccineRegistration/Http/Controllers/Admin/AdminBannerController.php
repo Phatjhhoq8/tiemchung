@@ -174,15 +174,40 @@ class AdminBannerController extends Controller
     }
 
     /**
-     * Xóa banner (Soft deactivation).
+     * Bật / Tắt trạng thái hiển thị (Ẩn mềm) biểu ngữ.
+     */
+    public function toggleStatus($id)
+    {
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền thay đổi trạng thái biểu ngữ.');
+        $banner = Banner::findOrFail($id);
+        $banner->is_active = ! $banner->is_active;
+        $banner->save();
+
+        $statusText = $banner->is_active ? 'Hiển thị' : 'Đã ẩn';
+
+        return redirect()->back()->with('success', "Đã chuyển biểu ngữ \"{$banner->title}\" sang trạng thái: {$statusText}!");
+    }
+
+    /**
+     * Xóa cứng (Hard Delete) banner vĩnh viễn khỏi CSDL và xóa file ảnh.
      */
     public function destroy($id)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền vô hiệu hóa biểu ngữ.');
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền xóa biểu ngữ.');
         $banner = Banner::findOrFail($id);
-        $banner->is_active = false;
-        $banner->save();
 
-        return redirect()->route('admin.banners.index')->with('success', 'Vô hiệu hóa biểu ngữ thành công.');
+        // Xóa file ảnh đính kèm nếu không phải ảnh mặc định hệ thống
+        if ($banner->image_url && ! in_array($banner->image_url, ['images/banners/banner_family.jpg', 'images/banners/banner2.jpg', '/images/banners/banner_family.jpg', '/images/banners/banner2.jpg'])) {
+            $oldFilename = basename($banner->image_url);
+            $oldPath = public_path('images/banners/'.$oldFilename);
+            if (file_exists($oldPath)) {
+                @unlink($oldPath);
+            }
+        }
+
+        $title = $banner->title;
+        $banner->delete();
+
+        return redirect()->route('admin.banners.index')->with('success', "Đã xóa vĩnh viễn biểu ngữ \"{$title}\" thành công!");
     }
 }

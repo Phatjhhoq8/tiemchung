@@ -16,9 +16,21 @@
 
         <!-- Action Bar -->
         <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
-            <a href="{{ route('vaccine.index') }}" class="inline-flex items-center gap-1.5 text-[#c8102e] hover:text-[#a00d24] font-bold text-sm transition-colors ml-auto">
-                Xem tất cả danh mục sản phẩm <i data-lucide="chevron-right" class="w-4 h-4"></i>
-            </a>
+            <div class="inline-flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-50 text-amber-700 border border-amber-200">
+                    <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-500 text-amber-500"></i>
+                    Sản phẩm tiêu biểu
+                </span>
+            </div>
+            <div class="inline-flex items-center gap-4 ml-auto flex-wrap">
+                <a href="{{ route('vaccine.index', ['featured' => 1]) }}" class="inline-flex items-center gap-1.5 text-amber-700 hover:text-amber-800 font-bold text-sm transition-colors">
+                    <i data-lucide="star" class="w-4 h-4 fill-amber-500 text-amber-500"></i> Xem tất cả vắc xin nổi bật
+                </a>
+                <span class="text-slate-300">•</span>
+                <a href="{{ route('vaccine.index') }}" class="inline-flex items-center gap-1.5 text-[#c8102e] hover:text-[#a00d24] font-bold text-sm transition-colors">
+                    Xem tất cả danh mục sản phẩm <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </a>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

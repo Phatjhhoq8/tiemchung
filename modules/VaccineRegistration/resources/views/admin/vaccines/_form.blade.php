@@ -79,7 +79,7 @@
         @if(isset($centers) && ($isSuperAdmin ?? false))
         <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0;">
             <label for="center_id" class="form-label-modern">Chi nhánh áp dụng giá/tồn kho <span style="color: #ef4444;">*</span></label>
-            <select name="center_id" id="center_id" required class="form-control-modern">
+            <select name="center_id" id="center_id" required class="form-control-modern no-custom-select">
                 <option value="">-- Chọn chi nhánh --</option>
                 @foreach($centers as $center)
                     <option value="{{ $center->id }}" {{ (string) old('center_id', $selectedCenterId ?? null) === (string) $center->id ? 'selected' : '' }}>{{ $center->name }} - {{ $center->phone }}</option>
@@ -226,7 +226,7 @@
             <!-- Kinh doanh tại chi nhánh -->
             <div class="form-group-modern" style="margin-bottom: 0;">
                 <label for="center_is_active" class="form-label-modern">Kinh doanh tại chi nhánh <span style="color: #ef4444;">*</span></label>
-                <select name="center_is_active" id="center_is_active" required class="form-control-modern">
+                <select name="center_is_active" id="center_is_active" required class="form-control-modern no-custom-select">
                     <option value="1" {{ (int) old('center_is_active', $vaccine->center_is_active ?? 1) === 1 ? 'selected' : '' }}>Đang kinh doanh</option>
                     <option value="0" {{ (int) old('center_is_active', $vaccine->center_is_active ?? 1) === 0 ? 'selected' : '' }}>Tạm ngưng</option>
                 </select>
@@ -350,7 +350,7 @@
                     <span style="font-size: 12px; color: var(--text-light);">Hỗ trợ: JPG, PNG, GIF, WEBP (Tối đa 2MB)</span>
                 </div>
                 <div id="image_preview_container" class="image-upload-preview-container" style="{{ $vaccine->image ? 'display: block;' : '' }}">
-                    <div class="image-upload-preview-wrapper">
+                    <div class="image-upload-preview-wrapper" style="text-align: center;">
                         <img id="image_preview" class="image-upload-preview" src="{{ $vaccine->image ? asset('images/vaccines/' . $vaccine->image) : '' }}" alt="Xem trước hình ảnh">
                         @if($isSuperAdmin ?? false)
                         <button type="button" id="btn_remove_image" class="image-upload-remove-btn" title="Xóa hình ảnh">
@@ -358,6 +358,13 @@
                         </button>
                         @endif
                     </div>
+                    @if($isSuperAdmin ?? false)
+                    <div style="text-align: center; margin-top: 6px;">
+                        <button type="button" id="btn_recrop_image" class="btn-recrop-trigger" style="display: none;">
+                            <i data-lucide="crop"></i> Cắt lại hình ảnh
+                        </button>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -399,6 +406,8 @@
         // ===== HÀM CHUẨN HÓA DROPDOWN ĐỒNG BỘ 100% CSS =====
         function initCustomDropdown(selectEl, enableSearch = false) {
             if (!selectEl) return;
+            if (selectEl.dataset.customDropdownInitialized) return;
+            selectEl.dataset.customDropdownInitialized = 'true';
             selectEl.style.display = 'none';
             
             const wrapper = document.createElement('div');
@@ -936,7 +945,7 @@
             });
         }
 
-        // ===== 3. HÌNH ẢNH DROPZONE =====
+        // ===== 3. HÌNH ẢNH DROPZONE WITH IMAGE CROPPER =====
         const dropzone = document.getElementById('image_dropzone');
         const fileInput = document.getElementById('image_file');
         const hiddenInput = document.getElementById('image_hidden');
@@ -944,16 +953,20 @@
         const previewContainer = document.getElementById('image_preview_container');
         const previewImg = document.getElementById('image_preview');
         const removeBtn = document.getElementById('btn_remove_image');
+        const recropBtn = document.getElementById('btn_recrop_image');
+        let currentVaccineRawFile = null;
 
         if (dropzone && fileInput) {
             dropzone.addEventListener('click', function(e) {
                 if (dropzone.classList.contains('disabled-zone')) return;
-                if (e.target.closest('#btn_remove_image')) return;
+                if (e.target.closest('#btn_remove_image') || e.target.closest('#btn_recrop_image')) return;
                 fileInput.click();
             });
 
             fileInput.addEventListener('change', function() {
-                handleFiles(this.files);
+                if (this.files && this.files.length > 0) {
+                    handleFiles(this.files);
+                }
             });
 
             ['dragenter', 'dragover'].forEach(eventName => {
@@ -999,8 +1012,9 @@
                 }
                 const dt = e.dataTransfer;
                 const files = dt.files;
-                handleFiles(files);
-                fileInput.files = files;
+                if (files && files.length > 0) {
+                    handleFiles(files);
+                }
             });
 
             function handleFiles(files) {
@@ -1014,26 +1028,69 @@
                     }
                     return;
                 }
-                if (file.size > 2 * 1024 * 1024) {
+                if (file.size > 5 * 1024 * 1024) {
                     if (window.AppDialog) {
-                        window.AppDialog.alert('Dung lượng hình ảnh không được vượt quá 2 MB.');
+                        window.AppDialog.alert('Dung lượng hình ảnh không được vượt quá 5 MB.');
                     } else {
-                        alert('Dung lượng hình ảnh không được vượt quá 2 MB.');
+                        alert('Dung lượng hình ảnh không được vượt quá 5 MB.');
                     }
                     return;
                 }
 
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onloadend = function() {
-                    previewImg.src = reader.result;
-                    promptBlock.style.display = 'none';
-                    previewContainer.style.display = 'block';
-                    hiddenInput.value = '';
-                    if (typeof lucide !== 'undefined') {
-                        lucide.createIcons();
+                currentVaccineRawFile = file;
+
+                // Mở Modal Cắt Ảnh (Tỷ lệ 1:1 mặc định cho vắc-xin)
+                if (typeof window.openMedicareCropperModal === 'function') {
+                    window.openMedicareCropperModal({
+                        file: file,
+                        defaultRatio: 1,
+                        ratioName: '1/1',
+                        onCropComplete: function(croppedBlob, croppedDataUrl, croppedFile) {
+                            const dt = new DataTransfer();
+                            dt.items.add(croppedFile);
+                            fileInput.files = dt.files;
+
+                            previewImg.src = croppedDataUrl;
+                            promptBlock.style.display = 'none';
+                            previewContainer.style.display = 'block';
+                            if (recropBtn) recropBtn.style.display = 'inline-flex';
+                            hiddenInput.value = '';
+
+                            if (typeof lucide !== 'undefined') {
+                                lucide.createIcons();
+                            }
+                        }
+                    });
+                } else {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onloadend = function() {
+                        previewImg.src = reader.result;
+                        promptBlock.style.display = 'none';
+                        previewContainer.style.display = 'block';
+                        hiddenInput.value = '';
+                    };
+                }
+            }
+
+            if (recropBtn) {
+                recropBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (currentVaccineRawFile && typeof window.openMedicareCropperModal === 'function') {
+                        window.openMedicareCropperModal({
+                            file: currentVaccineRawFile,
+                            defaultRatio: 1,
+                            ratioName: '1/1',
+                            onCropComplete: function(croppedBlob, croppedDataUrl, croppedFile) {
+                                const dt = new DataTransfer();
+                                dt.items.add(croppedFile);
+                                fileInput.files = dt.files;
+                                previewImg.src = croppedDataUrl;
+                            }
+                        });
                     }
-                };
+                });
             }
 
             if (removeBtn) {
@@ -1043,7 +1100,9 @@
                     fileInput.value = '';
                     hiddenInput.value = '';
                     previewImg.src = '';
+                    currentVaccineRawFile = null;
                     previewContainer.style.display = 'none';
+                    if (recropBtn) recropBtn.style.display = 'none';
                     promptBlock.style.display = 'block';
                 });
             }

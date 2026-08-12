@@ -40,20 +40,32 @@ class HomeController extends Controller
         // Lấy danh sách banner đang hoạt động và sắp xếp thứ tự
         $banners = Banner::active()->ordered()->get();
 
-        // Lấy danh sách vắc xin nổi bật được cấu hình trong Admin, tự động điền thêm nếu thiếu
-        $featuredVaccines = Vaccine::forCenter($currentCenter?->id)->featured()->orderBy('center_vaccines.sort_order', 'asc')->take(8)->get();
-        if ($featuredVaccines->count() < 8) {
-            $excludeIds = $featuredVaccines->pluck('id')->toArray();
-            $extraVaccines = Vaccine::forCenter($currentCenter?->id)->whereNotIn('vaccines.id', $excludeIds)->orderBy('center_vaccines.sort_order', 'asc')->take(8 - $featuredVaccines->count())->get();
-            $featuredVaccines = $featuredVaccines->merge($extraVaccines);
+        // Lấy danh sách vắc xin nổi bật được cấu hình trong Admin (tối đa 8 vắc xin)
+        $featuredVaccines = Vaccine::forCenter($currentCenter?->id)
+            ->featured()
+            ->orderBy('center_vaccines.sort_order', 'asc')
+            ->take(8)
+            ->get();
+
+        if ($featuredVaccines->isEmpty()) {
+            $featuredVaccines = Vaccine::forCenter($currentCenter?->id)
+                ->orderBy('center_vaccines.sort_order', 'asc')
+                ->take(8)
+                ->get();
         }
 
-        // Lấy 4 vắc xin nổi bật chiến dịch (để hiển thị lưới 2x2 ở phần qdenga_promo cũ)
-        $campaignVaccines = Vaccine::forCenter($currentCenter?->id)->featured()->orderBy('center_vaccines.sort_order', 'asc')->take(4)->get();
-        if ($campaignVaccines->count() < 4) {
-            $excludeIds = $campaignVaccines->pluck('id')->toArray();
-            $extraCampaign = Vaccine::forCenter($currentCenter?->id)->whereNotIn('vaccines.id', $excludeIds)->orderBy('center_vaccines.sort_order', 'asc')->take(4 - $campaignVaccines->count())->get();
-            $campaignVaccines = $campaignVaccines->merge($extraCampaign);
+        // Lấy 4 vắc xin nổi bật chiến dịch
+        $campaignVaccines = Vaccine::forCenter($currentCenter?->id)
+            ->featured()
+            ->orderBy('center_vaccines.sort_order', 'asc')
+            ->take(4)
+            ->get();
+
+        if ($campaignVaccines->isEmpty()) {
+            $campaignVaccines = Vaccine::forCenter($currentCenter?->id)
+                ->orderBy('center_vaccines.sort_order', 'asc')
+                ->take(4)
+                ->get();
         }
 
         // Lấy 4 bài viết tin tức / kiến thức y tế mới nhất từ CSDL (1 bài lớn + 3 bài nhỏ)

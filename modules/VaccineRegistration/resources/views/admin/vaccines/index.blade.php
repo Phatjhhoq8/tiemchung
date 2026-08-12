@@ -230,15 +230,19 @@
                     let html = '';
                     data.branches.forEach(branch => {
                         let statusClass = 'badge-modern-danger';
-                        let statusText = 'Hết hàng';
+                        let statusText = 'Thiếu';
 
                         if (branch.is_active) {
                             if (branch.stock_status === 'available') {
                                 statusClass = 'badge-modern-success';
                                 statusText = 'Đầy đủ';
-                            } else if (branch.stock_status === 'limited') {
-                                statusClass = 'badge-modern-warning';
-                                statusText = 'Còn ít';
+                            } else {
+                                statusClass = 'badge-modern-danger';
+                                if (branch.required_quantity > branch.stock_quantity) {
+                                    statusText = `Thiếu (-${branch.required_quantity - branch.stock_quantity})`;
+                                } else {
+                                    statusText = 'Hết hàng';
+                                }
                             }
                         } else {
                             statusText = 'Tạm ngưng';

@@ -27,45 +27,8 @@ class AdminRegistrationController extends Controller
     {
         $selectedCenterId = AdminContext::resolveListCenterId($request);
 
-        $query = $this->registrationQuery($selectedCenterId)
+        $query = $this->buildFilteredRegistrationQuery($request, $selectedCenterId)
             ->with('customer:id,name,phone');
-
-        if ($request->filled('booking_status')) {
-            $query->where('booking_status', $request->input('booking_status'));
-        }
-
-        if ($request->filled('payment_status')) {
-            $query->where('payment_status', $request->input('payment_status'));
-        }
-
-        if ($request->filled('search')) {
-            $search = trim((string) $request->input('search'));
-            $query->where(function ($builder) use ($search) {
-                $builder->where('registration_code', 'like', $search.'%')
-                    ->orWhere('patient_phone', 'like', '%'.$search.'%')
-                    ->orWhere('patient_name', 'like', '%'.$search.'%');
-            });
-        }
-
-        if ($request->filled('injection_date_from')) {
-            $query->whereDate('injection_date', '>=', $request->input('injection_date_from'));
-        }
-
-        $day = $request->input('filter_day') ?? $request->input('day');
-        $month = $request->input('filter_month') ?? $request->input('month');
-        $year = $request->input('filter_year') ?? $request->input('year');
-
-        if ($day !== null && $day !== '') {
-            $query->whereDay('injection_date', (int) $day);
-        }
-        if ($month !== null && $month !== '') {
-            $query->whereMonth('injection_date', (int) $month);
-        }
-        if ($year !== null && $year !== '') {
-            $query->whereYear('injection_date', (int) $year);
-        }
-
-
 
         $registrations = $query->latest('id')->paginate(20)->withQueryString();
         $isSuperAdmin = AdminContext::isSuperAdmin();
@@ -361,7 +324,10 @@ class AdminRegistrationController extends Controller
     {
         $selectedCenterId = AdminContext::resolveListCenterId($request);
         $filename = 'don_dang_ky_tiem_'.now()->format('Y-m-d_His').'.csv';
-        $query = $this->registrationQuery($selectedCenterId)->with('vaccines:id,name')->orderBy('id');
+        $query = $this->buildFilteredRegistrationQuery($request, $selectedCenterId)
+            ->with('vaccines:id,name')
+            ->latest('id');
+
         AuditLogger::log(
             'registration.exported',
             'registration_export',
@@ -402,6 +368,52 @@ class AdminRegistrationController extends Controller
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
+    }
+
+    private function buildFilteredRegistrationQuery(Request $request, ?int $selectedCenterId)
+    {
+        $query = $this->registrationQuery($selectedCenterId);
+
+        if ($request->filled('booking_status')) {
+            $query->where('booking_status', $request->input('booking_status'));
+        }
+
+        if ($request->filled('payment_status')) {
+            $query->where('payment_status', $request->input('payment_status'));
+        }
+
+        if ($request->filled('search')) {
+            $search = trim((string) $request->input('search'));
+            $query->where(function ($builder) use ($search) {
+                $builder->where('registration_code', 'like', $search.'%')
+                    ->orWhere('patient_phone', 'like', '%'.$search.'%')
+                    ->orWhere('patient_name', 'like', '%'.$search.'%');
+            });
+        }
+
+        if ($request->filled('injection_date_from')) {
+            $query->whereDate('injection_date', '>=', $request->input('injection_date_from'));
+        }
+
+        if ($request->filled('injection_date_to')) {
+            $query->whereDate('injection_date', '<=', $request->input('injection_date_to'));
+        }
+
+        $day = $request->input('filter_day') ?? $request->input('day');
+        $month = $request->input('filter_month') ?? $request->input('month');
+        $year = $request->input('filter_year') ?? $request->input('year');
+
+        if ($day !== null && $day !== '') {
+            $query->whereDay('injection_date', (int) $day);
+        }
+        if ($month !== null && $month !== '') {
+            $query->whereMonth('injection_date', (int) $month);
+        }
+        if ($year !== null && $year !== '') {
+            $query->whereYear('injection_date', (int) $year);
+        }
+
+        return $query;
     }
 
     private function registrationQuery(?int $selectedCenterId)

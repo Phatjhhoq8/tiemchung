@@ -71,6 +71,29 @@
                 <h3><i data-lucide="list-filter"></i> Bộ lọc vắc xin</h3>
             </div>
 
+            <!-- Nhóm lọc Vắc Xin Nổi Bật -->
+            <div class="lc-filter-group open">
+                <button type="button" class="lc-filter-toggle" onclick="toggleCatalogFilterGroup(this)">
+                    <span>⭐ Phân loại đặc biệt</span>
+                    <i data-lucide="chevron-up"></i>
+                </button>
+                <div class="lc-filter-body" id="featuredFilterSelect">
+                    <button type="button" onclick="setFeaturedFilter('', event)" class="lc-check-row {{ !request('featured') ? 'active' : '' }}" data-value="">
+                        <span class="lc-check-box"><i data-lucide="check"></i></span>
+                        <span>Tất cả sản phẩm</span>
+                    </button>
+                    <button type="button" onclick="setFeaturedFilter('1', event)" class="lc-check-row {{ request('featured') == '1' ? 'active' : '' }}" data-value="1">
+                        <span class="lc-check-box"><i data-lucide="check"></i></span>
+                        <span style="display: flex; align-items: center; gap: 4px; color: #d97706; font-weight: 700;">
+                            <i data-lucide="star" style="width: 14px; height: 14px; fill: #d97706;"></i> Vắc xin nổi bật
+                        </span>
+                        @if(!empty($featuredCount))
+                            <small style="margin-left: auto; background: #fffbeb; color: #d97706; border: 1px solid #fde68a; padding: 1px 7px; border-radius: 999px; font-weight: 800; font-size: 11px;">{{ $featuredCount }}</small>
+                        @endif
+                    </button>
+                </div>
+            </div>
+
             <div class="lc-filter-group {{ request('age_group') ? 'open' : '' }}">
                 <button type="button" class="lc-filter-toggle" onclick="toggleCatalogFilterGroup(this)">
                     <span>Độ tuổi</span>
@@ -181,7 +204,7 @@
                 <button type="button" class="btn-mobile-filter-pill" onclick="toggleMobileFilterBottomSheet(true)">
                     <i data-lucide="sliders-horizontal"></i>
                     <span>Bộ lọc</span>
-                    @if(request('age_group') || request('disease') || request('origin') || request('doses') || (request('sort') && request('sort') !== 'popular'))
+                    @if(request('featured') || request('age_group') || request('disease') || request('origin') || request('doses') || (request('sort') && request('sort') !== 'popular'))
                         <span class="filter-active-dot"></span>
                     @endif
                 </button>
@@ -195,13 +218,16 @@
                     </h2>
                 </div>
                 <div class="catalog-sort-box">
-                    <span>Sắp xếp theo:</span>
+                    <span>Sắp xếp & lọc:</span>
                     <div class="catalog-sort-pills" id="sortPillGroup">
+                        <button type="button" id="btnFeaturedFilterPill" onclick="setFeaturedFilter(currentFeatured === '1' ? '' : '1', event)" class="sort-pill {{ request('featured') == '1' ? 'active' : '' }}" style="{{ request('featured') == '1' ? 'background: #f59e0b; color: #ffffff; border-color: #f59e0b;' : 'border-color: #fde68a; color: #b45309; background: #fffbeb;' }}">
+                            <i data-lucide="star" style="width: 13px; height: 13px; display: inline-block; vertical-align: middle; margin-right: 3px; fill: {{ request('featured') == '1' ? '#ffffff' : '#f59e0b' }};"></i> Nổi bật
+                        </button>
                         <button type="button" data-sort="popular" onclick="setSortFilter('popular', event)" class="sort-pill {{ request('sort', 'popular') === 'popular' ? 'active' : '' }}">Được quan tâm</button>
                         <button type="button" data-sort="price_asc" onclick="setSortFilter('price_asc', event)" class="sort-pill {{ request('sort') === 'price_asc' ? 'active' : '' }}">Giá thấp</button>
                         <button type="button" data-sort="price_desc" onclick="setSortFilter('price_desc', event)" class="sort-pill {{ request('sort') === 'price_desc' ? 'active' : '' }}">Giá cao</button>
                     </div>
-                    <button type="button" id="btnClearFilters" onclick="resetVaccineFilters(event)" class="clear-filters-btn" style="display: {{ (request('search') || request('disease') || request('age_group') || request('origin') || request('doses') || request('sort')) ? 'inline-flex' : 'none' }};">Xóa bộ lọc <i data-lucide="x"></i></button>
+                    <button type="button" id="btnClearFilters" onclick="resetVaccineFilters(event)" class="clear-filters-btn" style="display: {{ (request('search') || request('featured') || request('disease') || request('age_group') || request('origin') || request('doses') || request('sort')) ? 'inline-flex' : 'none' }};">Xóa bộ lọc <i data-lucide="x"></i></button>
                 </div>
             </div>
 
@@ -237,6 +263,17 @@
         </button>
     </div>
     <div class="mobile-filter-sheet-body" style="padding: 16px 20px; max-height: 65vh; overflow-y: auto;">
+        <!-- Featured Option -->
+        <div style="margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px dashed #e2e8f0;">
+            <label style="font-size: 13px; font-weight: 800; color: #0f172a; display: block; margin-bottom: 8px;">Phân loại nổi bật</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <button type="button" onclick="setFeaturedFilter('', event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ !request('featured') ? 'active' : '' }}">Tất cả sản phẩm</button>
+                <button type="button" onclick="setFeaturedFilter('1', event); toggleMobileFilterBottomSheet(false);" class="mobile-filter-pill {{ request('featured') == '1' ? 'active' : '' }}" style="{{ request('featured') == '1' ? 'background: #f59e0b; color: #ffffff; border-color: #f59e0b;' : 'border-color: #fde68a; color: #b45309; background: #fffbeb;' }}">
+                    <i data-lucide="star" style="width: 13px; height: 13px; display: inline-block; vertical-align: middle; margin-right: 3px; fill: {{ request('featured') == '1' ? '#ffffff' : '#f59e0b' }};"></i> Vắc xin nổi bật ({{ $featuredCount ?? 0 }})
+                </button>
+            </div>
+        </div>
+
         <!-- Sort Options -->
         <div style="margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px dashed #e2e8f0;">
             <label style="font-size: 13px; font-weight: 800; color: #0f172a; display: block; margin-bottom: 8px;">Sắp xếp sản phẩm</label>

@@ -95,27 +95,46 @@
                         @endif
 
                         <td style="text-align: center;">
-                            @if(!empty($selectedCenterId))
-                                @if(!$vac->center_is_active)
-                                    <span class="badge-modern badge-modern-secondary">Tạm ngưng</span>
-                                @else
-                                    <div style="font-size: 16px; font-weight: 800; color: {{ (int) $vac->stock_quantity <= 5 ? '#b91c1c' : '#15803d' }};">
-                                        {{ number_format((int) $vac->stock_quantity) }}
-                                    </div>
-                                    <span class="badge-modern
-                                        @if($vac->stock_status === 'available') badge-modern-success
-                                        @elseif($vac->stock_status === 'limited') badge-modern-warning
-                                        @else badge-modern-danger @endif" style="font-size: 11px; padding: 2px 8px; margin-top: 4px; display: inline-block;">
-                                        {{ $vac->getStockLabel() }}
-                                    </span>
-                                @endif
+                            <?php
+                                $reqDoses = (int) ($scheduledDemands[$vac->id] ?? 0);
+                                $stockQty = (int) ($vac->stock_quantity ?? 0);
+                                $isSufficient = $reqDoses > 0 ? ($stockQty >= $reqDoses) : ($stockQty > 0);
+                            ?>
+
+                            @if(!empty($selectedCenterId) && !$vac->center_is_active)
+                                <span class="badge-modern badge-modern-secondary">Tạm ngưng</span>
                             @else
-                                <div style="font-size: 16px; font-weight: 800; color: {{ (int) ($vac->stock_quantity ?? 0) <= 0 ? '#b91c1c' : '#15803d' }};">
-                                    {{ number_format((int) ($vac->stock_quantity ?? 0)) }}
+                                <div style="font-size: 16px; font-weight: 800; color: {{ ($reqDoses > 0 ? $stockQty >= $reqDoses : $stockQty > 0) ? '#15803d' : '#b91c1c' }};">
+                                    {{ number_format($stockQty) }}
                                 </div>
-                                <small style="display: block; color: #64748b; font-size: 11px; margin-top: 2px; font-weight: 600;">
-                                    Tổng hệ thống
-                                </small>
+                                
+                                @if($reqDoses > 0)
+                                    @if($stockQty >= $reqDoses)
+                                        <span class="badge-modern badge-modern-success" style="font-size: 11px; padding: 2px 8px; margin-top: 4px; display: inline-block;" title="Lịch tiêm: {{ $reqDoses }} liều - Tồn kho: {{ $stockQty }} liều (Đầy đủ)">
+                                            Đầy đủ
+                                        </span>
+                                    @else
+                                        <span class="badge-modern badge-modern-danger" style="font-size: 11px; padding: 2px 8px; margin-top: 4px; display: inline-block; background: #fee2e2; color: #c8102e; border: 1px solid #fecaca; font-weight: 700;" title="Lịch tiêm cần {{ $reqDoses }} liều nhưng tồn kho chỉ có {{ $stockQty }} liều (Thiếu {{ $reqDoses - $stockQty }} liều)">
+                                            Thiếu (-{{ $reqDoses - $stockQty }})
+                                        </span>
+                                    @endif
+                                @else
+                                    @if($stockQty > 0)
+                                        <span class="badge-modern badge-modern-success" style="font-size: 11px; padding: 2px 8px; margin-top: 4px; display: inline-block;">
+                                            Đầy đủ
+                                        </span>
+                                    @else
+                                        <span class="badge-modern badge-modern-danger" style="font-size: 11px; padding: 2px 8px; margin-top: 4px; display: inline-block; background: #fee2e2; color: #c8102e; border: 1px solid #fecaca; font-weight: 700;">
+                                            Hết hàng
+                                        </span>
+                                    @endif
+                                @endif
+
+                                @if(empty($selectedCenterId))
+                                    <small style="display: block; color: #64748b; font-size: 11px; margin-top: 2px; font-weight: 600;">
+                                        Tổng hệ thống
+                                    </small>
+                                @endif
                             @endif
                         </td>
 

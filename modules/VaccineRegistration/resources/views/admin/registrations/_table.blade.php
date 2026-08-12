@@ -3,10 +3,11 @@
 @else
     <div class="table-responsive-modern">
         <table class="table-modern">
-            <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Chi nhánh</th><th>Khung giờ</th><th>Tổng tiền</th><th>Lịch hẹn</th><th>Thanh toán</th><th style="text-align: right;">Thao tác</th></tr></thead>
+            <thead><tr><th style="width: 50px; text-align: center;">STT</th><th>Mã đơn</th><th>Khách hàng</th><th>Chi nhánh</th><th>Khung giờ</th><th>Tổng tiền</th><th>Lịch hẹn</th><th>Thanh toán</th><th style="text-align: right;">Thao tác</th></tr></thead>
             <tbody>
                 @foreach($registrations as $registration)
                     <tr>
+                        <td style="text-align: center; color:var(--text-muted); font-weight:600;">{{ $registrations->firstItem() ? ($registrations->firstItem() + $loop->index) : $loop->iteration }}</td>
                         <td style="font-weight:700; color:var(--primary-color);">{{ $registration->registration_code }}</td>
                         <td><strong>{{ $registration->patient_name }}</strong><small style="display:block; color:var(--text-muted);">{{ \Modules\VaccineRegistration\Support\PhoneNormalizer::display($registration->patient_phone) }}</small></td>
                         <td>{{ $registration->center_name }}</td>

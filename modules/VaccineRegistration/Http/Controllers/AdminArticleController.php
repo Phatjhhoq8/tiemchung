@@ -141,15 +141,42 @@ class AdminArticleController extends Controller
         return redirect()->route('admin.articles.index')->with('success', 'Cập nhật bài viết thành công!');
     }
 
-    public function destroy($id)
+    /**
+     * Bật / Tắt trạng thái Ẩn / Hiện (Ẩn mềm) bài viết.
+     */
+    public function toggleStatus($id)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền vô hiệu hóa bài viết.');
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền thay đổi trạng thái bài viết.');
         $article = Article::findOrFail($id);
-        $article->is_active = false;
-        $article->is_published = false;
+        $article->is_published = ! $article->is_published;
+        $article->is_active = $article->is_published;
         $article->save();
 
-        return redirect()->route('admin.articles.index')->with('success', 'Vô hiệu hóa bài viết thành công!');
+        $statusText = $article->is_published ? 'Hiển thị' : 'Đã ẩn';
+
+        return redirect()->back()->with('success', "Đã chuyển bài viết \"{$article->title}\" sang trạng thái: {$statusText}!");
+    }
+
+    /**
+     * Xóa cứng (Hard Delete) bài viết vĩnh viễn khỏi CSDL.
+     */
+    public function destroy($id)
+    {
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền xóa bài viết.');
+        $article = Article::findOrFail($id);
+
+        // Xóa file ảnh đính kèm nếu không phải ảnh mặc định
+        if ($article->image && ! in_array($article->image, ['default_package.jpg', 'default_vaccine.jpg', 'hexaxim.jpg'])) {
+            $oldPath = public_path('images/vaccines/'.$article->image);
+            if (file_exists($oldPath)) {
+                @unlink($oldPath);
+            }
+        }
+
+        $title = $article->title;
+        $article->delete();
+
+        return redirect()->route('admin.articles.index')->with('success', "Đã xóa vĩnh viễn bài viết \"{$title}\" thành công!");
     }
 
     /**

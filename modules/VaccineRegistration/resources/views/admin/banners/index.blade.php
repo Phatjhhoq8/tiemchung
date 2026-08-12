@@ -44,33 +44,52 @@
             <table class="table-modern">
                 <thead>
                     <tr>
+                        <th style="width: 70px; text-align: center;">STT</th>
                         <th style="width: 80px; text-align: center;">Thứ tự</th>
                         <th>Tiêu đề</th>
                         <th>Phụ đề</th>
                         <th>URL ảnh</th>
-                        <th style="text-align: center; width: 140px;">Trạng thái</th>
-                        <th style="text-align: right; width: 160px;">Thao tác</th>
+                        <th style="text-align: center; width: 130px;">Trạng thái</th>
+                        <th style="text-align: right; width: 200px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($banners as $banner)
                         <tr>
+                            <td style="text-align: center; font-weight: 700; color: var(--text-muted);">
+                                {{ $banners->firstItem() + $loop->index }}
+                            </td>
                             <td style="text-align: center; font-weight: 600; color: var(--text-muted);">{{ $banner->sort_order }}</td>
                             <td style="font-weight: 700; color: var(--text-primary);">{{ $banner->title }}</td>
                             <td style="color: var(--text-muted);">{{ Str::limit($banner->subtitle, 50) }}</td>
                             <td style="color: var(--text-light); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $banner->image_url }}</td>
                             <td style="text-align: center;">
-                                <span class="badge-modern {{ $banner->is_active ? 'badge-modern-success' : 'badge-modern-danger' }}">
-                                    {{ $banner->is_active ? 'Hiển thị' : 'Ẩn' }}
-                                </span>
+                                @if($banner->is_active)
+                                    <span class="badge-modern badge-modern-success">Hiển thị</span>
+                                @else
+                                    <span class="badge-modern badge-modern-danger">Đang ẩn</span>
+                                @endif
                             </td>
                             <td style="text-align: right; white-space: nowrap;">
-                                <div style="display: inline-flex; gap: 6px; justify-content: flex-end;">
+                                <div style="display: inline-flex; gap: 6px; justify-content: flex-end; align-items: center;">
+                                    {{-- Nút Ẩn / Hiện (Ẩn mềm) --}}
+                                    <form action="{{ route('admin.banners.toggle-status', $banner->id) }}" method="POST" style="margin: 0;">
+                                        @csrf
+                                        @if($banner->is_active)
+                                            <button type="submit" class="btn-action-sm btn-action-warning" title="Bấm để ẩn biểu ngữ khỏi slider (Ẩn mềm)">Ẩn</button>
+                                        @else
+                                            <button type="submit" class="btn-action-sm btn-action-success" title="Bấm để hiển thị lại biểu ngữ lên slider">Hiện</button>
+                                        @endif
+                                    </form>
+
+                                    {{-- Nút Sửa --}}
                                     <a href="{{ route('admin.banners.edit', $banner->id) }}" class="btn-action-sm">Sửa</a>
-                                    <form action="{{ route('admin.banners.destroy', $banner->id) }}" method="POST" data-confirm="Bạn có chắc chắn muốn xóa biểu ngữ này?" style="display: inline;">
+
+                                    {{-- Nút Xóa cứng (Xóa vĩnh viễn) --}}
+                                    <form action="{{ route('admin.banners.destroy', $banner->id) }}" method="POST" data-confirm="CẢNH BÁO: Hành động này sẽ XÓA VĨNH VIỄN biểu ngữ khỏi hệ thống và không thể khôi phục. Bạn có chắc chắn muốn xóa cứng?" style="margin: 0;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-action-sm btn-action-danger">Xóa</button>
+                                        <button type="submit" class="btn-action-sm btn-action-danger" title="Xóa vĩnh viễn biểu ngữ khỏi CSDL">Xóa</button>
                                     </form>
                                 </div>
                             </td>
@@ -80,7 +99,7 @@
             </table>
         </div>
 
-        <div style="margin-top: 20px; display: flex; justify-content: center;">
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
             {{ $banners->links() }}
         </div>
     @endif

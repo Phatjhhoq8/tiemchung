@@ -4,6 +4,22 @@
 @section('page_title', 'Lịch Hẹn Tiêm Chủng Theo Tuần')
 
 @section('admin_content')
+<style>
+    .day-appointments-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+    .day-appointments-scroll::-webkit-scrollbar-track {
+        background: #f8fafc;
+        border-radius: 4px;
+    }
+    .day-appointments-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    .day-appointments-scroll::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+</style>
 <div class="card-modern">
     <!-- Top Week Navigation Bar (Separated Display & Controls) -->
     <div class="week-nav-bar" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; background: #ffffff; padding: 14px 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); margin-bottom: 24px;">
@@ -77,7 +93,7 @@
                 </div>
 
                 <!-- Day Body (Danh sách lịch hẹn) -->
-                <div style="padding: 20px;">
+                <div class="day-appointments-scroll" style="padding: 20px; max-height: 480px; overflow-y: auto;">
                     @if(!$hasItems)
                         <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13.5px; display: flex; align-items: center; justify-content: center; gap: 6px;">
                             <i data-lucide="calendar-check" style="width: 16px; height: 16px; color: var(--text-light);"></i>

@@ -95,11 +95,20 @@
         @else
             <div class="table-responsive-modern">
                 <table class="table-modern">
-                    <thead><tr><th>Mã đơn</th><th>Chi nhánh</th><th>Ngày hẹn</th><th>Thanh toán</th><th>Tổng tiền</th><th></th></tr></thead>
+                    <thead><tr><th>Mã đơn</th><th>Người tiêm</th><th>Chi nhánh</th><th>Ngày hẹn</th><th>Thanh toán</th><th>Tổng tiền</th><th></th></tr></thead>
                     <tbody>
                         @foreach($registrations as $registration)
                             <tr>
                                 <td>{{ $registration->registration_code }}</td>
+                                <td>
+                                    @if($registration->patient_id)
+                                        <a href="{{ route('admin.patients.show', $registration->patient_id) }}" style="color:var(--primary-color); font-weight:600; text-decoration:none;">
+                                            {{ $registration->patient_name }}
+                                        </a>
+                                    @else
+                                        {{ $registration->patient_name }}
+                                    @endif
+                                </td>
                                 <td>{{ $registration->center_name }}</td>
                                 <td>{{ $registration->injection_date?->format('d/m/Y') }}</td>
                                 <td>{{ $registration->paymentStatusLabel() }}</td>

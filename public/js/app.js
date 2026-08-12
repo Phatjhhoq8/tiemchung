@@ -254,6 +254,7 @@ let filterTimer;
 let filterRequest;
 const vaccineFilterParams = new URLSearchParams(window.location.search);
 let currentSearch = vaccineFilterParams.get('search') || '';
+let currentFeatured = vaccineFilterParams.get('featured') || '';
 let currentAgeGroup = vaccineFilterParams.get('age_group') || '';
 let currentDisease = vaccineFilterParams.get('disease') || '';
 let currentOrigin = vaccineFilterParams.get('origin') || '';
@@ -274,6 +275,27 @@ function setActiveFilterRow(containerId, value) {
     document.getElementById(containerId)?.querySelectorAll('.lc-check-row').forEach((row) => {
         row.classList.toggle('active', row.dataset.value === String(value));
     });
+}
+
+function setFeaturedFilter(featured, event) {
+    event?.preventDefault();
+    currentFeatured = featured;
+    currentPage = '1';
+    setActiveFilterRow('featuredFilterSelect', featured);
+    const pill = document.getElementById('btnFeaturedFilterPill');
+    if (pill) {
+        pill.classList.toggle('active', featured === '1');
+        if (featured === '1') {
+            pill.style.background = '#f59e0b';
+            pill.style.color = '#ffffff';
+            pill.style.borderColor = '#f59e0b';
+        } else {
+            pill.style.background = '#fffbeb';
+            pill.style.color = '#b45309';
+            pill.style.borderColor = '#fde68a';
+        }
+    }
+    filterVaccinesSpa();
 }
 
 function setAgeGroupFilter(age, event) {
@@ -321,6 +343,7 @@ function setSortFilter(sort, event) {
 function resetVaccineFilters(event) {
     event?.preventDefault();
     currentSearch = '';
+    currentFeatured = '';
     currentAgeGroup = '';
     currentDisease = '';
     currentOrigin = '';
@@ -329,8 +352,19 @@ function resetVaccineFilters(event) {
     currentPage = '1';
     const search = document.getElementById('spaSearchInput');
     if (search) search.value = '';
-    ['ageGroupFilterSelect', 'diseaseFilterSelect', 'originFilterSelect', 'dosesFilterSelect'].forEach((id) => setActiveFilterRow(id, ''));
-    document.querySelectorAll('#sortPillGroup .sort-pill').forEach((button) => button.classList.toggle('active', button.dataset.sort === 'popular'));
+    ['featuredFilterSelect', 'ageGroupFilterSelect', 'diseaseFilterSelect', 'originFilterSelect', 'dosesFilterSelect'].forEach((id) => setActiveFilterRow(id, ''));
+    const pill = document.getElementById('btnFeaturedFilterPill');
+    if (pill) {
+        pill.classList.remove('active');
+        pill.style.background = '#fffbeb';
+        pill.style.color = '#b45309';
+        pill.style.borderColor = '#fde68a';
+    }
+    document.querySelectorAll('#sortPillGroup .sort-pill').forEach((button) => {
+        if (button.id !== 'btnFeaturedFilterPill') {
+            button.classList.toggle('active', button.dataset.sort === 'popular');
+        }
+    });
     filterVaccinesSpa();
 }
 
@@ -345,6 +379,7 @@ async function filterVaccinesSpa(event, page = null) {
 
     const params = new URLSearchParams();
     if (currentSearch) params.set('search', currentSearch);
+    if (currentFeatured) params.set('featured', currentFeatured);
     if (currentDisease) params.set('disease', currentDisease);
     if (currentAgeGroup) params.set('age_group', currentAgeGroup);
     if (currentOrigin) params.set('origin', currentOrigin);
@@ -2317,6 +2352,7 @@ if (typeof window !== 'undefined') {
     window.clearCartUI = clearCartUI;
     window.openVaccineDetailModal = openVaccineDetailModal;
     window.closeVaccineDetailModal = closeVaccineDetailModal;
+    window.setFeaturedFilter = setFeaturedFilter;
     window.setAgeGroupFilter = setAgeGroupFilter;
     window.setDiseaseFilter = setDiseaseFilter;
     window.setOriginFilter = setOriginFilter;

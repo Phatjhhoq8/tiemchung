@@ -1,3 +1,133 @@
+## [v6.5.28] - 2026-08-12
+
+### Admin Menu Regrouping & Horizontal Sub-Navigation
+
+* **Sidebar Regrouping (`admin.blade.php`)**:
+  - Grouped 15 raw admin menu items into 5 major business categories: "Bảng điều khiển" (Dashboard), "Tiêm Chủng & Lịch Trình" (Vaccine & Schedules), "Đăng Ký & Khách Hàng" (Registrations & Customers), "Nội Dung Website" (Website Contents - SuperAdmin only), and "Hệ Thống & Thiết Lập" (System & Settings).
+  - Maintained consistent Lucide brand icons and preserved role-based access permissions.
+* **Horizontal Sub-Navigation (`admin.blade.php`)**:
+  - Implemented an elegant, responsive horizontal sub-navigation tab system (Modern Underline Tabs style) at the top of the admin page content area.
+  - Automatically detects the active category group based on the current Laravel route name and displays the corresponding sub-menu links dynamically (e.g. switching between Vaccines, Time Slots, and Weekly Calendars).
+  - Cleanly handled route prefix collision cases (such as between `admin.settings.index` and `admin.settings.loyalty`).
+  - Added smooth CSS transitions, hover states, and overflow scroll support using brand colors (Medicare Red `#c8102e` and Medicare Navy `#004b8f`).
+* **UX Improvement for Out-of-Stock Status (`_table.blade.php`, `index.blade.php`)**:
+  - Replaced the confusing "Thiếu (0)" badge status with "Hết hàng" (Out of stock) when the today's scheduled dose demand is zero but the branch vaccine warehouse stock is also zero.
+* **Scrollable Daily Schedule Blocks (`schedule.blade.php`)**:
+  - Added a `max-height: 480px` constraint and custom slim scrollbar style for each daily block on the Weekly Calendar dashboard, preventing the page from expanding indefinitely when handling hundreds of daily injections.
+* **Client-Side Filters for Patient Details (`patients/show.blade.php`)**:
+  - Added real-time client-side search inputs and dropdown filters for both "Lịch sử tiêm chủng thực tế" (Administered Doses) and "Lịch sử đăng ký tiêm" (Registrations) tables.
+  - Users can now search by vaccine/lot/code and filter dynamically by branches, booking status, and payment status without reloading.
+* **Clinical Workflow Security & Payment Enforcement (`VaccinationWorkflowController.php`, `registrations/show.blade.php`)**:
+  - Blocked access to the clinical workflow steps (Check-in, Clinical Screening, and Dose Administration) at both the controller layer and view layer for any unpaid registrations.
+  - Added a red warning banner on the registration detail page if the bill is unpaid, ensuring financial compliance before medical operations.
+* **Warehouse Stock & Batch Lot Synchronization**:
+  - Identified 142 mismatched data records between branch warehouse totals (`center_vaccines`) and individual batch lots (`inventory_lots`) caused by raw database seeders.
+  - Created and executed a stock repair script to dynamically auto-generate missing batch lots, achieving 100% synchronization and preventing clinical "out of stock lots" errors when the overall stock shows positive values.
+* **Thoi Lai Branch Vaccine Activation**:
+  - Identified that 44 vaccines at the Thoi Lai branch (`center_id = 2`) had their active status disabled (`is_active = false`) in the `center_vaccines` table, blocking registrations.
+  - Created and executed an activation script to re-enable all 44 vaccines for the Thoi Lai branch, allowing normal booking operations.
+* **Consultation Leads Menu Removal (`admin.blade.php`)**:
+  - Removed the "Yêu Cầu Tư Vấn" (Leads) link from the main layout sub-navigation bar under the "Đăng Ký & Khách Hàng" category as requested.
+* **Smart Branch Navigation from Stock Shortage Alerts (`dashboard.blade.php`)**:
+  - Updated both the general "Quản lý vắc xin" button and individual vaccine shortage alert cards on the Dashboard to pass the exact `center_id` of the branch with shortages.
+  - Clicking a shortage alert now navigates directly to the Vaccine Management screen filtered specifically to that branch and searched by that vaccine name.
+* **Table Row Sequence Numbering (STT) Across Admin Tables**:
+  - Added standard STT (Sequence Number 1, 2, 3...) columns across all main admin management tables: Recent Registrations on Dashboard, Registrations Index, Patients Index, Customers & Loyalty Points Index, and Patient Detail history tables.
+  - Correctly calculated pagination offsets (`$paginator->firstItem() + $loop->index`) across paginated views.
+* **Center Vaccine Synchronization on Status Toggle (`AdminCenterController.php`)**:
+  - Resolved an issue where activating a center did not propagate `is_active = true` to its associated `center_vaccines` records, leaving all vaccines in "Tạm ngưng" status.
+  - Updated `store`, `update`, and `toggleStatus` to automatically sync branch vaccine statuses with the center's active state.
+  - Activated all vaccines across all active branches including Medicare Vị Thanh.
+* **Vaccine Featured Status (`is_featured`) Synchronization & Catalog Filter (`VaccineController.php`, `AdminVaccineController.php`, `HomeController.php`, `index.blade.php`, `app.js`)**:
+  - Resolved an issue where unchecking the "Nổi bật" checkbox on the vaccine edit form failed to persist because `is_featured` was unset before saving to the master `vaccines` table.
+  - Fixed rapid toggle action in table dropdown menu (`admin.vaccines.toggle-featured`): now properly supports toggling in all views, including global "Toàn hệ thống" mode without requiring `center_id`.
+  - Removed unwanted automatic extra non-featured vaccine injection fallback in `HomeController.php`: only specifically marked featured vaccines now render on the homepage.
+  - Added dedicated interactive Featured Products filter (`?featured=1`) on the public product catalog page (`/vaccines`) across sidebar, sort pill toolbar, and mobile bottom sheet.
+  - Added direct link "Xem tất cả vắc xin nổi bật ⭐" on the homepage catalog section.
+* **Vaccine Edit & Update Bug Fix (`AdminVaccineController.php`)**:
+  - Resolved a validation failure on the vaccine edit form where `sale_price` being equal to `price`, empty, or zero triggered the `lt:price` validation error ("Giá ưu đãi phải nhỏ hơn giá gốc vắc xin").
+  - Normalized `sale_price` so that empty/zero values or values $\ge$ `price` automatically convert to `null` (representing non-discounted pricing).
+  - Fixed an issue where editing a vaccine from the global "Toàn hệ thống" mode resulted in missing `center_id`: now automatically preselects and defaults to the first active branch.
+* **Audit Log UI & Non-Tech Readability Redesign (`AuditLog.php`, `audit-logs/index.blade.php`, `audit-logs/show.blade.php`)**:
+  - Replaced ambiguous, technical target IDs (such as `Ngữ cảnh chi nhánh #current`, `Hồ sơ bệnh nhân #49`, `Chi nhánh #1`) with fully resolved, human-readable entity names (e.g. `Chi nhánh: MEDICARE CỜ ĐỎ`, `Bệnh nhân: Trần Thị Mỹ Duyên (#49)`, `Vắc xin: Hexaxim`, `Xem: Toàn hệ thống`, `Xuất 12 lịch tiêm`).
+  - Completely stripped all internal technical function call signatures and English code identifiers from both dropdowns and table badges.
+  - Reorganized filter bar into an aligned, responsive 2-tier search panel with friendly dropdown options and a reset button.
+  - Added sequence numbers (STT), timestamp styling, user icons, and dedicated detail view panels.
+* **Typo Fix in Center Management Forms (`centers/create.blade.php`, `centers/edit.blade.php`)**:
+  - Corrected spelling typo on the cancel button from "Hủy bộ" to "Hủy bỏ".
+* **Interactive Image Cropper Modal Integration (`_image_cropper_modal.blade.php`, `admin.blade.php`, `banners/_form.blade.php`, `articles/create.blade.php`, `articles/edit.blade.php`, `vaccines/_form.blade.php`)**:
+  - Implemented an interactive Image Cropper modal powered by Cropper.js across all admin image upload interfaces (Banners, Article Thumbnails & Content Blocks, Vaccine Products).
+  - Provided custom preset aspect ratios tailored to each content type (16:9, 21:9 ultra-wide for Banners; 16:9 / 4:3 for Articles; 1:1 square for Vaccine products; and Freeform crop).
+  - Added transformation tools: zoom in/out, 90-degree left/right rotations, horizontal flipping, and reset.
+  - Added dynamic re-crop button ("✂️ Cắt lại hình ảnh") directly below preview containers so admins can fine-tune crop boundaries without re-selecting files from their computer.
+  - Preserved standard HTML5 form submission flow via `DataTransfer` file encapsulation without requiring backend endpoint modifications.
+* **Banner Hard Deletion & Soft Toggle Implementation (`Banner.php`, `AdminBannerController.php`, `index.blade.php`, `web.php`)**:
+  - Separated Banner soft visibility toggle ("Ẩn mềm" / "Hiện") from permanent deletion ("Xóa cứng").
+  - Removed internal `Banner::deleting` event blocker to allow SuperAdmin to permanently delete unwanted banners from the database alongside their physical uploaded image files.
+  - Added dedicated route `admin.banners.toggle-status` with quick toggle actions ("Ẩn" / "Hiện") directly from the table.
+  - Added standard STT column, right-aligned pagination, and clear 3-action buttons (Ẩn/Hiện, Sửa, Xóa) with irreversible deletion warning confirmations.
+* **Live Editor Banner Deduplication (`live_editor.blade.php`, `live_editor_modals.blade.php`)**:
+  - Removed duplicated "Hero Banner Slider" frame and its single-banner popup modal from the Live Editor tool.
+  - Centralized banner slider management exclusively into the dedicated, full-featured Banner Management section (`/admin/banners`).
+  - Streamlined Home tab sections in Live Editor starting directly from Quick Action Toolbar.
+* **Article Hard Deletion & Soft Toggle Implementation (`Article.php`, `AdminArticleController.php`, `index.blade.php`, `web.php`)**:
+  - Separated Article soft visibility toggle ("Ẩn mềm" / "Hiện") from permanent deletion ("Xóa cứng").
+  - Removed internal `Article::deleting` event blocker to allow SuperAdmin to permanently delete unwanted articles from the database alongside their physical uploaded image files.
+  - Added dedicated route `admin.articles.toggle-status` with quick toggle actions ("Ẩn" / "Hiện") directly from the table.
+  - Added STT column, view count indicator, and clear 3-action buttons (Ẩn/Hiện, Sửa, Xóa) with irreversible deletion warning confirmations.
+* **Registration CSV Export Filter Synchronization (`AdminRegistrationController.php`)**:
+  - Unified registration query filtering into `buildFilteredRegistrationQuery` across both list pagination (`index`) and CSV export (`exportCsv`).
+  - Corrected CSV export to accurately respect all active query filters: search keyword, branch ID, appointment status (`booking_status`), payment status (`payment_status`), appointment date ranges (`injection_date_from` and `injection_date_to`), and specific day/month/year selections.
+  - Added missing `injection_date_to` date range filter parsing to ensure precise historical reporting.
+* **Footer Deduplication & Modern CSS Redesign (`app.blade.php`, `style.css`)**:
+  - Removed redundant duplicated branch addresses from the right-hand legal column in the website footer.
+  - Redesigned company legal panel with structured iconography (business certificate, headquarters, email, hotline).
+  - Fixed uneven branch card stretched span on odd-number branches, establishing clean balanced grid alignments and smooth micro-interaction hover elevations.
+  - Implemented 4-card maximum grid logic for footer branches: displays up to 4 branches if total <= 4; if > 4, displays the top 3 branches and a dedicated interactive 4th card linking to the full centers map page (`route('contact')`).
+  - Synchronized exact color hierarchy, font styling (Medicare Gold `#eaaa00` title), solid borders, and iconography of the 4th "HỆ THỐNG TẤT CẢ CHI NHÁNH" card to perfectly match the other 3 branch cards.
+  - Aligned top headers (`.footer-branches-title` and `.footer-policy-links`) to exactly match top borders and ensure 100% horizontal alignment between the branch cards and the legal information panel.
+
+## [v6.5.27] - 2026-08-12
+
+### Automated Stock Shortage Alerts & 20:30 Evening Next-Day Cutoff Analysis
+
+* **Vaccine Shortage Analysis & 20:30 Cutoff Rule (`AdminDashboardController.php`, `dashboard.blade.php`)**:
+  - Implemented automated stock shortage detection that reconciles upcoming injection appointment demands against available active inventory lots (`inventory_lots.available_quantity`) per branch.
+  - Added an intelligent time rule: Before 20:30, the system tracks today's injection appointments; **from 20:30 onward**, it automatically shifts to analyzing next-day (tomorrow's) injection demands so medical staff can proactively identify stock shortages and arrange replenishments before morning clinics.
+  - Rendered prominent real-time shortage alert banners highlighting the specific vaccine name, branch, required doses, currently available doses, and exact shortage quantity needed.
+  - Refined CSS, removed redundant date/label repetitions, and added instant action buttons for immediate replenishment.
+  - Added direct quick links to the Vaccine Management panel (`admin.vaccines.index`) with quick vaccine searching and date-filtered registration lists.
+  - Fixed single-day / 1-point SVG trend chart calculation: centered single node at `x=375`, replaced skewed triangle with a balanced centered pillar and horizontal guideline, and optimized node label vertical offsets to eliminate text collisions.
+  - Dynamically reconciled vaccine inventory status against daily scheduled injection demands (`AdminVaccineController.php`, `_table.blade.php`, `index.blade.php`): displayed "Đầy đủ" when inventory >= scheduled demand, and "Thiếu" when inventory < scheduled demand (including exact shortage count e.g., "Thiếu (-X)", and "Thiếu (0)" when available stock is zero and there is no current-day demand, completely replacing the "Hết hàng" badge for clean UX consistency).
+  - Implemented real-time two-way synchronization between `InventoryLot` and `CenterVaccine` (`InventoryLot.php` model booted hook), ensuring stock quantities displayed across all admin management screens and shortage alerts are 100% consistent.
+  - Redesigned and aligned the Admin Dashboard filter form layout with custom responsive CSS (`dashboard.blade.php`): set balanced fixed widths for Center and Date inputs, pushed search/clear action buttons cleanly to the right, and optimized wrap behavior on mobile screens.
+  - Simplified stock shortage logic: reverted the complex multi-batch lot system in favor of direct vaccine inventory checks (`center_vaccines.stock_quantity`), ensuring the Admin Dashboard and Vaccine Management screens display identical simple warehouse stock counts.
+  - Fixed double select dropdown duplication on the Add/Edit Vaccine form (`_form.blade.php`) by adding the `no-custom-select` class to the select inputs, completely bypassing conflict with the global layout custom select initializer.
+  - Resolved action dropdown menu clipping/cutting-off issue and vertical scrollbar in tables (`admin.blade.php` layout): added CSS styles for `.action-dropdown-menu.dropup`, updated the toggle JS handler to position menus upwards (`dropup`) dynamically when rendering near bottom viewport, and set `overflow: visible !important;` on the table responsive wrapper at desktop screens (`@media (min-width: 1024px)`) to keep absolute menus floating over the card without triggering any browser vertical/horizontal scrollbars, while preserving full touch-scrollability on mobile.
+  - Fixed form deletion submission error on the Vaccine list (`_table.blade.php`): resolved a Chrome/Edge browser quirk where disabling submit buttons synchronously cancelled form navigation by wrapping it in `setTimeout(..., 0)` asynchronously, and resolved a race condition where the double-submit protection listener incorrectly intercepted and blocked the subsequent submission triggered after clicking "Xác nhận" on the custom `AppDialog.confirm` modal.
+  - Reconciled registration and customer data consistency: ran a database repair migration script to backfill `customer_id` associations for 57 orphaned bookings using normalized patient phone numbers, and updated demo seeders (`seed_shortage_demo.php`, `seed_50_shortage_demo.php`) to automatically generate and link corresponding Customer records for all test registrations.
+  - Implemented automatic database-level customer synchronization in the `Registration` model (`Registration.php` booted saving hook): automatically normalizes patient phone numbers and finds or creates associated `Customer` records during any create or update event.
+  - Resolved patient identification duplication for shared family phone numbers (`Patient.php` model): updated `findOrCreateCentralized` to identify unique individuals using the combination of phone number, full name, and birth date, preventing different family members who share a single phone number from being merged into one record.
+  - Reset and re-seeded the database: cleaned up all test registrations, patients, and customers, and re-ran the updated 50 shortage registrations seeder to populate clean, fully synchronized, and differentiated data.
+  - Integrated Clinical Workflow Control Center on registration detail page (`show.blade.php`): added step-by-step interactive panels for Patient Check-in, Clinical Screening (eligible/deferred/contraindicated status and notes), and Vaccine Administration execution (lot-selection, vaccinator assignment, observation timer) to ensure clinical history (`administered_doses`) and stock movements are properly captured and synchronized.
+  - Enhanced Patient Profile index page with advanced filters and AJAX pagination (`AdminPatientController.php`, `index.blade.php`, `_table.blade.php`): integrated branch selection (for Super Admins) and registration date range filters (`from_date` / `to_date`), implemented `withQueryString()` to preserve search criteria across pages, and integrated AJAX table reloading for a fast SPA-like user experience.
+
+## [v6.5.26] - 2026-08-12
+
+### Custom Date Range Filtering & Enhanced Admin Analytics
+
+* **Custom Date Range Filter (`AdminDashboardController.php`, `dashboard.blade.php`)**:
+  - Added "Từ ngày" (`from_date`) and "Đến ngày" (`to_date`) date range selectors to the admin dashboard filter form.
+  - Added one-click quick preset buttons: "Hôm nay", "7 ngày qua", "30 ngày qua", "Tháng này", and "Tháng trước".
+  - Dynamically recalculates all summary statistics (Total Registrations, Paid Revenue, Pending, Completed, Consultations) and plots daily trend curves for the selected custom date interval.
+* **Enhanced Dual-Line Trend Chart (`dashboard.blade.php`)**:
+  - Rendered **Đường Doanh Thu (Revenue Line)** in bold Medicare Red (`#c8102e`) with a soft glow area fill and white/red node indicators.
+  - Rendered **Đường Lượt Đăng Ký (Registration Line)** in Medicare Navy (`#004b8f`) dashed style with gold node indicators (`#eaaa00`).
+  - Added an interactive floating tooltip card displaying exact revenue (VND) and registration counts per day/month on hover.
+  - Added dynamic summary total metrics (Total Revenue & Total Registrations) directly above the chart.
+* **Dashboard Stat Cards (`dashboard.blade.php`)**:
+  - Removed redundant "Yêu Cầu Tư Vấn" and "Tồn Kho Vắc Xin" stat cards from the admin dashboard grid.
+
 ## [v6.5.25] - 2026-08-12
 
 ### Refined Loyalty Service, FIFO Ledger Allocations & Strict Settings Validation

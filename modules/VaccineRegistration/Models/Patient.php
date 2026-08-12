@@ -44,6 +44,7 @@ class Patient extends Model
     {
         $query = static::query();
 
+        // 1. Tìm theo số định danh (identity_card) nếu có
         if (!empty($data['identity_card'])) {
             $patient = $query->where('identity_card', $data['identity_card'])->first();
             if ($patient) {
@@ -51,13 +52,22 @@ class Patient extends Model
             }
         }
 
+        // 2. Tìm theo tổ hợp: SĐT + Họ tên + Ngày sinh (để phân biệt các thành viên gia đình dùng chung SĐT)
         if (!empty($data['phone'])) {
-            $patient = static::where('phone', $data['phone'])->first();
+            $name = $data['full_name'] ?? $data['patient_name'] ?? '';
+            $dob = $data['dob'] ?? $data['patient_dob'] ?? null;
+            
+            $patient = static::where('phone', $data['phone'])
+                ->where('full_name', trim($name))
+                ->when($dob, fn($q) => $q->whereDate('dob', $dob))
+                ->first();
+                
             if ($patient) {
                 return $patient;
             }
         }
 
+        // 3. Tạo mới nếu không tìm thấy
         return static::create([
             'identity_card' => $data['identity_card'] ?? null,
             'full_name' => $data['full_name'] ?? $data['patient_name'] ?? 'Chưa rõ',

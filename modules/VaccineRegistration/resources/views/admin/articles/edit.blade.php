@@ -182,6 +182,11 @@
                                     <i data-lucide="x" style="width: 12px; height: 12px;"></i>
                                 </button>
                             </div>
+                            <div style="margin-top: 6px; text-align: center;">
+                                <button type="button" id="btn_recrop_image" class="btn-recrop-trigger" style="display: none;">
+                                    <i data-lucide="crop"></i> Cắt lại hình ảnh
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -358,7 +363,7 @@
             input.click();
         };
         
-        // Upload image using AJAX
+        // Upload image using AJAX with Cropper support
         window.uploadCellImage = function(input, cellId) {
             if (input.files.length === 0) return;
             const file = input.files[0];
@@ -367,42 +372,57 @@
             const preview = cell.querySelector('.cell-image-preview');
             const previewImg = cell.querySelector('.cell-image-preview img');
             const hiddenUrl = cell.querySelector('.cell-image-url');
+
+            if (typeof window.openMedicareCropperModal === 'function') {
+                window.openMedicareCropperModal({
+                    file: file,
+                    defaultRatio: NaN,
+                    ratioName: 'free',
+                    onCropComplete: function(croppedBlob, croppedDataUrl, croppedFile) {
+                        performUpload(croppedFile);
+                    }
+                });
+            } else {
+                performUpload(file);
+            }
             
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            prompt.innerHTML = `
-                <i data-lucide="loader" class="animate-spin" style="width: 32px; height: 32px; color: var(--accent-color); margin-bottom: 4px; display: inline-block;"></i>
-                <p style="font-weight: 600; color: #475569; margin: 0; font-size: 12.5px;">Đang tải ảnh...</p>
-            `;
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-            
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', '{{ route("admin.articles.upload-image") }}');
-            xhr.setRequestHeader('X-CSRF-Token', '{{ csrf_token() }}');
-            
-            xhr.onload = function() {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    const response = JSON.parse(xhr.responseText);
-                    if (response.location) {
-                        hiddenUrl.value = response.location;
-                        previewImg.src = response.location;
-                        prompt.style.display = 'none';
-                        preview.style.display = 'block';
+            function performUpload(uploadFile) {
+                const formData = new FormData();
+                formData.append('file', uploadFile);
+                
+                prompt.innerHTML = `
+                    <i data-lucide="loader" class="animate-spin" style="width: 32px; height: 32px; color: var(--accent-color); margin-bottom: 4px; display: inline-block;"></i>
+                    <p style="font-weight: 600; color: #475569; margin: 0; font-size: 12.5px;">Đang tải ảnh...</p>
+                `;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '{{ route("admin.articles.upload-image") }}');
+                xhr.setRequestHeader('X-CSRF-Token', '{{ csrf_token() }}');
+                
+                xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.location) {
+                            hiddenUrl.value = response.location;
+                            previewImg.src = response.location;
+                            prompt.style.display = 'none';
+                            preview.style.display = 'block';
+                        } else {
+                            window.AppDialog ? window.AppDialog.alert('Tải ảnh lên thất bại.') : alert('Tải ảnh lên thất bại.');
+                            resetPrompt();
+                        }
                     } else {
-                        window.AppDialog.alert('Tải ảnh lên thất bại.');
+                        window.AppDialog ? window.AppDialog.alert('Tải ảnh lên thất bại.') : alert('Tải ảnh lên thất bại.');
                         resetPrompt();
                     }
-                } else {
-                    window.AppDialog.alert('Tải ảnh lên thất bại.');
+                };
+                xhr.onerror = function() {
+                    window.AppDialog ? window.AppDialog.alert('Lỗi kết nối. Vui lòng thử lại.') : alert('Lỗi kết nối. Vui lòng thử lại.');
                     resetPrompt();
-                }
-            };
-            xhr.onerror = function() {
-                window.AppDialog.alert('Lỗi kết nối. Vui lòng thử lại.');
-                resetPrompt();
-            };
-            xhr.send(formData);
+                };
+                xhr.send(formData);
+            }
             
             function resetPrompt() {
                 prompt.innerHTML = `
@@ -569,30 +589,79 @@
             contentHidden.value = htmlContent;
         });
 
-        // Dedicated Thumbnail upload preview handler
+        // Dedicated Thumbnail upload preview handler with Image Cropper
         const dropzone = document.getElementById('image_dropzone');
         const fileInput = document.getElementById('image_file');
         const previewImg = document.getElementById('image_preview');
         const previewContainer = document.getElementById('image_preview_container');
         const prompt = document.getElementById('dropzone_prompt');
         const btnRemove = document.getElementById('btn_remove_image');
+        const btnRecrop = document.getElementById('btn_recrop_image');
         const hiddenInput = document.getElementById('image_hidden');
+        let currentArticleRawFile = null;
 
-        dropzone.addEventListener('click', () => {
+        dropzone.addEventListener('click', (e) => {
+            if (e.target.closest('#btn_remove_image') || e.target.closest('#btn_recrop_image')) return;
             fileInput.click();
         });
 
         fileInput.addEventListener('change', () => {
             if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    prompt.style.display = 'none';
-                    previewContainer.style.display = 'block';
-                };
-                reader.readAsDataURL(fileInput.files[0]);
+                const file = fileInput.files[0];
+                currentArticleRawFile = file;
+
+                if (typeof window.openMedicareCropperModal === 'function') {
+                    window.openMedicareCropperModal({
+                        file: file,
+                        defaultRatio: 16 / 9,
+                        ratioName: '16:9',
+                        onCropComplete: function(croppedBlob, croppedDataUrl, croppedFile) {
+                            const dt = new DataTransfer();
+                            dt.items.add(croppedFile);
+                            fileInput.files = dt.files;
+
+                            previewImg.src = croppedDataUrl;
+                            prompt.style.display = 'none';
+                            previewContainer.style.display = 'block';
+                            if (btnRecrop) btnRecrop.style.display = 'inline-flex';
+                            hiddenInput.value = '';
+
+                            if (typeof lucide !== 'undefined') {
+                                lucide.createIcons();
+                            }
+                        }
+                    });
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        prompt.style.display = 'none';
+                        previewContainer.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
             }
         });
+
+        if (btnRecrop) {
+            btnRecrop.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (currentArticleRawFile && typeof window.openMedicareCropperModal === 'function') {
+                    window.openMedicareCropperModal({
+                        file: currentArticleRawFile,
+                        defaultRatio: 16 / 9,
+                        ratioName: '16:9',
+                        onCropComplete: function(croppedBlob, croppedDataUrl, croppedFile) {
+                            const dt = new DataTransfer();
+                            dt.items.add(croppedFile);
+                            fileInput.files = dt.files;
+                            previewImg.src = croppedDataUrl;
+                        }
+                    });
+                }
+            });
+        }
 
         if (btnRemove) {
             btnRemove.addEventListener('click', (e) => {
@@ -600,7 +669,9 @@
                 fileInput.value = '';
                 hiddenInput.value = '';
                 previewImg.src = '';
+                currentArticleRawFile = null;
                 previewContainer.style.display = 'none';
+                if (btnRecrop) btnRecrop.style.display = 'none';
                 prompt.style.display = 'block';
             });
         }

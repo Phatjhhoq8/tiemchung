@@ -134,7 +134,7 @@ class AdminCenterController extends Controller
                     'price' => $vaccine->price,
                     'sale_price' => $vaccine->sale_price,
                     'stock_status' => 'out_of_stock',
-                    'is_active' => false,
+                    'is_active' => (bool) $center->is_active,
                 ]
             );
         });
@@ -201,6 +201,11 @@ class AdminCenterController extends Controller
 
         $oldValues = $center->only(['name', 'slug', 'address', 'phone', 'working_hours', 'sort_order', 'is_active']);
         $center->update($validated);
+
+        if (isset($validated['is_active'])) {
+            CenterVaccine::where('center_id', $center->id)->update(['is_active' => (bool) $validated['is_active']]);
+        }
+
         AuditLogger::log(
             'center.updated',
             'center',
@@ -226,9 +231,7 @@ class AdminCenterController extends Controller
         $center->is_active = $newActive;
         $center->save();
 
-        if (! $newActive) {
-            CenterVaccine::where('center_id', $center->id)->update(['is_active' => false]);
-        }
+        CenterVaccine::where('center_id', $center->id)->update(['is_active' => $newActive]);
 
         AuditLogger::log(
             $newActive ? 'center.activated' : 'center.deactivated',

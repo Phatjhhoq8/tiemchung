@@ -7,10 +7,42 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\VaccineRegistration\Support\PhoneNormalizer;
 
 class Registration extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::saving(function (Registration $registration) {
+            // 1. Tự động đồng bộ tài khoản tích điểm (Customer)
+            if (!$registration->customer_id && $registration->patient_phone) {
+                $phone = PhoneNormalizer::normalize($registration->patient_phone);
+                if (!$phone) {
+                    $phone = $registration->patient_phone;
+                }
+                
+                $customer = Customer::findOrCreateByPhone(
+                    $phone,
+                    $registration->patient_name ?? 'Khách hàng'
+                );
+                $registration->customer_id = $customer->id;
+            }
+
+            // 2. Tự động đồng bộ hồ sơ bệnh nhân (Patient)
+            if (!$registration->patient_id && $registration->patient_phone) {
+                $patient = Patient::findOrCreateCentralized([
+                    'full_name' => $registration->patient_name,
+                    'dob' => $registration->patient_dob,
+                    'gender' => $registration->patient_gender,
+                    'phone' => $registration->patient_phone,
+                    'address' => $registration->patient_address,
+                ]);
+                $registration->patient_id = $patient->id;
+            }
+        });
+    }
 
     public const BOOKING_PENDING = 'pending';
 

@@ -64,6 +64,10 @@ class VaccineController extends Controller
             $query->where('doses', (int) $request->input('doses'));
         }
 
+        if ($request->boolean('featured') || $request->input('featured') === '1') {
+            $query->featured();
+        }
+
         $sort = $request->input('sort', 'popular');
         match ($sort) {
             'price_asc' => $query->orderBy('price', 'asc'),
@@ -77,6 +81,7 @@ class VaccineController extends Controller
         $cart = $cartState['cart'];
 
         $allVaccines = Vaccine::forCenter($currentCenter?->id)->get();
+        $featuredCount = $allVaccines->where('is_featured', true)->count();
         $diseaseOptions = $this->buildDiseaseOptions($allVaccines);
         $diseases = $diseaseOptions;
 
@@ -102,6 +107,7 @@ class VaccineController extends Controller
         return view('vaccine::index', compact(
             'vaccines',
             'cart',
+            'featuredCount',
             'diseaseOptions',
             'diseases',
             'ageGroupOptions',
