@@ -14,10 +14,11 @@
   - Translated technical action keys (such as `admin_user.created`, `auth.password_changed`, and `publish_settings`) into friendly, localized Vietnamese labels for non-technical users.
   - Custom branded error pages (4xx & 5xx) to match the brand identity using Medicare Red (`#c8102e`) and Medicare Navy (`#004b8f`) as primary/hover states and Medicare Gold (`#eaaa00`) as focus outline.
   - Adjusted alert toast background colors in `app-dialog.blade.php` to use fresh, vibrant palettes (Success `#10b981`, Error `#ef4444`, Info `#3b82f6`).
-* **Observation Minutes Removal & Past Slot Selection Blocking (`show.blade.php`, `register.blade.php`, `VaccineController.php`, `AdminRegistrationController.php`, `app.js`)**:
+* **Observation Minutes Removal & Past Slot Selection Blocking (`show.blade.php`, `register.blade.php`, `VaccineController.php`, `AdminRegistrationController.php`, `app.js`, `app.blade.php`)**:
   - Removed "Observation Minutes" (Theo dõi) number input field entirely from the clinical dose administration form in admin `show.blade.php`.
   - Added frontend and backend filters to completely hide and block selection of past time slots of today (e.g. if today is chosen, slots starting before local time are omitted).
   - Applied the same frontend filters to both the standalone `/register` form and the popup SPA Modal form defined inside `app.js` to ensure uniform booking constraints.
+  - Replaced undefined `$appJsVersion` with dynamic `time()` timestamp in `app.blade.php` to bypass aggressive client-side Javascript asset caching.
 * **Timezone Synchronization, Multi-Patient Checkout, & Lot Selection Removal (`app.php`, `app.blade.php`, `success.blade.php`, `Registration.php`, `VaccinationWorkflowController.php`, `show.blade.php`)**:
   - Shifted application default timezone in `app.php` to `'Asia/Ho_Chi_Minh'` to resolve day-mismatch between server UTC and Vietnam local time (preventing customers from booking on past dates).
   - Removed "Dịch Vụ" menu link from layout header navigation in `app.blade.php` to fit custom business requirements.
