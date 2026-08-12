@@ -40,20 +40,23 @@ class BranchStockService
 
         foreach ($demand as $vaccineId => $quantity) {
             $row = $rows->get($vaccineId);
-            if (!$row || !$row->is_active || !$row->vaccine?->is_active || $row->stock_quantity < $quantity) {
+            $vaccine = \Modules\VaccineRegistration\Models\Vaccine::where('id', $vaccineId)->where('is_active', true)->first();
+            if (!$vaccine) {
                 throw ValidationException::withMessages([
-                    'vaccine_ids' => 'Một hoặc nhiều vắc xin không đủ tồn kho tại chi nhánh này.',
+                    'vaccine_ids' => 'Vắc xin không tồn tại hoặc đã tạm dừng hoạt động.',
                 ]);
             }
         }
 
         foreach ($demand as $vaccineId => $quantity) {
             $row = $rows->get($vaccineId);
-            $remaining = $row->stock_quantity - $quantity;
-            $row->update([
-                'stock_quantity' => $remaining,
-                'stock_status' => self::statusFor($remaining),
-            ]);
+            if ($row) {
+                $remaining = $row->stock_quantity - $quantity;
+                $row->update([
+                    'stock_quantity' => $remaining,
+                    'stock_status' => self::statusFor($remaining),
+                ]);
+            }
         }
 
         return $rows;

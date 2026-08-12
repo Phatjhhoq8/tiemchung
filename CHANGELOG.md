@@ -2,6 +2,12 @@
 
 ### Production Deployment & PHP Platform Compatibility
 
+* **Banner Custom Background & Autoplay, Client-Side Stock Lock Bypassing (`hero_slider.blade.php`, `AdminBannerController.php`, `_form.blade.php`, `Banner.php`, `BranchStockService.php`, `CenterContext.php`, `grid.blade.php`, `show.blade.php`)**:
+  - Implemented dynamic vanilla JavaScript autoplay logic inside `hero_slider.blade.php` to slide automatically every 5s, supporting controls and indicators.
+  - Added new `background_url` column to `banners` table via migration, enabling Admin to upload full-width background images instead of default red gradient background.
+  - Lifted "Out of Stock" (Hết hàng) block constraints from frontend catalog lists and vaccine detail templates, keeping all buttons active and using standard fallback prices.
+  - Re-configured `BranchStockService.php` to bypass stock blocking during ticket reservation, allowing stock quantity to drop into negatives for administrative tracking.
+
 * **Deployment Automation Scripts (`deploy_all_v2.ps1`, `upload_untar.ps1`)**:
   - Developed a robust deployment script `deploy_all_v2.ps1` to upload the entire codebase while filtering out VCS and build garbage (e.g. `.git`, `.agents`, `node_modules`).
   - Added support for double-destination uploading for public assets (to both `/public` and `/` directories) to guarantee asset loading compatibility on shared host configurations.

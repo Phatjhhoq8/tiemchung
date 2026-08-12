@@ -49,6 +49,29 @@
         </div>
     </div>
 
+    <!-- Tải lên hình nền Banner (Background) -->
+    <div class="form-group" style="grid-column: span 2;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Hình nền Banner <span style="font-size: 13px; font-weight: 400; color: #64748b;">(Không bắt buộc - mặc định dùng màu đỏ gradient)</span></label>
+        <input type="file" name="background_file" id="background_file" accept="image/*" style="display: none;">
+        <input type="hidden" name="background_url" id="background_url" value="{{ old('background_url', $banner->background_url) }}">
+        
+        <div id="background_dropzone" class="image-upload-zone" style="padding: 20px;">
+            <div id="background_dropzone_prompt" style="{{ $banner->background_url ? 'display: none;' : '' }}">
+                <i data-lucide="upload-cloud" style="width: 36px; height: 36px; color: var(--text-light); margin-bottom: 6px; display: inline-block;"></i>
+                <p style="font-weight: 600; color: var(--text-muted); margin: 0 0 4px 0; font-size: 14px;">Kéo thả hình nền banner vào đây hoặc click để tải lên</p>
+                <span style="font-size: 11px; color: var(--text-light);">Hỗ trợ: JPG, PNG, GIF, WEBP (Tối đa 2MB, tỷ lệ rộng hoặc toàn màn hình)</span>
+            </div>
+            <div id="background_preview_container" class="image-upload-preview-container" style="{{ $banner->background_url ? 'display: block;' : '' }}">
+                <div class="image-upload-preview-wrapper" style="text-align: center;">
+                    <img id="background_preview" class="image-upload-preview" src="{{ $banner->background_url ? asset($banner->background_url) : '' }}" alt="Xem trước hình nền" style="max-height: 140px; border-radius: 8px;">
+                    <button type="button" id="btn_remove_background" class="image-upload-remove-btn" title="Xóa hình nền">
+                        <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- URL liên kết -->
     <div class="form-group">
         <label for="link_url" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Liên kết khi click</label>
@@ -212,6 +235,89 @@
             if (recropBtn) recropBtn.style.display = 'none';
             promptBlock.style.display = 'block';
         });
+
+        // Xử lý background image
+        const bgDropzone = document.getElementById('background_dropzone');
+        const bgFileInput = document.getElementById('background_file');
+        const bgHiddenInput = document.getElementById('background_url');
+        const bgPromptBlock = document.getElementById('background_dropzone_prompt');
+        const bgPreviewContainer = document.getElementById('background_preview_container');
+        const bgPreviewImg = document.getElementById('background_preview');
+        const bgRemoveBtn = document.getElementById('btn_remove_background');
+
+        if (bgDropzone) {
+            // Click to choose file
+            bgDropzone.addEventListener('click', function(e) {
+                if (e.target.closest('#btn_remove_background')) return;
+                bgFileInput.click();
+            });
+
+            // File input change
+            bgFileInput.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    handleBgFiles(this.files);
+                }
+            });
+
+            // Drag & Drop events
+            ['dragenter', 'dragover'].forEach(eventName => {
+                bgDropzone.addEventListener(eventName, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    bgDropzone.style.borderColor = 'var(--accent-color)';
+                    bgDropzone.style.backgroundColor = '#f1f5f9';
+                }, false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                bgDropzone.addEventListener(eventName, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    bgDropzone.style.borderColor = 'var(--border-color)';
+                    bgDropzone.style.backgroundColor = '#f8fafc';
+                }, false);
+            });
+
+            bgDropzone.addEventListener('drop', function(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files && files.length > 0) {
+                    handleBgFiles(files);
+                }
+            });
+
+            function handleBgFiles(files) {
+                if (files.length === 0) return;
+                const file = files[0];
+                if (!file.type.startsWith('image/')) {
+                    window.AppDialog ? window.AppDialog.alert('Vui lòng chỉ tải lên tệp hình ảnh.') : alert('Vui lòng chỉ tải lên tệp hình ảnh.');
+                    return;
+                }
+                if (file.size > 2 * 1024 * 1024) {
+                    window.AppDialog ? window.AppDialog.alert('Dung lượng hình ảnh không được vượt quá 2 MB.') : alert('Dung lượng hình ảnh không được vượt quá 2 MB.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onloadend = function() {
+                    bgPreviewImg.src = reader.result;
+                    bgPromptBlock.style.display = 'none';
+                    bgPreviewContainer.style.display = 'block';
+                    bgHiddenInput.value = '';
+                };
+            }
+
+            // Remove background action
+            bgRemoveBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                bgFileInput.value = '';
+                bgHiddenInput.value = '';
+                bgPreviewImg.src = '';
+                bgPreviewContainer.style.display = 'none';
+                bgPromptBlock.style.display = 'block';
+            });
+        }
     });
 </script>
 @endsection

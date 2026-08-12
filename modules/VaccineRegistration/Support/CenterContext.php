@@ -84,7 +84,6 @@ class CenterContext
         $centerVaccines = CenterVaccine::where('center_id', $centerId)
             ->whereIn('vaccine_id', $vaccineIds)
             ->where('is_active', true)
-            ->where('stock_quantity', '>', 0)
             ->get()
             ->keyBy('vaccine_id');
 
@@ -96,8 +95,12 @@ class CenterContext
             $vaccine = $vaccines->get((int) $id);
             $centerVaccine = $centerVaccines->get((int) $id);
             $quantity = max(1, (int) ($item['quantity'] ?? 1));
-            $price = $centerVaccine ? ($centerVaccine->hasSalePrice() ? $centerVaccine->sale_price : $centerVaccine->price) : 0;
-            $isUnavailable = ! $centerVaccine;
+            
+            $price = $centerVaccine 
+                ? ($centerVaccine->hasSalePrice() ? $centerVaccine->sale_price : $centerVaccine->price) 
+                : ($vaccine ? ($vaccine->hasSalePrice() ? $vaccine->sale_price : $vaccine->price) : 0);
+                
+            $isUnavailable = false;
 
             if ($isUnavailable) {
                 $unavailable++;

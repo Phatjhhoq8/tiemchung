@@ -88,9 +88,9 @@
                             <i data-lucide="arrow-left" style="width: 15px; height: 15px;"></i>
                             <span>Quay lại danh mục</span>
                         </a>
-                        <button class="btn-select-detail {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" data-id="{{ $vaccine->id }}" onclick="toggleCart({{ $vaccine->id }})" {{ $vaccine->stock_quantity <= 0 ? 'disabled' : '' }} style="padding: 12px 24px; border-radius: 30px; color: {{ isset($cart[$vaccine->id]) ? 'var(--primary-color, #c8102e)' : '#ffffff' }}; font-weight: 800; font-size: 15px; cursor: {{ $vaccine->stock_quantity <= 0 ? 'not-allowed' : 'pointer' }}; opacity:{{ $vaccine->stock_quantity <= 0 ? '.55' : '1' }}; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; background-color: {{ isset($cart[$vaccine->id]) ? '#fff1f2' : 'var(--primary-color, #c8102e)' }}; border: 1px solid var(--primary-color, #c8102e); box-shadow: 0 4px 15px rgba(200, 16, 46, 0.22);">
+                        <button class="btn-select-detail {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" data-id="{{ $vaccine->id }}" onclick="toggleCart({{ $vaccine->id }})" style="padding: 12px 24px; border-radius: 30px; color: {{ isset($cart[$vaccine->id]) ? 'var(--primary-color, #c8102e)' : '#ffffff' }}; font-weight: 800; font-size: 15px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; background-color: {{ isset($cart[$vaccine->id]) ? '#fff1f2' : 'var(--primary-color, #c8102e)' }}; border: 1px solid var(--primary-color, #c8102e); box-shadow: 0 4px 15px rgba(200, 16, 46, 0.22);">
                             <i data-lucide="{{ isset($cart[$vaccine->id]) ? 'check' : 'plus' }}" style="width: 18px; height: 18px;"></i>
-                            <span>{{ $vaccine->stock_quantity <= 0 ? 'Hết hàng tại chi nhánh' : (isset($cart[$vaccine->id]) ? 'Đã chọn vắc xin' : 'Đăng ký tiêm chủng') }}</span>
+                            <span>{{ isset($cart[$vaccine->id]) ? 'Đã chọn vắc xin' : 'Đăng ký tiêm chủng' }}</span>
                         </button>
                         {{-- Nút đặt lịch ngay — xuất hiện sau khi đã chọn vaccine --}}
                         <a href="{{ route('register.show') }}"

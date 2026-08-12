@@ -14,7 +14,7 @@
             @php
                 $hasSalePrice = $vaccine->hasSalePrice();
                 $displayPrice = $hasSalePrice ? $vaccine->sale_price : $vaccine->price;
-                $outOfStock = (int) $vaccine->stock_quantity <= 0;
+                $outOfStock = false;
             @endphp
             <article class="catalog-product-card {{ isset($cart[$vaccine->id]) ? 'selected' : '' }}" data-id="{{ $vaccine->id }}">
                 <a href="{{ route('vaccine.show', $vaccine->id) }}" class="catalog-product-media" style="display: block; text-decoration: none;">

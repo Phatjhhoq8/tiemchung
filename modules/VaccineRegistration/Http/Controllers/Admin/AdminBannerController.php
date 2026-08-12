@@ -68,6 +68,8 @@ class AdminBannerController extends Controller
             'subtitle' => 'nullable|string|max:500',
             'image_url' => 'nullable|string|max:500',
             'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new SafeImageFile],
+            'background_url' => 'nullable|string|max:500',
+            'background_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new SafeImageFile],
             'link_url' => [
                 'nullable',
                 'string',
@@ -95,6 +97,18 @@ class AdminBannerController extends Controller
 
         if (empty($validated['image_url'])) {
             $validated['image_url'] = null;
+        }
+
+        // Xử lý tải lên ảnh nền từ file
+        if ($request->hasFile('background_file')) {
+            $file = $request->file('background_file');
+            $filename = 'banner_bg_'.time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
+            $file->move(public_path('images/banners'), $filename);
+            $validated['background_url'] = '/images/banners/'.$filename;
+        }
+
+        if (empty($validated['background_url'])) {
+            $validated['background_url'] = null;
         }
 
         $validated['is_active'] = $request->has('is_active');
@@ -129,6 +143,8 @@ class AdminBannerController extends Controller
             'subtitle' => 'nullable|string|max:500',
             'image_url' => 'nullable|string|max:500',
             'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new SafeImageFile],
+            'background_url' => 'nullable|string|max:500',
+            'background_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new SafeImageFile],
             'link_url' => [
                 'nullable',
                 'string',
@@ -162,7 +178,6 @@ class AdminBannerController extends Controller
             $validated['image_url'] = '/images/banners/'.$filename;
         } else {
             // Nếu không upload file mới, xem thử người dùng có xóa ảnh cũ không
-            // image_url rỗng nghĩa là người dùng đã nhấn nút xóa hình ảnh
             if (empty($request->input('image_url'))) {
                 if ($banner->image_url && ! in_array($banner->image_url, ['images/banners/banner_family.jpg', 'images/banners/banner2.jpg', '/images/banners/banner_family.jpg', '/images/banners/banner2.jpg'])) {
                     $oldFilename = basename($banner->image_url);
@@ -174,6 +189,36 @@ class AdminBannerController extends Controller
                 $validated['image_url'] = null;
             } else {
                 $validated['image_url'] = $banner->image_url;
+            }
+        }
+
+        // Xử lý tải lên ảnh nền từ file
+        if ($request->hasFile('background_file')) {
+            // Xóa ảnh nền cũ nếu có
+            if ($banner->background_url) {
+                $oldFilename = basename($banner->background_url);
+                $oldPath = public_path('images/banners/'.$oldFilename);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+            $file = $request->file('background_file');
+            $filename = 'banner_bg_'.time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
+            $file->move(public_path('images/banners'), $filename);
+            $validated['background_url'] = '/images/banners/'.$filename;
+        } else {
+            // Nếu không upload file mới, xem thử người dùng có xóa ảnh nền cũ không
+            if (empty($request->input('background_url'))) {
+                if ($banner->background_url) {
+                    $oldFilename = basename($banner->background_url);
+                    $oldPath = public_path('images/banners/'.$oldFilename);
+                    if (file_exists($oldPath)) {
+                        @unlink($oldPath);
+                    }
+                }
+                $validated['background_url'] = null;
+            } else {
+                $validated['background_url'] = $banner->background_url;
             }
         }
 
