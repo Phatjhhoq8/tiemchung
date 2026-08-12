@@ -391,6 +391,9 @@ class VaccineController extends Controller
         // Tự động sinh lịch 30 ngày từ cấu hình mặc định
         Schedule::generateFromDefaults($currentCenter->id, today(), today()->addDays(30));
 
+        $nowTime = now()->format('H:i');
+        $today = today()->toDateString();
+
         $schedules = Schedule::query()
             ->where('center_id', $currentCenter->id)
             ->where('is_active', true)
@@ -402,6 +405,14 @@ class VaccineController extends Controller
             }])
             ->orderBy('date')
             ->get()
+            ->map(function (Schedule $schedule) use ($today, $nowTime) {
+                if ($schedule->date->toDateString() === $today) {
+                    $schedule->setRelation('slots', $schedule->slots->filter(function ($slot) use ($nowTime) {
+                        return $slot->start_at > $nowTime;
+                    }));
+                }
+                return $schedule;
+            })
             ->filter(fn (Schedule $schedule) => $schedule->slots->isNotEmpty())
             ->values();
 
@@ -614,11 +625,16 @@ class VaccineController extends Controller
             DB::transaction(function () use ($validated, $currentCenter, &$successCodes, $idempotencyKey, $request, $hasPatientsArrayInRequest, $stockService, $accountPhone, $accountName) {
                 // Lock slot
                 $slot = Slot::with('schedule')->whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
+                $todayDate = today()->toDateString();
+                $isPastSlot = $slot->schedule->date->toDateString() === $todayDate 
+                    && $slot->start_at <= now()->format('H:i');
+
                 if (! $slot->is_active || ! $slot->schedule || ! $slot->schedule->is_active
                     || (int) $slot->schedule->center_id !== (int) $currentCenter->id
-                    || $slot->schedule->date->isBefore(today())) {
+                    || $slot->schedule->date->isBefore(today())
+                    || $isPastSlot) {
                     throw ValidationException::withMessages([
-                        'slot_id' => 'Khung giờ không khả dụng hoặc không thuộc chi nhánh đang chọn.',
+                        'slot_id' => 'Khung giờ này đã trôi qua hoặc không khả dụng.',
                     ]);
                 }
 

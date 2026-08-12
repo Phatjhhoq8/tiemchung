@@ -376,9 +376,21 @@
             return `${yyyy}-${mm}-${dd}` === selectedDate;
         });
         
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const todayStrLocal = `${yyyy}-${mm}-${dd}`;
+        const currentHour = String(now.getHours()).padStart(2, '0');
+        const currentMin = String(now.getMinutes()).padStart(2, '0');
+        const currentTimeStr = `${currentHour}:${currentMin}`;
+
         let options = '<option value="">-- Chọn khung giờ tiêm --</option>';
         if (daySchedule && daySchedule.slots) {
             daySchedule.slots.forEach(slot => {
+                if (selectedDate === todayStrLocal && slot.start_at <= currentTimeStr) {
+                    return;
+                }
                 const remaining = Math.max(0, slot.capacity - slot.reserved_count);
                 options += `<option value="${slot.id}">${slot.start_at} - ${slot.end_at} (còn ${remaining} chỗ)</option>`;
             });

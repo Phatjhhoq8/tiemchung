@@ -211,11 +211,6 @@
                                                 @csrf
                                                 <input type="hidden" name="vaccine_id" value="{{ $vaccine->id }}">
                                                 
-                                                <div>
-                                                    <label class="form-label-modern" style="font-size:11px; margin-bottom:2px;" for="obs_{{ $vaccine->id }}">Theo dõi (phút)</label>
-                                                    <input class="form-control-modern" id="obs_{{ $vaccine->id }}" type="number" name="observation_minutes" value="30" style="height:36px; width:70px; padding:4px; font-size:12px; text-align:center;">
-                                                </div>
-                                                
                                                 <button type="submit" class="btn-modern btn-modern-primary" style="height:36px; line-height:36px; padding:0 12px; font-size:12px; background:var(--primary-color);">
                                                     Xác nhận tiêm
                                                 </button>

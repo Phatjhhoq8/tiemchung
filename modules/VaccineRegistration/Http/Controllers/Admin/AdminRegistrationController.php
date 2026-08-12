@@ -81,6 +81,15 @@ class AdminRegistrationController extends Controller
                 ->whereColumn('reserved_count', '<', 'capacity')
                 ->orderBy('id')
                 ->get()
+                ->filter(function ($slot) {
+                    $today = today()->toDateString();
+                    $nowTime = now()->format('H:i');
+                    if ($slot->schedule->date->toDateString() === $today) {
+                        return $slot->start_at > $nowTime;
+                    }
+                    return true;
+                })
+                ->values()
             : collect();
         $vaccines = $center
             ? CenterVaccine::query()
@@ -133,10 +142,15 @@ class AdminRegistrationController extends Controller
         $center = Center::active()->findOrFail($validated['center_id']);
         $registration = DB::transaction(function () use ($validated, $recipientPhone, $accountPhone, $center, $stockService, $idempotencyKey) {
             $slot = Slot::with('schedule')->whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
+            $todayDate = today()->toDateString();
+            $isPastSlot = $slot->schedule->date->toDateString() === $todayDate 
+                && $slot->start_at <= now()->format('H:i');
+
             if (! $slot->is_active || ! $slot->schedule || ! $slot->schedule->is_active
                 || (int) $slot->schedule->center_id !== (int) $center->id
-                || $slot->schedule->date->isBefore(today()) || $slot->reserved_count >= $slot->capacity) {
-                throw ValidationException::withMessages(['slot_id' => 'Khung giờ không còn chỗ hoặc không thuộc chi nhánh đã chọn.']);
+                || $slot->schedule->date->isBefore(today()) 
+                || $isPastSlot || $slot->reserved_count >= $slot->capacity) {
+                throw ValidationException::withMessages(['slot_id' => 'Khung giờ không còn chỗ, đã trôi qua hoặc không thuộc chi nhánh đã chọn.']);
             }
 
             $vaccineIds = array_map('intval', $validated['vaccine_ids']);
