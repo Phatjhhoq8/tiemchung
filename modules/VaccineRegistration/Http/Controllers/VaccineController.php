@@ -563,6 +563,7 @@ class VaccineController extends Controller
             'patients.*.address' => 'nullable|string|max:500',
             'patients.*.vaccine_ids' => 'required|array|min:1',
             'patients.*.vaccine_ids.*' => 'required|integer|exists:vaccines,id',
+            'patients.*.regimen_choices' => 'nullable|array',
             'slot_id' => 'required|integer|exists:slots,id',
             'guardian_name' => 'nullable|string|max:255',
             'guardian_phone' => 'nullable|string|max:30',
@@ -655,7 +656,25 @@ class VaccineController extends Controller
                     $total = 0;
                     foreach ($patient['vaccine_ids'] as $vaccineId) {
                         $centerVaccine = $centerVaccines->get($vaccineId);
+                        
+                        $regimenId = $patient['regimen_choices'][$vaccineId] ?? null;
                         $price = $centerVaccine->hasSalePrice() ? $centerVaccine->sale_price : $centerVaccine->price;
+                        
+                        if (!empty($regimenId)) {
+                            $regimen = \Modules\VaccineRegistration\Models\VaccineRegimen::find((int)$regimenId);
+                            if ($regimen && (int)$regimen->vaccine_id === (int)$vaccineId) {
+                                if ($regimen->price !== null) {
+                                    $price = $regimen->sale_price !== null ? $regimen->sale_price : $regimen->price;
+                                } else {
+                                    $price = $price * $regimen->doses;
+                                }
+                            } else {
+                                $regimenId = null;
+                            }
+                        } else {
+                            $regimenId = null;
+                        }
+
                         $total += $price;
                         $items[$vaccineId] = [
                             'price' => $price,

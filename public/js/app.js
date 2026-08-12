@@ -1162,15 +1162,45 @@ function addSpaPatientField() {
     Object.entries(window.lastCartData.cart || {}).forEach(([id, item]) => {
         const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
         const unavailable = Boolean(item.unavailable_for_center);
+        
+        let selectRegimenHtml = `
+            <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 12px; color: #64748b;">Hình thức:</span>
+                <select name="patients[${index}][regimen_choices][${id}]" class="spa-regimen-selector" data-vaccine-id="${id}" onchange="recalculateSpaRegisterPrices()" style="font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; max-width: 250px; outline: none;">
+                    <option value="" data-price="${item.price}">Tiêm lẻ (1 mũi) - ${formattedPrice}</option>
+        `;
+        
+        const regimens = item.regimens || [];
+        regimens.forEach(reg => {
+            let regPrice = 0;
+            if (reg.price !== null && reg.price !== undefined) {
+                regPrice = reg.sale_price !== null && reg.sale_price !== undefined ? reg.sale_price : reg.price;
+            } else {
+                regPrice = item.price * reg.doses;
+            }
+            const formattedRegPrice = new Intl.NumberFormat('vi-VN').format(regPrice) + ' đ';
+            selectRegimenHtml += `
+                <option value="${reg.id}" data-price="${regPrice}">Trọn gói: ${escapeHtml(reg.age_group)} (${reg.doses} mũi) - ${formattedRegPrice}</option>
+            `;
+        });
+        
+        selectRegimenHtml += `
+                </select>
+            </div>
+        `;
+
         vaccineCheckboxes += `
-            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid ${unavailable ? '#fecaca' : '#e2e8f0'}; border-radius: 8px; cursor: ${unavailable ? 'not-allowed' : 'pointer'}; font-size: 13.5px; background: #fff; ${unavailable ? 'opacity: 0.55;' : ''}">
-                <input type="checkbox" value="${id}" data-price="${item.price}" class="spa-patient-vaccine-checkbox" ${unavailable ? 'disabled' : 'checked'} onchange="recalculateSpaRegisterPrices()" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary-color);">
-                <span style="flex: 1; text-align: left;">
-                    <strong>${escapeHtml(item.name)}</strong>
-                    <small style="display: block; color: #64748b; margin-top: 3px;">${escapeHtml(item.disease_prevention)}</small>
-                </span>
-                <strong style="color: var(--primary-color);">${formattedPrice}</strong>
-            </label>
+            <div style="display: flex; flex-direction: column; padding: 10px; border: 1px solid ${unavailable ? '#fecaca' : '#e2e8f0'}; border-radius: 8px; background: #f8fafc; margin-bottom: 8px; box-sizing: border-box; ${unavailable ? 'opacity: 0.55;' : ''}">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: ${unavailable ? 'not-allowed' : 'pointer'}; font-size: 13.5px;">
+                    <input type="checkbox" name="patients[${index}][vaccine_ids][]" value="${id}" class="spa-patient-vaccine-checkbox" ${unavailable ? 'disabled' : 'checked'} onchange="recalculateSpaRegisterPrices()" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary-color);">
+                    <span style="flex: 1; text-align: left;">
+                        <strong>${escapeHtml(item.name)}</strong>
+                        <small style="display: block; color: #64748b; margin-top: 3px;">${escapeHtml(item.disease_prevention)}</small>
+                    </span>
+                    <strong class="spa-display-price-label-${id}" style="color: var(--primary-color);">${formattedPrice}</strong>
+                </label>
+                ${unavailable ? '' : selectRegimenHtml}
+            </div>
         `;
     });
 
@@ -1336,25 +1366,44 @@ function recalculateSpaRegisterPrices() {
     const submitBtn = document.getElementById('spaSubmitBtn');
     if (!form || !summaryContainer || !totalPriceEl) return;
 
-    const checkedCheckboxes = form.querySelectorAll('.spa-patient-vaccine-checkbox:checked');
-    
     let total = 0;
     const itemsMap = {};
+    let totalCheckedCount = 0;
 
-    checkedCheckboxes.forEach(cb => {
-        const id = cb.value;
-        const cartItem = window.lastCartData?.cart?.[id];
-        if (cartItem) {
-            total += Number(cartItem.price);
-            if (!itemsMap[id]) {
-                itemsMap[id] = {
-                    name: cartItem.name,
-                    price: cartItem.price,
-                    count: 0
-                };
+    form.querySelectorAll('.spa-patient-block').forEach(block => {
+        block.querySelectorAll('.spa-patient-vaccine-checkbox:checked').forEach(cb => {
+            const vaccineId = cb.value;
+            totalCheckedCount++;
+            
+            const cartItem = window.lastCartData?.cart?.[vaccineId];
+            if (cartItem) {
+                let price = Number(cartItem.price);
+                const selector = block.querySelector(`.spa-regimen-selector[data-vaccine-id="${vaccineId}"]`);
+                if (selector) {
+                    const opt = selector.options[selector.selectedIndex];
+                    if (opt) {
+                        price = Number(opt.getAttribute('data-price') || 0);
+                    }
+                }
+
+                total += price;
+
+                const priceLabel = block.querySelector(`.spa-display-price-label-${vaccineId}`);
+                if (priceLabel) {
+                    priceLabel.textContent = new Intl.NumberFormat('vi-VN').format(price) + ' đ';
+                }
+
+                if (!itemsMap[vaccineId]) {
+                    itemsMap[vaccineId] = {
+                        name: cartItem.name,
+                        totalPrice: 0,
+                        count: 0
+                    };
+                }
+                itemsMap[vaccineId].totalPrice += price;
+                itemsMap[vaccineId].count += 1;
             }
-            itemsMap[id].count += 1;
-        }
+        });
     });
 
     let summaryHtml = '';
@@ -1362,7 +1411,7 @@ function recalculateSpaRegisterPrices() {
         summaryHtml += `
             <div style="display: flex; justify-content: space-between; font-size: 13.5px;">
                 <span style="font-weight: 700; color: #334155; max-width: 180px;">${escapeHtml(item.name)} ${item.count > 1 ? `(x${item.count})` : ''}</span>
-                <span style="font-weight: 700; color: var(--primary-color);">${new Intl.NumberFormat('vi-VN').format(item.price * item.count)} đ</span>
+                <span style="font-weight: 700; color: var(--primary-color);">${new Intl.NumberFormat('vi-VN').format(item.totalPrice)} đ</span>
             </div>
         `;
     });
@@ -1371,7 +1420,7 @@ function recalculateSpaRegisterPrices() {
     totalPriceEl.textContent = new Intl.NumberFormat('vi-VN').format(total) + ' đ';
 
     if (submitBtn) {
-        submitBtn.disabled = checkedCheckboxes.length === 0;
+        submitBtn.disabled = totalCheckedCount === 0;
     }
 }
 
@@ -1505,8 +1554,15 @@ async function submitSpaRegistrationForm(event) {
                     const gender = block.querySelector('.spa-patient-gender')?.value || 'Khác';
                     const address = block.querySelector('.spa-patient-address')?.value?.trim() || '';
                     const checkedVacIds = [];
+                    const regimenChoices = {};
                     block.querySelectorAll('.spa-patient-vaccine-checkbox:checked').forEach(cb => {
-                        checkedVacIds.push(Number(cb.value));
+                        const vacId = Number(cb.value);
+                        checkedVacIds.push(vacId);
+                        
+                        const selector = block.querySelector(`.spa-regimen-selector[data-vaccine-id="${vacId}"]`);
+                        if (selector && selector.value) {
+                            regimenChoices[vacId] = Number(selector.value);
+                        }
                     });
                     
                     patients.push({
@@ -1515,7 +1571,8 @@ async function submitSpaRegistrationForm(event) {
                         dob,
                         gender,
                         address,
-                        vaccine_ids: checkedVacIds
+                        vaccine_ids: checkedVacIds,
+                        regimen_choices: regimenChoices
                     });
                 });
 

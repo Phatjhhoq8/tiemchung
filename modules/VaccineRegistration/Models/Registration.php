@@ -125,7 +125,7 @@ class Registration extends Model
     public function vaccines()
     {
         return $this->belongsToMany(Vaccine::class, 'registration_vaccines')
-            ->withPivot(['id', 'quantity', 'stock_committed_quantity', 'price', 'sale_price', 'inventory_lot_id'])
+            ->withPivot(['id', 'quantity', 'stock_committed_quantity', 'price', 'sale_price', 'inventory_lot_id', 'regimen_id'])
             ->withTimestamps();
     }
 

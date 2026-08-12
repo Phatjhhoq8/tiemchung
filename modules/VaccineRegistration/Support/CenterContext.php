@@ -80,7 +80,7 @@ class CenterContext
         }
 
         $vaccineIds = array_map('intval', array_keys($cart));
-        $vaccines = Vaccine::whereIn('id', $vaccineIds)->get()->keyBy('id');
+        $vaccines = Vaccine::with('regimens')->whereIn('id', $vaccineIds)->get()->keyBy('id');
         $centerVaccines = CenterVaccine::where('center_id', $centerId)
             ->whereIn('vaccine_id', $vaccineIds)
             ->where('is_active', true)
@@ -115,6 +115,7 @@ class CenterContext
                 'quantity' => $quantity,
                 'disease_prevention' => $vaccine?->disease_prevention ?? ($item['disease_prevention'] ?? ''),
                 'unavailable_for_center' => $isUnavailable,
+                'regimens' => $vaccine?->regimens ?? collect(),
             ];
         }
 
