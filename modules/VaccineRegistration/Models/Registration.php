@@ -249,6 +249,7 @@ class Registration extends Model
         ]);
 
         $this->status = 'completed';
+        $this->booking_status = 'completed';
         $this->save();
 
         return $dose;

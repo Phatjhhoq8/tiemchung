@@ -191,10 +191,6 @@
                                         $doseRecord = $registration->administeredDoses->where('vaccine_id', $vaccine->id)->first();
                                         $availableLots = \Modules\VaccineRegistration\Models\InventoryLot::where('vaccine_id', $vaccine->id)
                                             ->where('center_id', $registration->center_id)
-                                            ->where('status', 'active')
-                                            ->where('expires_at', '>=', today())
-                                            ->where('available_quantity', '>', 0)
-                                            ->get();
                                     @endphp
                                     
                                     <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#fff; border-radius:8px; border:1px solid #e2e8f0; flex-wrap:wrap; gap:16px;">
@@ -205,7 +201,7 @@
                                             </div>
                                             @if($isVaccinated)
                                                 <div style="margin-top:5px; color:#15803d; font-size:12px; font-weight:700;">
-                                                    ✓ Đã tiêm lúc {{ $doseRecord->administered_at?->format('d/m/Y H:i') }} - Lô: {{ $doseRecord->inventoryLot?->lot_number }}
+                                                    ✓ Đã tiêm lúc {{ $doseRecord->administered_at?->format('d/m/Y H:i') }}@if($doseRecord->inventoryLot?->lot_number) - Lô: {{ $doseRecord->inventoryLot->lot_number }}@endif
                                                 </div>
                                             @endif
                                         </div>
@@ -216,24 +212,11 @@
                                                 <input type="hidden" name="vaccine_id" value="{{ $vaccine->id }}">
                                                 
                                                 <div>
-                                                    <label class="form-label-modern" style="font-size:11px; margin-bottom:2px;" for="lot_{{ $vaccine->id }}">Lô vắc xin còn hàng</label>
-                                                    <select id="lot_{{ $vaccine->id }}" name="inventory_lot_id" class="form-control-modern" style="height:36px; padding:4px 8px; font-size:12px; min-width:165px;" required>
-                                                        <option value="">-- Chọn lô --</option>
-                                                        @foreach($availableLots as $lot)
-                                                            <option value="{{ $lot->id }}">{{ $lot->lot_number }} (còn {{ $lot->available_quantity }} liều - Hạn: {{ $lot->expires_at->format('d/m/Y') }})</option>
-                                                        @endforeach
-                                                    </select>
-                                                    @if($availableLots->isEmpty())
-                                                        <small style="display:block; color:#dc2626; font-size:11px; margin-top:2px;">Hết lô vắc xin khả dụng.</small>
-                                                    @endif
-                                                </div>
-                                                
-                                                <div>
                                                     <label class="form-label-modern" style="font-size:11px; margin-bottom:2px;" for="obs_{{ $vaccine->id }}">Theo dõi (phút)</label>
                                                     <input class="form-control-modern" id="obs_{{ $vaccine->id }}" type="number" name="observation_minutes" value="30" style="height:36px; width:70px; padding:4px; font-size:12px; text-align:center;">
                                                 </div>
                                                 
-                                                <button type="submit" class="btn-modern btn-modern-primary" style="height:36px; line-height:36px; padding:0 12px; font-size:12px; background:var(--primary-color);" {{ $availableLots->isEmpty() ? 'disabled' : '' }}>
+                                                <button type="submit" class="btn-modern btn-modern-primary" style="height:36px; line-height:36px; padding:0 12px; font-size:12px; background:var(--primary-color);">
                                                     Xác nhận tiêm
                                                 </button>
                                             </form>

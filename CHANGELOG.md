@@ -14,6 +14,12 @@
   - Translated technical action keys (such as `admin_user.created`, `auth.password_changed`, and `publish_settings`) into friendly, localized Vietnamese labels for non-technical users.
   - Custom branded error pages (4xx & 5xx) to match the brand identity using Medicare Red (`#c8102e`) and Medicare Navy (`#004b8f`) as primary/hover states and Medicare Gold (`#eaaa00`) as focus outline.
   - Adjusted alert toast background colors in `app-dialog.blade.php` to use fresh, vibrant palettes (Success `#10b981`, Error `#ef4444`, Info `#3b82f6`).
+* **Timezone Synchronization, Multi-Patient Checkout, & Lot Selection Removal (`app.php`, `app.blade.php`, `success.blade.php`, `Registration.php`, `VaccinationWorkflowController.php`, `show.blade.php`)**:
+  - Shifted application default timezone in `app.php` to `'Asia/Ho_Chi_Minh'` to resolve day-mismatch between server UTC and Vietnam local time (preventing customers from booking on past dates).
+  - Removed "Dịch Vụ" menu link from layout header navigation in `app.blade.php` to fit custom business requirements.
+  - Refactored `success.blade.php` to render all registered patients tickets (codes, details, and totals) in a multi-patient reservation flow instead of showing only the first person.
+  - Modified the clinical workflow to make `inventory_lot_id` nullable (in `VaccinationWorkflowController.php` and `show.blade.php`), removing the select-lot constraint while keeping database constraints intact.
+  - Synchronized `booking_status` to `completed` in `Registration.php` when a vaccine dose is successfully administered, updating the admin details page status immediately.
 
 ## [v6.5.31] - 2026-08-13
 

@@ -158,7 +158,7 @@ class VaccinationWorkflowController extends Controller
 
         $validated = $request->validate([
             'vaccine_id' => 'required|integer|exists:vaccines,id',
-            'inventory_lot_id' => 'required|integer|exists:inventory_lots,id',
+            'inventory_lot_id' => 'nullable|integer|exists:inventory_lots,id',
             'observation_minutes' => 'nullable|integer|min:1',
             'observation_notes' => 'nullable|string',
         ]);
@@ -174,57 +174,62 @@ class VaccinationWorkflowController extends Controller
 
         try {
             $dose = DB::transaction(function () use ($registration, $validated, $oldRegistrationStatus) {
-                // Lock lô vắc xin
-                $lot = InventoryLot::lockForUpdate()->findOrFail($validated['inventory_lot_id']);
+                $lotId = $validated['inventory_lot_id'] ?? null;
+                $lot = null;
 
-                // Kiểm tra các ràng buộc bảo mật y tế của lô vắc xin
-                if ((int) $lot->vaccine_id !== (int) $validated['vaccine_id']) {
-                    throw ValidationException::withMessages([
-                        'inventory_lot_id' => 'Lô vắc xin này không thuộc loại vắc xin đã chọn.',
+                if ($lotId) {
+                    // Lock lô vắc xin
+                    $lot = InventoryLot::lockForUpdate()->findOrFail($lotId);
+
+                    // Kiểm tra các ràng buộc bảo mật y tế của lô vắc xin
+                    if ((int) $lot->vaccine_id !== (int) $validated['vaccine_id']) {
+                        throw ValidationException::withMessages([
+                            'inventory_lot_id' => 'Lô vắc xin này không thuộc loại vắc xin đã chọn.',
+                        ]);
+                    }
+
+                    if ((int) $lot->center_id !== (int) $registration->center_id) {
+                        throw ValidationException::withMessages([
+                            'inventory_lot_id' => 'Lô vắc xin không thuộc chi nhánh của lịch hẹn.',
+                        ]);
+                    }
+
+                    if ($lot->status !== 'active') {
+                        throw ValidationException::withMessages([
+                            'inventory_lot_id' => 'Lô vắc xin hiện đang có trạng thái không khả dụng (thu hồi hoặc cách ly).',
+                        ]);
+                    }
+
+                    if ($lot->expires_at->isBefore(today())) {
+                        throw ValidationException::withMessages([
+                            'inventory_lot_id' => 'Lô vắc xin này đã hết hạn sử dụng.',
+                        ]);
+                    }
+
+                    if ($lot->available_quantity <= 0) {
+                        throw ValidationException::withMessages([
+                            'inventory_lot_id' => 'Lô vắc xin đã hết số lượng khả dụng.',
+                        ]);
+                    }
+
+                    // Trừ tồn kho
+                    $lot->decrement('available_quantity');
+
+                    // Tạo StockMovement
+                    StockMovement::create([
+                        'inventory_lot_id' => $lot->id,
+                        'user_id' => AdminContext::user()?->id,
+                        'type' => 'export',
+                        'quantity' => 1,
+                        'note' => 'Tiêm chủng cho lịch hẹn '.$registration->registration_code,
                     ]);
                 }
-
-                if ((int) $lot->center_id !== (int) $registration->center_id) {
-                    throw ValidationException::withMessages([
-                        'inventory_lot_id' => 'Lô vắc xin không thuộc chi nhánh của lịch hẹn.',
-                    ]);
-                }
-
-                if ($lot->status !== 'active') {
-                    throw ValidationException::withMessages([
-                        'inventory_lot_id' => 'Lô vắc xin hiện đang có trạng thái không khả dụng (thu hồi hoặc cách ly).',
-                    ]);
-                }
-
-                if ($lot->expires_at->isBefore(today())) {
-                    throw ValidationException::withMessages([
-                        'inventory_lot_id' => 'Lô vắc xin này đã hết hạn sử dụng.',
-                    ]);
-                }
-
-                if ($lot->available_quantity <= 0) {
-                    throw ValidationException::withMessages([
-                        'inventory_lot_id' => 'Lô vắc xin đã hết số lượng khả dụng.',
-                    ]);
-                }
-
-                // Trừ tồn kho
-                $lot->decrement('available_quantity');
-
-                // Tạo StockMovement
-                StockMovement::create([
-                    'inventory_lot_id' => $lot->id,
-                    'user_id' => AdminContext::user()?->id,
-                    'type' => 'export',
-                    'quantity' => 1,
-                    'note' => 'Tiêm chủng cho lịch hẹn '.$registration->registration_code,
-                ]);
 
                 // Ghi nhận liều tiêm
                 $dose = $registration->administer(
                     AdminContext::user()?->id,
                     $validated['vaccine_id'],
-                    $validated['inventory_lot_id'],
+                    $lotId,
                     $validated['observation_minutes'] ?? 30,
                     $validated['observation_notes'] ?? null
                 );
@@ -233,13 +238,13 @@ class VaccinationWorkflowController extends Controller
                     'vaccination.administered',
                     'registration',
                     $registration->id,
-                    ['status' => $oldRegistrationStatus, 'available_quantity' => $lot->available_quantity + 1],
+                    ['status' => $oldRegistrationStatus, 'available_quantity' => $lot ? ($lot->available_quantity + 1) : null],
                     [
                         'status' => $registration->fresh()->status,
                         'administered_dose_id' => $dose->id,
                         'vaccine_id' => (int) $validated['vaccine_id'],
-                        'inventory_lot_id' => $lot->id,
-                        'available_quantity' => $lot->fresh()->available_quantity,
+                        'inventory_lot_id' => $lotId,
+                        'available_quantity' => $lot ? $lot->fresh()->available_quantity : null,
                         'observation_notes' => $validated['observation_notes'] ?? null,
                     ],
                     $registration->center_id
