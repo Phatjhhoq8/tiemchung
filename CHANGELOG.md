@@ -2,11 +2,14 @@
 
 ### Production Deployment & PHP Platform Compatibility
 
-* **Banner Custom Background & Autoplay, Client-Side Stock Lock Bypassing (`hero_slider.blade.php`, `AdminBannerController.php`, `_form.blade.php`, `Banner.php`, `BranchStockService.php`, `CenterContext.php`, `grid.blade.php`, `show.blade.php`)**:
+* **Banner Custom Background & Autoplay, Client-Side Stock Lock Bypassing (`hero_slider.blade.php`, `AdminBannerController.php`, `_form.blade.php`, `Banner.php`, `BranchStockService.php`, `CenterContext.php`, `grid.blade.php`, `show.blade.php`, `VaccineController.php`, `create.blade.php`)**:
   - Implemented dynamic vanilla JavaScript autoplay logic inside `hero_slider.blade.php` to slide automatically every 5s, supporting controls and indicators.
   - Added new `background_url` column to `banners` table via migration, enabling Admin to upload full-width background images instead of default red gradient background.
-  - Lifted "Out of Stock" (Hết hàng) block constraints from frontend catalog lists and vaccine detail templates, keeping all buttons active and using standard fallback prices.
-  - Re-configured `BranchStockService.php` to bypass stock blocking during ticket reservation, allowing stock quantity to drop into negatives for administrative tracking.
+  - Lifted "Out of Stock" (Hết hàng) block constraints from frontend catalog lists, vaccine detail templates, and admin creation view checkbox, keeping all buttons active.
+  - Re-configured `BranchStockService.php` and `VaccineController.php` to bypass stock blocking during shopping cart additions and ticket reservations.
+  - Deleted Vite local hot reloading `public/hot` configuration from production FTP host to force loading production build files.
+  - Deployed Vite compiled files to both public and root assets folder on FTP to resolve shared hosting assets loading paths mismatch.
+  - Executed a temporary database reset script to truncate all bookings, patients, and customers tables while resetting all branches stock quantity back to 100.
 
 * **Deployment Automation Scripts (`deploy_all_v2.ps1`, `upload_untar.ps1`)**:
   - Developed a robust deployment script `deploy_all_v2.ps1` to upload the entire codebase while filtering out VCS and build garbage (e.g. `.git`, `.agents`, `node_modules`).
