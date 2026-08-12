@@ -81,6 +81,7 @@
             <label for="center_id" class="form-label-modern">Chi nhánh áp dụng giá/tồn kho <span style="color: #ef4444;">*</span></label>
             <select name="center_id" id="center_id" required class="form-control-modern no-custom-select">
                 <option value="">-- Chọn chi nhánh --</option>
+                <option value="all" {{ (string) old('center_id', $selectedCenterId ?? null) === 'all' ? 'selected' : '' }}>-- Áp dụng cho tất cả chi nhánh --</option>
                 @foreach($centers as $center)
                     <option value="{{ $center->id }}" {{ (string) old('center_id', $selectedCenterId ?? null) === (string) $center->id ? 'selected' : '' }}>{{ $center->name }} - {{ $center->phone }}</option>
                 @endforeach
@@ -183,7 +184,7 @@
 <div class="card-modern" style="margin-bottom: 24px; padding: 24px;">
     <h3 style="font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 20px 0; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px;">
         <i data-lucide="dollar-sign" style="width: 18px; height: 18px; color: var(--accent-color);"></i>
-        Giá cả & Phác đồ
+        Giá cả & Tồn kho
     </h3>
     <div style="display: flex; flex-direction: column; gap: 16px;">
         <div class="form-grid-3">
@@ -210,12 +211,9 @@
             </div>
         </div>
 
-        <div class="form-grid-3">
-            <!-- Số mũi tiêm -->
-            <div class="form-group-modern" style="margin-bottom: 0;">
-                <label for="doses" class="form-label-modern">Số mũi tiêm theo phác đồ <span style="color: #ef4444;">*</span></label>
-                <input type="number" name="doses" id="doses" value="{{ old('doses', $vaccine->doses ?: 1) }}" required min="1" class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
-            </div>
+        <div class="form-grid-2">
+            <!-- Số mũi tiêm (Ẩn đi, tự động tính từ phác đồ con) -->
+            <input type="hidden" name="doses" id="doses" value="{{ old('doses', $vaccine->doses ?: 1) }}">
 
             <!-- Số lượng tồn kho -->
             <div class="form-group-modern" style="margin-bottom: 0;">
@@ -312,8 +310,9 @@
                 @endif
             </div>
         </div>
+        <input type="hidden" name="detailed_schedule" id="detailed_schedule" value="{{ old('detailed_schedule', $vaccine->detailed_schedule) }}">
+
         @foreach([
-            'detailed_schedule' => 'Phác đồ / lịch tiêm chi tiết',
             'contraindications' => 'Chống chỉ định',
             'adverse_effects' => 'Phản ứng bất lợi',
             'warnings' => 'Cảnh báo và thận trọng',
@@ -329,6 +328,134 @@
         </div>
     </div>
 </div>
+
+{{-- ===== PHÁC ĐỒ TIÊM CHỦNG THEO ĐỘ TUỔI ===== --}}
+<div class="card-modern" style="margin-bottom: 24px; padding: 24px;">
+    <h3 style="font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 20px 0; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="list-todo" style="width: 18px; height: 18px; color: var(--accent-color);"></i>
+        Phác đồ tiêm chủng theo độ tuổi (Có thể cấu hình giá riêng cho từng phác đồ)
+    </h3>
+    
+    <div class="table-responsive-modern" style="margin-bottom: 16px;">
+        <table class="table-modern" id="regimens-table">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Độ tuổi (Ví dụ: Trẻ từ 9 - 14 tuổi) <span style="color: #ef4444;">*</span></th>
+                    <th style="width: 10%; text-align: center;">Số mũi tiêm <span style="color: #ef4444;">*</span></th>
+                    <th style="width: 15%; text-align: center;">Giá gốc riêng (VND)</th>
+                    <th style="width: 15%; text-align: center;">Giá ưu đãi riêng (VND)</th>
+                    <th style="width: 25%;">Mô tả phác đồ (Ví dụ: Mũi 1 và Mũi 2 cách nhau 6 tháng)</th>
+                    <th style="width: 10%; text-align: center;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="regimens-tbody">
+                @php
+                    $regimens = old('regimens', $vaccine->exists ? $vaccine->regimens : collect());
+                @endphp
+                @forelse($regimens as $index => $regimen)
+                    @php
+                        $regimenId = is_array($regimen) ? ($regimen['id'] ?? null) : $regimen->id;
+                        $ageGroup = is_array($regimen) ? $regimen['age_group'] : $regimen->age_group;
+                        $dosesVal = is_array($regimen) ? $regimen['doses'] : $regimen->doses;
+                        $priceVal = is_array($regimen) ? ($regimen['price'] ?? null) : $regimen->price;
+                        $salePriceVal = is_array($regimen) ? ($regimen['sale_price'] ?? null) : $regimen->sale_price;
+                        $desc = is_array($regimen) ? ($regimen['schedule_description'] ?? '') : $regimen->schedule_description;
+                    @endphp
+                    <tr data-index="{{ $index }}">
+                        <td>
+                            @if($regimenId)
+                                <input type="hidden" name="regimens[{{ $index }}][id]" value="{{ $regimenId }}">
+                            @endif
+                            <input type="text" name="regimens[{{ $index }}][age_group]" value="{{ $ageGroup }}" required class="form-control-modern" placeholder="VD: Trẻ em từ 9-14 tuổi" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="number" name="regimens[{{ $index }}][doses]" value="{{ $dosesVal }}" required min="1" class="form-control-modern" style="text-align: center;" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
+                        </td>
+                        <td>
+                            <input type="number" name="regimens[{{ $index }}][price]" value="{{ $priceVal }}" min="0" class="form-control-modern" placeholder="Mặc định" style="text-align: right;" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
+                        </td>
+                        <td>
+                            <input type="number" name="regimens[{{ $index }}][sale_price]" value="{{ $salePriceVal }}" min="0" class="form-control-modern" placeholder="Mặc định" style="text-align: right;" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
+                        </td>
+                        <td>
+                            <input type="text" name="regimens[{{ $index }}][schedule_description]" value="{{ $desc }}" class="form-control-modern" placeholder="VD: Cách nhau 6 tháng" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
+                        </td>
+                        <td style="text-align: center;">
+                            @if($isSuperAdmin ?? false)
+                                <button type="button" class="btn-action-sm btn-action-danger" onclick="removeRegimenRow(this)" style="background:#fee2e2; color:#b91c1c; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">Xóa</button>
+                            @else
+                                <span style="color:var(--text-light); font-size:12px;">N/A</span>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    @if(!($isSuperAdmin ?? false))
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted);">Không có phác đồ tiêm chủng nào được định nghĩa.</td>
+                        </tr>
+                    @endif
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    @if($isSuperAdmin ?? false)
+        <div style="text-align: left;">
+            <button type="button" class="btn-modern" id="add-regimen-btn" style="background:#f4f8fa; border:1px dashed var(--accent-color); color:var(--accent-color); font-weight:700; padding:8px 16px; border-radius:6px; cursor:pointer;">
+                <i data-lucide="plus-circle" style="width:16px; height:16px; display:inline-block; vertical-align:middle; margin-right:4px;"></i> Thêm phác đồ mới
+            </button>
+        </div>
+    @endif
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const addBtn = document.getElementById('add-regimen-btn');
+    const tbody = document.getElementById('regimens-tbody');
+    if (!addBtn || !tbody) return;
+
+    let rowIndex = tbody.querySelectorAll('tr[data-index]').length;
+
+    addBtn.addEventListener('click', () => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-index', rowIndex);
+        tr.innerHTML = `
+            <td>
+                <input type="text" name="regimens[${rowIndex}][age_group]" required class="form-control-modern" placeholder="VD: Trẻ em từ 9-14 tuổi">
+            </td>
+            <td style="text-align: center;">
+                <input type="number" name="regimens[${rowIndex}][doses]" value="1" required min="1" class="form-control-modern" style="text-align: center;">
+            </td>
+            <td>
+                <input type="number" name="regimens[${rowIndex}][price]" min="0" class="form-control-modern" placeholder="Mặc định" style="text-align: right;">
+            </td>
+            <td>
+                <input type="number" name="regimens[${rowIndex}][sale_price]" min="0" class="form-control-modern" placeholder="Mặc định" style="text-align: right;">
+            </td>
+            <td>
+                <input type="text" name="regimens[${rowIndex}][schedule_description]" class="form-control-modern" placeholder="VD: Cách nhau 6 tháng">
+            </td>
+            <td style="text-align: center;">
+                <button type="button" class="btn-action-sm btn-action-danger" onclick="removeRegimenRow(this)" style="background:#fee2e2; color:#b91c1c; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">Xóa</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+        
+        // Re-init lucide icons if applicable
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        rowIndex++;
+    });
+});
+
+function removeRegimenRow(btn) {
+    const tr = btn.closest('tr');
+    if (tr) {
+        tr.remove();
+    }
+}
+</script>
 
 {{-- ===== HÌNH ẢNH & HIỂN THỊ ===== --}}
 <div class="card-modern" style="margin-bottom: 24px; padding: 24px;">

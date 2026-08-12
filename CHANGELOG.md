@@ -2,11 +2,22 @@
 
 ### Production Deployment & PHP Platform Compatibility
 
-* **Banner Custom Background & Autoplay, Client-Side Stock Lock Bypassing (`hero_slider.blade.php`, `AdminBannerController.php`, `_form.blade.php`, `Banner.php`, `BranchStockService.php`, `CenterContext.php`, `grid.blade.php`, `show.blade.php`, `VaccineController.php`, `create.blade.php`)**:
+* **Vaccine Regimens Price & All-Branch Option (`AdminVaccineController.php`, `_form.blade.php`, `show.blade.php`, `VaccineRegimen.php`)**:
+  - Added new `price` and `sale_price` columns to `vaccine_regimens` table via migration, allowing each age-group regimen to specify its own pricing.
+  - Added "Áp dụng cho tất cả chi nhánh" (All branches) option inside the branch price/stock dropdown selector in the vaccine admin form.
+  - Programmed automated creation and synchronization of vaccine price/stock records for all active branches in `AdminVaccineController.php` when the "All branches" option is chosen.
+  - Rendered a new "Giá phác đồ" (Regimen price) column inside the vaccine regimens table on the client-facing vaccine details page, automatically multiplying vaccine single-dose price if no regimen-specific price is defined.
+  - Adjusted the deferred rescheduling form layout in the admin registrations detail page to split date and time selection into two responsive grid columns with client-side JavaScript filtering.
+
+* **Banner Custom Background & Autoplay, Client-Side Stock Lock Bypassing (`hero_slider.blade.php`, `AdminBannerController.php`, `_form.blade.php`, `Banner.php`, `BranchStockService.php`, `CenterContext.php`, `grid.blade.php`, `show.blade.php`, `VaccineController.php`, `create.blade.php`, `VaccinationWorkflowController.php`, `AdminRegistrationController.php`, `web.php`)**:
   - Implemented dynamic vanilla JavaScript autoplay logic inside `hero_slider.blade.php` to slide automatically every 5s, supporting controls and indicators.
   - Added new `background_url` column to `banners` table via migration, enabling Admin to upload full-width background images instead of default red gradient background.
   - Lifted "Out of Stock" (Hết hàng) block constraints from frontend catalog lists, vaccine detail templates, and admin creation view checkbox, keeping all buttons active.
   - Re-configured `BranchStockService.php` and `VaccineController.php` to bypass stock blocking during shopping cart additions and ticket reservations.
+  - Delayed branch stock quantity decrement from booking creation time to actual vaccine administration completion step (`administer` method).
+  - Programmed automated refund and order cancellation logic in clinical screening when the evaluation status is contraindicated.
+  - Added a rescheduling form inside the clinical screening step for deferred patients to select a new date and time slot, resetting their screening status.
+  - Fixed registration details layout CSS spacing between the payment status card and clinical workflow section.
   - Deleted Vite local hot reloading `public/hot` configuration from production FTP host to force loading production build files.
   - Deployed Vite compiled files to both public and root assets folder on FTP to resolve shared hosting assets loading paths mismatch.
   - Executed a temporary database reset script to truncate all bookings, patients, and customers tables while resetting all branches stock quantity back to 100.

@@ -48,16 +48,8 @@ class BranchStockService
             }
         }
 
-        foreach ($demand as $vaccineId => $quantity) {
-            $row = $rows->get($vaccineId);
-            if ($row) {
-                $remaining = $row->stock_quantity - $quantity;
-                $row->update([
-                    'stock_quantity' => $remaining,
-                    'stock_status' => self::statusFor($remaining),
-                ]);
-            }
-        }
+        // Do not decrement stock during booking commit anymore.
+        // Tồn kho chỉ được trừ khi hoàn tất tiêm chủng thực tế.
 
         return $rows;
     }
@@ -65,39 +57,13 @@ class BranchStockService
     /** Restore only quantities committed by this booking implementation, once. */
     public function restore(Registration $registration): void
     {
-        $items = DB::table('registration_vaccines')
+        // Do not restore stock since we did not decrement on booking.
+        // Clear the committed quantity trace.
+        DB::table('registration_vaccines')
             ->where('registration_id', $registration->id)
-            ->where('stock_committed_quantity', '>', 0)
-            ->orderBy('vaccine_id')
-            ->lockForUpdate()
-            ->get();
-
-        if ($items->isEmpty()) {
-            return;
-        }
-
-        $rows = CenterVaccine::query()
-            ->where('center_id', $registration->center_id)
-            ->whereIn('vaccine_id', $items->pluck('vaccine_id'))
-            ->orderBy('vaccine_id')
-            ->lockForUpdate()
-            ->get()
-            ->keyBy('vaccine_id');
-
-        foreach ($items as $item) {
-            $row = $rows->get($item->vaccine_id);
-            if ($row) {
-                $quantity = $row->stock_quantity + (int) $item->stock_committed_quantity;
-                $row->update([
-                    'stock_quantity' => $quantity,
-                    'stock_status' => self::statusFor($quantity),
-                ]);
-            }
-
-            DB::table('registration_vaccines')->where('id', $item->id)->update([
+            ->update([
                 'stock_committed_quantity' => 0,
                 'updated_at' => now(),
             ]);
-        }
     }
 }

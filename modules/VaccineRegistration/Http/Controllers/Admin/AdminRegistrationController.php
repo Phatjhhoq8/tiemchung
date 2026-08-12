@@ -52,7 +52,26 @@ class AdminRegistrationController extends Controller
         $pointQuote = $registration->customer ? $paymentService->quote($registration->customer, $registration) : null;
         $loyaltySettings = $paymentService->getLoyaltySettings($registration->center_id);
 
-        return view('vaccine::admin.registrations.show', compact('registration', 'pointQuote', 'loyaltySettings'));
+        // Lấy danh sách khung giờ trống khả dụng để đổi lịch hẹn (nếu cần hoãn lịch)
+        $nowVn = \Carbon\Carbon::now('Asia/Ho_Chi_Minh');
+        $today = $nowVn->toDateString();
+        $availableSlots = Slot::query()
+            ->with('schedule')
+            ->whereHas('schedule', fn ($query) => $query->where('center_id', $registration->center_id)->whereDate('date', '>=', $today))
+            ->where('is_active', true)
+            ->whereColumn('reserved_count', '<', 'capacity')
+            ->orderBy('id')
+            ->get()
+            ->filter(function ($slot) use ($today, $nowVn) {
+                $nowTime = $nowVn->format('H:i');
+                if ($slot->schedule->date->toDateString() === $today) {
+                    return $slot->start_at > $nowTime;
+                }
+                return true;
+            })
+            ->values();
+
+        return view('vaccine::admin.registrations.show', compact('registration', 'pointQuote', 'loyaltySettings', 'availableSlots'));
     }
 
     public function create(Request $request)
@@ -472,6 +491,53 @@ class AdminRegistrationController extends Controller
     private function safeCsvCell(?string $value): string
     {
         return CsvSanitizer::sanitizeCell($value);
+    }
+
+    public function reschedule(Request $request, int $id)
+    {
+        $registration = $this->visibleRegistration($id);
+
+        $validated = $request->validate([
+            'slot_id' => 'required|integer|exists:slots,id',
+        ]);
+
+        $slot = Slot::with('schedule')->findOrFail($validated['slot_id']);
+
+        if (!$slot->is_active || !$slot->schedule || !$slot->schedule->is_active
+            || (int) $slot->schedule->center_id !== (int) $registration->center_id
+            || $slot->reserved_count >= $slot->capacity) {
+            return back()->withErrors(['slot_id' => 'Khung giờ được chọn không hợp lệ hoặc đã hết chỗ.']);
+        }
+
+        DB::transaction(function () use ($registration, $slot) {
+            // Giải phóng slot cũ
+            if ($registration->slot_id) {
+                Slot::where('id', $registration->slot_id)->decrement('reserved_count');
+            }
+
+            // Cập nhật sang slot mới
+            $registration->update([
+                'slot_id' => $slot->id,
+                'injection_date' => $slot->schedule->date->toDateString(),
+                'screening_status' => null,
+                'screening_notes' => null,
+                'status' => 'confirmed',
+                'booking_status' => 'confirmed',
+            ]);
+
+            $slot->increment('reserved_count');
+
+            AuditLogger::log(
+                'registration.rescheduled',
+                'registration',
+                $registration->id,
+                ['slot_id' => $registration->slot_id, 'injection_date' => $registration->injection_date],
+                ['slot_id' => $slot->id, 'injection_date' => $slot->schedule->date->toDateString()],
+                $registration->center_id
+            );
+        });
+
+        return back()->with('success', 'Đã thay đổi lịch hẹn tiêm chủng thành công sang ngày ' . $slot->schedule->date->format('d/m/Y') . ' (' . $slot->start_at . ' - ' . $slot->end_at . ').');
     }
 
     private function newRegistrationCode(): string

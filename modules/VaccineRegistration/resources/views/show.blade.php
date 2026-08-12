@@ -169,11 +169,56 @@
                 </h2>
                 <div class="article-body-content">
                     @if($vaccine->administration_route)
-                        <p style="text-align: justify;"><strong>Đường dùng:</strong> {{ $vaccine->administration_route }}</p>
+                        <p style="text-align: justify; margin-bottom: 16px;"><strong>Đường dùng:</strong> {{ $vaccine->administration_route }}</p>
                     @endif
+
+                    @if($vaccine->regimens && $vaccine->regimens->isNotEmpty())
+                        <div style="margin-bottom: 20px; overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14.5px;">
+                                <thead>
+                                    <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                                        <th style="padding: 12px 16px; font-weight: 700; color: #1e293b; width: 25%;">Độ tuổi áp dụng</th>
+                                        <th style="padding: 12px 16px; font-weight: 700; color: #1e293b; width: 15%; text-align: center;">Số mũi</th>
+                                        <th style="padding: 12px 16px; font-weight: 700; color: #1e293b; width: 25%; text-align: right;">Giá phác đồ (VND)</th>
+                                        <th style="padding: 12px 16px; font-weight: 700; color: #1e293b; width: 35%;">Lịch tiêm chi tiết (Phác đồ)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($vaccine->regimens as $regimen)
+                                        @php
+                                            $regimenPrice = $regimen->price ?: ($vaccine->price * $regimen->doses);
+                                            $regimenSalePrice = $regimen->sale_price ?: ($vaccine->hasSalePrice() ? ($vaccine->sale_price * $regimen->doses) : null);
+                                        @endphp
+                                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                                            <td style="padding: 14px 16px; color: #0f172a; font-weight: 600;">
+                                                <i data-lucide="baby" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-right: 6px; color: var(--accent-color, #004b8f);"></i>
+                                                {{ $regimen->age_group }}
+                                            </td>
+                                            <td style="padding: 14px 16px; text-align: center; color: var(--primary-color, #c8102e); font-weight: 700; font-size: 15px;">
+                                                {{ $regimen->doses }} mũi
+                                            </td>
+                                            <td style="padding: 14px 16px; text-align: right;">
+                                                @if($regimenSalePrice && $regimenSalePrice < $regimenPrice)
+                                                    <div style="font-weight: 700; color: var(--primary-color, #c8102e); font-size: 15px;">{{ number_format($regimenSalePrice, 0, ',', '.') }}đ</div>
+                                                    <div style="font-size: 11.5px; color: #94a3b8; text-decoration: line-through;">{{ number_format($regimenPrice, 0, ',', '.') }}đ</div>
+                                                @else
+                                                    <div style="font-weight: 700; color: #0f172a; font-size: 15px;">{{ number_format($regimenPrice, 0, ',', '.') }}đ</div>
+                                                @endif
+                                            </td>
+                                            <td style="padding: 14px 16px; color: #334155; text-align: justify; line-height: 1.5; white-space: pre-line;">{{ $regimen->schedule_description }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+
                     @if($vaccine->detailed_schedule)
-                        <p style="text-align: justify; white-space: pre-line;">{{ $vaccine->detailed_schedule }}</p>
-                    @else
+                        <div style="background-color: #f8fafc; border-left: 4px solid var(--accent-color, #004b8f); padding: 14px 16px; border-radius: 0 8px 8px 0; margin-top: 16px;">
+                            <h4 style="margin: 0 0 6px 0; font-size: 14.5px; font-weight: 700; color: #1e293b;">Thông tin phác đồ chung:</h4>
+                            <p style="text-align: justify; white-space: pre-line; margin: 0; color: #475569; font-size: 14px; line-height: 1.6;">{{ $vaccine->detailed_schedule }}</p>
+                        </div>
+                    @elseif(!($vaccine->regimens && $vaccine->regimens->isNotEmpty()))
                         <p>Phác đồ chi tiết chưa được cập nhật từ nguồn đã xác minh. Lịch tiêm cần được nhân viên y tế xác nhận theo độ tuổi và lịch sử tiêm chủng.</p>
                     @endif
                 </div>

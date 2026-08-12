@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use App\Services\RegistrationPaymentService;
 use Modules\VaccineRegistration\Models\InventoryLot;
 use Modules\VaccineRegistration\Models\Registration;
 use Modules\VaccineRegistration\Models\StockMovement;
@@ -67,7 +68,7 @@ class VaccinationWorkflowController extends Controller
      * Step 2: Clinical Screening.
      * Records screening_status ('eligible', 'deferred', 'contraindicated') and notes.
      */
-    public function screening(Request $request, $id)
+    public function screening(Request $request, $id, RegistrationPaymentService $paymentService)
     {
         $registration = Registration::findOrFail($id);
 
@@ -91,7 +92,20 @@ class VaccinationWorkflowController extends Controller
             'screening_notes' => 'nullable|string',
         ]);
         $oldValues = $registration->only(['screening_status', 'screening_notes']);
-        $registration->screening($validated['screening_status'], $validated['screening_notes'] ?? null);
+        
+        DB::transaction(function () use ($registration, $validated, $paymentService) {
+            $registration->screening($validated['screening_status'], $validated['screening_notes'] ?? null);
+
+            // Nếu chống chỉ định, thực hiện hủy tiêm và hoàn tiền
+            if ($validated['screening_status'] === 'contraindicated') {
+                if ($registration->payment_status === Registration::PAYMENT_PAID) {
+                    $paymentService->refund($registration->id, AdminContext::user());
+                } else {
+                    $paymentService->cancelUnpaid($registration->id, AdminContext::user());
+                }
+            }
+        });
+
         $newValues = $registration->fresh()->only(['screening_status', 'screening_notes']);
         if ($oldValues !== $newValues) {
             AuditLogger::log(
@@ -107,12 +121,18 @@ class VaccinationWorkflowController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Sàng lọc lâm sàng hoàn tất.',
+                'message' => $validated['screening_status'] === 'contraindicated' 
+                    ? 'Bệnh nhân chống chỉ định tiêm chủng. Lịch hẹn đã tự động hủy và hoàn tiền.' 
+                    : 'Sàng lọc lâm sàng hoàn tất.',
                 'data' => $registration->fresh(),
             ]);
         }
 
-        return redirect()->back()->with('success', 'Kết quả khám sàng lọc đã được ghi nhận.');
+        $successMsg = $validated['screening_status'] === 'contraindicated'
+            ? 'Đã ghi nhận kết quả chống chỉ định. Lịch hẹn tự động hủy và hoàn tiền thành công.'
+            : 'Kết quả khám sàng lọc đã được ghi nhận.';
+
+        return redirect()->back()->with('success', $successMsg);
     }
 
     /**
@@ -222,6 +242,17 @@ class VaccinationWorkflowController extends Controller
                         'type' => 'export',
                         'quantity' => 1,
                         'note' => 'Tiêm chủng cho lịch hẹn '.$registration->registration_code,
+                    ]);
+                }
+
+                // Trừ tồn kho tổng của chi nhánh trong bảng center_vaccines khi hoàn tất tiêm chủng thực tế
+                $centerVaccine = \Modules\VaccineRegistration\Models\CenterVaccine::where('center_id', $registration->center_id)
+                    ->where('vaccine_id', $validated['vaccine_id'])
+                    ->first();
+                if ($centerVaccine) {
+                    $centerVaccine->decrement('stock_quantity');
+                    $centerVaccine->update([
+                        'stock_status' => \App\Services\BranchStockService::statusFor($centerVaccine->stock_quantity)
                     ]);
                 }
 

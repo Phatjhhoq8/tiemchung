@@ -85,14 +85,16 @@
                 <button type="submit" class="btn-modern btn-modern-primary">Xác nhận thanh toán</button>
             </form>
         @elseif($registration->payment_status === \Modules\VaccineRegistration\Models\Registration::PAYMENT_PAID)
-            <form action="{{ route('admin.registrations.refund', $registration) }}" method="POST" data-confirm="Hoàn tiền toàn bộ đơn này? Điểm sẽ được hoàn lại.">
+            <form action="{{ route('admin.registrations.refund', $registration) }}" method="POST" data-confirm="Hoàn tiền toàn bộ đơn này? Điểm sẽ được hoàn lại." style="margin-top: 16px;">
                 @csrf
                 <button type="submit" class="btn-modern btn-modern-secondary">Hoàn tiền toàn bộ</button>
             </form>
         @endif
+    </div>
+
     @if($registration->booking_status !== \Modules\VaccineRegistration\Models\Registration::BOOKING_CANCELLED)
         @if($registration->payment_status !== \Modules\VaccineRegistration\Models\Registration::PAYMENT_PAID)
-            <div class="card-modern" style="border-left: 4px solid var(--primary-color);">
+            <div class="card-modern" style="border-left: 4px solid var(--primary-color); margin-top: 12px;">
                 <h3 style="margin-top:0; color:var(--primary-color);">Quy trình y tế lâm sàng (Tiếp đón & Tiêm chủng)</h3>
                 <div style="background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; padding:16px; border-radius:8px; display:flex; align-items:center; gap:12px; font-weight:700; font-size:13.5px; text-align:justify;">
                     <i data-lucide="alert-triangle" style="width:20px; height:20px; flex-shrink:0; color:#dc2626;"></i>
@@ -100,7 +102,7 @@
                 </div>
             </div>
         @else
-            <div class="card-modern" style="border-left: 4px solid var(--accent-color);">
+            <div class="card-modern" style="border-left: 4px solid var(--accent-color); margin-top: 12px;">
                 <h3 style="margin-top:0; color:var(--accent-color);">Quy trình y tế lâm sàng (Tiếp đón & Tiêm chủng)</h3>
                 
                 <!-- BƯỚC 1: TIẾP ĐÓN (CHECK-IN) -->
@@ -172,6 +174,74 @@
                                     <button type="submit" class="btn-modern" style="background:#eaaa00; color:#0f172a; font-weight:700; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Lưu kết quả khám</button>
                                 </div>
                             </form>
+                        @endif
+
+                        @if($registration->screening_status === 'deferred' && $registration->status !== 'completed')
+                            <div style="margin-top:16px; padding:16px; background:#fffdf5; border:1px solid #fef3c7; border-radius:8px;">
+                                <h5 style="margin:0 0 10px; color:#b45309; font-weight:700; font-size:13.5px;">Đổi lịch hẹn tiêm chủng (Bệnh nhân bị tạm hoãn)</h5>
+                                <form action="{{ route('admin.registrations.reschedule', $registration->id) }}" method="POST" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; align-items:end; margin:0;">
+                                    @csrf
+                                    <div>
+                                        <label class="form-label-modern" for="reschedule_date" style="color:#92400e; font-weight: 700;">1. Chọn ngày hẹn mới</label>
+                                        <select id="reschedule_date" class="form-control-modern" required style="border-color:#fcd34d;">
+                                            <option value="">-- Chọn ngày tiêm --</option>
+                                            @foreach($availableSlots->groupBy(fn($s) => $s->schedule->date->toDateString()) as $dateString => $slots)
+                                                @php
+                                                    $formattedDate = \Carbon\Carbon::parse($dateString)->format('d/m/Y');
+                                                @endphp
+                                                <option value="{{ $dateString }}">{{ $formattedDate }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label-modern" for="reschedule_slot_id" style="color:#92400e; font-weight: 700;">2. Chọn khung giờ mới</label>
+                                        <select id="reschedule_slot_id" name="slot_id" class="form-control-modern" required style="border-color:#fcd34d;">
+                                            <option value="">-- Vui lòng chọn ngày trước --</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <button type="submit" class="btn-modern" style="background:#d97706; color:#fff; font-weight:700; border:none; padding:0 20px; border-radius:6px; cursor:pointer; height:42px; width: 100%;">
+                                            Xác nhận đổi lịch
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <script>
+                            document.addEventListener('DOMContentLoaded', () => {
+                                const dateSelect = document.getElementById('reschedule_date');
+                                const slotSelect = document.getElementById('reschedule_slot_id');
+                                if (!dateSelect || !slotSelect) return;
+
+                                const rescheduleSlotsMap = @json($availableSlots->groupBy(function($slot) {
+                                    return $slot->schedule->date->toDateString();
+                                })->map(function($slots) {
+                                    return $slots->map(function($slot) {
+                                        return [
+                                            'id' => $slot->id,
+                                            'time_label' => $slot->start_at . ' - ' . $slot->end_at,
+                                            'remaining' => $slot->capacity - $slot->reserved_count
+                                        ];
+                                    });
+                                }));
+
+                                dateSelect.addEventListener('change', function() {
+                                    const selectedDate = this.value;
+                                    slotSelect.innerHTML = '<option value="">-- Chọn khung giờ mới --</option>';
+                                    
+                                    if (selectedDate && rescheduleSlotsMap[selectedDate]) {
+                                        rescheduleSlotsMap[selectedDate].forEach(slot => {
+                                            const option = document.createElement('option');
+                                            option.value = slot.id;
+                                            option.textContent = `${slot.time_label} (Còn ${slot.remaining} chỗ)`;
+                                            slotSelect.appendChild(option);
+                                        });
+                                    } else {
+                                        slotSelect.innerHTML = '<option value="">-- Vui lòng chọn ngày trước --</option>';
+                                    }
+                                });
+                            });
+                            </script>
                         @endif
                     </div>
 

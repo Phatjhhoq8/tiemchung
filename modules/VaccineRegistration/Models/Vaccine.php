@@ -67,6 +67,11 @@ class Vaccine extends Model
         return $query->where('is_active', true);
     }
 
+    public function regimens()
+    {
+        return $this->hasMany(VaccineRegimen::class, 'vaccine_id')->orderBy('sort_order')->orderBy('id');
+    }
+
     /**
      * Kiểm tra có đang giảm giá không
      */

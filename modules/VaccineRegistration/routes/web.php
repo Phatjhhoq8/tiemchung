@@ -149,6 +149,7 @@ Route::middleware('web')->group(function () {
         Route::patch('/registrations/{id}/status', [AdminRegistrationController::class, 'updateStatus'])->name('registrations.status');
         Route::post('/registrations/{id}/settle', [AdminRegistrationController::class, 'settle'])->name('registrations.settle');
         Route::post('/registrations/{id}/refund', [AdminRegistrationController::class, 'refund'])->name('registrations.refund');
+        Route::post('/registrations/{id}/reschedule', [AdminRegistrationController::class, 'reschedule'])->name('registrations.reschedule');
 
         // Quy trình tiêm chủng lâm sàng (3 bước)
         Route::post('/registrations/{id}/check-in', [VaccinationWorkflowController::class, 'checkIn'])->name('registrations.check-in');

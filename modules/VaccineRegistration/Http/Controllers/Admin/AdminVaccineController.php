@@ -16,6 +16,7 @@ use Illuminate\Validation\ValidationException;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
 use Modules\VaccineRegistration\Models\Vaccine;
+use Modules\VaccineRegistration\Models\VaccineRegimen;
 use Modules\VaccineRegistration\Support\AdminContext;
 
 class AdminVaccineController extends Controller
@@ -211,6 +212,16 @@ class AdminVaccineController extends Controller
 
         $validated = $this->validateVaccine($request);
 
+        $maxDoses = 1;
+        if ($request->has('regimens')) {
+            foreach ($request->input('regimens') as $regimenData) {
+                if (!empty($regimenData['doses']) && (int) $regimenData['doses'] > $maxDoses) {
+                    $maxDoses = (int) $regimenData['doses'];
+                }
+            }
+        }
+        $validated['doses'] = $maxDoses;
+
         // Xử lý tải lên hình ảnh từ file
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
@@ -227,11 +238,29 @@ class AdminVaccineController extends Controller
         // Xử lý checkbox is_featured
         $validated['is_featured'] = $request->boolean('is_featured');
 
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) $validated['center_id']);
+        $isAllCenters = $validated['center_id'] === 'all';
+        $selectedCenterId = null;
+        if (!$isAllCenters) {
+            $selectedCenterId = (int) AdminContext::selectedCenterId((int) $validated['center_id']);
+        }
         unset($validated['center_id']);
 
         $vaccine = Vaccine::create($validated);
-        Center::active()->each(function (Center $center) use ($vaccine, $validated, $selectedCenterId) {
+
+        if ($request->has('regimens')) {
+            foreach ($request->input('regimens') as $index => $regimenData) {
+                $vaccine->regimens()->create([
+                    'age_group' => $regimenData['age_group'],
+                    'doses' => (int) $regimenData['doses'],
+                    'price' => !empty($regimenData['price']) ? (int) $regimenData['price'] : null,
+                    'sale_price' => !empty($regimenData['sale_price']) ? (int) $regimenData['sale_price'] : null,
+                    'schedule_description' => $regimenData['schedule_description'] ?? null,
+                    'sort_order' => $index,
+                ]);
+            }
+        }
+
+        Center::active()->each(function (Center $center) use ($vaccine, $validated, $selectedCenterId, $isAllCenters) {
             $qty = (int) ($validated['stock_quantity'] ?? 0);
             $stockStatus = 'available';
             if ($qty === 0) {
@@ -247,12 +276,21 @@ class AdminVaccineController extends Controller
                     'sale_price' => $validated['sale_price'] ?? null,
                     'stock_quantity' => $qty,
                     'stock_status' => $stockStatus,
-                    'is_active' => $center->id === $selectedCenterId,
+                    'is_active' => $isAllCenters ? true : ($center->id === $selectedCenterId),
                     'is_featured' => (bool) $validated['is_featured'],
                 ]
             );
         });
-        $this->syncCenterVaccine($vaccine, $selectedCenterId, $validated);
+
+        if ($isAllCenters) {
+            Center::active()->each(function(Center $center) use ($vaccine, $validated) {
+                $this->syncCenterVaccine($vaccine, $center->id, $validated);
+            });
+            $selectedCenterId = Center::active()->orderBy('sort_order')->orderBy('id')->first()?->id;
+        } else {
+            $this->syncCenterVaccine($vaccine, $selectedCenterId, $validated);
+        }
+
         AuditLogger::log(
             'vaccine.created',
             'vaccine',
@@ -356,10 +394,26 @@ class AdminVaccineController extends Controller
         }
 
         $validated = $this->validateVaccine($request);
-        $selectedCenterId = (int) AdminContext::selectedCenterId((int) $validated['center_id']);
-        AdminContext::assertCanManageCenter($selectedCenterId);
+
+        $maxDoses = 1;
+        if ($request->has('regimens')) {
+            foreach ($request->input('regimens') as $regimenData) {
+                if (!empty($regimenData['doses']) && (int) $regimenData['doses'] > $maxDoses) {
+                    $maxDoses = (int) $regimenData['doses'];
+                }
+            }
+        }
+        $validated['doses'] = $maxDoses;
+
+        $isAllCenters = $validated['center_id'] === 'all';
+        $selectedCenterId = null;
+        if (!$isAllCenters) {
+            $selectedCenterId = (int) AdminContext::selectedCenterId((int) $validated['center_id']);
+            AdminContext::assertCanManageCenter($selectedCenterId);
+        }
         unset($validated['center_id']);
-        $oldCenterVaccine = CenterVaccine::where('center_id', $selectedCenterId)->where('vaccine_id', $vaccine->id)->first();
+
+        $oldCenterVaccine = !$isAllCenters ? CenterVaccine::where('center_id', $selectedCenterId)->where('vaccine_id', $vaccine->id)->first() : null;
         $oldAuditValues = [
             'name' => $vaccine->name,
             'origin' => $vaccine->origin,
@@ -400,12 +454,53 @@ class AdminVaccineController extends Controller
             unset($masterData['stock_quantity'], $masterData['center_is_active']);
             $vaccine->update($masterData);
 
+            // Cập nhật các phác đồ tiêm chủng theo độ tuổi
+            $regimensInput = $request->input('regimens', []);
+            $keepRegimenIds = [];
+            foreach ($regimensInput as $index => $regimenData) {
+                $regimenId = $regimenData['id'] ?? null;
+                if ($regimenId) {
+                    $regimen = $vaccine->regimens()->find($regimenId);
+                    if ($regimen) {
+                        $regimen->update([
+                            'age_group' => $regimenData['age_group'],
+                            'doses' => (int) $regimenData['doses'],
+                            'price' => !empty($regimenData['price']) ? (int) $regimenData['price'] : null,
+                            'sale_price' => !empty($regimenData['sale_price']) ? (int) $regimenData['sale_price'] : null,
+                            'schedule_description' => $regimenData['schedule_description'] ?? null,
+                            'sort_order' => $index,
+                        ]);
+                        $keepRegimenIds[] = $regimen->id;
+                    }
+                } else {
+                    $newRegimen = $vaccine->regimens()->create([
+                        'age_group' => $regimenData['age_group'],
+                        'doses' => (int) $regimenData['doses'],
+                        'price' => !empty($regimenData['price']) ? (int) $regimenData['price'] : null,
+                        'sale_price' => !empty($regimenData['sale_price']) ? (int) $regimenData['sale_price'] : null,
+                        'schedule_description' => $regimenData['schedule_description'] ?? null,
+                        'sort_order' => $index,
+                    ]);
+                    $keepRegimenIds[] = $newRegimen->id;
+                }
+            }
+            $vaccine->regimens()->whereNotIn('id', $keepRegimenIds)->delete();
+
             // Đồng bộ trạng thái nổi bật cho toàn bộ các chi nhánh
             CenterVaccine::where('vaccine_id', $vaccine->id)->update(['is_featured' => (bool) $validated['is_featured']]);
         }
-        $this->syncCenterVaccine($vaccine, $selectedCenterId, $validated);
+
+        if ($isAllCenters) {
+            Center::active()->each(function(Center $center) use ($vaccine, $validated) {
+                $this->syncCenterVaccine($vaccine, $center->id, $validated);
+            });
+            $selectedCenterId = Center::active()->orderBy('sort_order')->orderBy('id')->first()?->id;
+        } else {
+            $this->syncCenterVaccine($vaccine, $selectedCenterId, $validated);
+        }
+
         $freshVaccine = $vaccine->fresh();
-        $freshCenterVaccine = CenterVaccine::where('center_id', $selectedCenterId)->where('vaccine_id', $vaccine->id)->first();
+        $freshCenterVaccine = !$isAllCenters ? CenterVaccine::where('center_id', $selectedCenterId)->where('vaccine_id', $vaccine->id)->first() : null;
         $newAuditValues = [
             'name' => $freshVaccine->name,
             'origin' => $freshVaccine->origin,
@@ -607,6 +702,43 @@ class AdminVaccineController extends Controller
      */
     private function validateVaccine(Request $request): array
     {
+        // Chuẩn hóa các trường số của vắc xin về kiểu int để tránh lỗi octal (ví dụ: '087' bị filter_var coi là false)
+        if ($request->has('price') && $request->input('price') !== null && $request->input('price') !== '') {
+            $request->merge(['price' => (int) $request->input('price')]);
+        }
+        if ($request->has('sale_price') && $request->input('sale_price') !== null && $request->input('sale_price') !== '') {
+            $request->merge(['sale_price' => (int) $request->input('sale_price')]);
+        }
+        if ($request->has('doses') && $request->input('doses') !== null && $request->input('doses') !== '') {
+            $request->merge(['doses' => (int) $request->input('doses')]);
+        }
+        if ($request->has('stock_quantity') && $request->input('stock_quantity') !== null && $request->input('stock_quantity') !== '') {
+            $request->merge(['stock_quantity' => (int) $request->input('stock_quantity')]);
+        }
+        if ($request->has('sort_order') && $request->input('sort_order') !== null && $request->input('sort_order') !== '') {
+            $request->merge(['sort_order' => (int) $request->input('sort_order')]);
+        }
+
+        // Chuẩn hóa các trường số trong mảng regimens
+        if ($request->has('regimens') && is_array($request->input('regimens'))) {
+            $regimens = $request->input('regimens');
+            foreach ($regimens as $k => $regimen) {
+                if (isset($regimen['doses']) && $regimen['doses'] !== null && $regimen['doses'] !== '') {
+                    $regimens[$k]['doses'] = (int) $regimen['doses'];
+                }
+                if (isset($regimen['price']) && $regimen['price'] !== null && $regimen['price'] !== '') {
+                    $regimens[$k]['price'] = (int) $regimen['price'];
+                } else {
+                    $regimens[$k]['price'] = null;
+                }
+                if (isset($regimen['sale_price']) && $regimen['sale_price'] !== null && $regimen['sale_price'] !== '') {
+                    $regimens[$k]['sale_price'] = (int) $regimen['sale_price'];
+                } else {
+                    $regimens[$k]['sale_price'] = null;
+                }
+            }
+            $request->merge(['regimens' => $regimens]);
+        }
         // Gán default center_id nếu SuperAdmin không gửi hoặc ở chế độ toàn hệ thống
         if (! $request->filled('center_id') && AdminContext::isSuperAdmin()) {
             $defaultCenter = Center::active()->orderBy('sort_order')->orderBy('id')->first();
@@ -650,12 +782,12 @@ class AdminVaccineController extends Controller
             $request->merge(['stock_quantity' => $qty]);
         }
 
-        return $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'center_id' => 'required|exists:centers,id',
+            'center_id' => 'required|string',
             'price' => 'required|integer|min:0',
             'sale_price' => 'nullable|integer|min:1|lt:price',
-            'doses' => 'required|integer|min:1',
+            'doses' => 'nullable|integer',
             'stock_quantity' => 'required|integer|min:0',
             'center_is_active' => 'nullable|boolean',
             'disease_prevention' => 'required|string|max:255',
@@ -676,6 +808,13 @@ class AdminVaccineController extends Controller
             'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new SafeImageFile],
             'is_featured' => 'nullable',
             'sort_order' => 'nullable|integer|min:0',
+            'regimens' => 'nullable|array',
+            'regimens.*.id' => 'nullable|integer',
+            'regimens.*.age_group' => 'required|string|max:255',
+            'regimens.*.doses' => 'required|integer|min:1',
+            'regimens.*.price' => 'nullable|integer|min:0',
+            'regimens.*.sale_price' => 'nullable|integer|min:0',
+            'regimens.*.schedule_description' => 'nullable|string|max:1000',
         ], [
             'name.required' => 'Tên vắc xin không được để trống.',
             'price.required' => 'Giá vắc xin không được để trống.',
@@ -693,6 +832,16 @@ class AdminVaccineController extends Controller
             'age_group.required' => 'Độ tuổi chỉ định không được để trống.',
             'origin.required' => 'Nguồn gốc xuất xứ không được để trống.',
         ]);
+
+        if ($validated['center_id'] !== 'all') {
+            if (!\Modules\VaccineRegistration\Models\Center::where('id', (int) $validated['center_id'])->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'center_id' => 'Chi nhánh được chọn không tồn tại.'
+                ]);
+            }
+        }
+
+        return $validated;
     }
 
     private function syncCenterVaccine(Vaccine $vaccine, int $centerId, array $data): void
