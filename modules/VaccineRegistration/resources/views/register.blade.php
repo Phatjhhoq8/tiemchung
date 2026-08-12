@@ -354,7 +354,12 @@
 <script>
     const publicSchedules = @json($schedules);
     let patientCount = 0;
-    const todayStr = new Date().toISOString().split('T')[0];
+    
+    const nowLocal = new Date();
+    const yyyyLocal = nowLocal.getFullYear();
+    const mmLocal = String(nowLocal.getMonth() + 1).padStart(2, '0');
+    const ddLocal = String(nowLocal.getDate()).padStart(2, '0');
+    const todayStr = `${yyyyLocal}-${mmLocal}-${ddLocal}`;
 
     function changePublicDateFilter(selectedDate) {
         const slotSelect = document.getElementById('slot_id');
@@ -377,10 +382,6 @@
         });
         
         const now = new Date();
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const dd = String(now.getDate()).padStart(2, '0');
-        const todayStrLocal = `${yyyy}-${mm}-${dd}`;
         const currentHour = String(now.getHours()).padStart(2, '0');
         const currentMin = String(now.getMinutes()).padStart(2, '0');
         const currentTimeStr = `${currentHour}:${currentMin}`;
@@ -388,7 +389,7 @@
         let options = '<option value="">-- Chọn khung giờ tiêm --</option>';
         if (daySchedule && daySchedule.slots) {
             daySchedule.slots.forEach(slot => {
-                if (selectedDate === todayStrLocal && slot.start_at <= currentTimeStr) {
+                if (selectedDate === todayStr && slot.start_at <= currentTimeStr) {
                     return;
                 }
                 const remaining = Math.max(0, slot.capacity - slot.reserved_count);

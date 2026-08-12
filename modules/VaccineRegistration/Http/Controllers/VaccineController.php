@@ -388,16 +388,17 @@ class VaccineController extends Controller
         $isEmptyCart = empty($cartState['cart']);
         $centers = CenterContext::activeCenters();
 
-        // Tự động sinh lịch 30 ngày từ cấu hình mặc định
-        Schedule::generateFromDefaults($currentCenter->id, today(), today()->addDays(30));
+        $nowVn = \Carbon\Carbon::now('Asia/Ho_Chi_Minh');
+        $nowTime = $nowVn->format('H:i');
+        $today = $nowVn->toDateString();
 
-        $nowTime = now()->format('H:i');
-        $today = today()->toDateString();
+        // Tự động sinh lịch 30 ngày từ cấu hình mặc định
+        Schedule::generateFromDefaults($currentCenter->id, $today, $nowVn->copy()->addDays(30)->toDateString());
 
         $schedules = Schedule::query()
             ->where('center_id', $currentCenter->id)
             ->where('is_active', true)
-            ->whereDate('date', '>=', today())
+            ->whereDate('date', '>=', $today)
             ->with(['slots' => function ($query) {
                 $query->where('is_active', true)
                     ->whereColumn('reserved_count', '<', 'capacity')
@@ -625,13 +626,14 @@ class VaccineController extends Controller
             DB::transaction(function () use ($validated, $currentCenter, &$successCodes, $idempotencyKey, $request, $hasPatientsArrayInRequest, $stockService, $accountPhone, $accountName) {
                 // Lock slot
                 $slot = Slot::with('schedule')->whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
-                $todayDate = today()->toDateString();
+                $nowVn = \Carbon\Carbon::now('Asia/Ho_Chi_Minh');
+                $todayDate = $nowVn->toDateString();
                 $isPastSlot = $slot->schedule->date->toDateString() === $todayDate 
-                    && $slot->start_at <= now()->format('H:i');
+                    && $slot->start_at <= $nowVn->format('H:i');
 
                 if (! $slot->is_active || ! $slot->schedule || ! $slot->schedule->is_active
                     || (int) $slot->schedule->center_id !== (int) $currentCenter->id
-                    || $slot->schedule->date->isBefore(today())
+                    || $slot->schedule->date->isBefore($todayDate)
                     || $isPastSlot) {
                     throw ValidationException::withMessages([
                         'slot_id' => 'Khung giờ này đã trôi qua hoặc không khả dụng.',

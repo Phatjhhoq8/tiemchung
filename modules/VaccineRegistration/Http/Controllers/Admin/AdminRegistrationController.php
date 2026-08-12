@@ -66,8 +66,11 @@ class AdminRegistrationController extends Controller
             : AdminContext::selectedCenterId();
         $center = $selectedCenterId ? Center::active()->findOrFail($selectedCenterId) : null;
 
+        $nowVn = \Carbon\Carbon::now('Asia/Ho_Chi_Minh');
+        $today = $nowVn->toDateString();
+
         if ($center) {
-            Schedule::generateFromDefaults($center->id, today(), today()->addDays(30));
+            Schedule::generateFromDefaults($center->id, $today, $nowVn->copy()->addDays(30)->toDateString());
         }
 
         $centers = AdminContext::isSuperAdmin()
@@ -76,14 +79,13 @@ class AdminRegistrationController extends Controller
         $slots = $center
             ? Slot::query()
                 ->with('schedule:id,center_id,date')
-                ->whereHas('schedule', fn ($query) => $query->where('center_id', $center->id)->whereDate('date', '>=', today()))
+                ->whereHas('schedule', fn ($query) => $query->where('center_id', $center->id)->whereDate('date', '>=', $today))
                 ->where('is_active', true)
                 ->whereColumn('reserved_count', '<', 'capacity')
                 ->orderBy('id')
                 ->get()
-                ->filter(function ($slot) {
-                    $today = today()->toDateString();
-                    $nowTime = now()->format('H:i');
+                ->filter(function ($slot) use ($today, $nowVn) {
+                    $nowTime = $nowVn->format('H:i');
                     if ($slot->schedule->date->toDateString() === $today) {
                         return $slot->start_at > $nowTime;
                     }
@@ -141,14 +143,14 @@ class AdminRegistrationController extends Controller
 
         $center = Center::active()->findOrFail($validated['center_id']);
         $registration = DB::transaction(function () use ($validated, $recipientPhone, $accountPhone, $center, $stockService, $idempotencyKey) {
-            $slot = Slot::with('schedule')->whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
-            $todayDate = today()->toDateString();
+            $nowVn = \Carbon\Carbon::now('Asia/Ho_Chi_Minh');
+            $todayDate = $nowVn->toDateString();
             $isPastSlot = $slot->schedule->date->toDateString() === $todayDate 
-                && $slot->start_at <= now()->format('H:i');
+                && $slot->start_at <= $nowVn->format('H:i');
 
             if (! $slot->is_active || ! $slot->schedule || ! $slot->schedule->is_active
                 || (int) $slot->schedule->center_id !== (int) $center->id
-                || $slot->schedule->date->isBefore(today()) 
+                || $slot->schedule->date->isBefore($todayDate) 
                 || $isPastSlot || $slot->reserved_count >= $slot->capacity) {
                 throw ValidationException::withMessages(['slot_id' => 'Khung giờ không còn chỗ, đã trôi qua hoặc không thuộc chi nhánh đã chọn.']);
             }
