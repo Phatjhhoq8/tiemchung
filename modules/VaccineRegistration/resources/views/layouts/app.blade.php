@@ -1,14 +1,14 @@
 @php
-    $settings = \Modules\VaccineRegistration\Models\Setting::values([
+    $globalSettings = \Modules\VaccineRegistration\Models\Setting::values([
         'site_name' => 'Medicare',
         'hotline' => '0938 60 38 39',
         'email' => 'cskh@medicare.vn',
         'footer_text' => '© 2026 Medicare - Hệ Thống Tiêm Chủng Vắc Xin Trẻ Em và Người Lớn.',
     ]);
-    $site_name = $settings['site_name'];
-    $hotline = $settings['hotline'];
-    $email = $settings['email'];
-    $footer_text = $settings['footer_text'];
+    $site_name = $globalSettings['site_name'];
+    $hotline = $globalSettings['hotline'];
+    $email = $globalSettings['email'];
+    $footer_text = $globalSettings['footer_text'];
     $currentCenter = $currentCenter ?? \Modules\VaccineRegistration\Support\CenterContext::current();
     $activeCenters = $activeCenters ?? \Modules\VaccineRegistration\Support\CenterContext::activeCenters();
     if ($currentCenter) {
@@ -17,6 +17,7 @@
     $currentCenterPhoneHref = \Modules\VaccineRegistration\Support\CenterContext::phoneHref($hotline);
     $currentCenterZalo = \Modules\VaccineRegistration\Support\CenterContext::phoneHref($currentCenter?->zalo_phone ?: $hotline);
     $appJsVersion = file_exists(public_path('js/app.js')) ? filemtime(public_path('js/app.js')) : '1.0.0';
+    $isPreviewMode = $isPreviewMode ?? (request()->query('preview') == '1');
 @endphp
 <!DOCTYPE html>
 <html lang="vi">
@@ -60,7 +61,19 @@
     </script>
     @yield('styles')
 </head>
-<body>
+<body class="{{ $isPreviewMode ? 'preview-mode-active' : '' }}">
+    @if($isPreviewMode)
+        <!-- Sticky Top Preview Warning Banner -->
+        <div style="background: #fef08a; border-bottom: 1px solid #fde047; padding: 8px 16px; text-align: center; font-weight: 700; color: #854d0e; font-size: 13.5px; position: sticky; top: 0; z-index: 999999; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="eye" style="width: 16px; height: 16px; color: #ca8a04;"></i>
+                <span>Bạn đang ở chế độ xem thử bản nháp. Quy trình đặt tiêm bị tạm khóa trong chế độ này.</span>
+            </div>
+            <a href="{{ route('admin.live-editor') }}" style="background-color: var(--primary-color, #c8102e); color: #ffffff; padding: 4px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; transition: background-color 0.2s; border: none; box-shadow: 0 2px 4px rgba(200, 16, 46, 0.15);" onmouseover="this.style.backgroundColor='#a00d24'" onmouseout="this.style.backgroundColor='var(--primary-color, #c8102e)'">
+                Quay về Admin
+            </a>
+        </div>
+    @endif
     <!-- Topbar liên hệ nhanh hệ thống nhiều chi nhánh -->
     <div class="top-bar">
         <div class="topbar-container">
@@ -87,6 +100,7 @@
             <nav class="nav-menu" id="nav-menu">
                 <a href="{{ route('home') }}" class="nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}">Trang Chủ</a>
                 <a href="{{ route('about') }}" class="nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}">Giới Thiệu</a>
+                <a href="{{ route('services') }}" class="nav-link {{ Route::currentRouteName() === 'services' ? 'active' : '' }}">Dịch Vụ</a>
                 <a href="{{ route('vaccine.index') }}" class="nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}">Danh Mục Sản Phẩm</a>
                 <a href="{{ route('news.index') }}" class="nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}">Tin Tức</a>
                 <a href="{{ route('booking.lookup') }}" class="nav-link {{ Route::currentRouteName() === 'booking.lookup' ? 'active' : '' }}">Tra Cứu Lịch Hẹn</a>
@@ -956,6 +970,35 @@
                 window.location.href = "{{ route('home') }}#" + elementId;
             }
         }
+
+        @if($isPreviewMode)
+        // Preview Mode: Block all booking and purchase flows
+        document.addEventListener('DOMContentLoaded', () => {
+            const blockActions = (e) => {
+                const target = e.target;
+                const isBookingBtn = target.closest('a[href*="/register"], button[type="submit"], form[action*="/register"], button[onclick*="addToCart"], a[onclick*="addToCart"], button[onclick*="postRegister"], form[action*="/consultations"], form[action*="/leads"], button[onclick*="openSpaRegisterModal"], a[href*="/register"]');
+                const isCartAction = target.closest('form[action*="/cart/add"], button[onclick*="addToCart"], a[onclick*="addToCart"], .header-action-pill[href*="/register"]');
+                
+                if (isBookingBtn || isCartAction) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert('⚠️ Không thể thực hiện đặt tiêm hoặc gửi yêu cầu trong chế độ xem thử bản nháp!');
+                    return false;
+                }
+            };
+            document.addEventListener('click', blockActions, true);
+            document.addEventListener('submit', (e) => {
+                const form = e.target;
+                const action = form.getAttribute('action') || '';
+                if (action.includes('/register') || action.includes('/cart/add') || action.includes('/consultations') || action.includes('/leads') || action.includes('/vaccines/disease')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert('⚠️ Không thể gửi yêu cầu đặt tiêm hoặc tư vấn trong chế độ xem thử bản nháp!');
+                    return false;
+                }
+            }, true);
+        });
+        @endif
     </script>
     @yield('scripts')
 </body>

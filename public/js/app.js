@@ -285,15 +285,6 @@ function setFeaturedFilter(featured, event) {
     const pill = document.getElementById('btnFeaturedFilterPill');
     if (pill) {
         pill.classList.toggle('active', featured === '1');
-        if (featured === '1') {
-            pill.style.background = '#f59e0b';
-            pill.style.color = '#ffffff';
-            pill.style.borderColor = '#f59e0b';
-        } else {
-            pill.style.background = '#fffbeb';
-            pill.style.color = '#b45309';
-            pill.style.borderColor = '#fde68a';
-        }
     }
     filterVaccinesSpa();
 }
@@ -356,9 +347,6 @@ function resetVaccineFilters(event) {
     const pill = document.getElementById('btnFeaturedFilterPill');
     if (pill) {
         pill.classList.remove('active');
-        pill.style.background = '#fffbeb';
-        pill.style.color = '#b45309';
-        pill.style.borderColor = '#fde68a';
     }
     document.querySelectorAll('#sortPillGroup .sort-pill').forEach((button) => {
         if (button.id !== 'btnFeaturedFilterPill') {

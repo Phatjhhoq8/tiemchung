@@ -7,8 +7,12 @@
                     <i data-lucide="syringe" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <div class="font-bold text-slate-900 text-sm group-hover:text-[#c8102e] transition-colors">Đặt Mua Vắc Xin Online</div>
-                    <div class="text-xs text-slate-500 font-medium">Giữ vắc xin 100%, không lo thiếu mũi</div>
+                    <div class="font-bold text-slate-900 text-sm group-hover:text-[#c8102e] transition-colors">
+                        {{ $settings['quick_t1_title'] ?? 'Đặt Mua Vắc Xin' }}
+                    </div>
+                    <div class="text-xs text-slate-500 font-medium">
+                        {{ $settings['quick_t1_sub'] ?? 'Chọn mua vắc xin online nhanh chóng' }}
+                    </div>
                 </div>
             </a>
 
@@ -17,8 +21,12 @@
                     <i data-lucide="calendar-check-2" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <div class="font-bold text-slate-900 text-sm group-hover:text-[#c8102e] transition-colors">Đăng Ký Tiêm Chủng</div>
-                    <div class="text-xs text-slate-500 font-medium">Chọn chi nhánh & ngày giờ hẹn trước</div>
+                    <div class="font-bold text-slate-900 text-sm group-hover:text-[#c8102e] transition-colors">
+                        {{ $settings['quick_t2_title'] ?? 'Đăng Ký Tiêm' }}
+                    </div>
+                    <div class="text-xs text-slate-500 font-medium">
+                        {{ $settings['quick_t2_sub'] ?? 'Đặt hẹn tiêm chủng cho bé & gia đình' }}
+                    </div>
                 </div>
             </a>
 
@@ -27,8 +35,12 @@
                     <i data-lucide="badge-percent" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <div class="font-bold text-slate-900 text-sm group-hover:text-[#c8102e] transition-colors">Danh Mục Sản Phẩm</div>
-                    <div class="text-xs text-slate-500 font-medium">Giá niêm yết công khai, bình ổn</div>
+                    <div class="font-bold text-slate-900 text-sm group-hover:text-[#c8102e] transition-colors">
+                        {{ $settings['quick_t3_title'] ?? 'Bảng Giá Vắc Xin' }}
+                    </div>
+                    <div class="text-xs text-slate-500 font-medium">
+                        {{ $settings['quick_t3_sub'] ?? 'Tra cứu bảng giá vắc xin mới nhất' }}
+                    </div>
                 </div>
             </a>
 
@@ -37,8 +49,12 @@
                     <i data-lucide="map-pin" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <div class="font-bold text-slate-900 text-sm group-hover:text-[#c8102e] transition-colors">Tìm Chi Nhánh Gần Bạn</div>
-                    <div class="text-xs text-slate-500 font-medium">Xem địa chỉ & bản đồ chỉ đường</div>
+                    <div class="font-bold text-slate-900 text-sm group-hover:text-[#c8102e] transition-colors">
+                        {{ $settings['quick_t4_title'] ?? 'Hệ Thống Trung Tâm' }}
+                    </div>
+                    <div class="text-xs text-slate-500 font-medium">
+                        {{ $settings['quick_t4_sub'] ?? 'Tìm kiếm chi nhánh gần bạn nhất' }}
+                    </div>
                 </div>
             </a>
         </div>

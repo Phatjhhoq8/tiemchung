@@ -4,70 +4,60 @@
         <span class="section-badge">
             Khách Hàng Nói Gì
         </span>
-        <h2 class="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900">
+        <h2 class="text-2xl md:text-3xl lg:text-4xl font-black {{ ($section['bg'] ?? 'red') === 'white' ? 'text-slate-900' : 'text-white' }}">
             Phụ Huynh & Khách Hàng Tin Tưởng Medicare
         </h2>
-        <p class="text-slate-600 text-sm md:text-base">
-            Hàng nghìn gia định đã lựa chọn Medicare cho hành trình tiêm chủng an toàn.
+        <p class="{{ ($section['bg'] ?? 'red') === 'white' ? 'text-slate-600' : 'text-slate-300' }} text-sm md:text-base">
+            Hàng nghìn gia đình đã lựa chọn Medicare cho hành trình tiêm chủng an toàn.
         </p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Testimonial 1 -->
-        <div class="testimonial-card bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all" data-aos="fade-up" data-aos-delay="100">
-            <div class="flex gap-1 mb-4">
-                @for($i = 0; $i < 5; $i++)
-                    <i data-lucide="star" class="w-4 h-4 fill-[#eaaa00] text-[#eaaa00]"></i>
-                @endfor
-            </div>
-            <p class="text-slate-300 text-sm leading-relaxed mb-6 italic">
-                "Mình đưa bé đến Medicare tiêm rất yên tâm. Nhân viên tư vấn nhiệt tình, bác sĩ khám kỹ trước khi tiêm. Bé tiêm xong không quấy, theo dõi 30 phút rất chu đáo."
-            </p>
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-white text-[#c8102e] flex items-center justify-center font-bold text-sm">NT</div>
-                <div>
-                    <div class="text-white font-bold text-sm">Chị Ngọc Thanh</div>
-                    <div class="text-slate-500 text-xs">Phụ huynh, Cờ Đỏ</div>
-                </div>
-            </div>
-        </div>
+    @php
+        $testimonials = $settings['home_testimonials'] ?? [];
+        if (!is_array($testimonials)) {
+            $testimonials = json_decode($testimonials, true) ?: [];
+        }
+    @endphp
 
-        <!-- Testimonial 2 -->
-        <div class="testimonial-card bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all" data-aos="fade-up" data-aos-delay="200">
-            <div class="flex gap-1 mb-4">
-                @for($i = 0; $i < 5; $i++)
-                    <i data-lucide="star" class="w-4 h-4 fill-[#eaaa00] text-[#eaaa00]"></i>
-                @endfor
-            </div>
-            <p class="text-slate-300 text-sm leading-relaxed mb-6 italic">
-                "Giá vắc xin ở Medicare niêm yết rõ ràng, không phát sinh chi phí. Đặt lịch online rất tiện, đến nơi không phải chờ lâu. Rất hài lòng về dịch vụ!"
-            </p>
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-white text-[#c8102e] flex items-center justify-center font-bold text-sm">MH</div>
-                <div>
-                    <div class="text-white font-bold text-sm">Anh Minh Hoàng</div>
-                    <div class="text-slate-500 text-xs">Khách hàng, Thới Lai</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @foreach($testimonials as $index => $item)
+            @php
+                $avatar = $item['avatar'] ?? '/images/logo.png';
+                if (!str_starts_with($avatar, 'http') && !str_starts_with($avatar, 'data:') && !str_starts_with($avatar, '/')) {
+                    $avatar = asset($avatar);
+                }
+                
+                // Trực quan hóa tên viết tắt làm avatar nếu rỗng hoặc mặc định
+                $nameParts = explode(' ', trim($item['name'] ?? 'K H'));
+                $initials = '';
+                if (count($nameParts) >= 2) {
+                    $initials = mb_substr($nameParts[count($nameParts)-2], 0, 1) . mb_substr($nameParts[count($nameParts)-1], 0, 1);
+                } else {
+                    $initials = mb_substr($nameParts[0], 0, 2);
+                }
+                $initials = mb_strtoupper($initials);
+            @endphp
+            <div class="testimonial-card {{ ($section['bg'] ?? 'red') === 'white' ? 'bg-slate-50 border-slate-100' : 'bg-white/5 border-white/10' }} backdrop-blur-sm border rounded-2xl p-6 hover:bg-white/10 transition-all duration-300" data-aos="fade-up" data-aos-delay="{{ 100 * ($index + 1) }}">
+                <div class="flex gap-1 mb-4">
+                    @for($i = 0; $i < 5; $i++)
+                        <i data-lucide="star" class="w-4 h-4 fill-[#eaaa00] text-[#eaaa00]"></i>
+                    @endfor
+                </div>
+                <p class="{{ ($section['bg'] ?? 'red') === 'white' ? 'text-slate-700' : 'text-slate-200' }} text-sm leading-relaxed mb-6 italic text-justify">
+                    "{{ $item['content'] ?? '' }}"
+                </p>
+                <div class="flex items-center gap-3">
+                    @if(!empty($item['avatar']) && $item['avatar'] !== '/images/logo.png')
+                        <img src="{{ $avatar }}" class="w-10 h-10 rounded-full object-cover border-2 border-white/20" alt="{{ $item['name'] }}">
+                    @else
+                        <div class="w-10 h-10 rounded-full bg-white text-[#c8102e] flex items-center justify-center font-bold text-sm shadow-sm">{{ $initials }}</div>
+                    @endif
+                    <div>
+                        <div class="{{ ($section['bg'] ?? 'red') === 'white' ? 'text-slate-900' : 'text-white' }} font-bold text-sm">{{ $item['name'] ?? '' }}</div>
+                        <div class="{{ ($section['bg'] ?? 'red') === 'white' ? 'text-slate-500' : 'text-slate-400' }} text-xs">{{ $item['role'] ?? '' }}</div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Testimonial 3 -->
-        <div class="testimonial-card bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all" data-aos="fade-up" data-aos-delay="300">
-            <div class="flex gap-1 mb-4">
-                @for($i = 0; $i < 5; $i++)
-                    <i data-lucide="star" class="w-4 h-4 fill-[#eaaa00] text-[#eaaa00]"></i>
-                @endfor
-            </div>
-            <p class="text-slate-300 text-sm leading-relaxed mb-6 italic">
-                "Cơ sở vật chất sạch sẽ, khang trang. Mình tiêm vắc xin Zona và Cúm cho ba mẹ ở đây. Bác sĩ giải thích rất dễ hiểu, cảm thấy an tâm khi tiêm cho người lớn tuổi."
-            </p>
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-white text-[#c8102e] flex items-center justify-center font-bold text-sm">TL</div>
-                <div>
-                    <div class="text-white font-bold text-sm">Chị Thùy Linh</div>
-                    <div class="text-slate-500 text-xs">Khách hàng, Cờ Đỏ</div>
-                </div>
-            </div>
-        </div>
+        @endforeach
     </div>
 </div>

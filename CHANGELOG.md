@@ -1,3 +1,38 @@
+## [v6.5.29] - 2026-08-13
+
+### Dynamic Content, Visual Live Editor & Preview Enforcement
+
+* **Dynamic Content & Live Editor Integration (`SiteContentService.php`, `SiteContentRegistry.php`)**:
+  - Created a centralized registry class `SiteContentRegistry` defining all configurable fields for Home, About, Services, and Contact pages, including their validation rules and default data.
+  - Implemented `SiteContentService` to manage draft settings, publishing draft configs to production database, and resetting drafts.
+* **Preview Mode & Booking Security Enforcement (`app.blade.php`, `web.php`, `BlockInPreviewMode.php`, `HomeController.php`)**:
+  - Implemented a sticky yellow warning banner at the top of all public pages when in Preview mode (`?preview=1` checked against active SuperAdmin session), featuring a dedicated "Quay về Admin" button in Medicare Red for easy navigation back to the Live Editor.
+  - Added the missing "Dịch Vụ" link to the public header navigation menu in `app.blade.php`, enabling users and admins to naturally access and preview the services page.
+  - Created `BlockInPreviewMode` middleware to prevent registration, cart additions, and consultation lead submission at the backend level when previewing.
+  - Injected client-side JavaScript to intercept and block all booking/purchase interactions when previewing, showing custom warning alerts.
+* **Enhanced JSON Array Fields inside Live Editor (`live_editor.blade.php`, `AdminLiveEditorController.php`)**:
+  - Redesigned the Live Editor form panel to visually render complex JSON lists (FAQs, Testimonials, Team Members, and Services Commitments) with dynamic "Add" and "Delete" actions.
+  - Refactored `AdminLiveEditorController` to integrate schema validation, transaction-safe publishing, and system audit logging.
+* **Brand Color Harmonization & Natural Filter UI (`style.css`, `index.blade.php`, `app.js`, `show.blade.php`)**:
+  - Cleaned up the "Vắc xin nổi bật" filter styling by removing machine-translated/AI-like titles ("Phân loại đặc biệt" renamed to "Loại sản phẩm"), removing excessive gold stars, and styling the count badge to use a clean Medicare Red color palette instead of a bright yellow.
+  - Removed inline style overrides from the toolbar filter buttons, letting the "Nổi bật" pill active states blend seamlessly using the official Medicare Red primary color. Added high-priority CSS overrides with `!important` for `#btnFeaturedFilterPill` to completely suppress legacy cached JS color injections, locking the pill to the brand identity.
+  - Removed the redundant "Loại sản phẩm" (Featured Filter) group block from the sidebar to prevent visual clutter and duplication with the toolbar pill button.
+  - Refactored selected product card state (`.catalog-product-card.selected`) and checkout selection buttons (`.btn-select-vaccine.btn-selected`, `btn-select-detail`) to shift from the previous inconsistent gold/brown colors to the official Medicare Red primary tone and soft red background, resolving UX visual disharmony. Simplified admin password policy to only enforce a minimum length of 8 characters (removing letters, uppercase, number, and symbol complex restrictions), updating corresponding validator rules and view forms. Created automatic database exporter tool `session_data/dump_db.php` to export all records into `database/seeders/test_data.sql` and updated `DatabaseSeeder.php` to seed this customized test data if present.
+* **Visual Live Editor & Layout Sorting Restoration (`live_editor.blade.php`, `live_editor_layout_tab.blade.php`)**:
+  - Recreated the missing `live_editor_layout_tab.blade.php` view, restoring the visual layout customizer for the homepage sections (using JavaScript-powered row swapping and automatic order recalculation).
+  - Integrated the layout save, publish, and reset forms inside the live editor with proper action dispatching, resolving the 500 error on page swap. Replaced default browser `alert()` and `confirm()` prompts with `window.AppDialog` custom modals for all actions. Styled the "Lưu Sắp Xếp Nháp" button to use Medicare Red instead of blue.
+  - Cleaned up tab aesthetics by removing the bright border outline styles and focus outline rings from the navigation tab buttons.
+  - Simplified visual edit badges by removing unnecessary Lucide icons, shortening labels, and styling with clean brand colors (Medicare Red background shifting to deep red on hover) to avoid an AI-generated look. Removed inline blue styles from the global configuration edit badge. Added visual grid preview for the 6 golden core values inside the Giới Thiệu tab.
+  - Removed all artificial emojis (e.g. `⭐`, `📖`, `🎯`, `👁️`, `👨‍⚕️`, `📋`) from the live editor preview section titles.
+* **Dual Branch Actions for Centers (Hard Delete & Soft Pause) (`AdminCenterController.php`, `Center.php`, `_table.blade.php`)**:
+  - Refactored the `destroy` method of `AdminCenterController` and removed the deleting event interceptor in `Center.php` to execute a true database hard delete, leveraging SQL constraints (`cascadeOnDelete`, `nullOnDelete`) to handle related slots, stocks, and schedules safely.
+  - Added a dedicated "Xóa" button next to "Ngừng" / "Bật lại" in the centers datatable.
+  - Color-coded action buttons to match their risk levels: "Ngừng" styled with Medicare Gold (`#eaaa00`), and "Xóa" styled with Medicare Red (`#c8102e`).
+  - Harmonized the 4 quick action toolbar title colors on the homepage tab to only use the official Medicare Red and Medicare Navy, replacing the unharmonized bright green and orange titles.
+  - Simplified the live-edit-frame border style by changing it from a thick, blue dashed outline to a thin, subtle light gray dashed border, which gracefully lights up in Medicare Red on hover.
+  - Cleaned up tab navigation text by removing the numbers like "(7 Khung)", "(5 Khung)", and "(2 Khung)" and renaming "Khung Chung System Shell" to "Cấu Hinh Chung". Removed the blue border from the global configuration navigation tab button.
+  - Completely removed all AI-generated placeholder messages in square brackets (e.g. `[Khung: ...]`, `[Bao gồm mảng...]`) to deliver a fully clean production visual preview.
+
 ## [v6.5.28] - 2026-08-12
 
 ### Admin Menu Regrouping & Horizontal Sub-Navigation
@@ -48,6 +83,11 @@
   - Resolved a validation failure on the vaccine edit form where `sale_price` being equal to `price`, empty, or zero triggered the `lt:price` validation error ("Giá ưu đãi phải nhỏ hơn giá gốc vắc xin").
   - Normalized `sale_price` so that empty/zero values or values $\ge$ `price` automatically convert to `null` (representing non-discounted pricing).
   - Fixed an issue where editing a vaccine from the global "Toàn hệ thống" mode resulted in missing `center_id`: now automatically preselects and defaults to the first active branch.
+* **Homepage Section Order & Layout Customizer in Live Editor (`AdminLiveEditorController.php`, `live_editor.blade.php`, `web.php`, `HomeController.php`)**:
+  - Restored and integrated the dedicated "Sắp Xếp & Thứ Tự Khung" tab (`?page=layout`) inside Visual Live Editor (`/admin/live-editor`).
+  - Added intuitive Up / Down arrow buttons alongside HTML5 Drag & Drop sorting to reorder homepage blocks effortlessly.
+  - Provided section customization for visibility (Hiển thị / Tạm ẩn), background theme (Nền trắng, Nền đỏ thương hiệu, Nền tối), and padding spacing.
+  - Implemented 3 key workflow actions: "Khôi Phục Gốc", "Xem Thử Giả Lập" (`/?preview=1`), and "Xuất Bản Áp Dụng".
 * **Audit Log UI & Non-Tech Readability Redesign (`AuditLog.php`, `audit-logs/index.blade.php`, `audit-logs/show.blade.php`)**:
   - Replaced ambiguous, technical target IDs (such as `Ngữ cảnh chi nhánh #current`, `Hồ sơ bệnh nhân #49`, `Chi nhánh #1`) with fully resolved, human-readable entity names (e.g. `Chi nhánh: MEDICARE CỜ ĐỎ`, `Bệnh nhân: Trần Thị Mỹ Duyên (#49)`, `Vắc xin: Hexaxim`, `Xem: Toàn hệ thống`, `Xuất 12 lịch tiêm`).
   - Completely stripped all internal technical function call signatures and English code identifiers from both dropdowns and table badges.

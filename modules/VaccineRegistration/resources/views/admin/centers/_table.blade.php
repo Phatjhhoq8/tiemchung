@@ -39,7 +39,7 @@
                                 @if($center->is_active)
                                     <form action="{{ route('admin.centers.toggle-status', $center->id) }}" method="POST" data-confirm="Bạn có chắc chắn muốn tạm dừng hoạt động trung tâm này?" style="display: inline;">
                                         @csrf
-                                        <button type="submit" class="btn-action-sm btn-action-danger">Ngừng</button>
+                                        <button type="submit" class="btn-action-sm" style="background-color: var(--secondary-color, #eaaa00); border-color: var(--secondary-color, #eaaa00); color: #fff;">Ngừng</button>
                                     </form>
                                 @else
                                     <form action="{{ route('admin.centers.toggle-status', $center->id) }}" method="POST" data-confirm="Bạn có chắc chắn muốn kích hoạt lại hoạt động trung tâm này?" style="display: inline;">
@@ -47,6 +47,11 @@
                                         <button type="submit" class="btn-action-sm btn-action-success">Bật lại</button>
                                     </form>
                                 @endif
+                                <form action="{{ route('admin.centers.destroy', $center->id) }}" method="POST" data-confirm="CẢNH BÁO: Bạn có chắc chắn muốn XÓA VĨNH VIỄN chi nhánh này khỏi hệ thống? Thao tác này sẽ xóa sạch dữ liệu liên quan và không thể khôi phục." style="display: inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-action-sm btn-action-danger">Xóa</button>
+                                </form>
                             </div>
                         </td>
                     </tr>

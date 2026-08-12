@@ -8,16 +8,6 @@ class AdminPasswordPolicy
 {
     public static function rule(): Password
     {
-        $rule = Password::min(12)
-            ->letters()
-            ->mixedCase()
-            ->numbers()
-            ->symbols();
-
-        if (app()->environment('production')) {
-            $rule->uncompromised();
-        }
-
-        return $rule;
+        return Password::min(8);
     }
 }

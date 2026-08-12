@@ -252,21 +252,23 @@ class AdminCenterController extends Controller
      */
     public function destroy($id)
     {
-        $center = Center::findOrFail($id);
-        $oldActive = $center->is_active;
-        $center->is_active = false;
-        $center->save();
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền quản lý trung tâm tiêm chủng.');
 
-        CenterVaccine::where('center_id', $center->id)->update(['is_active' => false]);
+        $center = Center::findOrFail($id);
+        $centerName = $center->name;
+
+        // Thực hiện xóa cứng chi nhánh (MySQL tự động cascadeOnDelete/nullOnDelete các bảng liên quan)
+        $center->delete();
+
         AuditLogger::log(
-            'center.deactivated',
+            'center.deleted',
             'center',
-            $center->id,
-            ['is_active' => $oldActive],
-            ['is_active' => false],
-            $center->id
+            $id,
+            ['name' => $centerName],
+            null,
+            null
         );
 
-        return redirect()->route('admin.centers.index')->with('success', 'Tạm dừng trung tâm tiêm chủng thành công.');
+        return redirect()->route('admin.centers.index')->with('success', 'Đã xóa vĩnh viễn chi nhánh ' . $centerName . ' khỏi hệ thống.');
     }
 }

@@ -28,13 +28,13 @@
 
         <div class="form-group-modern">
             <label class="form-label-modern" for="password">Mật khẩu mới *</label>
-            <input class="form-control-modern" type="password" id="password" name="password" required minlength="12" autocomplete="new-password">
-            <small style="display:block; margin-top:8px; color:#64748b;">Ít nhất 12 ký tự, gồm chữ hoa, chữ thường, số và ký hiệu; không được trùng mật khẩu hiện tại.</small>
+            <input class="form-control-modern" type="password" id="password" name="password" required minlength="8" autocomplete="new-password">
+            <small style="display:block; margin-top:8px; color:#64748b;">Ít nhất 8 ký tự; không được trùng mật khẩu hiện tại.</small>
         </div>
 
         <div class="form-group-modern">
             <label class="form-label-modern" for="password_confirmation">Xác nhận mật khẩu mới *</label>
-            <input class="form-control-modern" type="password" id="password_confirmation" name="password_confirmation" required minlength="12" autocomplete="new-password">
+            <input class="form-control-modern" type="password" id="password_confirmation" name="password_confirmation" required minlength="8" autocomplete="new-password">
         </div>
 
         <div style="display:flex; justify-content:flex-end; margin-top:24px;">

@@ -20,11 +20,18 @@ class DatabaseSeeder extends Seeder
     {
         $this->assertSafeSeedingTarget();
 
-        // Seed các bảng dữ liệu cho mô đun Tiêm chủng
-        $this->call(\Modules\VaccineRegistration\Database\Seeders\CenterSeeder::class);
-        $this->call(\Modules\VaccineRegistration\Database\Seeders\ScheduleSeeder::class);
-        $this->call(\Modules\VaccineRegistration\Database\Seeders\SettingSeeder::class);
-        $this->call(\Modules\VaccineRegistration\Database\Seeders\BannerSeeder::class);
-        $this->call(\Modules\VaccineRegistration\Database\Seeders\ArticleSeeder::class);
+        $testDataPath = database_path('seeders/test_data.sql');
+        if (file_exists($testDataPath)) {
+            // Nạp dữ liệu test thực tế đã lưu
+            $this->command->info('Loading custom test data from test_data.sql...');
+            \Illuminate\Support\Facades\DB::unprepared(file_get_contents($testDataPath));
+        } else {
+            // Fallback chạy các seeders mặc định
+            $this->call(\Modules\VaccineRegistration\Database\Seeders\CenterSeeder::class);
+            $this->call(\Modules\VaccineRegistration\Database\Seeders\ScheduleSeeder::class);
+            $this->call(\Modules\VaccineRegistration\Database\Seeders\SettingSeeder::class);
+            $this->call(\Modules\VaccineRegistration\Database\Seeders\BannerSeeder::class);
+            $this->call(\Modules\VaccineRegistration\Database\Seeders\ArticleSeeder::class);
+        }
     }
 }

@@ -14,28 +14,26 @@ use Modules\VaccineRegistration\Models\Setting;
 use Illuminate\Http\Request;
 use Modules\VaccineRegistration\Support\CenterContext;
 
+use Modules\VaccineRegistration\Services\SiteContentService;
+use Modules\VaccineRegistration\Support\SiteContentRegistry;
+
 class HomeController extends Controller
 {
-    private const HOME_SECTIONS = [
-        'quick_booking' => 'Form Đăng ký nhanh',
-        'centers' => 'Hệ thống Trung tâm',
-        'recommendations' => 'Khuyến nghị Y khoa',
-        'qdenga_promo' => 'Vắc-xin nổi bật',
-        'featured_vaccines' => 'Danh mục vắc-xin',
-        'safe_process' => 'Quy trình 5 bước',
-        'services' => 'Dịch vụ chính',
-        'testimonials' => 'Đánh giá khách hàng',
-        'news' => 'Tin tức y khoa',
-        'faq' => 'Câu hỏi thường gặp',
-    ];
+    protected $contentService;
+
+    public function __construct(SiteContentService $contentService)
+    {
+        $this->contentService = $contentService;
+    }
 
     /**
      * Hiển thị trang chủ với dữ liệu động.
      */
-    public function index()
+    public function index(Request $request)
     {
         $currentCenter = CenterContext::current();
         $activeCenters = CenterContext::activeCenters();
+        $isPreviewMode = $this->isPreviewMode($request);
 
         // Lấy danh sách banner đang hoạt động và sắp xếp thứ tự
         $banners = Banner::active()->ordered()->get();
@@ -71,21 +69,36 @@ class HomeController extends Controller
         // Lấy 4 bài viết tin tức / kiến thức y tế mới nhất từ CSDL (1 bài lớn + 3 bài nhỏ)
         $articles = Article::where('is_published', true)->latest()->take(4)->get();
 
-        $layoutConfig = $this->publishedLayoutConfig();
+        // Lấy cấu hình layout động
+        $layoutConfig = $this->publishedLayoutConfig($isPreviewMode);
+        
+        // Tải cài đặt động
+        $settings = $this->contentService->getAll($isPreviewMode);
 
-        return view('vaccine::home', compact('banners', 'featuredVaccines', 'campaignVaccines', 'articles', 'layoutConfig', 'currentCenter', 'activeCenters'));
+        return view('vaccine::home', compact(
+            'banners',
+            'featuredVaccines',
+            'campaignVaccines',
+            'articles',
+            'layoutConfig',
+            'currentCenter',
+            'activeCenters',
+            'settings',
+            'isPreviewMode'
+        ));
     }
 
-    private function publishedLayoutConfig(): array
+    private function publishedLayoutConfig(bool $isDraft = false): array
     {
-        $stored = Setting::get('homepage_layout_config');
+        $key = $isDraft ? 'homepage_layout_config_draft' : 'homepage_layout_config';
+        $stored = Setting::get($key) ?: Setting::get('homepage_layout_config');
         $config = is_string($stored) ? json_decode($stored, true) : [];
         $config = is_array($config) ? $config : [];
         $sections = [];
 
-        foreach (self::HOME_SECTIONS as $key => $name) {
-            $defaultBackground = in_array($key, ['qdenga_promo', 'testimonials'], true) ? 'red' : 'white';
-            $section = $config[$key] ?? [];
+        foreach (SiteContentRegistry::$defaultSections as $sectionKey => $name) {
+            $defaultBackground = in_array($sectionKey, ['qdenga_promo', 'testimonials'], true) ? 'red' : 'white';
+            $section = $config[$sectionKey] ?? [];
             $background = in_array($section['bg'] ?? $defaultBackground, ['red', 'dark', 'light-blue', 'white'], true)
                 ? $section['bg'] ?? $defaultBackground
                 : $defaultBackground;
@@ -93,7 +106,7 @@ class HomeController extends Controller
                 ? $section['padding'] ?? 'standard'
                 : 'standard';
 
-            $sections[$key] = [
+            $sections[$sectionKey] = [
                 'name' => $name,
                 'order' => (int) ($section['order'] ?? (count($sections) + 1) * 10),
                 'is_visible' => array_key_exists('is_visible', $section) ? (bool) $section['is_visible'] : true,
@@ -148,27 +161,40 @@ class HomeController extends Controller
     /**
      * Trang Giới Thiệu Phòng Khám riêng biệt.
      */
-    public function about()
+    public function about(Request $request)
     {
-        $settings = Setting::all()->pluck('value', 'key')->toArray();
-        return view('vaccine::about', compact('settings'));
+        $isPreviewMode = $this->isPreviewMode($request);
+        $settings = $this->contentService->getAll($isPreviewMode);
+        return view('vaccine::about', compact('settings', 'isPreviewMode'));
     }
 
     /**
      * Trang Dịch Vụ Tiêm Chủng riêng biệt.
      */
-    public function services()
+    public function services(Request $request)
     {
-        return view('vaccine::services');
+        $isPreviewMode = $this->isPreviewMode($request);
+        $settings = $this->contentService->getAll($isPreviewMode);
+        return view('vaccine::services', compact('settings', 'isPreviewMode'));
     }
 
     /**
      * Trang Liên Hệ & Bản Đồ riêng biệt.
      */
-    public function contact()
+    public function contact(Request $request)
     {
+        $isPreviewMode = $this->isPreviewMode($request);
+        $settings = $this->contentService->getAll($isPreviewMode);
         $centers = CenterContext::activeCenters();
         $currentCenter = CenterContext::current();
-        return view('vaccine::contact', compact('centers', 'currentCenter'));
+        return view('vaccine::contact', compact('centers', 'currentCenter', 'settings', 'isPreviewMode'));
+    }
+
+    /**
+     * Kiểm tra chế độ xem thử (Preview Mode).
+     */
+    private function isPreviewMode(Request $request): bool
+    {
+        return $request->query('preview') == '1' && \Modules\VaccineRegistration\Support\AdminContext::user() !== null;
     }
 }

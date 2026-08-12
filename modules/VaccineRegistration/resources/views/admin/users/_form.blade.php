@@ -24,8 +24,8 @@
         </div>
         <div class="form-group-modern" style="margin-bottom:0;">
             <label class="form-label-modern" for="password">Mật khẩu {{ $user->exists ? '(để trống nếu không đổi)' : '*' }}</label>
-            <input class="form-control-modern" type="password" id="password" name="password" {{ $user->exists ? '' : 'required' }} minlength="12" autocomplete="new-password">
-            <small style="display:block; margin-top:8px; color:#64748b;">Ít nhất 12 ký tự, gồm chữ hoa, chữ thường, số và ký hiệu. Người dùng sẽ phải đổi mật khẩu tạm này khi đăng nhập.</small>
+            <input class="form-control-modern" type="password" id="password" name="password" {{ $user->exists ? '' : 'required' }} minlength="8" autocomplete="new-password">
+            <small style="display:block; margin-top:8px; color:#64748b;">Mật khẩu có độ dài ít nhất 8 ký tự. Người dùng sẽ phải đổi mật khẩu tạm này khi đăng nhập lần đầu.</small>
         </div>
         <div class="form-group-modern" style="margin-bottom:0;">
             <label class="form-label-modern" for="role">Quyền *</label>

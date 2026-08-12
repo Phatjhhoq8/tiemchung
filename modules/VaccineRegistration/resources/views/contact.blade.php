@@ -11,8 +11,8 @@
                 <i data-lucide="chevron-right"></i>
                 <span>Liên hệ</span>
             </div>
-            <h1>Thông tin liên hệ & Chi nhánh</h1>
-            <p>Chi nhánh hiện tại: <strong>{{ $currentCenter?->name ?? 'Chưa chọn' }}</strong>. Bạn có thể đổi chi nhánh bên dưới.</p>
+            <h1>{{ $settings['contact_hero_title'] ?? 'Thông tin liên hệ & Chi nhánh' }}</h1>
+            <p>{{ $settings['contact_hero_desc'] ?? '' }} <strong>{{ $currentCenter?->name ?? 'Chưa chọn' }}</strong>.</p>
         </div>
     </div>
 </section>

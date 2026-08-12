@@ -283,7 +283,7 @@
         </div>
 
         @php
-            $teamMembers = json_decode($settings['about_team_members'] ?? '[]', true);
+            $teamMembers = is_array($settings['about_team_members'] ?? null) ? $settings['about_team_members'] : json_decode($settings['about_team_members'] ?? '[]', true);
         @endphp
 
         <div class="team-grid">

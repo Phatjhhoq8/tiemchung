@@ -53,15 +53,7 @@ class Center extends Model
         return $this->getZaloQrUrlAttribute();
     }
 
-    protected static function booted(): void
-    {
-        static::deleting(function (Center $center) {
-            $center->is_active = false;
-            $center->save();
-            CenterVaccine::where('center_id', $center->id)->update(['is_active' => false]);
-            return false; // Prevent hard deletion
-        });
-    }
+
 
     /**
      * Scope lọc trung tâm đang hoạt động

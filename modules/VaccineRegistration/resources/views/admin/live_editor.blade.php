@@ -1,7 +1,7 @@
 @extends('vaccine::layouts.admin')
 
-@section('title', 'Chỉnh Sửa Trực Quan Toàn Bộ Tất Cả Các Trang - Medicare')
-@section('page_title', '🎨 Trình Chỉnh Sửa Trực Quan Toàn Bộ Các Trang (Universal All-Page Live Editor)')
+@section('title', 'Chỉnh Sửa Trực Quan Toàn Bộ Các Trang - Medicare')
+@section('page_title', 'Trình Chỉnh Sửa Trực Quan Toàn Bộ Các Trang (Universal All-Page Live Editor)')
 
 @section('styles')
 <style>
@@ -28,6 +28,7 @@
         gap: 6px;
         transition: all 0.2s;
         border: 1px solid transparent;
+        outline: none;
     }
     .live-page-tab:hover {
         background: #f1f5f9;
@@ -39,45 +40,43 @@
         box-shadow: 0 4px 12px rgba(200, 16, 46, 0.25);
     }
     .live-page-tab.active-global {
-        background: #0284c7;
+        background: #004b8f;
         color: #ffffff;
-        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+        box-shadow: 0 4px 12px rgba(0, 75, 143, 0.25);
     }
 
-    /* Facebook Customizer Overlay Frames */
+    /* Visual Overlay Frames */
     .live-edit-frame {
         position: relative;
-        border: 2px dashed #0284c7;
-        border-radius: 14px;
-        transition: all 0.3s ease;
+        border: 1px dashed #cbd5e1;
+        border-radius: 12px;
+        transition: all 0.2s ease;
         cursor: pointer;
         margin-bottom: 24px;
-        background-color: rgba(2, 132, 199, 0.02);
+        background-color: #ffffff;
     }
     .live-edit-frame:hover {
         border-color: var(--primary-color, #c8102e);
-        box-shadow: 0 0 20px rgba(200, 16, 46, 0.2);
-        background-color: rgba(200, 16, 46, 0.03);
+        box-shadow: 0 0 20px rgba(200, 16, 46, 0.1);
+        background-color: rgba(200, 16, 46, 0.02);
     }
     .edit-frame-badge {
         position: absolute;
         top: 12px;
         right: 12px;
-        background-color: #0284c7;
+        background-color: var(--primary-color, #c8102e);
         color: #ffffff;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 12px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 11.5px;
         font-weight: 700;
         z-index: 50;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        box-shadow: 0 2px 6px rgba(200, 16, 46, 0.15);
         pointer-events: none;
+        transition: background-color 0.2s ease;
     }
     .live-edit-frame:hover .edit-frame-badge {
-        background-color: var(--primary-color, #c8102e);
+        background-color: #a00d24;
     }
 
     /* Modal Styling */
@@ -88,7 +87,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(15, 23, 42, 0.75);
+        background-color: rgba(15, 23, 42, 0.7);
         backdrop-filter: blur(4px);
         z-index: 99999;
         align-items: center;
@@ -98,11 +97,14 @@
     .fb-modal-content {
         background: #ffffff;
         width: 100%;
-        max-width: 650px;
+        max-width: 800px;
         border-radius: 16px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2);
         overflow: hidden;
         animation: modalSlideUp 0.3s ease-out;
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh;
     }
     @keyframes modalSlideUp {
         from { transform: translateY(30px); opacity: 0; }
@@ -118,8 +120,8 @@
     }
     .fb-modal-body {
         padding: 24px;
-        max-height: 75vh;
         overflow-y: auto;
+        flex-grow: 1;
     }
     .fb-modal-footer {
         padding: 16px 24px;
@@ -129,6 +131,33 @@
         justify-content: flex-end;
         gap: 12px;
     }
+
+    /* Dynamic Form Cards for JSON Arrays */
+    .json-array-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 16px;
+        position: relative;
+    }
+    .json-array-item .btn-remove {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        color: #ef4444;
+        cursor: pointer;
+        background: none;
+        border: none;
+        font-weight: 700;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .json-array-item .btn-remove:hover {
+        text-decoration: underline;
+    }
 </style>
 @endsection
 
@@ -136,46 +165,94 @@
 <!-- BAR CHUYỂN ĐỔI CÁC TRANG CẦN CHỈNH SỬA LIVE -->
 <div class="live-page-tabs">
     <a href="{{ route('admin.live-editor', ['page' => 'home']) }}" class="live-page-tab {{ $currentPage === 'home' ? 'active' : '' }}">
-        <i data-lucide="home" style="width: 16px; height: 16px;"></i> 🏠 Trang Chủ (7 Khung)
+        Trang Chủ
+    </a>
+    <a href="{{ route('admin.live-editor', ['page' => 'layout']) }}" class="live-page-tab {{ $currentPage === 'layout' ? 'active' : '' }}">
+        Sắp Xếp Trang Chủ
     </a>
     <a href="{{ route('admin.live-editor', ['page' => 'about']) }}" class="live-page-tab {{ $currentPage === 'about' ? 'active' : '' }}">
-        <i data-lucide="building-2" style="width: 16px; height: 16px;"></i> 🏢 Giới Thiệu (3 Khung)
+        Giới Thiệu
     </a>
     <a href="{{ route('admin.live-editor', ['page' => 'services']) }}" class="live-page-tab {{ $currentPage === 'services' ? 'active' : '' }}">
-        <i data-lucide="stethoscope" style="width: 16px; height: 16px;"></i> 🛠️ Dịch Vụ (2 Khung)
+        Dịch Vụ
     </a>
     <a href="{{ route('admin.live-editor', ['page' => 'contact']) }}" class="live-page-tab {{ $currentPage === 'contact' ? 'active' : '' }}">
-        <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i> 📍 Liên Hệ & Chi Nhánh
+        Liên Hệ & Chi Nhánh
     </a>
-    <a href="{{ route('admin.live-editor', ['page' => 'vaccines']) }}" class="live-page-tab {{ $currentPage === 'vaccines' ? 'active' : '' }}">
-        <i data-lucide="syringe" style="width: 16px; height: 16px;"></i> 💉 Vắc Xin CSDL
+    <a href="{{ route('admin.live-editor', ['page' => 'global']) }}" class="live-page-tab {{ $currentPage === 'global' ? 'active-global' : '' }}" style="margin-left: auto;">
+        Cấu Hinh Chung
     </a>
-    <a href="{{ route('admin.live-editor', ['page' => 'global']) }}" class="live-page-tab {{ $currentPage === 'global' ? 'active-global' : '' }}" style="margin-left: auto; border: 1px solid #0284c7;">
-        <i data-lucide="settings-2" style="width: 16px; height: 16px;"></i> ⚙️ Khung Chung System Shell
-    </a>
+</div>
+
+<!-- ================= TOP ACTION BAR (LƯU TẠM / XEM THỬ / XUẤT BẢN / RESET) ================= -->
+<div style="background: #ffffff; padding: 16px 24px; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+    <div>
+        <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #1e293b;">Bảng Điều Khiển Live Editor</h4>
+        <p style="margin: 2px 0 0 0; font-size: 12.5px; color: #64748b;">Mọi chỉnh sửa bên dưới đều được tự động lưu vào bản nháp tạm thời.</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <button type="button" onclick="actionSettings('reset')" class="btn-secondary" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <i data-lucide="rotate-ccw" style="width: 16px; height: 16px;"></i> Khôi Phục Nháp
+        </button>
+        <a href="{{ url('/?preview=1') }}" target="_blank" class="btn-secondary-outline" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; font-weight: 700; color: #0f172a; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <i data-lucide="eye" style="width: 16px; height: 16px; color: #ca8a04;"></i> Xem Thử (Preview)
+        </a>
+        <button type="button" onclick="publishAllSettings()" class="btn-primary" style="padding: 10px 22px; border-radius: 8px; background: #c8102e; border: none; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 10px rgba(200,16,46,0.15);">
+            <i data-lucide="send" style="width: 16px; height: 16px;"></i> Xuất Bản Chính Thức
+        </button>
+    </div>
 </div>
 
 <!-- ================= 1. TAB TRANG CHỦ ================= -->
 @if($currentPage === 'home')
-    <!-- Khung 1: Thanh 4 Ô Tiện Ích Thao Tác Nhanh (Quick Action Toolbar) -->
-    <div class="live-edit-frame" onclick="openSettingModal('quick_toolbar', 'Thanh 4 Tiện Ích Nhanh', ['quick_t1_title', 'quick_t1_sub', 'quick_t2_title', 'quick_t2_sub'])">
-        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 1: Bảng 4 Tiện Ích Nhanh</div>
+    <!-- Khung 2: Thanh 4 Ô Tiện Ích Thao Tác Nhanh (Quick Action Toolbar) -->
+    <div class="live-edit-frame" onclick="openSettingModal('quick_toolbar', 'Thanh 4 Tiện Ích Nhanh', ['quick_t1_title', 'quick_t1_sub', 'quick_t2_title', 'quick_t2_sub', 'quick_t3_title', 'quick_t3_sub', 'quick_t4_title', 'quick_t4_sub'])">
+        <div class="edit-frame-badge">Sửa Tiện Ích Nhanh</div>
         <div style="padding: 24px; background: #ffffff; border-radius: 10px;">
-            <h4 style="margin: 0 0 14px 0; color: #475569; font-size: 13px; text-transform: uppercase; font-weight: 700;">[Khung 1: Thanh Bảng 4 Tiện Ích Nhanh Nổi Bật]</h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
-                <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
-                    <strong style="color: var(--primary-color); font-size: 13.5px;">1. Đặt Mua Vắc Xin Online</strong>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+                <div style="padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
+                    <strong style="color: var(--primary-color, #c8102e);">{{ $settings['quick_t1_title'] }}</strong>
+                    <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">{{ $settings['quick_t1_sub'] }}</div>
                 </div>
-                <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
-                    <strong style="color: #0284c7; font-size: 13.5px;">2. Đăng Ký Tiêm Chủng</strong>
+                <div style="padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
+                    <strong style="color: #004b8f;">{{ $settings['quick_t2_title'] }}</strong>
+                    <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">{{ $settings['quick_t2_sub'] }}</div>
                 </div>
-                <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
-                    <strong style="color: #eaaa00; font-size: 13.5px;">3. Bảng Giá Vắc Xin</strong>
+                <div style="padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
+                    <strong style="color: var(--primary-color, #c8102e);">{{ $settings['quick_t3_title'] }}</strong>
+                    <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">{{ $settings['quick_t3_sub'] }}</div>
                 </div>
-                <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
-                    <strong style="color: #16a34a; font-size: 13.5px;">4. Tìm Chi Nhánh Gần Bạn</strong>
+                <div style="padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
+                    <strong style="color: #004b8f;">{{ $settings['quick_t4_title'] }}</strong>
+                    <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">{{ $settings['quick_t4_sub'] }}</div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Khung 3: Quy Trình Tiêm Chủng 5 Bước An Toàn -->
+    <div class="live-edit-frame" onclick="openSettingModal('safe_process', 'Quy Trình Tiêm Chủng An Toàn', ['home_safe_process_title', 'home_safe_process_desc', 'home_safe_process'])">
+        <div class="edit-frame-badge">Sửa Quy Trình 5 Bước</div>
+        <div style="padding: 24px; background: #ffffff; border-radius: 10px;">
+            <h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 17px; font-weight: 800;">{{ $settings['home_safe_process_title'] }}</h4>
+            <p style="color: #64748b; font-size: 13.5px; margin: 0;">{{ $settings['home_safe_process_desc'] }}</p>
+        </div>
+    </div>
+
+    <!-- Khung 4: Ý Kiến Đánh Giá Khách Hàng (Testimonials) -->
+    <div class="live-edit-frame" onclick="openSettingModal('testimonials', 'Đánh Giá Của Khách Hàng', ['home_testimonials'])">
+        <div class="edit-frame-badge">Sửa Đánh Giá Khách Hàng</div>
+        <div style="padding: 24px; background: #ffffff; border-radius: 10px;">
+            <h4 style="margin: 0; color: #1e293b; font-size: 17px; font-weight: 800;">Phản hồi & Đánh giá từ Khách hàng</h4>
+        </div>
+    </div>
+
+    <!-- Khung 5: Hỏi Đáp Thường Gặp (FAQ) -->
+    <div class="live-edit-frame" onclick="openSettingModal('faqs', 'Hỏi Đáp Thường Gặp', ['home_faq_title', 'home_faq_desc', 'home_faqs'])">
+        <div class="edit-frame-badge">Sửa Hỏi Đáp FAQs</div>
+        <div style="padding: 24px; background: #ffffff; border-radius: 10px;">
+            <h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 17px; font-weight: 800;">{{ $settings['home_faq_title'] }}</h4>
+            <p style="color: #64748b; font-size: 13.5px; margin: 0;">{{ $settings['home_faq_desc'] }}</p>
         </div>
     </div>
 @endif
@@ -184,60 +261,127 @@
 @if($currentPage === 'about')
     <!-- Khung 1: Hero Banner Giới Thiệu -->
     <div class="live-edit-frame" onclick="openSettingModal('about_hero', 'Banner Đầu Trang Giới Thiệu', ['about_hero_title', 'about_hero_desc'])">
-        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 1: Banner Giới Thiệu</div>
+        <div class="edit-frame-badge">Sửa Banner Giới Thiệu</div>
         <div style="padding: 28px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #ffffff; border-radius: 12px; text-align: center;">
             <span style="background-color: var(--primary-color); color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase;">Về Chúng Tôi</span>
-            <h2 style="font-size: 26px; font-weight: 800; margin: 12px 0 8px 0; color: #fff;">{{ $settings['about_hero_title'] ?? 'Phòng Tiêm Chủng Vắc Xin Medicare' }}</h2>
-            <p style="color: #94a3b8; font-size: 14.5px; max-width: 650px; margin: 0 auto;">{{ $settings['about_hero_desc'] ?? 'Đơn vị y tế uy tín hàng đầu cung cấp giải pháp phòng bệnh toàn diện bằng vắc xin chất lượng cao cho trẻ em và người lớn tại Cờ Đỏ và Thới Lai.' }}</p>
+            <h2 style="font-size: 26px; font-weight: 800; margin: 12px 0 8px 0; color: #fff;">{{ $settings['about_hero_title'] }}</h2>
+            <p style="color: #94a3b8; font-size: 14.5px; max-width: 650px; margin: 0 auto;">{{ $settings['about_hero_desc'] }}</p>
         </div>
     </div>
 
-    <!-- Khung 2: Sứ Mệnh Bảo Vệ Sức Khỏe -->
-    <div class="live-edit-frame" onclick="openSettingModal('about_mission', 'Sứ Mệnh Bảo Vệ Sức Khỏe', ['about_mission_title', 'about_mission_desc'])">
-        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 2: Sứ Mệnh Bảo Vệ Sức Khỏe</div>
+    <!-- Khung 2: Câu Chuyện Medicare -->
+    <div class="live-edit-frame" onclick="openSettingModal('about_story', 'Câu Chuyện Medicare', ['about_story_title', 'about_story_desc'])">
+        <div class="edit-frame-badge">Sửa Câu Chuyện Lịch Sử</div>
         <div style="padding: 24px; background: #ffffff; border-radius: 12px;">
-            <h4 style="margin: 0 0 10px 0; color: var(--primary-color); font-size: 18px; font-weight: 700;">🎯 {{ $settings['about_mission_title'] ?? 'Sứ Mệnh Bảo Vệ Sức Khỏe' }}</h4>
-            <p style="color: #64748b; font-size: 14.5px; margin: 0; line-height: 1.6;">{{ $settings['about_mission_desc'] ?? 'Mang lại dịch vụ tiêm chủng an toàn tuyệt đối, nhanh chóng và tiếp cận dễ dàng cho mọi gia đình. Giúp cộng đồng chủ động phòng ngừa bệnh truyền nhiễm.' }}</p>
+            <h4 style="margin: 0 0 10px 0; color: var(--primary-color); font-size: 18px; font-weight: 700;">{{ $settings['about_story_title'] }}</h4>
+            <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.6; text-align: justify;">{{ $settings['about_story_desc'] }}</p>
         </div>
     </div>
 
-    <!-- Khung 3: Dây Chuyền Dược Kho Lạnh GSP -->
-    <div class="live-edit-frame" onclick="openSettingModal('about_gsp', 'Kho Lạnh GSP Đạt Chuẩn', ['about_gsp_title', 'about_gsp_desc'])">
-        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 3: Kho Lạnh GSP</div>
+    <!-- Khung 3: Số Liệu Thống Kê -->
+    <div class="live-edit-frame" onclick="openSettingModal('about_stats', 'Chỉ Số Thống Kê', ['about_stat_exp', 'about_stat_exp_lbl', 'about_stat_clients', 'about_stat_clients_lbl', 'about_stat_branches', 'about_stat_branches_lbl'])">
+        <div class="edit-frame-badge">Sửa Chỉ Số Thống Kê</div>
         <div style="padding: 24px; background: #ffffff; border-radius: 12px;">
-            <h4 style="margin: 0 0 10px 0; color: #0284c7; font-size: 18px; font-weight: 700;">🛡️ {{ $settings['about_gsp_title'] ?? 'Kho Lạnh GSP Đạt Chuẩn' }}</h4>
-            <p style="color: #64748b; font-size: 14.5px; margin: 0; line-height: 1.6;">{{ $settings['about_gsp_desc'] ?? '100% vắc xin lưu trữ trong kho lạnh dây chuyền lạnh GSP đạt tiêu chuẩn Bộ Y tế, duy trì nhiệt độ chuẩn 2 - 8°C cho chất lượng vắc xin tối đa.' }}</p>
+            <h4 style="margin: 0 0 16px 0; color: #475569; font-size: 13.5px; font-weight: 700;">Chỉ Số Thống Kê</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;">
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px;">
+                    <div style="font-size: 24px; font-weight: 900; color: var(--primary-color);">{{ $settings['about_stat_exp'] }}</div>
+                    <div style="font-size: 12px; color: #64748b;">{{ $settings['about_stat_exp_lbl'] }}</div>
+                </div>
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px;">
+                    <div style="font-size: 24px; font-weight: 900; color: var(--primary-color);">{{ $settings['about_stat_clients'] }}</div>
+                    <div style="font-size: 12px; color: #64748b;">{{ $settings['about_stat_clients_lbl'] }}</div>
+                </div>
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px;">
+                    <div style="font-size: 24px; font-weight: 900; color: var(--primary-color);">{{ $settings['about_stat_branches'] }}</div>
+                    <div style="font-size: 12px; color: #64748b;">{{ $settings['about_stat_branches_lbl'] }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Khung 4: Sứ Mệnh & Tầm Nhìn & Sáu Giá Trị Vàng -->
+    <div class="live-edit-frame" onclick="openSettingModal('about_mission_vision', 'Sứ Mệnh & Tầm Nhìn', ['about_mission_title', 'about_mission_desc', 'about_vision_title', 'about_vision_desc', 'about_values_desc', 'about_val1_title', 'about_val1_desc', 'about_val2_title', 'about_val2_desc', 'about_val3_title', 'about_val3_desc', 'about_val4_title', 'about_val4_desc', 'about_val5_title', 'about_val5_desc', 'about_val6_title', 'about_val6_desc'])">
+        <div class="edit-frame-badge">Sửa Sứ Mệnh & Giá Trị</div>
+        <div style="padding: 24px; background: #ffffff; border-radius: 12px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h5 style="font-weight: 800; color: var(--primary-color); margin: 0 0 6px 0;">{{ $settings['about_mission_title'] }}</h5>
+                    <p style="font-size: 13px; color: #64748b; margin: 0;">{{ $settings['about_mission_desc'] }}</p>
+                </div>
+                <div>
+                    <h5 style="font-weight: 800; color: var(--primary-color); margin: 0 0 6px 0;">{{ $settings['about_vision_title'] }}</h5>
+                    <p style="font-size: 13px; color: #64748b; margin: 0;">{{ $settings['about_vision_desc'] }}</p>
+                </div>
+            </div>
+            <div style="margin-top: 20px; border-top: 1px dashed #cbd5e1; padding-top: 16px;">
+                <h6 style="margin: 0 0 10px 0; font-size: 12.5px; text-transform: uppercase; color: #475569; font-weight: 700; letter-spacing: 0.5px;">Sáu Giá Trị Cốt Lõi Vàng</h6>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                    <div style="padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <strong style="font-size: 12px; color: var(--primary-color); display: block;">1. {{ $settings['about_val1_title'] }}</strong>
+                        <span style="font-size: 11px; color: #64748b; display: block; margin-top: 2px;">{{ Str::limit($settings['about_val1_desc'], 45) }}</span>
+                    </div>
+                    <div style="padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <strong style="font-size: 12px; color: var(--primary-color); display: block;">2. {{ $settings['about_val2_title'] }}</strong>
+                        <span style="font-size: 11px; color: #64748b; display: block; margin-top: 2px;">{{ Str::limit($settings['about_val2_desc'], 45) }}</span>
+                    </div>
+                    <div style="padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <strong style="font-size: 12px; color: var(--primary-color); display: block;">3. {{ $settings['about_val3_title'] }}</strong>
+                        <span style="font-size: 11px; color: #64748b; display: block; margin-top: 2px;">{{ Str::limit($settings['about_val3_desc'], 45) }}</span>
+                    </div>
+                    <div style="padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <strong style="font-size: 12px; color: var(--primary-color); display: block;">4. {{ $settings['about_val4_title'] }}</strong>
+                        <span style="font-size: 11px; color: #64748b; display: block; margin-top: 2px;">{{ Str::limit($settings['about_val4_desc'], 45) }}</span>
+                    </div>
+                    <div style="padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <strong style="font-size: 12px; color: var(--primary-color); display: block;">5. {{ $settings['about_val5_title'] }}</strong>
+                        <span style="font-size: 11px; color: #64748b; display: block; margin-top: 2px;">{{ Str::limit($settings['about_val5_desc'], 45) }}</span>
+                    </div>
+                    <div style="padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <strong style="font-size: 12px; color: var(--primary-color); display: block;">6. {{ $settings['about_val6_title'] }}</strong>
+                        <span style="font-size: 11px; color: #64748b; display: block; margin-top: 2px;">{{ Str::limit($settings['about_val6_desc'], 45) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Khung 5: Đội Ngũ Bác Sĩ & Chuyên Gia -->
+    <div class="live-edit-frame" onclick="openSettingModal('about_team', 'Đội Ngũ Bác Sĩ & Chuyên Gia', ['about_team_members'])">
+        <div class="edit-frame-badge">Sửa Đội Ngũ Bác Sĩ</div>
+        <div style="padding: 24px; background: #ffffff; border-radius: 12px;">
+            <h4 style="margin: 0; color: #1e293b; font-size: 17px; font-weight: 800;">Ban điều hành & Đội ngũ y bác sĩ Medicare</h4>
         </div>
     </div>
 @endif
 
 <!-- ================= 3. TAB TRANG DỊCH VỤ (/services) ================= -->
 @if($currentPage === 'services')
+    <!-- Khung 1: Banner & Giới thiệu dịch vụ -->
     <div class="live-edit-frame" onclick="openSettingModal('services_hero', 'Banner Đầu Trang Dịch Vụ', ['services_hero_title', 'services_hero_desc'])">
-        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Khung 1: Banner Dịch Vụ</div>
+        <div class="edit-frame-badge">Sửa Banner Dịch Vụ</div>
         <div style="padding: 28px; background: #ffffff; border-radius: 12px;">
-            <h2 style="font-size: 24px; font-weight: 800; color: #1e293b; margin: 0 0 8px 0;">{{ $settings['services_hero_title'] ?? 'Dịch Vụ Tiêm Chủng Toàn Diện' }}</h2>
-            <p style="color: #64748b; font-size: 15px; margin: 0;">{{ $settings['services_hero_desc'] ?? 'Cung cấp đầy đủ gói tiêm vắc xin cho Trẻ em, Người lớn, Phụ nữ chuẩn bị mang thai và Tiêm chủng lưu động doanh nghiệp.' }}</p>
+            <h2 style="font-size: 24px; font-weight: 800; color: #1e293b; margin: 0 0 8px 0;">{{ $settings['services_hero_title'] }}</h2>
+            <p style="color: #64748b; font-size: 15px; margin: 0;">{{ $settings['services_hero_desc'] }}</p>
+        </div>
+    </div>
+
+    <!-- Khung 2: Các danh sách dịch vụ y tế chính, ưu đãi và cam kết -->
+    <div class="live-edit-frame" onclick="openSettingModal('services_lists', 'Danh Sách Dịch Vụ & Ưu Đãi', ['services_list', 'services_promos', 'services_commitments'])">
+        <div class="edit-frame-badge">Sửa Gói Dịch Vụ & Cam Kết</div>
+        <div style="padding: 24px; background: #ffffff; border-radius: 12px;">
+            <h4 style="margin: 0; color: #1e293b; font-size: 17px; font-weight: 800;">Chi tiết danh mục dịch vụ tiêm chủng Medicare</h4>
         </div>
     </div>
 @endif
 
 <!-- ================= 4. TAB TRANG LIÊN HỆ (/contact) ================= -->
 @if($currentPage === 'contact')
-    <div class="live-edit-frame" onclick="openSettingModal('contact_branches', 'Thông Tin 2 Chi Nhánh', ['branch1_name', 'branch1_phone', 'branch2_name', 'branch2_phone'])">
-        <div class="edit-frame-badge"><i data-lucide="edit-3"></i> Sửa Thông Tin 2 Chi Nhánh</div>
+    <div class="live-edit-frame" onclick="openSettingModal('contact_hero', 'Thông Tin Đầu Trang Liên Hệ', ['contact_hero_title', 'contact_hero_desc'])">
+        <div class="edit-frame-badge">Sửa Banner Liên Hệ</div>
         <div style="padding: 24px; background: #ffffff; border-radius: 12px;">
-            <h4 style="margin: 0 0 14px 0; color: #475569; font-size: 13px; text-transform: uppercase; font-weight: 700;">[Khung: Chi Nhánh Medicare Cờ Đỏ & Thới Lai]</h4>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                <div style="padding: 14px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc;">
-                    <strong style="color: var(--primary-color);">📍 {{ $settings['branch1_name'] ?? 'Chi nhánh 1: Medicare Cờ Đỏ' }}</strong>
-                    <div style="font-size: 13px; color: #475569; margin-top: 4px;">Phone: {{ $settings['branch1_phone'] ?? '0938 60 38 39' }}</div>
-                </div>
-                <div style="padding: 14px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc;">
-                    <strong style="color: #0284c7;">📍 {{ $settings['branch2_name'] ?? 'Chi nhánh 2: Medicare Thới Lai' }}</strong>
-                    <div style="font-size: 13px; color: #475569; margin-top: 4px;">Phone: {{ $settings['branch2_phone'] ?? '0932 477 184' }}</div>
-                </div>
-            </div>
+            <h2 style="font-size: 24px; font-weight: 800; color: #1e293b; margin: 0 0 8px 0;">{{ $settings['contact_hero_title'] }}</h2>
+            <p style="color: #64748b; font-size: 15px; margin: 0;">{{ $settings['contact_hero_desc'] }}</p>
         </div>
     </div>
 @endif
@@ -245,25 +389,31 @@
 <!-- ================= TAB KHUNG CHUNG SYSTEM SHELL ================= -->
 @if($currentPage === 'global')
     <div class="live-edit-frame" onclick="openSettingModal('global_shell', 'Khung Chung Toàn Hệ Thống', ['site_name', 'brand_title', 'hotline', 'email', 'footer_text'])">
-        <div class="edit-frame-badge" style="background: #0284c7;"><i data-lucide="settings-2"></i> Sửa Khung Dùng Chung System Shell</div>
+        <div class="edit-frame-badge">Sửa Cấu Hình Chung</div>
         <div style="padding: 28px; background: #ffffff; border-radius: 12px;">
-            <h4 style="margin: 0 0 16px 0; color: #0284c7; font-size: 13px; text-transform: uppercase; font-weight: 800;">[Khung Dùng Chung: Header, Topbar, Footer, Bong bóng Chat Zalo]</h4>
+            <h4 style="margin: 0 0 16px 0; color: #004b8f; font-size: 13.5px; font-weight: 800;">Thông Tin Dùng Chung Hệ Thống</h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
                 <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
                     <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Tên Thương Hiệu:</strong>
-                    <span>{{ $settings['brand_title'] ?? 'Hệ Thống Tiêm Chủng Medicare' }}</span>
+                    <span>{{ $settings['brand_title'] }}</span>
                 </div>
                 <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
                     <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Hotline Tổng:</strong>
-                    <span>{{ $settings['hotline'] ?? '0938 60 38 39' }}</span>
+                    <span>{{ $settings['hotline'] }}</span>
                 </div>
                 <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
                     <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Bản Quyền Footer:</strong>
-                    <span style="font-size: 12.5px;">{{ $settings['footer_text'] ?? '© 2026 Medicare' }}</span>
+                    <span style="font-size: 12.5px;">{{ $settings['footer_text'] }}</span>
                 </div>
             </div>
         </div>
     </div>
+@endif
+
+<!-- ================= TAB SẮP XẾP TRANG CHỦ ================= -->
+@if($currentPage === 'layout')
+    <!-- Chèn lại layout sắp xếp của User trước đó hoạt động hoàn hảo -->
+    @include('vaccine::admin.live_editor_layout_tab')
 @endif
 
 <!-- MODAL CẤU HÌNH -->
@@ -271,14 +421,16 @@
     <div class="fb-modal-content">
         <div class="fb-modal-header">
             <h3 id="settingModalTitle" style="margin: 0; font-size: 17px; font-weight: 700; color: #1e293b;">Chỉnh Sửa Trực Quan Cài Đặt</h3>
-            <button onclick="closeModal('settingModal')" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+            <button onclick="closeModal('settingModal')" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #94a3b8; font-weight: 500;">&times;</button>
         </div>
         <form id="settingForm">
             @csrf
+            <input type="hidden" name="action" id="settingFormAction" value="draft">
             <div class="fb-modal-body" id="settingModalFields"></div>
             <div class="fb-modal-footer">
-                <button type="button" onclick="closeModal('settingModal')" class="btn-secondary" style="padding: 9px 16px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff;">Hủy</button>
-                <button type="button" onclick="saveSettingsSubmit()" class="btn-primary" style="padding: 9px 20px; border-radius: 8px; background: #0284c7; color: #fff; border: none; font-weight: 700;">Lưu Cấu Hình</button>
+                <button type="button" onclick="closeModal('settingModal')" class="btn-secondary" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; font-weight: 700; color: #475569; cursor: pointer;">Hủy</button>
+                <button type="button" onclick="submitSettingsForm('draft')" class="btn-secondary-outline" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 700; color: #004b8f; cursor: pointer;">Lưu Bản Nháp</button>
+                <button type="button" onclick="submitSettingsForm('publish')" class="btn-primary" style="padding: 10px 22px; border-radius: 8px; background: #c8102e; border: none; font-weight: 700; color: #fff; cursor: pointer;">Xuất Bản Ngay</button>
             </div>
         </form>
     </div>
@@ -292,28 +444,299 @@
 <script>
     const settingsData = @json($settings);
 
+    // Schema của các mảng JSON giúp vẽ giao diện nhập liệu trực quan
+    const jsonSchemas = {
+        'home_safe_process': {
+            title: 'Quy trình tiêm chủng an toàn',
+            itemTitle: 'Bước',
+            fields: [
+                { key: 'step', label: 'Thứ tự bước', type: 'text', placeholder: 'Ví dụ: 1' },
+                { key: 'title', label: 'Tên bước', type: 'text', placeholder: 'Ví dụ: Khám sàng lọc' },
+                { key: 'desc', label: 'Mô tả chi tiết', type: 'textarea', placeholder: 'Nhập nội dung...' }
+            ]
+        },
+        'home_testimonials': {
+            title: 'Nhận xét từ khách hàng',
+            itemTitle: 'Khách hàng',
+            fields: [
+                { key: 'name', label: 'Họ tên khách hàng', type: 'text', placeholder: 'Ví dụ: Chị Nguyễn Thảo Vy' },
+                { key: 'role', label: 'Mô tả / Vai trò', type: 'text', placeholder: 'Ví dụ: Phụ huynh bé Min (3 tháng)' },
+                { key: 'content', label: 'Ý kiến / Nhận xét', type: 'textarea', placeholder: 'Nhập ý kiến đánh giá...' },
+                { key: 'avatar', label: 'Đường dẫn ảnh đại diện', type: 'text', placeholder: 'Mặc định: /images/logo.png' }
+            ]
+        },
+        'home_faqs': {
+            title: 'Câu hỏi thường gặp (FAQ)',
+            itemTitle: 'Câu hỏi',
+            fields: [
+                { key: 'q', label: 'Câu hỏi', type: 'text', placeholder: 'Ví dụ: Trẻ bao nhiêu tháng tuổi bắt đầu tiêm chủng?' },
+                { key: 'a', label: 'Câu trả lời giải đáp', type: 'textarea', placeholder: 'Nhập nội dung giải đáp y tế...' }
+            ]
+        },
+        'about_team_members': {
+            title: 'Đội ngũ bác sĩ & chuyên gia y khoa',
+            itemTitle: 'Thành viên',
+            fields: [
+                { key: 'name', label: 'Họ và tên bác sĩ', type: 'text', placeholder: 'Ví dụ: ThS. BS. Nguyễn Minh Đức' },
+                { key: 'role', label: 'Chức vụ / Chuyên khoa', type: 'text', placeholder: 'Ví dụ: Giám đốc chuyên môn tiêm chủng' },
+                { key: 'avatar', label: 'Ảnh đại diện', type: 'text', placeholder: 'Ví dụ: /images/avt_pktn.png' },
+                { key: 'zalo', label: 'Số hotline / Zalo liên hệ', type: 'text', placeholder: 'Ví dụ: 0938603839' }
+            ]
+        },
+        'services_list': {
+            title: 'Danh sách dịch vụ chính',
+            itemTitle: 'Dịch vụ',
+            fields: [
+                { key: 'title', label: 'Tên dịch vụ', type: 'text', placeholder: 'Ví dụ: Tiêm vắc xin lẻ' },
+                { key: 'desc', label: 'Mô tả chi tiết dịch vụ', type: 'textarea', placeholder: 'Nhập nội dung...' },
+                { key: 'icon', label: 'Tên Icon (Lucide)', type: 'text', placeholder: 'Mặc định: syringe (hoặc package, truck, user-check...)' }
+            ]
+        },
+        'services_promos': {
+            title: 'Chính sách ưu đãi và hỗ trợ',
+            itemTitle: 'Ưu đãi',
+            fields: [
+                { key: 'title', label: 'Tiêu đề ưu đãi', type: 'text', placeholder: 'Ví dụ: Miễn phí khám sàng lọc' },
+                { key: 'desc', label: 'Mô tả ưu đãi chi tiết', type: 'textarea', placeholder: 'Nhập nội dung...' }
+            ]
+        },
+        'services_commitments': {
+            title: 'Cam kết chất lượng y khoa',
+            itemTitle: 'Cam kết',
+            fields: [
+                { key: 'title', label: 'Tiêu đề cam kết', type: 'text', placeholder: 'Ví dụ: 100% Vắc xin chính hãng' },
+                { key: 'desc', label: 'Nội dung cam kết chi tiết', type: 'textarea', placeholder: 'Nhập nội dung...' }
+            ]
+        }
+    };
+
     function openSettingModal(type, title, fields) {
         document.getElementById('settingModalTitle').innerText = 'Chỉnh Sửa Live: ' + title;
         const container = document.getElementById('settingModalFields');
         container.innerHTML = '';
 
         fields.forEach(field => {
-            const val = settingsData[field] || '';
-            const fieldGroup = document.createElement('div');
-            fieldGroup.style.marginBottom = '14px';
-            fieldGroup.innerHTML = `
-                <label style="display:block; font-weight:700; font-size:13px; margin-bottom:4px; color:#334155;">Nội dung [${field}]:</label>
-                <textarea name="${field}" class="form-control" rows="2" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1;">${val}</textarea>
-            `;
-            container.appendChild(fieldGroup);
+            const val = settingsData[field];
+
+            if (jsonSchemas[field]) {
+                // Render giao diện mảng JSON trực quan (Thêm/Xóa dòng)
+                renderJsonArrayField(container, field, jsonSchemas[field], val);
+            } else {
+                // Render ô nhập text/textarea thông thường
+                const isLongText = field.includes('desc') || field.includes('text') || field.includes('address') || field.includes('values');
+                const fieldGroup = document.createElement('div');
+                fieldGroup.style.marginBottom = '18px';
+                
+                let inputHtml = '';
+                if (isLongText) {
+                    inputHtml = `<textarea name="${field}" class="form-control" rows="4" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; font-size:14px; line-height:1.5;">${val || ''}</textarea>`;
+                } else {
+                    inputHtml = `<input type="text" name="${field}" value="${val || ''}" class="form-control" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; font-size:14px;">`;
+                }
+
+                fieldGroup.innerHTML = `
+                    <label style="display:block; font-weight:750; font-size:13.5px; margin-bottom:6px; color:#1e293b;">
+                        Nội dung cấu hình [${field}]:
+                    </label>
+                    ${inputHtml}
+                `;
+                container.appendChild(fieldGroup);
+            }
         });
 
         document.getElementById('settingModal').style.display = 'flex';
+        if (window.lucide) { lucide.createIcons(); }
     }
 
-    function saveSettingsSubmit() {
+    function renderJsonArrayField(container, fieldName, schema, value) {
+        let items = [];
+        try {
+            if (value) {
+                items = typeof value === 'string' ? JSON.parse(value) : value;
+            }
+        } catch (e) {
+            console.error('Lỗi parse JSON field ' + fieldName, e);
+        }
+        if (!Array.isArray(items)) {
+            items = [];
+        }
+
+        const wrapper = document.createElement('div');
+        wrapper.style.marginBottom = '20px';
+        wrapper.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1.5px solid #cbd5e1; padding-bottom:8px;">
+                <label style="font-weight:800; font-size:14.5px; color:#0f172a;">${schema.title}</label>
+                <button type="button" onclick="addJsonArrayRow('${fieldName}')" class="editor-btn-secondary" style="padding:6px 12px; font-size:12.5px; border-radius:6px; background:#f1f5f9; border:1px solid #cbd5e1; color:#0f172a; font-weight:700; cursor:pointer;">
+                    + Thêm ${schema.itemTitle}
+                </button>
+            </div>
+            <div id="json-array-container-${fieldName}"></div>
+        `;
+        container.appendChild(wrapper);
+
+        const listContainer = document.getElementById(`json-array-container-${fieldName}`);
+        items.forEach((item, index) => {
+            renderJsonRow(listContainer, fieldName, schema, item, index);
+        });
+    }
+
+    function renderJsonRow(container, fieldName, schema, itemData, index) {
+        const row = document.createElement('div');
+        row.className = `json-array-item json-item-row-${fieldName}`;
+        row.style.position = 'relative';
+        row.style.background = '#f8fafc';
+        row.style.border = '1px solid #e2e8f0';
+        row.style.borderRadius = '10px';
+        row.style.padding = '16px';
+        row.style.marginBottom = '12px';
+
+        let fieldsHtml = '';
+        schema.fields.forEach(f => {
+            const val = itemData ? (itemData[f.key] || '') : '';
+            if (f.type === 'textarea') {
+                fieldsHtml += `
+                    <div style="margin-bottom:10px;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">${f.label}</label>
+                        <textarea data-field="${f.key}" class="json-input-${fieldName}" rows="2" style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px;" placeholder="${f.placeholder}">${val}</textarea>
+                    </div>
+                `;
+            } else {
+                fieldsHtml += `
+                    <div style="margin-bottom:10px;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">${f.label}</label>
+                        <input type="text" data-field="${f.key}" value="${val}" class="json-input-${fieldName}" style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px;" placeholder="${f.placeholder}">
+                    </div>
+                `;
+            }
+        });
+
+        row.innerHTML = `
+            <button type="button" class="btn-remove" onclick="removeJsonArrayRow(this)">
+                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Xóa dòng
+            </button>
+            ${fieldsHtml}
+        `;
+        container.appendChild(row);
+        if (window.lucide) { lucide.createIcons(); }
+    }
+
+    function addJsonArrayRow(fieldName) {
+        const schema = jsonSchemas[fieldName];
+        const container = document.getElementById(`json-array-container-${fieldName}`);
+        if (!container || !schema) return;
+        
+        const index = container.children.length;
+        renderJsonRow(container, fieldName, schema, null, index);
+    }
+
+    function removeJsonArrayRow(btn) {
+        const row = btn.closest('.json-array-item');
+        if (row) {
+            row.remove();
+        }
+    }
+
+    function submitSettingsForm(action) {
+        document.getElementById('settingFormAction').value = action;
         const form = document.getElementById('settingForm');
         const formData = new FormData(form);
+
+        // Đóng gói dữ liệu JSON động thu được từ form list
+        for (const fieldName in jsonSchemas) {
+            const container = document.getElementById(`json-array-container-${fieldName}`);
+            if (container) {
+                const items = [];
+                const rows = container.querySelectorAll(`.json-item-row-${fieldName}`);
+                rows.forEach(row => {
+                    const item = {};
+                    const inputs = row.querySelectorAll(`.json-input-${fieldName}`);
+                    inputs.forEach(input => {
+                        const key = input.getAttribute('data-field');
+                        item[key] = input.value;
+                    });
+                    items.push(item);
+                });
+                
+                // Ghi đè hoặc nối dữ liệu dạng JSON String vào form data để submit lên controller
+                formData.set(fieldName, JSON.stringify(items));
+            }
+        }
+
+        fetch("{{ route('admin.live-editor.settings') }}", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Accept": "application/json"
+            }
+        })
+        .then(res => {
+            if (res.status === 422) {
+                return res.json().then(errData => {
+                    throw errData;
+                });
+            }
+            return res.json();
+        })
+        .then(async data => {
+            if (data.success) {
+                await window.AppDialog.alert(data.message);
+                closeModal('settingModal');
+                window.location.reload();
+            }
+        })
+        .catch(async err => {
+            console.error(err);
+            if (err.errors) {
+                let msg = 'Dữ liệu nhập không hợp lệ:\n';
+                for (const key in err.errors) {
+                    msg += `- ${err.errors[key].join(', ')}\n`;
+                }
+                await window.AppDialog.alert(msg);
+            } else {
+                await window.AppDialog.alert("❌ Đã xảy ra lỗi khi lưu cấu hình.");
+            }
+        });
+    }
+
+    async function actionSettings(action, skipConfirm = false) {
+        if (!skipConfirm && !await window.AppDialog.confirm('Bạn có chắc chắn muốn thực hiện hành động này không?')) {
+            return;
+        }
+
+        // Nếu đang ở trang sắp xếp layout, gọi các API layout config tương ứng
+        if ("{{ $currentPage }}" === 'layout') {
+            let url = "{{ route('admin.live-editor.layout.reset') }}";
+            let body = new FormData();
+            
+            if (action === 'publish') {
+                url = "{{ route('admin.live-editor.layout.publish') }}";
+                const form = document.getElementById('layoutConfigForm');
+                if (form) {
+                    body = new FormData(form);
+                }
+            }
+
+            fetch(url, {
+                method: "POST",
+                body: body,
+                headers: {
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                    "Accept": "application/json"
+                }
+            })
+            .then(res => res.json())
+            .then(async data => {
+                if (data.success) {
+                    await window.AppDialog.alert(data.message);
+                    window.location.reload();
+                }
+            });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('action', action);
 
         fetch("{{ route('admin.live-editor.settings') }}", {
             method: "POST",
@@ -324,13 +747,18 @@
             }
         })
         .then(res => res.json())
-        .then(data => {
+        .then(async data => {
             if (data.success) {
-                alert("🎉 " + data.message);
-                closeModal('settingModal');
+                await window.AppDialog.alert(data.message);
                 window.location.reload();
             }
         });
+    }
+
+    async function publishAllSettings() {
+        if (await window.AppDialog.confirm('Bạn có chắc chắn muốn xuất bản tất cả cấu hình trang chủ/sắp xếp hiện tại lên trang chính thức?')) {
+            await actionSettings('publish', true);
+        }
     }
 
     function closeModal(id) {
