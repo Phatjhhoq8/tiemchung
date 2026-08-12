@@ -10,9 +10,10 @@
   - Re-configured Composer platform emulation settings to target PHP `8.2.0` (matching the remote host version `8.2.26` instead of local development PHP `8.4.x`).
   - Successfully downgraded active dependencies to resolve autoloader check requirements (`platform_check.php`) on older host software environments.
   - Created and executed a web-based extraction script utilizing `PharData` to unzip composer libraries (`vendor.tar`) locally on the server in a matter of seconds.
-* **Audit Log Localization & Error Page Branding (`AuditLog.php`, `layout.blade.php`)**:
+* **Audit Log Localization, Error Page Branding & Toast Color Adjustments (`AuditLog.php`, `layout.blade.php`, `app-dialog.blade.php`)**:
   - Translated technical action keys (such as `admin_user.created`, `auth.password_changed`, and `publish_settings`) into friendly, localized Vietnamese labels for non-technical users.
   - Custom branded error pages (4xx & 5xx) to match the brand identity using Medicare Red (`#c8102e`) and Medicare Navy (`#004b8f`) as primary/hover states and Medicare Gold (`#eaaa00`) as focus outline.
+  - Adjusted alert toast background colors in `app-dialog.blade.php` to use fresh, vibrant palettes (Success `#10b981`, Error `#ef4444`, Info `#3b82f6`).
 
 ## [v6.5.31] - 2026-08-13
 

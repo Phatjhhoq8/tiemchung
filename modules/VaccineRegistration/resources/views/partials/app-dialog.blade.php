@@ -25,9 +25,9 @@
     .app-dialog-confirm { background: var(--primary-color, #c8102e); color: #fff; }
     .app-dialog-button:focus-visible { outline: 3px solid rgba(0, 75, 143, 0.35); outline-offset: 2px; }
     .app-toast-region { position: fixed; top: 20px; right: 20px; z-index: 10000001; display: grid; gap: 10px; width: min(380px, calc(100vw - 32px)); pointer-events: none; }
-    .app-toast { display: flex; align-items: flex-start; gap: 10px; padding: 13px 15px; border-radius: 10px; box-shadow: 0 12px 35px rgba(15, 23, 42, 0.2); background: #0f766e; color: #fff; pointer-events: auto; }
-    .app-toast-error { background: #b91c1c; }
-    .app-toast-info { background: #075985; }
+    .app-toast { display: flex; align-items: flex-start; gap: 10px; padding: 13px 15px; border-radius: 10px; box-shadow: 0 12px 35px rgba(15, 23, 42, 0.2); background: #10b981; color: #fff; pointer-events: auto; }
+    .app-toast-error { background: #ef4444; }
+    .app-toast-info { background: #3b82f6; }
     .app-toast span { flex: 1; line-height: 1.45; }
     .app-toast button { padding: 0; border: 0; background: transparent; color: inherit; font-size: 20px; line-height: 1; cursor: pointer; }
     @media (max-width: 540px) {
