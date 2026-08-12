@@ -294,7 +294,9 @@
                                 <select id="date_select" onchange="changePublicDateFilter(this.value)" required style="width: 100%; padding: 10px 36px 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; background: #fff; -webkit-appearance: none; -moz-appearance: none; appearance: none; cursor: pointer; height: 42px;">
                                     <option value="">-- Chọn ngày tiêm --</option>
                                     @foreach($schedules as $schedule)
-                                        <option value="{{ $schedule->date->format('Y-m-d') }}">{{ $schedule->date->format('d/m/Y') }}</option>
+                                        @if($schedule->date->format('Y-m-d') >= \Carbon\Carbon::now('Asia/Ho_Chi_Minh')->toDateString())
+                                            <option value="{{ $schedule->date->format('Y-m-d') }}">{{ $schedule->date->format('d/m/Y') }}</option>
+                                        @endif
                                     @endforeach
                                 </select>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none;"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -613,6 +615,22 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         addPatientField();
+        
+        // Xóa các ngày trong quá khứ khỏi select box để chống cache trình duyệt
+        const dateSelect = document.getElementById('date_select');
+        if (dateSelect) {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const todayStrLocal = `${yyyy}-${mm}-${dd}`;
+
+            Array.from(dateSelect.options).forEach(opt => {
+                if (opt.value && opt.value < todayStrLocal) {
+                    opt.remove();
+                }
+            });
+        }
     });
 </script>
 @endsection

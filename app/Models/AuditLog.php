@@ -188,7 +188,7 @@ class AuditLog extends Model
 
         // 6. Lịch hẹn tiêm / Đơn đăng ký
         if ($this->resource_type === 'registration') {
-            $regCode = \Modules\VaccineRegistration\Models\Registration::where('id', $this->resource_id)->value('code');
+            $regCode = \Modules\VaccineRegistration\Models\Registration::where('id', $this->resource_id)->value('registration_code');
             return $regCode ? "Lịch tiêm: #{$regCode}" : "Lịch tiêm (#{$this->resource_id})";
         }
 
