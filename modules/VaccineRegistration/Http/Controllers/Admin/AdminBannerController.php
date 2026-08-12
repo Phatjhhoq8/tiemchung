@@ -94,7 +94,7 @@ class AdminBannerController extends Controller
         }
 
         if (empty($validated['image_url'])) {
-            return redirect()->back()->withInput()->withErrors(['image_file' => 'Vui lòng chọn hình ảnh biểu ngữ để tải lên.']);
+            $validated['image_url'] = null;
         }
 
         $validated['is_active'] = $request->has('is_active');
@@ -148,8 +148,8 @@ class AdminBannerController extends Controller
 
         // Xử lý tải lên hình ảnh từ file
         if ($request->hasFile('image_file')) {
-            // Xóa ảnh cũ nếu có
-            if ($banner->image_url) {
+            // Xóa ảnh cũ nếu có (không xóa ảnh mặc định hệ thống)
+            if ($banner->image_url && ! in_array($banner->image_url, ['images/banners/banner_family.jpg', 'images/banners/banner2.jpg', '/images/banners/banner_family.jpg', '/images/banners/banner2.jpg'])) {
                 $oldFilename = basename($banner->image_url);
                 $oldPath = public_path('images/banners/'.$oldFilename);
                 if (file_exists($oldPath)) {
@@ -160,10 +160,21 @@ class AdminBannerController extends Controller
             $filename = 'banner_'.time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
             $file->move(public_path('images/banners'), $filename);
             $validated['image_url'] = '/images/banners/'.$filename;
-        }
-
-        if (empty($validated['image_url'])) {
-            $validated['image_url'] = $banner->image_url;
+        } else {
+            // Nếu không upload file mới, xem thử người dùng có xóa ảnh cũ không
+            // image_url rỗng nghĩa là người dùng đã nhấn nút xóa hình ảnh
+            if (empty($request->input('image_url'))) {
+                if ($banner->image_url && ! in_array($banner->image_url, ['images/banners/banner_family.jpg', 'images/banners/banner2.jpg', '/images/banners/banner_family.jpg', '/images/banners/banner2.jpg'])) {
+                    $oldFilename = basename($banner->image_url);
+                    $oldPath = public_path('images/banners/'.$oldFilename);
+                    if (file_exists($oldPath)) {
+                        @unlink($oldPath);
+                    }
+                }
+                $validated['image_url'] = null;
+            } else {
+                $validated['image_url'] = $banner->image_url;
+            }
         }
 
         $validated['is_active'] = $request->has('is_active');

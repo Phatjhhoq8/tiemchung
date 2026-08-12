@@ -23,7 +23,7 @@
 
     <!-- Tải lên hình ảnh Banner -->
     <div class="form-group" style="grid-column: span 2;">
-        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Hình ảnh Banner *</label>
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Hình ảnh Banner <span style="font-size: 13px; font-weight: 400; color: #64748b;">(Không bắt buộc - mặc định dùng ảnh hệ thống)</span></label>
         <input type="file" name="image_file" id="image_file" accept="image/*" style="display: none;">
         <input type="hidden" name="image_url" id="image_url" value="{{ old('image_url', $banner->image_url) }}">
         

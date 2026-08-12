@@ -1,5 +1,23 @@
 <!-- 1. Flowbite Hero Slider Banner (FULL WIDTH - TRÀN VIỀN 100%) -->
 <section class="banner-slider relative w-full overflow-hidden shadow-xl snap-section" id="hero-banner" data-aos="fade-up" data-aos-duration="600">
+    <style>
+        @media (max-width: 480px) {
+            .hero-carousel-wrapper {
+                height: 520px !important;
+            }
+            .hero-image-frame {
+                height: 180px !important;
+            }
+        }
+        @media (max-width: 360px) {
+            .hero-carousel-wrapper {
+                height: 490px !important;
+            }
+            .hero-image-frame {
+                height: 150px !important;
+            }
+        }
+    </style>
     @if($banners->isEmpty())
         <div class="hero-carousel-wrapper text-white w-full h-[460px] sm:h-[500px] lg:h-[520px] border-y border-red-800/40 shadow-xl overflow-hidden relative flex items-center" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%);">
             <!-- Background ambient glow effect -->
@@ -31,7 +49,7 @@
 
                     <!-- Right Banner Image Frame -->
                     <div class="lg:col-span-5 flex items-center justify-center">
-                        <div class="w-full h-56 sm:h-72 lg:h-[320px] rounded-2xl overflow-hidden border-2 border-white/30 shadow-2xl bg-black/10 relative group">
+                        <div class="hero-image-frame w-full h-56 sm:h-72 lg:h-[320px] rounded-2xl overflow-hidden border-2 border-white/30 shadow-2xl bg-black/10 relative group">
                             <img src="{{ asset('images/banners/banner_family.jpg') }}" alt="Hệ Thống Medicare" class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 block" loading="lazy">
                             <div class="absolute inset-0 ring-1 ring-inset ring-white/20 rounded-2xl pointer-events-none"></div>
                         </div>
@@ -71,7 +89,7 @@
                                     </div>
                                     <!-- Right Banner Image Frame -->
                                     <div class="lg:col-span-5 flex items-center justify-center">
-                                        <div class="w-full h-56 sm:h-72 lg:h-[320px] rounded-2xl overflow-hidden border-2 border-white/30 shadow-2xl bg-black/10 relative group">
+                                        <div class="hero-image-frame w-full h-56 sm:h-72 lg:h-[320px] rounded-2xl overflow-hidden border-2 border-white/30 shadow-2xl bg-black/10 relative group">
                                             <img src="{{ $banner->image_url ? asset($banner->image_url) : asset('images/banners/banner_family.jpg') }}" alt="{{ $banner->title }}" class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 block" loading="lazy">
                                             <div class="absolute inset-0 ring-1 ring-inset ring-white/20 rounded-2xl pointer-events-none"></div>
                                         </div>
@@ -89,12 +107,12 @@
                 @endforeach
             </div>
             <!-- Slider controls -->
-            <button type="button" class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
+            <button type="button" class="hidden sm:flex absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
                 <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-black/30 group-hover:bg-[#c8102e] group-hover:text-white transition-all backdrop-blur-xs">
                     <i data-lucide="chevron-left" class="w-6 h-6"></i>
                 </span>
             </button>
-            <button type="button" class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
+            <button type="button" class="hidden sm:flex absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
                 <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-black/30 group-hover:bg-[#c8102e] group-hover:text-white transition-all backdrop-blur-xs">
                     <i data-lucide="chevron-right" class="w-6 h-6"></i>
                 </span>

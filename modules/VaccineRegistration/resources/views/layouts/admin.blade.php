@@ -399,18 +399,28 @@
             box-shadow: var(--shadow-sm);
             background: #ffffff;
         }
-        @media (min-width: 1024px) {
-            .table-responsive-modern {
-                overflow: visible !important;
-            }
-        }
+
         .table-modern {
-            width: 100%;
-            min-width: 850px;
-            border-collapse: separate;
-            border-spacing: 0;
+            display: table !important;
+            width: 100% !important;
+            min-width: 950px !important;
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
             text-align: left;
             font-size: 0.875rem;
+        }
+        .table-modern thead {
+            display: table-header-group !important;
+        }
+        .table-modern tbody {
+            display: table-row-group !important;
+        }
+        .table-modern tr {
+            display: table-row !important;
+        }
+        .table-modern th,
+        .table-modern td {
+            display: table-cell !important;
         }
         .table-modern th {
             background-color: #fff1f2;
@@ -819,9 +829,26 @@
             .admin-header {
                 padding: 0 12px;
                 height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
             }
             .admin-title {
-                font-size: 16px;
+                font-size: 13.5px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 140px;
+            }
+            .admin-user {
+                padding: 4px 8px;
+                gap: 6px;
+            }
+            .admin-user select {
+                max-width: 110px !important;
+                font-size: 11px;
+                padding: 4px 6px;
             }
             .admin-user span {
                 display: none;

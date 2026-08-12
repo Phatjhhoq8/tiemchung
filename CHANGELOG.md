@@ -1,3 +1,23 @@
+## [v6.5.31] - 2026-08-13
+
+### Mobile Responsiveness & Layout Fixes
+
+* **Mobile Header, Table Alignment & Footer Layouts (`admin.blade.php`, `hero_slider.blade.php`, `style.css`)**:
+  - Prevented wrapping of the Admin Panel Page Title on mobile by automatically truncating the text with ellipsis and limiting the width of the branch selector dropdown.
+  - Forced table layouts to obey standard browser table-rendering styles using `!important` to keep column headers and body cells strictly aligned, and enabled responsive horizontal scrolling on all viewports (including narrower desktop resolutions) to prevent data tables from overflowing/spilling out of card borders.
+  - Stabilized the Homepage Hero Slider on mobile by adding robust responsive height queries, scaling down the image slightly, and hiding navigation arrows on small screens.
+  - Enhanced mobile layout for Footer Branch Actions by transforming them into full-width stacked buttons and centered the policy navigation links row on mobile/tablet viewports to eliminate messy wrapping and left-alignments.
+
+## [v6.5.30] - 2026-08-13
+
+### Optional Banner Image Configuration
+
+* **Optional Banner Image (`AdminBannerController.php`, `_form.blade.php`)**:
+  - Removed strict requirement for banner images, making it optional to save/update a banner.
+  - Automatically falls back to the system's default banner image on the homepage slider when no image is provided.
+  - Safely deletes the old banner image file from disk when a user removes it or replaces it (excluding seed/default images).
+  - Updated form label and styling in `_form.blade.php` to reflect that the image is optional.
+
 ## [v6.5.29] - 2026-08-13
 
 ### Dynamic Content, Visual Live Editor & Preview Enforcement
