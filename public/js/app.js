@@ -874,9 +874,18 @@ function renderSpaRegisterForm(data) {
         centerOptions += `<option value="${c.id}" ${Number(c.id) === Number(currentCenterId) ? 'selected' : ''}>${escapeHtml(c.name)} - ${escapeHtml(c.address)}</option>`;
     });
 
+    const nowLocal = new Date();
+    const yyyyLocal = nowLocal.getFullYear();
+    const mmLocal = String(nowLocal.getMonth() + 1).padStart(2, '0');
+    const ddLocal = String(nowLocal.getDate()).padStart(2, '0');
+    const todayStr = `${yyyyLocal}-${mmLocal}-${ddLocal}`;
+
     let dateOptions = '<option value="">-- Chọn ngày tiêm --</option>';
     (data.schedules || []).forEach(sch => {
         const datePart = (sch.date || '').substring(0, 10);
+        if (datePart < todayStr) {
+            return;
+        }
         const parts = datePart.split('-');
         const formattedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : datePart;
         dateOptions += `<option value="${datePart}">${formattedDate}</option>`;
@@ -1288,9 +1297,21 @@ function changeSpaDateFilter(selectedDate) {
     const schedules = window.lastSchedules || [];
     const daySchedule = schedules.find(s => (s.date || '').substring(0, 10) === selectedDate);
     
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+    const currentHour = String(now.getHours()).padStart(2, '0');
+    const currentMin = String(now.getMinutes()).padStart(2, '0');
+    const currentTimeStr = `${currentHour}:${currentMin}`;
+
     let options = '<option value="">-- Chọn khung giờ tiêm --</option>';
     if (daySchedule && daySchedule.slots && daySchedule.slots.length > 0) {
         daySchedule.slots.forEach(slot => {
+            if (selectedDate === todayStr && slot.start_at <= currentTimeStr) {
+                return;
+            }
             const remaining = Math.max(0, slot.capacity - slot.reserved_count);
             options += `<option value="${slot.id}">${slot.start_at} - ${slot.end_at} (còn ${remaining} chỗ)</option>`;
         });
