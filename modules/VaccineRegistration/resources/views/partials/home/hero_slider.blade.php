@@ -63,11 +63,7 @@
             <div class="hero-carousel-wrapper relative h-[460px] sm:h-[500px] lg:h-[520px] overflow-hidden">
                 @foreach($banners as $index => $banner)
                     <div class="{{ $index === 0 ? '' : 'hidden' }} duration-700 ease-in-out h-full w-full" data-carousel-item="{{ $index === 0 ? 'active' : '' }}">
-                        @if($banner->background_url)
-                            <div class="text-white w-full h-full border-y border-red-800/40 shadow-xl overflow-hidden relative flex items-center" style="background-image: url('{{ asset($banner->background_url) }}'); background-size: cover; background-position: center;">
-                        @else
-                            <div class="text-white w-full h-full border-y border-red-800/40 shadow-xl overflow-hidden relative flex items-center" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%);">
-                        @endif
+                        <div class="text-white w-full h-full border-y border-red-800/40 shadow-xl overflow-hidden relative flex items-center" style="{{ $banner->background_url ? 'background-image: url(' . asset($banner->background_url) . '); background-size: cover; background-position: center;' : 'background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%);' }}">
                             <!-- Background ambient glow effect -->
                             <div class="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
                             <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-red-400/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -122,91 +118,5 @@
                 </span>
             </button>
         </div>
-        <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const carousel = document.getElementById('flowbite-hero-carousel');
-            if (!carousel) return;
-
-            const items = carousel.querySelectorAll('[data-carousel-item]');
-            const indicators = carousel.querySelectorAll('[data-carousel-slide-to]');
-            const prevBtn = carousel.querySelector('[data-carousel-prev]');
-            const nextBtn = carousel.querySelector('[data-carousel-next]');
-
-            if (items.length <= 1) return;
-
-            let currentIndex = 0;
-            let intervalId = null;
-
-            function showSlide(index) {
-                items[currentIndex].classList.add('hidden');
-                items[currentIndex].removeAttribute('data-carousel-item-active');
-                
-                indicators[currentIndex].classList.replace('bg-white', 'bg-white/50');
-                indicators[currentIndex].setAttribute('aria-current', 'false');
-
-                currentIndex = (index + items.length) % items.length;
-
-                items[currentIndex].classList.remove('hidden');
-                items[currentIndex].setAttribute('data-carousel-item-active', 'true');
-                
-                indicators[currentIndex].classList.replace('bg-white/50', 'bg-white');
-                indicators[currentIndex].setAttribute('aria-current', 'true');
-            }
-
-            function nextSlide() {
-                showSlide(currentIndex + 1);
-            }
-
-            function prevSlide() {
-                showSlide(currentIndex - 1);
-            }
-
-            function startAutoPlay() {
-                stopAutoPlay();
-                intervalId = setInterval(nextSlide, 5000);
-            }
-
-            function stopAutoPlay() {
-                if (intervalId) clearInterval(intervalId);
-            }
-
-            // Set initial active indicator class
-            if (indicators[0]) {
-                indicators[0].classList.replace('bg-white/50', 'bg-white');
-            }
-
-            // Event listeners
-            if (prevBtn) {
-                prevBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    prevSlide();
-                    startAutoPlay();
-                });
-            }
-
-            if (nextBtn) {
-                nextBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    nextSlide();
-                    startAutoPlay();
-                });
-            }
-
-            indicators.forEach((indicator, index) => {
-                indicator.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showSlide(index);
-                    startAutoPlay();
-                });
-            });
-
-            // Start auto play
-            startAutoPlay();
-
-            // Pause on hover
-            carousel.addEventListener('mouseenter', stopAutoPlay);
-            carousel.addEventListener('mouseleave', startAutoPlay);
-        });
-        </script>
     @endif
 </section>

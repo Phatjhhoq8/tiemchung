@@ -138,7 +138,7 @@
                            data-origin="{{ $centerVaccine->vaccine->origin }}"
                            data-age-group="{{ $centerVaccine->vaccine->age_group }}"
                            style="display:flex; gap:10px; align-items:center; border:1px solid #e2e8f0; border-radius:10px; padding:12px; cursor:pointer; background:#fff; transition:all 0.2s;">
-                         <input type="checkbox" name="vaccine_ids[]" value="{{ $centerVaccine->vaccine_id }}" {{ !$outOfStock && in_array($centerVaccine->vaccine_id, old('vaccine_ids', [])) ? 'checked' : '' }} onchange="onVaccineCheckboxChange(this, {{ $centerVaccine->vaccine_id }})" {{ $outOfStock ? 'disabled' : '' }}>
+                         <input type="checkbox" name="vaccine_ids[]" value="{{ $centerVaccine->vaccine_id }}" {{ in_array($centerVaccine->vaccine_id, old('vaccine_ids', [])) ? 'checked' : '' }} onchange="onVaccineCheckboxChange(this, {{ $centerVaccine->vaccine_id }})">
                         <span style="flex:1;">
                             <strong>{{ $centerVaccine->vaccine->name }}</strong>
                             <span style="display:flex; gap:8px; align-items:center; margin-top:3px; font-size:12px;">
@@ -151,9 +151,9 @@
                             <span style="font-size:12px; color:var(--text-muted);">Số lượng:</span>
                             <input type="number" id="qty_{{ $centerVaccine->vaccine_id }}" name="quantities[{{ $centerVaccine->vaccine_id }}]" 
                                    value="{{ old('quantities.'.$centerVaccine->vaccine_id, 1) }}" 
-                                   min="1" max="{{ $centerVaccine->stock_quantity }}" 
+                                   min="1" 
                                    style="width: 55px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; text-align: center; height:28px;"
-                                   {{ !$outOfStock && in_array($centerVaccine->vaccine_id, old('vaccine_ids', [])) ? '' : 'disabled' }}>
+                                   {{ in_array($centerVaccine->vaccine_id, old('vaccine_ids', [])) ? '' : 'disabled' }}>
                         </div>
                         <strong style="color:var(--primary-color); white-space:nowrap; margin-left:8px;">{{ number_format($price) }} đ</strong>
                     </label>

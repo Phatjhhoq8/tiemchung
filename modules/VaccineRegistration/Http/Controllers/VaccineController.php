@@ -256,19 +256,7 @@ class VaccineController extends Controller
         $vaccineId = $request->integer('vaccine_id');
         $vaccine = Vaccine::active()->findOrFail($vaccineId);
         $currentCenter = CenterContext::current();
-        $isAvailable = $currentCenter && CenterVaccine::where('center_id', $currentCenter->id)
-            ->where('vaccine_id', $vaccine->id)
-            ->where('is_active', true)
-            ->where('stock_quantity', '>', 0)
-            ->exists();
-
-        if (! $isAvailable) {
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => 'Sản phẩm không được bán tại chi nhánh đang chọn.'], 422);
-            }
-
-            return back()->with('error', 'Sản phẩm không được bán tại chi nhánh đang chọn.');
-        }
+        $isAvailable = true;
 
         $cart = session()->get('cart', []);
 
