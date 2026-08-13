@@ -5,8 +5,9 @@
         'email' => 'cskh@medicare.vn',
         'footer_text' => '© 2026 Medicare - Hệ Thống Tiêm Chủng Vắc Xin Trẻ Em và Người Lớn.',
         'footer_company_name' => 'CÔNG TY CỔ PHẦN VẮC XIN MEDICARE',
-        'footer_sub_title' => 'HỆ THỐNG TRUNG TÂM TIÊM CHỦNG VẮC XIN CHO TRẺ EM & NGƯỜI LỚN AN TOÀN – UY TÍN – CHẤT LƯỢNG HÀƠ ĐẦU VIỆT NAM',
+        'footer_sub_title' => 'HỆ THỐNG TRUNG TÂM TIÊM CHỦNG VẮC XIN CHO TRẺ EM & NGƯỜI LỚN AN TOÀN – UY TÍN – CHẤT LƯỢNG HÀNG ĐẦU VIỆT NAM',
         'footer_content_manager' => 'Chịu trách nhiệm nội dung: Ban Giám Đốc HỆ THỐNG TIÊM CHỦNG MEDICARE',
+        'footer_working_hours' => 'Mở cửa 7:30 – 17:00 (không nghỉ trưa)',
         'footer_info_lines' => '[{"icon":"shield-check","text":"Giấy chứng nhận ĐKKD số 0107631488 do Sở KH&ĐT TP. Cần Thơ cấp ngày 11/11/2016"},{"icon":"building","text":"Trụ sở: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Thuận, Xã Cờ Đỏ, TP. Cần Thơ"},{"icon":"mail","text":"Email liên hệ: cskh@medicare.vn"}]',
     ]);
     $site_name = $globalSettings['site_name'];
@@ -16,6 +17,7 @@
     $footer_company_name = $globalSettings['footer_company_name'];
     $footer_sub_title = $globalSettings['footer_sub_title'];
     $footer_content_manager = $globalSettings['footer_content_manager'];
+    $footer_working_hours = $globalSettings['footer_working_hours'];
     $footer_info_lines = json_decode($globalSettings['footer_info_lines'], true) ?: [];
     $currentCenter = $currentCenter ?? \Modules\VaccineRegistration\Support\CenterContext::current();
     $activeCenters = $activeCenters ?? \Modules\VaccineRegistration\Support\CenterContext::activeCenters();
@@ -743,7 +745,7 @@
                     <span style="opacity: 0.3;">|</span>
                     <div class="footer-top-item">
                         <i data-lucide="clock" style="width: 16px; height: 16px; color: var(--secondary-color);"></i>
-                        <span>Mở cửa 7:30 – 17:00 (không nghỉ trưa)</span>
+                        <span>{{ $footer_working_hours }}</span>
                     </div>
                 </div>
             </div>

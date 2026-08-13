@@ -402,9 +402,8 @@
     </div>
 @endif
 
-<!-- ================= TAB KHUNG CHUNG SYSTEM SHELL ================= -->
 @if($currentPage === 'global')
-    <div class="live-edit-frame" onclick="openSettingModal('global_shell', 'Khung Chung Toàn Hệ Thống & Footer', ['site_name', 'brand_title', 'email', 'footer_text', 'footer_company_name', 'footer_sub_title', 'footer_content_manager', 'footer_info_lines'])">
+    <div class="live-edit-frame" onclick="openSettingModal('global_shell', 'Khung Chung Toàn Hệ Thống & Footer', ['site_name', 'brand_title', 'email', 'footer_text', 'footer_company_name', 'footer_sub_title', 'footer_content_manager', 'footer_working_hours', 'footer_info_lines'])">
         <div class="edit-frame-badge">Sửa Cấu Hình Chung & Footer</div>
         <div style="padding: 28px; background: #ffffff; border-radius: 12px;">
             <h4 style="margin: 0 0 16px 0; color: #004b8f; font-size: 13.5px; font-weight: 800;">Thông Tin Dùng Chung Hệ Thống & Footer</h4>
@@ -420,6 +419,10 @@
                 <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
                     <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Tên Công Ty Footer:</strong>
                     <span>{{ $settings['footer_company_name'] ?? '' }}</span>
+                </div>
+                <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
+                    <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Giờ Mở Cửa Footer:</strong>
+                    <span>{{ $settings['footer_working_hours'] ?? '' }}</span>
                 </div>
                 <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; grid-column: span 2;">
                     <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Tiêu Đề Phụ Footer:</strong>
@@ -599,7 +602,8 @@
         'footer_text': 'Bản quyền chân trang (Footer Copyright)',
         'footer_company_name': 'Tên công ty hiển thị ở chân trang (Footer)',
         'footer_sub_title': 'Tiêu đề phụ / Slogan chân trang (Footer)',
-        'footer_content_manager': 'Thông tin người chịu trách nhiệm nội dung (Footer)'
+        'footer_content_manager': 'Thông tin người chịu trách nhiệm nội dung (Footer)',
+        'footer_working_hours': 'Giờ mở cửa hiển thị ở chân trang (Footer)'
     };
 
     function openSettingModal(type, title, fields) {

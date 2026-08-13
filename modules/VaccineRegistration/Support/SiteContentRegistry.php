@@ -62,6 +62,11 @@ class SiteContentRegistry
                 'default' => 'Tất cả các ngày trong tuần (Từ 7:00 - 17:00 kể cả Chủ Nhật và ngày Lễ)',
                 'rules' => 'required|string|max:255',
             ],
+            'footer_working_hours' => [
+                'type' => 'string',
+                'default' => 'Mở cửa 7:30 – 17:00 (không nghỉ trưa)',
+                'rules' => 'required|string|max:255',
+            ],
             'footer_text' => [
                 'type' => 'string',
                 'default' => '© 2026 Medicare - Hệ Thống Tiêm Chủng Vắc Xin Trẻ Em và Người Lớn phục vụ tận tâm.',

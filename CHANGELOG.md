@@ -10,6 +10,7 @@
   - Adjusted the default loyalty points earned ratio to 0.1% of the paid order value (1,000 VND = 1 point earned) and reinforced the maximum point redemption limit to 50% of the total order value.
   - Simplified the loyalty settings layout by hiding the member tiers, promotional campaigns, and patient birthday multiplier sections to keep a minimal point-based discount workflow.
   - Added real-time member loyalty point display on the client-facing booking lookup page when searching registrations by phone number.
+  - Linked the footer opening hours text to a dynamic configuration setting `footer_working_hours` that is fully editable from the Live Editor's Global Configuration tab.
 
 * **Vaccine Regimens Price & All-Branch Option (`AdminVaccineController.php`, `_form.blade.php`, `show.blade.php`, `VaccineRegimen.php`)**:
   - Added new `price` and `sale_price` columns to `vaccine_regimens` table via migration, allowing each age-group regimen to specify its own pricing.
