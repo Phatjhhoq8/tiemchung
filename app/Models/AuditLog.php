@@ -90,6 +90,8 @@ class AuditLog extends Model
             'vaccine.created' => 'Thêm vắc xin',
             'vaccine.updated' => 'Cập nhật vắc xin',
             'vaccine.deleted' => 'Xóa vắc xin',
+            'vaccine.deactivated' => 'Vô hiệu hóa vắc xin',
+            'vaccine.activated' => 'Kích hoạt vắc xin',
             'vaccine.featured_changed' => 'Đổi trạng thái vắc xin nổi bật',
             'price_update' => 'Cập nhật giá vắc xin',
 
@@ -235,11 +237,11 @@ class AuditLog extends Model
      */
     public function getActionBadgeClassAttribute(): string
     {
-        if (str_contains($this->action, 'created') || str_contains($this->action, 'activated') || str_contains($this->action, 'login_succeeded') || str_contains($this->action, 'administered') || str_contains($this->action, 'settled')) {
-            return 'badge-modern-success';
-        }
         if (str_contains($this->action, 'deleted') || str_contains($this->action, 'deactivated') || str_contains($this->action, 'failed')) {
             return 'badge-modern-danger';
+        }
+        if (str_contains($this->action, 'created') || str_contains($this->action, 'activated') || str_contains($this->action, 'login_succeeded') || str_contains($this->action, 'administered') || str_contains($this->action, 'settled')) {
+            return 'badge-modern-success';
         }
         if (str_contains($this->action, 'exported') || str_contains($this->action, 'featured') || str_contains($this->action, 'screened')) {
             return 'badge-modern-warning';

@@ -3,7 +3,8 @@
 ### Production Deployment & PHP Platform Compatibility
 
 * **Complete Audit Log Action & Resource Type Localization (`AuditLog.php`)**:
-  - Added friendly, localized Vietnamese translations for all remaining raw technical identifiers (such as `refund_issued`, `registration.rescheduled`, `order_status_update`, `setting.updated`, `reset_settings`, `save_settings_draft`, `inventory_lot.created/updated/deleted`, and resource type `inventory_lot`) so that non-technical administrators can easily understand the logs.
+  - Added friendly, localized Vietnamese translations for all remaining raw technical identifiers (such as `refund_issued`, `registration.rescheduled`, `order_status_update`, `setting.updated`, `reset_settings`, `save_settings_draft`, `inventory_lot.created/updated/deleted`, `vaccine.deactivated/activated` and resource type `inventory_lot`) so that non-technical administrators can easily understand the logs.
+  - Fixed a CSS class helper bug where `deactivated` status badges erroneously matched `activated` condition and displayed in green instead of red.
 
 * **Vaccine Regimens Price & All-Branch Option (`AdminVaccineController.php`, `_form.blade.php`, `show.blade.php`, `VaccineRegimen.php`)**:
   - Added new `price` and `sale_price` columns to `vaccine_regimens` table via migration, allowing each age-group regimen to specify its own pricing.
