@@ -1,3 +1,13 @@
+## [v6.5.38] - 2026-08-13
+
+### Vaccine Management Permission Tuning
+
+* **Conditional SuperAdmin Restrictive Permission (`AdminVaccineController.php`)**:
+  - Enhanced permission checks for vaccine master fields (shared details like name, category, origin, regimens, and image).
+  - Restricts SuperAdmin from editing shared vaccine fields, uploading vaccine images, creating new vaccines, or deleting vaccines when they are currently operating under a specific branch context (selected center is not null).
+  - When a center is selected, SuperAdmin's capability will act exactly like a Branch Admin, allowing them only to update center-specific parameters (price, stock, and featured status).
+  - The shared vaccine input fields in the editor view are automatically disabled when a center is selected.
+
 ## [v6.5.37] - 2026-08-13
 
 ### Admin Dashboard Vaccine Stats Correction

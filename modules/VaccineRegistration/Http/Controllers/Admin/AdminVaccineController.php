@@ -146,7 +146,7 @@ class AdminVaccineController extends Controller
             ->sort()
             ->values();
 
-        $isSuperAdmin = AdminContext::isSuperAdmin();
+        $isSuperAdmin = AdminContext::isSuperAdmin() && $selectedCenterId === null;
 
         // Lấy nhu cầu đặt lịch tiêm (20:30 cutoff rule: hôm nay hoặc ngày mai)
         $now = now();
@@ -184,14 +184,14 @@ class AdminVaccineController extends Controller
      */
     public function create()
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền tạo vắc xin.');
+        abort_unless(AdminContext::isSuperAdmin() && AdminContext::selectedCenterId() === null, 403, 'Bạn không có quyền tạo vắc xin mới ở chế độ chi nhánh.');
 
         $vaccine = new Vaccine; // Khởi tạo đối tượng rỗng phục vụ form partial
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
         $selectedCenterId = request()->filled('center_id')
             ? AdminContext::selectedCenterId(request()->integer('center_id'))
             : AdminContext::selectedCenterId();
-        $isSuperAdmin = AdminContext::isSuperAdmin();
+        $isSuperAdmin = AdminContext::isSuperAdmin() && $selectedCenterId === null;
         $adminUser = AdminContext::user();
         $categories = Vaccine::whereNotNull('category')
             ->where('category', '!=', '')
@@ -208,7 +208,7 @@ class AdminVaccineController extends Controller
      */
     public function store(Request $request)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền tạo vắc xin.');
+        abort_unless(AdminContext::isSuperAdmin() && AdminContext::selectedCenterId() === null, 403, 'Bạn không có quyền tạo vắc xin mới ở chế độ chi nhánh.');
 
         $validated = $this->validateVaccine($request);
 
@@ -321,7 +321,7 @@ class AdminVaccineController extends Controller
         if (!$selectedCenterId && $centers->isNotEmpty()) {
             $selectedCenterId = $centers->first()->id;
         }
-        $isSuperAdmin = AdminContext::isSuperAdmin();
+        $isSuperAdmin = AdminContext::isSuperAdmin() && AdminContext::selectedCenterId() === null;
         $adminUser = AdminContext::user();
         $centerVaccine = $selectedCenterId
             ? CenterVaccine::where('center_id', $selectedCenterId)->where('vaccine_id', $vaccine->id)->first()
@@ -354,9 +354,18 @@ class AdminVaccineController extends Controller
 
         $vaccine = Vaccine::findOrFail($id);
 
-        if (! AdminContext::isSuperAdmin()) {
-            if ($request->filled('center_id') && (int) $request->input('center_id') !== (int) AdminContext::centerId()) {
-                abort(403, 'Bạn không có quyền cập nhật vắc xin của chi nhánh khác.');
+        $currentSelectedCenterId = AdminContext::selectedCenterId();
+        $shouldRestrictMasterFields = !AdminContext::isSuperAdmin() || $currentSelectedCenterId !== null;
+
+        if ($shouldRestrictMasterFields) {
+            if (!AdminContext::isSuperAdmin()) {
+                if ($request->filled('center_id') && (int) $request->input('center_id') !== (int) AdminContext::centerId()) {
+                    abort(403, 'Bạn không có quyền cập nhật vắc xin của chi nhánh khác.');
+                }
+            } else {
+                if ($request->filled('center_id') && (int) $request->input('center_id') !== (int) $currentSelectedCenterId) {
+                    abort(403, 'Bạn đang ở chế độ chi nhánh, không thể cập nhật vắc xin của chi nhánh khác.');
+                }
             }
 
             $masterFields = [
@@ -366,11 +375,11 @@ class AdminVaccineController extends Controller
             ];
             foreach ($masterFields as $field) {
                 if ($request->has($field) && (string) $request->input($field) !== (string) $vaccine->$field) {
-                    abort(403, 'Quản trị viên chi nhánh không được thay đổi thông tin danh mục vắc xin dùng chung.');
+                    abort(403, 'Không được phép thay đổi thông tin danh mục vắc xin dùng chung ở chế độ chi nhánh.');
                 }
             }
             if ($request->hasFile('image_file')) {
-                abort(403, 'Quản trị viên chi nhánh không được thay đổi hình ảnh vắc xin dùng chung.');
+                abort(403, 'Không được phép thay đổi hình ảnh vắc xin dùng chung ở chế độ chi nhánh.');
             }
 
             $request->merge([
@@ -427,8 +436,8 @@ class AdminVaccineController extends Controller
             'sort_order' => $oldCenterVaccine?->sort_order,
         ];
 
-        // Xử lý tải lên hình ảnh từ file (chỉ cho phép super_admin thay đổi ảnh)
-        if (AdminContext::isSuperAdmin() && $request->hasFile('image_file')) {
+        // Xử lý tải lên hình ảnh từ file (chỉ cho phép super_admin thay đổi ảnh khi ở chế độ Tất cả chi nhánh)
+        if (AdminContext::isSuperAdmin() && $currentSelectedCenterId === null && $request->hasFile('image_file')) {
             // Xóa ảnh cũ nếu không phải ảnh mặc định
             if ($vaccine->image && $vaccine->image !== 'default_vaccine.jpg') {
                 $oldPath = public_path('images/vaccines/'.$vaccine->image);
@@ -449,7 +458,7 @@ class AdminVaccineController extends Controller
         // Xử lý checkbox is_featured
         $validated['is_featured'] = $request->boolean('is_featured');
 
-        if (AdminContext::isSuperAdmin()) {
+        if (AdminContext::isSuperAdmin() && $currentSelectedCenterId === null) {
             $masterData = $validated;
             unset($masterData['stock_quantity'], $masterData['center_is_active']);
             $vaccine->update($masterData);
@@ -620,7 +629,7 @@ class AdminVaccineController extends Controller
      */
     public function destroy($id)
     {
-        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền vô hiệu hóa vắc xin.');
+        abort_unless(AdminContext::isSuperAdmin() && AdminContext::selectedCenterId() === null, 403, 'Bạn không có quyền vô hiệu hóa vắc xin ở chế độ chi nhánh.');
 
         $vaccine = Vaccine::findOrFail($id);
         $vaccine->is_active = false;
