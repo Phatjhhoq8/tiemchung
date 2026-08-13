@@ -127,6 +127,36 @@ class CustomerLoyaltyAndManualPaymentTest extends TestCase
         $this->assertSame('Chủ hộ', $customer->name);
     }
 
+    public function test_settle_group_pays_all_unpaid_members_in_the_group(): void
+    {
+        $schedule = Schedule::create(['center_id' => $this->centerA->id, 'date' => today()->addDays(6), 'is_active' => true]);
+        $slot = Slot::create(['schedule_id' => $schedule->id, 'start_at' => '10:00', 'end_at' => '11:00', 'capacity' => 5, 'reserved_count' => 0, 'is_active' => true]);
+
+        $this->withSession(['selected_center_id' => $this->centerA->id])->post(route('register.post'), [
+            'account_name' => 'Chủ hộ',
+            'account_phone' => $this->householdPhone,
+            'patients' => [
+                ['name' => 'Người A', 'phone' => '0911111111', 'dob' => '2000-01-01', 'gender' => 'Nam', 'address' => 'A', 'vaccine_ids' => [$this->vaccine->id]],
+                ['name' => 'Người B', 'phone' => '0922222222', 'dob' => '2000-01-01', 'gender' => 'Nữ', 'address' => 'B', 'vaccine_ids' => [$this->vaccine->id]],
+            ],
+            'slot_id' => $slot->id,
+            'idempotency_key' => $this->keyPrefix . 'paygroup',
+        ])->assertRedirect(route('register.success'));
+
+        $registrations = Registration::where('idempotency_key', 'like', $this->keyPrefix . 'paygroup_%')->get();
+        $this->assertCount(2, $registrations);
+
+        $this->assertSame(Registration::PAYMENT_UNPAID, $registrations[0]->payment_status);
+        $this->assertSame(Registration::PAYMENT_UNPAID, $registrations[1]->payment_status);
+
+        $this->asAdmin($this->branchAdminA)
+            ->post(route('admin.registrations.settle-group', $registrations[0]->id))
+            ->assertSessionHas('success');
+
+        $this->assertSame(Registration::PAYMENT_PAID, $registrations[0]->fresh()->payment_status);
+        $this->assertSame(Registration::PAYMENT_PAID, $registrations[1]->fresh()->payment_status);
+    }
+
     public function test_points_earned_at_center_a_are_redeemed_at_center_b_with_phone_variant(): void
     {
         $first = $this->book($this->centerA, 'Người A', $this->householdPhone, $this->keyPrefix . 'earn-a');

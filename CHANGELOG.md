@@ -14,6 +14,7 @@
   - Fixed a clinical workflow bug in the `Registration` model where administering a single vaccine immediately marked the entire multi-vaccine order as completed, preventing remaining vaccines from being administered.
   - Added a defensive check `stock_quantity > 0` before decrementing branch vaccine stock in the clinical administration workflow, preventing SQL `Numeric value out of range` exception on `unsignedInteger` columns.
   - Implemented seamless AJAX-based vaccine deletion in the admin catalog (`AdminVaccineController.php`, `index.blade.php`, `_table.blade.php`), allowing rows to fade out and be removed from the DOM dynamically without page reload, preserving the user's active search filters.
+  - Added support for collective group payments (`AdminRegistrationController.php`, `web.php`, `show.blade.php`), enabling branch administrators to settle all unpaid registrations within the same booking group (multiple patients registered under one single request) using a single "Thanh toán chung cả nhóm" button, and displaying sibling group members in a structured list.
 
 * **Vaccine Regimens Price & All-Branch Option (`AdminVaccineController.php`, `_form.blade.php`, `show.blade.php`, `VaccineRegimen.php`)**:
   - Added new `price` and `sale_price` columns to `vaccine_regimens` table via migration, allowing each age-group regimen to specify its own pricing.

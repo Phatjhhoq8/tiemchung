@@ -148,6 +148,7 @@ Route::middleware('web')->group(function () {
         Route::get('/registrations/{id}', [AdminRegistrationController::class, 'show'])->name('registrations.show');
         Route::patch('/registrations/{id}/status', [AdminRegistrationController::class, 'updateStatus'])->name('registrations.status');
         Route::post('/registrations/{id}/settle', [AdminRegistrationController::class, 'settle'])->name('registrations.settle');
+        Route::post('/registrations/{id}/settle-group', [AdminRegistrationController::class, 'settleGroup'])->name('registrations.settle-group');
         Route::post('/registrations/{id}/refund', [AdminRegistrationController::class, 'refund'])->name('registrations.refund');
         Route::post('/registrations/{id}/reschedule', [AdminRegistrationController::class, 'reschedule'])->name('registrations.reschedule');
 

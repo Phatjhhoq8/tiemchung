@@ -84,6 +84,15 @@
                 </div>
                 <button type="submit" class="btn-modern btn-modern-primary">Xác nhận thanh toán</button>
             </form>
+            @if(isset($otherUnpaidCount) && $otherUnpaidCount > 0)
+                 <form action="{{ route('admin.registrations.settle-group', $registration) }}" method="POST" data-confirm="Xác nhận thanh toán chung cho toàn bộ {{ $otherUnpaidCount + 1 }} đơn hàng chưa thanh toán trong nhóm này?" style="margin-top: 16px; border-top: 1px dashed #e2e8f0; padding-top: 16px;">
+                     @csrf
+                     <button type="submit" class="btn-modern btn-modern-secondary" style="border-color: var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); display: inline-flex; align-items: center; gap: 8px;">
+                         <i data-lucide="wallet" style="width: 16px; height: 16px;"></i>
+                         Thanh toán chung cho cả nhóm ({{ $otherUnpaidCount + 1 }} người)
+                     </button>
+                 </form>
+             @endif
         @elseif($registration->payment_status === \Modules\VaccineRegistration\Models\Registration::PAYMENT_PAID)
             <form action="{{ route('admin.registrations.refund', $registration) }}" method="POST" data-confirm="Hoàn tiền toàn bộ đơn này? Điểm sẽ được hoàn lại." style="margin-top: 16px;">
                 @csrf
@@ -320,5 +329,32 @@
             </table>
         </div>
     </div>
+
+    @if(isset($groupRegistrations) && $groupRegistrations->count() > 0)
+        <div class="card-modern" style="margin-top: 16px;">
+            <h3 style="margin-top:0;">Các thành viên cùng lượt đăng ký nhóm</h3>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                @foreach($groupRegistrations as $gReg)
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <strong style="color: var(--text-primary);">{{ $gReg->patient_name }}</strong>
+                            <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">({{ $gReg->registration_code }})</span>
+                            <div style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
+                                Vắc xin: {{ $gReg->vaccines->pluck('name')->implode(', ') }}
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            @if($gReg->payment_status === \Modules\VaccineRegistration\Models\Registration::PAYMENT_PAID)
+                                <span class="badge-modern badge-modern-success" style="font-size: 11px;">Đã thanh toán</span>
+                            @else
+                                <span class="badge-modern badge-modern-danger" style="font-size: 11px; background: #fee2e2; color: #c8102e; border: 1px solid #fecaca; font-weight: 700;">Chưa thanh toán</span>
+                            @endif
+                            <a href="{{ route('admin.registrations.show', $gReg->id) }}" class="btn-modern" style="padding: 4px 10px; font-size: 12px; height: auto; text-decoration: none; display: inline-flex; align-items: center; background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; border-radius: 6px;">Chi tiết</a>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 </div>
 @endsection

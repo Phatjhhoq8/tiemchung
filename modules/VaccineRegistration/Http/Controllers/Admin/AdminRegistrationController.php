@@ -52,6 +52,20 @@ class AdminRegistrationController extends Controller
         $pointQuote = $registration->customer ? $paymentService->quote($registration->customer, $registration) : null;
         $loyaltySettings = $paymentService->getLoyaltySettings($registration->center_id);
 
+        $groupRegistrations = collect();
+        $otherUnpaidCount = 0;
+        if ($registration->idempotency_key) {
+            $parts = explode('_', $registration->idempotency_key);
+            $prefix = $parts[0];
+            if ($prefix) {
+                $groupRegistrations = Registration::where('idempotency_key', 'like', $prefix . '%')
+                    ->where('id', '!=', $registration->id)
+                    ->with('vaccines')
+                    ->get();
+                $otherUnpaidCount = $groupRegistrations->where('payment_status', '!=', Registration::PAYMENT_PAID)->count();
+            }
+        }
+
         // Lấy danh sách khung giờ trống khả dụng để đổi lịch hẹn (nếu cần hoãn lịch)
         $nowVn = \Carbon\Carbon::now('Asia/Ho_Chi_Minh');
         $today = $nowVn->toDateString();
@@ -71,7 +85,7 @@ class AdminRegistrationController extends Controller
             })
             ->values();
 
-        return view('vaccine::admin.registrations.show', compact('registration', 'pointQuote', 'loyaltySettings', 'availableSlots'));
+        return view('vaccine::admin.registrations.show', compact('registration', 'pointQuote', 'loyaltySettings', 'availableSlots', 'groupRegistrations', 'otherUnpaidCount'));
     }
 
     public function create(Request $request)
@@ -303,6 +317,49 @@ class AdminRegistrationController extends Controller
         }
 
         return back()->with('success', 'Đã xác nhận thanh toán và cập nhật điểm khách hàng.');
+    }
+
+    public function settleGroup(Request $request, int $id, RegistrationPaymentService $paymentService)
+    {
+        $registration = $this->visibleRegistration($id);
+
+        if (! $registration->idempotency_key) {
+            return back()->with('error', 'Đơn hàng này không thuộc nhóm đặt lịch chung nào.');
+        }
+
+        $parts = explode('_', $registration->idempotency_key);
+        $prefix = $parts[0];
+
+        if (! $prefix) {
+            return back()->with('error', 'Khóa nhóm không hợp lệ.');
+        }
+
+        // Lấy toàn bộ các đơn chưa thanh toán của nhóm, bao gồm cả đơn hiện tại
+        $unpaidGroupRegistrations = Registration::where('idempotency_key', 'like', $prefix . '%')
+            ->where('payment_status', '!=', Registration::PAYMENT_PAID)
+            ->get();
+
+        if ($unpaidGroupRegistrations->isEmpty()) {
+            return back()->with('info', 'Tất cả các đơn trong nhóm đã được thanh toán.');
+        }
+
+        $successCount = 0;
+        $errors = [];
+
+        foreach ($unpaidGroupRegistrations as $reg) {
+            try {
+                $paymentService->settle($reg->id, 0, AdminContext::user());
+                $successCount++;
+            } catch (\Exception $e) {
+                $errors[] = "Đơn {$reg->registration_code} ({$reg->patient_name}): " . $e->getMessage();
+            }
+        }
+
+        if (count($errors) > 0) {
+            return back()->with('success', "Đã thanh toán thành công {$successCount} đơn. Gặp lỗi tại: " . implode(', ', $errors));
+        }
+
+        return back()->with('success', "Đã xác nhận thanh toán chung thành công cho toàn bộ {$successCount} đơn hàng trong nhóm!");
     }
 
     public function refund(int $id, RegistrationPaymentService $paymentService)
