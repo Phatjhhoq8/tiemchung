@@ -7,7 +7,7 @@
         'footer_company_name' => 'CÔNG TY CỔ PHẦN VẮC XIN MEDICARE',
         'footer_sub_title' => 'HỆ THỐNG TRUNG TÂM TIÊM CHỦNG VẮC XIN CHO TRẺ EM & NGƯỜI LỚN AN TOÀN – UY TÍN – CHẤT LƯỢNG HÀƠ ĐẦU VIỆT NAM',
         'footer_content_manager' => 'Chịu trách nhiệm nội dung: Ban Giám Đốc HỆ THỐNG TIÊM CHỦNG MEDICARE',
-        'footer_info_lines' => '[{"icon":"shield-check","text":"Giấy chứng nhận ĐKKD số <strong>0107631488</strong> do Sở KH&ĐT TP. Cần Thơ cấp ngày 11/11/2016"},{"icon":"building","text":"Trụ sở: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Thuận, Xã Cờ Đỏ, TP. Cần Thơ"},{"icon":"mail","text":"Email liên hệ: cskh@medicare.vn"}]',
+        'footer_info_lines' => '[{"icon":"shield-check","text":"Giấy chứng nhận ĐKKD số 0107631488 do Sở KH&ĐT TP. Cần Thơ cấp ngày 11/11/2016"},{"icon":"building","text":"Trụ sở: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Thuận, Xã Cờ Đỏ, TP. Cần Thơ"},{"icon":"mail","text":"Email liên hệ: cskh@medicare.vn"}]',
     ]);
     $site_name = $globalSettings['site_name'];
     $hotline = $globalSettings['hotline'];
@@ -832,6 +832,18 @@
                             @php
                                 $lineText = $line['text'] ?? '';
                                 $lineIcon = $line['icon'] ?? 'shield-check';
+                                
+                                // 1. Escape HTML thô trước để chống người dùng nhập mã HTML trực tiếp
+                                $lineText = e($lineText);
+                                
+                                // 2. Tự động in đậm mã số ĐKKD (chuỗi số liên tiếp gồm 9 đến 11 chữ số)
+                                $lineText = preg_replace(
+                                    '/\b\d{9,11}\b/',
+                                    '<strong>$0</strong>',
+                                    $lineText
+                                );
+                                
+                                // 3. Tự động tìm email và tạo link mailto
                                 if ($lineIcon === 'mail') {
                                     $lineText = preg_replace(
                                         '/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/',
