@@ -216,7 +216,7 @@ class AdminDashboardController extends Controller
         }
 
         $recentRegistrations = (clone $filteredRegistrationQuery)->latest()->take(8)->get();
-        $vaccinesCount = (clone $productQuery)->where('is_active', true)->count();
+        $vaccinesCount = (clone $productQuery)->where('is_active', true)->distinct()->count('vaccine_id');
         $centersCount = $centers->count();
         $fromDate = $fromDateInput;
         $toDate = $toDateInput;

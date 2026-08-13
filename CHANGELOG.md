@@ -1,3 +1,11 @@
+## [v6.5.37] - 2026-08-13
+
+### Admin Dashboard Vaccine Stats Correction
+
+* **Distinct Vaccine Counting (`AdminDashboardController.php`)**:
+  - Fixed an issue where the overall vaccine count on the Admin Dashboard was showing duplicate counts across multiple centers (e.g., 220 instead of 40).
+  - Modified the dashboard query to use `distinct()->count('vaccine_id')` when counting active vaccines to represent unique vaccine types correctly instead of raw mapping records.
+
 ## [v6.5.36] - 2026-08-13
 
 ### Header Responsive Layout Optimization
