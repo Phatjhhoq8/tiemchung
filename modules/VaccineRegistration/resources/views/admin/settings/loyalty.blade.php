@@ -162,7 +162,7 @@
                 <div style="margin-bottom: 30px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                         <h3 style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent-color); margin: 0; display: flex; align-items: center; gap: 6px;">
-                            <i data-lucide="award" style="width: 18px; height: 18px;"></i> 3. Mốc tích lũy & Hạng thành viên (Shopee Style)
+                            <i data-lucide="award" style="width: 18px; height: 18px;"></i> 3. Mốc tích lũy & Hạng thành viên
                         </h3>
                         <button type="button" id="add_tier_btn" class="btn-action-sm btn-action-success">
                             Thêm hạng mới
