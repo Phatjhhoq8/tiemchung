@@ -77,6 +77,9 @@ class AuditLog extends Model
             'registration.deleted' => 'Xóa lịch tiêm',
             'registration_settled' => 'Xác nhận thanh toán',
             'registration.exported' => 'Xuất file Excel/CSV lịch tiêm',
+            'registration.rescheduled' => 'Thay đổi lịch hẹn tiêm',
+            'refund_issued' => 'Hoàn tiền đăng ký tiêm',
+            'order_status_update' => 'Cập nhật trạng thái đơn hàng',
 
             // Bệnh nhân & Khách hàng
             'patient.created' => 'Tạo hồ sơ bệnh nhân',
@@ -90,6 +93,11 @@ class AuditLog extends Model
             'vaccine.featured_changed' => 'Đổi trạng thái vắc xin nổi bật',
             'price_update' => 'Cập nhật giá vắc xin',
 
+            // Lô vắc xin
+            'inventory_lot.created' => 'Tạo lô vắc xin mới',
+            'inventory_lot.updated' => 'Cập nhật lô vắc xin',
+            'inventory_lot.deleted' => 'Xóa lô vắc xin',
+
             // Cấu hình & Người dùng
             'loyalty_settings.center_reset_to_system' => 'Khôi phục tích điểm mặc định',
             'user.created' => 'Tạo tài khoản quản trị',
@@ -100,6 +108,9 @@ class AuditLog extends Model
             'admin_user.deleted' => 'Xóa tài khoản quản trị',
             'auth.password_changed' => 'Đổi mật khẩu tài khoản',
             'publish_settings' => 'Xuất bản cấu hình trang web',
+            'setting.updated' => 'Cập nhật cấu hình hệ thống',
+            'reset_settings' => 'Khôi phục cấu hình mặc định',
+            'save_settings_draft' => 'Lưu bản nháp cấu hình',
 
             // Nội dung
             'article.created' => 'Đăng bài viết mới',
@@ -128,6 +139,7 @@ class AuditLog extends Model
             'setting' => 'Cấu hình hệ thống',
             'article' => 'Bài viết tin tức',
             'banner' => 'Biểu ngữ banner',
+            'inventory_lot' => 'Lô vắc xin',
         ];
     }
 
