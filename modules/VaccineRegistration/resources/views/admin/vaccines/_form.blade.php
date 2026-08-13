@@ -1066,6 +1066,14 @@ function removeRegimenRow(btn) {
                 });
             }
 
+            function selectCategoryValue(val) {
+                if (catHiddenInput) catHiddenInput.value = val;
+                if (catSelectedLabel) {
+                    catSelectedLabel.textContent = val || '-- Chọn hoặc gõ tìm nhóm bệnh --';
+                    catSelectedLabel.style.color = val ? 'var(--text-primary)' : '#94a3b8';
+                    catSelectedLabel.style.fontWeight = val ? '500' : 'normal';
+                }
+                catMenu.style.display = 'none';
             }
         }
 
