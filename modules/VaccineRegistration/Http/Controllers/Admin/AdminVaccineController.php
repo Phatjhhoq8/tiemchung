@@ -147,6 +147,7 @@ class AdminVaccineController extends Controller
             ->values();
 
         $isSuperAdmin = AdminContext::isSuperAdmin() && $selectedCenterId === null;
+        $isSuperAdminAllCenters = $isSuperAdmin;
 
         // Lấy nhu cầu đặt lịch tiêm (20:30 cutoff rule: hôm nay hoặc ngày mai)
         $now = now();
@@ -172,11 +173,11 @@ class AdminVaccineController extends Controller
         if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
                 'success' => true,
-                'html' => view('vaccine::admin.vaccines._table', compact('vaccines', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'scheduledDemands', 'targetDateLabel'))->render(),
+                'html' => view('vaccine::admin.vaccines._table', compact('vaccines', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'isSuperAdminAllCenters', 'scheduledDemands', 'targetDateLabel'))->render(),
             ]);
         }
 
-        return view('vaccine::admin.vaccines.index', compact('vaccines', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'scheduledDemands', 'targetDateLabel'));
+        return view('vaccine::admin.vaccines.index', compact('vaccines', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'isSuperAdminAllCenters', 'scheduledDemands', 'targetDateLabel'));
     }
 
     /**
@@ -192,6 +193,7 @@ class AdminVaccineController extends Controller
             ? AdminContext::selectedCenterId(request()->integer('center_id'))
             : AdminContext::selectedCenterId();
         $isSuperAdmin = AdminContext::isSuperAdmin() && $selectedCenterId === null;
+        $isSuperAdminAllCenters = $isSuperAdmin;
         $adminUser = AdminContext::user();
         $categories = Vaccine::whereNotNull('category')
             ->where('category', '!=', '')
@@ -200,7 +202,7 @@ class AdminVaccineController extends Controller
             ->sort()
             ->values();
 
-        return view('vaccine::admin.vaccines.create', compact('vaccine', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'adminUser'));
+        return view('vaccine::admin.vaccines.create', compact('vaccine', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'isSuperAdminAllCenters', 'adminUser'));
     }
 
     /**
@@ -322,6 +324,7 @@ class AdminVaccineController extends Controller
             $selectedCenterId = $centers->first()->id;
         }
         $isSuperAdmin = AdminContext::isSuperAdmin() && AdminContext::selectedCenterId() === null;
+        $isSuperAdminAllCenters = $isSuperAdmin;
         $adminUser = AdminContext::user();
         $centerVaccine = $selectedCenterId
             ? CenterVaccine::where('center_id', $selectedCenterId)->where('vaccine_id', $vaccine->id)->first()
@@ -342,7 +345,7 @@ class AdminVaccineController extends Controller
             ->sort()
             ->values();
 
-        return view('vaccine::admin.vaccines.edit', compact('vaccine', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'adminUser'));
+        return view('vaccine::admin.vaccines.edit', compact('vaccine', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'isSuperAdminAllCenters', 'adminUser'));
     }
 
     /**

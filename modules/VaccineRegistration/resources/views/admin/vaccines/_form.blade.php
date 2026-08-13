@@ -1,3 +1,4 @@
+@php($isSuperAdmin = $isSuperAdminAllCenters ?? $isSuperAdmin)
 @if ($errors->any())
     <div class="alert alert-danger" style="margin-bottom: 24px; padding: 16px; border-radius: 8px; background-color: #fde8e8; color: #9b1c1c; border: 1px solid #fbd5d5;">
         <ul style="margin: 0; padding-left: 20px;">
@@ -5,8 +6,12 @@
                 <li>{{ $error }}</li>
             @endforeach
         </ul>
-    </div>
 @endif
+
+<div style="background: #f1f5f9; padding: 10px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; color: #0f172a;">
+    DEBUG: isSuperAdmin = {{ var_export($isSuperAdmin ?? false, true) }} | 
+    selectedCenterId = {{ var_export(\Modules\VaccineRegistration\Support\AdminContext::selectedCenterId(), true) }}
+</div>
 
 <style>
     /* CSS cho các trường bị disabled/readonly trong form */
