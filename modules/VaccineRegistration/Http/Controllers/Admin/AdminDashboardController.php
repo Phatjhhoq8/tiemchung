@@ -216,7 +216,19 @@ class AdminDashboardController extends Controller
         }
 
         $recentRegistrations = (clone $filteredRegistrationQuery)->latest()->take(8)->get();
-        $vaccinesCount = (clone $productQuery)->where('is_active', true)->distinct()->count('vaccine_id');
+        if ($selectedCenterId) {
+            $vaccinesCount = CenterVaccine::query()
+                ->where('center_id', $selectedCenterId)
+                ->where('is_active', true)
+                ->whereHas('vaccine', function ($q) {
+                    $q->where('is_active', true);
+                })
+                ->count();
+        } else {
+            $vaccinesCount = \Modules\VaccineRegistration\Models\Vaccine::query()
+                ->where('is_active', true)
+                ->count();
+        }
         $centersCount = $centers->count();
         $fromDate = $fromDateInput;
         $toDate = $toDateInput;
