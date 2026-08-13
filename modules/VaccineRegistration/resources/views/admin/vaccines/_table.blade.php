@@ -1,4 +1,6 @@
-@php($isSuperAdmin = $isSuperAdminAllCenters ?? $isSuperAdmin)
+@php
+    $isSuperAdmin = $isSuperAdminAllCenters ?? $isSuperAdmin;
+@endphp
 @if($vaccines->isEmpty())
     <div style="text-align: center; padding: 40px; color: var(--text-muted);">
         <i data-lucide="inbox" style="width: 48px; height: 48px; margin-bottom: 12px; color: var(--text-light);"></i>

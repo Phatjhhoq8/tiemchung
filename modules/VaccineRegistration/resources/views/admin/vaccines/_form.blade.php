@@ -1,4 +1,6 @@
-@php($isSuperAdmin = $isSuperAdminAllCenters ?? $isSuperAdmin)
+@php
+    $isSuperAdmin = $isSuperAdminAllCenters ?? $isSuperAdmin;
+@endphp
 @if ($errors->any())
     <div class="alert alert-danger" style="margin-bottom: 24px; padding: 16px; border-radius: 8px; background-color: #fde8e8; color: #9b1c1c; border: 1px solid #fbd5d5;">
         <ul style="margin: 0; padding-left: 20px;">

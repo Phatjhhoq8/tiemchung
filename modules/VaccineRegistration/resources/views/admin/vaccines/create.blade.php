@@ -1,5 +1,7 @@
 @extends('vaccine::layouts.admin')
-@php($isSuperAdmin = $isSuperAdminAllCenters ?? $isSuperAdmin)
+@php
+    $isSuperAdmin = $isSuperAdminAllCenters ?? $isSuperAdmin;
+@endphp
 
 @section('title', 'Thêm Vắc Xin Mới - Medicare')
 @section('page_title', 'Thêm Vắc Xin Vào Danh Mục')
