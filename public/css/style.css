@@ -190,6 +190,7 @@ html.dark textarea::placeholder {
     font-size: 0.95rem;
     padding: 0.5rem 0;
     border-bottom: 2px solid transparent;
+    white-space: nowrap;
 }
 
 .nav-link:hover, .nav-link.active {
@@ -2713,7 +2714,7 @@ html.dark textarea::placeholder {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
     .header-container {
         padding: 1rem;
     }
@@ -3478,7 +3479,7 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
     color: var(--primary-color);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
     .mobile-menu-toggle {
         display: flex;
         align-items: center;

@@ -203,7 +203,7 @@
                     .branch-item-btn.active:hover {
                         background-color: rgba(200, 16, 46, 0.12);
                     }
-                    @media (max-width: 768px) {
+                    @media (max-width: 1200px) {
                         .header-actions {
                             gap: 6px !important;
                         }

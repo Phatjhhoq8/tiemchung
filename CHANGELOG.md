@@ -1,3 +1,12 @@
+## [v6.5.36] - 2026-08-13
+
+### Header Responsive Layout Optimization
+
+* **Responsive Navigation Header Fix (`app.blade.php`, `style.css`)**:
+  - Prevented navigation link texts from wrapping onto multiple lines by adding `white-space: nowrap;` to `.nav-link`.
+  - Raised the mobile breakpoint threshold from `768px` to `1200px` to hide the horizontal `.nav-menu` and show the hamburger `.mobile-menu-toggle` on medium/tablet screens.
+  - Adjusted the header action pill styles to collapse text and apply compact paddings under `1200px` screen size to fit tablets and prevent header layout distortion.
+
 ## [v6.5.35] - 2026-08-13
 
 ### Footer Layout Restoration - Card-based Branches & Legal Panel
