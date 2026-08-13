@@ -7,7 +7,7 @@
         'footer_company_name' => 'CÔNG TY CỔ PHẦN VẮC XIN MEDICARE',
         'footer_sub_title' => 'HỆ THỐNG TRUNG TÂM TIÊM CHỦNG VẮC XIN CHO TRẺ EM & NGƯỜI LỚN AN TOÀN – UY TÍN – CHẤT LƯỢNG HÀƠ ĐẦU VIỆT NAM',
         'footer_content_manager' => 'Chịu trách nhiệm nội dung: Ban Giám Đốc HỆ THỐNG TIÊM CHỦNG MEDICARE',
-        'footer_info_lines' => '[{"icon":"shield-check","text":"Giấy chứng nhận ĐKKD số <strong>0107631488</strong> do Sở KH&ĐT TP. Cần Thơ cấp ngày 11/11/2016"},{"icon":"building","text":"Trụ sở: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Thuận, Xã Cờ Đỏ, TP. Cần Thơ"},{"icon":"mail","text":"Email liên hệ: <a href=\"mailto:cskh@medicare.vn\" style=\"color: #ffffff; text-decoration: underline;\">cskh@medicare.vn</a>"},{"icon":"phone-call","text":"Tổng đài Hotline: <a href=\"tel:0938603839\" style=\"color: var(--secondary-color); font-weight: 700; text-decoration: none;\">0938 60 38 39</a>"}]',
+        'footer_info_lines' => '[{"icon":"shield-check","text":"Giấy chứng nhận ĐKKD số <strong>0107631488</strong> do Sở KH&ĐT TP. Cần Thơ cấp ngày 11/11/2016"},{"icon":"building","text":"Trụ sở: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Thuận, Xã Cờ Đỏ, TP. Cần Thơ"},{"icon":"mail","text":"Email liên hệ: <a href=\"mailto:cskh@medicare.vn\" style=\"color: #ffffff; text-decoration: underline;\">cskh@medicare.vn</a>"}]',
     ]);
     $site_name = $globalSettings['site_name'];
     $hotline = $globalSettings['hotline'];
@@ -834,6 +834,10 @@
                                 <span>{!! $line['text'] ?? '' !!}</span>
                             </div>
                             @endforeach
+                            <div class="footer-legal-item">
+                                <i data-lucide="phone-call" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
+                                <span>Tổng đài Hotline: <a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}" style="color: var(--secondary-color); font-weight: 700; text-decoration: none;">{{ $hotline }}</a></span>
+                            </div>
                             <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.12); font-size: 0.8rem; color: #94a3b8; line-height: 1.5;">
                                 {{ $footer_content_manager }}
                             </div>

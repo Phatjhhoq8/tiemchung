@@ -448,22 +448,20 @@
 
 <!-- MODAL CẤU HÌNH -->
 <div id="settingModal" class="fb-modal-overlay">
-    <div class="fb-modal-content">
+    <form id="settingForm" class="fb-modal-content" style="display: flex; flex-direction: column; max-height: 90vh; overflow: hidden;">
+        @csrf
+        <input type="hidden" name="action" id="settingFormAction" value="draft">
         <div class="fb-modal-header">
             <h3 id="settingModalTitle" style="margin: 0; font-size: 17px; font-weight: 700; color: #1e293b;">Chỉnh Sửa Trực Quan Cài Đặt</h3>
-            <button onclick="closeModal('settingModal')" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #94a3b8; font-weight: 500;">&times;</button>
+            <button type="button" onclick="closeModal('settingModal')" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #94a3b8; font-weight: 500;">&times;</button>
         </div>
-        <form id="settingForm">
-            @csrf
-            <input type="hidden" name="action" id="settingFormAction" value="draft">
-            <div class="fb-modal-body" id="settingModalFields"></div>
-            <div class="fb-modal-footer">
-                <button type="button" onclick="closeModal('settingModal')" class="btn-secondary" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; font-weight: 700; color: #475569; cursor: pointer;">Hủy</button>
-                <button type="button" onclick="submitSettingsForm('draft')" class="btn-secondary-outline" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 700; color: #004b8f; cursor: pointer;">Lưu Bản Nháp</button>
-                <button type="button" onclick="submitSettingsForm('publish')" class="btn-primary" style="padding: 10px 22px; border-radius: 8px; background: #c8102e; border: none; font-weight: 700; color: #fff; cursor: pointer;">Xuất Bản Ngay</button>
-            </div>
-        </form>
-    </div>
+        <div class="fb-modal-body" id="settingModalFields"></div>
+        <div class="fb-modal-footer">
+            <button type="button" onclick="closeModal('settingModal')" class="btn-secondary" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; font-weight: 700; color: #475569; cursor: pointer;">Hủy</button>
+            <button type="button" onclick="submitSettingsForm('draft')" class="btn-secondary-outline" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 700; color: #004b8f; cursor: pointer;">Lưu Bản Nháp</button>
+            <button type="button" onclick="submitSettingsForm('publish')" class="btn-primary" style="padding: 10px 22px; border-radius: 8px; background: #c8102e; border: none; font-weight: 700; color: #fff; cursor: pointer;">Xuất Bản Ngay</button>
+        </div>
+    </form>
 </div>
 
 @include('vaccine::admin.live_editor_modals')

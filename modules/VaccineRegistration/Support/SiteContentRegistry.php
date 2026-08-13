@@ -84,7 +84,7 @@ class SiteContentRegistry
             ],
             'footer_info_lines' => [
                 'type' => 'json',
-                'default' => '[{"icon":"shield-check","text":"Giấy chứng nhận ĐKKD số <strong>0107631488</strong> do Sở KH&ĐT TP. Cần Thơ cấp ngày 11/11/2016"},{"icon":"building","text":"Trụ sở: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Thuận, Xã Cờ Đỏ, TP. Cần Thơ"},{"icon":"mail","text":"Email liên hệ: <a href=\"mailto:cskh@medicare.vn\" style=\"color: #ffffff; text-decoration: underline;\">cskh@medicare.vn</a>"},{"icon":"phone-call","text":"Tổng đài Hotline: <a href=\"tel:0938603839\" style=\"color: var(--secondary-color); font-weight: 700; text-decoration: none;\">0938 60 38 39</a>"}]',
+                'default' => '[{"icon":"shield-check","text":"Giấy chứng nhận ĐKKD số <strong>0107631488</strong> do Sở KH&ĐT TP. Cần Thơ cấp ngày 11/11/2016"},{"icon":"building","text":"Trụ sở: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Thuận, Xã Cờ Đỏ, TP. Cần Thơ"},{"icon":"mail","text":"Email liên hệ: <a href=\"mailto:cskh@medicare.vn\" style=\"color: #ffffff; text-decoration: underline;\">cskh@medicare.vn</a>"}]',
                 'rules' => 'required|json',
             ],
 
