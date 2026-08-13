@@ -1,3 +1,12 @@
+## [v6.5.35] - 2026-08-13
+
+### Footer Layout Restoration - Card-based Branches & Legal Panel
+
+* **Rollback to Card-based Footer Layout (`app.blade.php`, `style.css`)**:
+  - Restored the footer branch listing to the 4 card-based boxes (`.footer-branch-item` inside `.footer-branch-list`) which show complete address details, hotline, and operating hours.
+  - Restored the right column's legal info container back to the background-blur panel card (`.footer-legal-panel`).
+  - Restored the top header bar of the footer containing the logo, Medicare tagline, search, and general hotline details.
+
 ## [v6.5.34] - 2026-08-13
 
 ### Footer Redesign - 2-Column Compact Layout
@@ -9,6 +18,7 @@
   - Right column retains navigation links and full company legal information.
   - Removed all old flat-row and card-based branch CSS; replaced with new `.footer-branch-compact-grid` and `.footer-branch-compact-item` styles.
   - Footer is now fully responsive: 3-column branch grid collapses to 2 columns on tablet and below.
+
 
 ## [v6.5.33] - 2026-08-13
 
