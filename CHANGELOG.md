@@ -1,3 +1,15 @@
+## [v6.5.34] - 2026-08-13
+
+### Footer Redesign - 2-Column Compact Layout
+
+* **Complete Footer Redesign (`app.blade.php`, `style.css`)**:
+  - Removed the top header bar section (logo + tagline + hotline row) from the footer to create a cleaner, more focused layout.
+  - Left column now displays the brand logo, tagline, and a compact branch grid (name + hotline only) in a 3-column grid arrangement.
+  - Each branch card is a minimal pill-style tile with the branch name and clickable hotline number, with active-branch highlighted in red.
+  - Right column retains navigation links and full company legal information.
+  - Removed all old flat-row and card-based branch CSS; replaced with new `.footer-branch-compact-grid` and `.footer-branch-compact-item` styles.
+  - Footer is now fully responsive: 3-column branch grid collapses to 2 columns on tablet and below.
+
 ## [v6.5.33] - 2026-08-13
 
 ### Footer Layout Optimization

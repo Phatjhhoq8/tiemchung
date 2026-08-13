@@ -3652,6 +3652,10 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
 /* ==========================================================================
    FOOTER 4-COLUMN LAYOUT (NEW)
    ========================================================================== */
+/* ===========================
+   FOOTER — 2-Column Medicare Layout
+   =========================== */
+
 .app-footer-vnvc {
     background-color: #0f172a;
     color: #ffffff;
@@ -3661,286 +3665,20 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
     border-top: 3px solid var(--primary-color);
 }
 
-.footer-top-header {
-    background-color: #020617;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 1.35rem 0;
-}
-
-.footer-header-container {
-    max-width: 1440px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-}
-
-.footer-brand-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-}
-
-.footer-brand-title h3 {
-    font-size: 1.05rem;
-    font-weight: 800;
-    color: #ffffff;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    line-height: 1.4;
-    margin: 0;
-    text-align: center;
-}
-
-.footer-top-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-    font-size: 0.95rem;
-    text-align: center;
-}
-
-.footer-top-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: #e2e8f0;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s ease;
-}
-
-.footer-top-item:hover {
-    color: var(--secondary-color);
-}
-
+/* Footer Body container */
 .footer-body-container {
     max-width: 1440px;
     width: 100%;
     margin: 0 auto;
-    padding: 2.75rem 0;
-}
-
-.footer-branches-title {
-    font-size: 0.95rem;
-    font-weight: 800;
-    color: #ffffff;
-    margin-bottom: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    height: 32px;
+    padding: 2.5rem 2rem;
     box-sizing: border-box;
 }
 
-.footer-branches-title::before {
-    content: '';
-    display: inline-block;
-    width: 5px;
-    height: 22px;
-    background-color: var(--primary-color);
-    border-radius: 3px;
-}
-
-.footer-branch-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.75rem;
-    margin-bottom: 2.75rem;
-}
-
-@media (max-width: 768px) {
-    .footer-branch-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.footer-branch-list-flat {
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-}
-
-.footer-branch-row-flat {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    padding-bottom: 0.85rem;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
-}
-
-.footer-branch-row-flat:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.footer-branch-row-title {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.65rem;
-}
-
-.footer-branch-row-title h4 {
-    font-size: 0.95rem;
-    font-weight: 800;
-    color: var(--secondary-color);
-    margin: 0;
-}
-
-.footer-branch-selected {
-    background: var(--primary-color);
-    border-radius: 999px;
-    color: #ffffff;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    padding: 0.2rem 0.5rem;
-    text-transform: uppercase;
-}
-
-.footer-branch-row-detail {
-    font-size: 0.84rem;
-    color: #e2e8f0;
-    line-height: 1.6;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 16px;
-}
-
-.footer-branch-row-detail span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.footer-branch-row-actions {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 0.8rem;
-}
-
-
-.footer-branch-info p {
-    margin: 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-}
-
-.footer-branch-meta {
-    display: grid;
-    gap: 0.5rem;
-}
-
-.footer-branch-meta span {
-    align-items: flex-start;
-    display: flex;
-    gap: 8px;
-}
-
-.footer-branch-meta i {
-    color: var(--secondary-color);
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-
-.footer-branch-item-actions {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    margin-top: 1rem;
-    padding-top: 0.85rem;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-@media (max-width: 480px) {
-    .footer-branch-item-actions {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 10px !important;
-    }
-    .footer-branch-link-map,
-    .footer-branch-link-book {
-        justify-content: center !important;
-        width: 100% !important;
-        padding: 8px 10px !important;
-        background: rgba(255, 255, 255, 0.04) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        border-radius: 8px !important;
-        box-sizing: border-box !important;
-    }
-}
-
-.footer-branch-link-map,
-.footer-branch-link-book {
-    font-size: 0.82rem;
-    font-weight: 700;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-}
-
-.footer-branch-link-map {
-    color: #ff5c77;
-}
-
-.footer-branch-link-map:hover {
-    color: var(--primary-color);
-    text-decoration: underline;
-}
-
-.footer-branch-link-book {
-    color: var(--secondary-color);
-    background: transparent;
-    padding: 0;
-}
-
-.footer-branch-link-book:hover {
-    color: #ffffff;
-    text-decoration: underline;
-}
-
-.footer-branch-more-card {
-    text-decoration: none !important;
-    cursor: pointer;
-}
-
-.footer-branch-more-card:hover {
-    border-color: rgba(234, 170, 0, 0.4);
-    background: rgba(255, 255, 255, 0.05);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-}
-
-.footer-branch-more-card:hover .footer-branch-link-book {
-    color: #ffffff;
-    text-decoration: underline;
-}
-
-.footer-branch-more-card:hover .footer-branch-link-map {
-    color: var(--primary-color);
-    text-decoration: underline;
-}
-
+/* 2-column main layout: left (brand+branches) wide, right (legal) narrower */
 .footer-main-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr);
-    gap: 2rem;
+    grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr);
+    gap: 3rem;
     align-items: start;
 }
 
@@ -3951,27 +3689,160 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
     }
 }
 
+/* ---- Cột trái: Logo + Branches ---- */
+.footer-brand-block {
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-brand-tagline {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+    margin: 0;
+    max-width: 420px;
+}
+
+.footer-branches-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--secondary-color, #eaaa00);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-branches-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background-color: var(--primary-color);
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+/* Compact Branch Grid */
+.footer-branch-compact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+@media (max-width: 1200px) {
+    .footer-branch-compact-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .footer-branch-compact-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.footer-branch-compact-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.03);
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.footer-branch-compact-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(234, 170, 0, 0.25);
+}
+
+.footer-branch-compact-item.is-active {
+    background: rgba(200, 16, 46, 0.08);
+    border-color: rgba(200, 16, 46, 0.3);
+}
+
+.footer-branch-compact-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.footer-branch-compact-name span {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    line-height: 1.3;
+}
+
+.footer-branch-compact-phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--secondary-color, #eaaa00);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.footer-branch-compact-phone:hover {
+    color: #ffffff;
+}
+
+/* Badge "Đang chọn" */
+.footer-branch-selected {
+    background: var(--primary-color);
+    border-radius: 999px;
+    color: #ffffff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0.15rem 0.45rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* "Xem tất cả" link */
+.footer-branch-view-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-branch-view-all:hover {
+    color: var(--secondary-color, #eaaa00);
+}
+
+/* ---- Cột phải: Nav + Company info ---- */
 .footer-policy-links {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    flex-wrap: nowrap;
-    white-space: nowrap;
-    gap: 0.85rem;
-    margin-bottom: 1.25rem;
-    font-size: 0.86rem;
-    height: 32px;
-    box-sizing: border-box;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.84rem;
 }
 
 @media (max-width: 992px) {
     .footer-policy-links {
-        height: auto;
-        justify-content: center !important;
+        justify-content: flex-start;
         flex-wrap: wrap;
-        width: 100%;
-        text-align: center;
-        gap: 0.85rem;
     }
 }
 
@@ -3987,63 +3858,55 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
     text-decoration: underline;
 }
 
-.footer-legal-panel {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    padding: 0;
-    backdrop-filter: none;
+.footer-policy-links span {
+    color: rgba(255, 255, 255, 0.25);
 }
 
 .footer-company-details {
-    font-size: 0.85rem;
+    font-size: 0.83rem;
     color: #cbd5e1;
     line-height: 1.6;
 }
 
 .footer-company-details h3 {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 800;
     color: #ffffff;
     text-transform: uppercase;
     margin-bottom: 1rem;
-    letter-spacing: 0.02em;
-    font-family: var(--font-display, inherit);
+    letter-spacing: 0.03em;
 }
 
 .footer-legal-item {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 0.75rem;
-    font-size: 0.84rem;
+    gap: 9px;
+    margin-bottom: 0.7rem;
+    font-size: 0.82rem;
     color: #cbd5e1;
     line-height: 1.5;
 }
 
+/* Copyright bar */
 .footer-copyright {
     border-top: 1px solid rgba(255, 255, 255, 0.08);
-    color: #94a3b8;
-    font-size: 0.82rem;
-    padding: 1.25rem 0;
+    color: #64748b;
+    font-size: 0.78rem;
+    padding: 1.1rem 2rem;
     text-align: center;
 }
 
 @media (max-width: 640px) {
-    .footer-branch-list {
-        grid-template-columns: 1fr;
+    .footer-body-container {
+        padding: 2rem 1.25rem;
     }
-
-    .footer-main-layout {
-        gap: 1.5rem;
-    }
-
-    .footer-legal-panel,
-    .footer-branch-item {
-        border-radius: 10px;
-        padding: 1rem;
+    .footer-copyright {
+        padding: 1rem 1.25rem;
     }
 }
+
+
+
 
 
 .footer-bottom-gold-bar {

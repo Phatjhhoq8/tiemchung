@@ -724,99 +724,50 @@
         @yield('content')
     </main>
 
-    <!-- Footer chính — VNVC Style Mẫu Hình 2 -->
+    <!-- Footer chính — Medicare 2-Column Layout -->
     <footer class="app-footer-vnvc">
-        <!-- Footer Top Header Bar -->
-        <div class="footer-top-header">
-            <div class="footer-header-container">
-                <div class="footer-brand-title">
-                    <a href="{{ route('home') }}" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-                        <img src="{{ asset('images/logo.png') }}" alt="{{ $site_name }}" style="max-height: 40px; width: auto; filter: brightness(0) invert(1);">
-                    </a>
-                    <h3>{{ $footer_sub_title }}</h3>
-                </div>
-                <div class="footer-top-actions">
-                    <a href="{{ route('contact') }}" class="footer-top-item">
-                        <i data-lucide="map-pin" style="width: 16px; height: 16px; color: var(--secondary-color);"></i>
-                        <span>Tìm trung tâm Medicare</span>
-                    </a>
-                    <span style="opacity: 0.3;">|</span>
-                    <a href="tel:{{ str_replace([' ', '.', '-'], '', $hotline) }}" class="footer-top-item">
-                        <i data-lucide="phone-call" style="width: 16px; height: 16px; color: var(--secondary-color);"></i>
-                        <span>Hotline: <strong>{{ $hotline }}</strong></span>
-                    </a>
-                    <span style="opacity: 0.3;">|</span>
-                    <div class="footer-top-item">
-                        <i data-lucide="clock" style="width: 16px; height: 16px; color: var(--secondary-color);"></i>
-                        <span>{{ $footer_working_hours }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Footer Body: Branch Network & Legal Information -->
+        <!-- Footer Body: 2 cột rõ ràng -->
         <div class="footer-body-container">
-            <!-- Footer Main Layout: Branch Network (Left) + Legal Information (Right) -->
             <div class="footer-main-layout">
+
+                <!-- Cột trái: Logo + Hệ thống chi nhánh -->
                 <div class="footer-left-col">
+                    <div class="footer-brand-block">
+                        <a href="{{ route('home') }}" style="display: inline-flex; align-items: center; text-decoration: none; margin-bottom: 10px;">
+                            <img src="{{ asset('images/logo.png') }}" alt="{{ $site_name }}" style="max-height: 38px; width: auto; filter: brightness(0) invert(1);">
+                        </a>
+                        <p class="footer-brand-tagline">{{ $footer_sub_title }}</p>
+                    </div>
+
                     <div class="footer-branches-title">
                         HỆ THỐNG CHI NHÁNH TIÊM CHỦNG MEDICARE CẦN THƠ
                     </div>
-                    <div class="footer-branch-list-flat">
-                        @php
-                            $totalCenters = $activeCenters->count();
-                            $displayCenters = $totalCenters > 4 ? $activeCenters->take(3) : $activeCenters->take(4);
-                        @endphp
 
-                        @foreach($displayCenters as $center)
-                        <div class="footer-branch-row-flat">
-                            <div class="footer-branch-row-title">
-                                <h4>{{ $center->name }}</h4>
+                    <div class="footer-branch-compact-grid">
+                        @foreach($activeCenters as $center)
+                        <div class="footer-branch-compact-item {{ $currentCenter?->id === $center->id ? 'is-active' : '' }}">
+                            <div class="footer-branch-compact-name">
                                 @if($currentCenter?->id === $center->id)
                                     <span class="footer-branch-selected">Đang chọn</span>
                                 @endif
-                                <div class="footer-branch-row-actions">
-                                    <a href="{{ route('contact') }}" class="footer-branch-link-map" style="display: inline-flex; align-items: center; gap: 4px;">
-                                        <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Bản đồ
-                                    </a>
-                                    <span style="opacity: 0.3; color: #fff;">|</span>
-                                    <form method="POST" action="{{ route('centers.select') }}" style="margin:0; display: inline;">
-                                        @csrf
-                                        <input type="hidden" name="center_id" value="{{ $center->id }}">
-                                        <input type="hidden" name="redirect_to" value="register">
-                                        <button type="submit" class="footer-branch-link-book" style="border:0; background:transparent; cursor:pointer; font-weight:700; padding:0; display: inline-flex; align-items: center; gap: 4px;">Đặt lịch →</button>
-                                    </form>
-                                </div>
+                                <span>{{ $center->name }}</span>
                             </div>
-                            <div class="footer-branch-row-detail">
-                                <span><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color);"></i> {{ $center->address }}</span>
-                                <span><i data-lucide="phone" style="width: 14px; height: 14px; color: var(--secondary-color);"></i> Hotline: <strong>{{ $center->phone }}</strong></span>
-                                <span><i data-lucide="clock" style="width: 14px; height: 14px; color: var(--secondary-color);"></i> {{ $center->working_hours ?: '7:00 – 17:00 (Tất cả các ngày trong tuần kể cả Thứ 7, Chủ Nhật & Ngày Lễ)' }}</span>
-                            </div>
+                            <a href="tel:{{ preg_replace('/\D+/', '', $center->phone) }}" class="footer-branch-compact-phone">
+                                <i data-lucide="phone" style="width: 12px; height: 12px;"></i>
+                                {{ $center->phone }}
+                            </a>
                         </div>
                         @endforeach
-
-                        @if($totalCenters > 4)
-                        <div class="footer-branch-row-flat">
-                            <div class="footer-branch-row-title">
-                                <h4>HỆ THỐNG TẤT CẢ CHI NHÁNH</h4>
-                                <div class="footer-branch-row-actions">
-                                    <a href="{{ route('contact') }}" class="footer-branch-link-map" style="display: inline-flex; align-items: center; gap: 4px;">
-                                        <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Bản đồ
-                                    </a>
-                                    <span style="opacity: 0.3; color: #fff;">|</span>
-                                    <a href="{{ route('contact') }}" class="footer-branch-link-book" style="font-weight:700; display: inline-flex; align-items: center; gap: 4px;">Xem tất cả →</a>
-                                </div>
-                            </div>
-                            <div class="footer-branch-row-detail">
-                                <span><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color);"></i> Tra cứu địa chỉ, bản đồ và hướng dẫn chỉ đường toàn bộ các trung tâm tiêm chủng Medicare.</span>
-                                <span><i data-lucide="phone" style="width: 14px; height: 14px; color: var(--secondary-color);"></i> Hotline tư vấn: <strong>0938 60 38 39</strong></span>
-                            </div>
-                        </div>
-                        @endif
                     </div>
+
+                    <a href="{{ route('contact') }}" class="footer-branch-view-all">
+                        <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
+                        Xem bản đồ &amp; địa chỉ tất cả chi nhánh →
+                    </a>
                 </div>
 
+                <!-- Cột phải: Thông tin công ty & pháp lý -->
                 <div class="footer-right-col">
                     <div class="footer-policy-links">
                         <a href="{{ route('about') }}">Giới thiệu</a>
@@ -827,50 +778,41 @@
                         <span>•</span>
                         <a href="{{ route('booking.lookup') }}">Tra cứu lịch hẹn</a>
                     </div>
-                    <div class="footer-legal-panel">
-                        <div class="footer-company-details">
-                            <h3>{{ $footer_company_name }}</h3>
-                            @foreach($footer_info_lines as $line)
-                            @php
-                                $lineText = $line['text'] ?? '';
-                                $lineIcon = $line['icon'] ?? 'shield-check';
-                                
-                                // 1. Escape HTML thô trước để chống người dùng nhập mã HTML trực tiếp
-                                $lineText = e($lineText);
-                                
-                                // 2. Tự động in đậm mã số ĐKKD (chuỗi số liên tiếp gồm 9 đến 11 chữ số)
+
+                    <div class="footer-company-details">
+                        <h3>{{ $footer_company_name }}</h3>
+                        @foreach($footer_info_lines as $line)
+                        @php
+                            $lineText = $line['text'] ?? '';
+                            $lineIcon = $line['icon'] ?? 'shield-check';
+                            $lineText = e($lineText);
+                            $lineText = preg_replace('/\b\d{9,11}\b/', '<strong>$0</strong>', $lineText);
+                            if ($lineIcon === 'mail') {
                                 $lineText = preg_replace(
-                                    '/\b\d{9,11}\b/',
-                                    '<strong>$0</strong>',
+                                    '/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/',
+                                    '<a href="mailto:$0" style="color: #ffffff; text-decoration: underline;">$0</a>',
                                     $lineText
                                 );
-                                
-                                // 3. Tự động tìm email và tạo link mailto
-                                if ($lineIcon === 'mail') {
-                                    $lineText = preg_replace(
-                                        '/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/',
-                                        '<a href="mailto:$0" style="color: #ffffff; text-decoration: underline;">$0</a>',
-                                        $lineText
-                                    );
-                                }
-                            @endphp
-                            <div class="footer-legal-item">
-                                <i data-lucide="{{ $lineIcon }}" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
-                                <span>{!! $lineText !!}</span>
-                            </div>
-                            @endforeach
-                            <div class="footer-legal-item">
-                                <i data-lucide="phone-call" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
-                                <span>Tổng đài Hotline: <a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}" style="color: var(--secondary-color); font-weight: 700; text-decoration: none;">{{ $hotline }}</a></span>
-                            </div>
-                            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.12); font-size: 0.8rem; color: #94a3b8; line-height: 1.5;">
-                                {{ $footer_content_manager }}
-                            </div>
+                            }
+                        @endphp
+                        <div class="footer-legal-item">
+                            <i data-lucide="{{ $lineIcon }}" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
+                            <span>{!! $lineText !!}</span>
+                        </div>
+                        @endforeach
+                        <div class="footer-legal-item">
+                            <i data-lucide="phone-call" style="width: 15px; height: 15px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
+                            <span>Tổng đài Hotline: <a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}" style="color: var(--secondary-color); font-weight: 700; text-decoration: none;">{{ $hotline }}</a></span>
+                        </div>
+                        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.12); font-size: 0.78rem; color: #94a3b8; line-height: 1.5;">
+                            {{ $footer_content_manager }}
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
+
         <div class="footer-copyright">{{ $footer_text }}</div>
 
     </footer>
