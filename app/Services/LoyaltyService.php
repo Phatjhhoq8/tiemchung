@@ -22,7 +22,7 @@ class LoyaltyService
             'use_system_settings' => true,
             'synced_system_at' => null,
             'enabled' => true,
-            'vnd_per_earned_point' => 10000,
+            'vnd_per_earned_point' => 1000,
             'min_order_value_to_earn' => 0,
             'min_order_value_to_redeem' => 0,
             'point_expiry_months' => 0, // 0 = Vô hạn

@@ -42,7 +42,7 @@ class SettingSeeder extends Seeder
         // Khởi tạo cấu hình loyalty mặc định nếu chưa có
         $loyaltySettings = json_encode([
             'enabled' => true,
-            'vnd_per_earned_point' => 10000,
+            'vnd_per_earned_point' => 1000,
             'min_order_value_to_earn' => 0,
             'min_order_value_to_redeem' => 0,
             'point_expiry_months' => 0,

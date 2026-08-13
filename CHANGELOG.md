@@ -7,6 +7,7 @@
   - Fixed a CSS class helper bug where `deactivated` status badges erroneously matched `activated` condition and displayed in green instead of red.
   - Dynamically linked the footer legal hotline info to the currently selected branch instead of using a hardcoded static configuration string.
   - Fixed a visual scrolling issue in the Live Editor settings modal where the form layout prevented vertical scroll bar activation when fields exceeded viewport height.
+  - Adjusted the default loyalty points earned ratio to 0.1% of the paid order value (1,000 VND = 1 point earned) and reinforced the maximum point redemption limit to 50% of the total order value.
 
 * **Vaccine Regimens Price & All-Branch Option (`AdminVaccineController.php`, `_form.blade.php`, `show.blade.php`, `VaccineRegimen.php`)**:
   - Added new `price` and `sale_price` columns to `vaccine_regimens` table via migration, allowing each age-group regimen to specify its own pricing.
