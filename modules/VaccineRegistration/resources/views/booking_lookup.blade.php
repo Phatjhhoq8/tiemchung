@@ -43,6 +43,23 @@
     @endif
 
     @if($registrations->isNotEmpty())
+        @if(isset($points))
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 18px; border-radius: 16px; margin-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.04);">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="background: #dcfce7; color: #16a34a; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="gift" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.85rem; color: #166534; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 2px;">Điểm tích lũy thành viên</span>
+                        <strong style="font-size: 1.3rem; color: #15803d; font-family: var(--font-display); line-height: 1.2;">{{ number_format($points) }} điểm</strong>
+                    </div>
+                </div>
+                <div style="font-size: 0.85rem; color: #166534; font-weight: 600; background: #dcfce7; padding: 6px 14px; border-radius: 30px;">
+                    Tương đương: <strong>{{ number_format($points) }} đ</strong>
+                </div>
+            </div>
+        @endif
+
         <section style="margin-top: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 1.25rem;">
                 <div>

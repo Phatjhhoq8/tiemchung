@@ -496,11 +496,19 @@ class VaccineController extends Controller
             }
         });
 
+        $customer = Customer::where('phone', $phone)->first();
+        $points = 0;
+        if ($customer) {
+            $loyaltyService = app(\App\Services\LoyaltyService::class);
+            $points = $loyaltyService->calculateAvailablePoints($customer);
+        }
+
         return view('vaccine::booking_lookup', [
             'lookedUp' => true,
             'registrations' => $registrations,
             'phone' => $phone,
             'registration_code' => $code,
+            'points' => $points,
         ]);
     }
 
