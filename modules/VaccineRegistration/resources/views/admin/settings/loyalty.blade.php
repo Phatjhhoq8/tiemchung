@@ -37,13 +37,6 @@
             Thiết lập cơ chế tích điểm - {{ $centerId ? 'Cấu hình chi nhánh' : 'Cấu hình chung hệ thống' }}
         </h2>
 
-        <div style="background: #f0f9ff; border: 1px solid #bae6fd; padding: 18px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px;">
-            <i data-lucide="info" style="color: #0284c7; flex-shrink: 0; width: 20px; height: 20px; margin-top: 2px;"></i>
-            <div style="font-size: 0.9rem; color: #0369a1; line-height: 1.6;">
-                <strong>💡 Đề xuất cơ chế tích điểm:</strong><br>
-                Lấy 0.1% giá trị của đơn để chuyển thành điểm. Ví dụ: đơn hàng <strong>200k</strong> thì tích được <strong>200 đồng</strong>. Khi dùng thì trừ số tiền được giảm và tối đa được dùng là <strong>50%</strong> đơn hàng. <em>(Các số liệu này được quyền tùy chỉnh chi tiết bên dưới).</em>
-            </div>
-        </div>
 
         @if ($errors->any())
             <div class="alert alert-danger" style="margin-bottom: 24px; padding: 16px; border-radius: 8px; background-color: #fde8e8; color: #9b1c1c; border: 1px solid #fbd5d5;">
