@@ -200,8 +200,12 @@ class AdminVaccineController extends Controller
         $origins = Vaccine::distinct()->whereNotNull('origin')->where('origin', '!=', '')->pluck('origin')->sort()->values();
         $dosages = Vaccine::distinct()->whereNotNull('dosage')->where('dosage', '!=', '')->pluck('dosage')->sort()->values();
         $ageGroups = Vaccine::distinct()->whereNotNull('age_group')->where('age_group', '!=', '')->pluck('age_group')->sort()->values();
+        $manufacturers = Vaccine::distinct()->whereNotNull('manufacturer')->where('manufacturer', '!=', '')->pluck('manufacturer')->sort()->values();
+        $administrationRoutes = Vaccine::distinct()->whereNotNull('administration_route')->where('administration_route', '!=', '')->pluck('administration_route')->sort()->values();
+        $regimenAgeGroups = \Modules\VaccineRegistration\Models\VaccineRegimen::distinct()->whereNotNull('age_group')->where('age_group', '!=', '')->pluck('age_group')->sort()->values();
+        $regimenScheduleDescriptions = \Modules\VaccineRegistration\Models\VaccineRegimen::distinct()->whereNotNull('schedule_description')->where('schedule_description', '!=', '')->pluck('schedule_description')->sort()->values();
 
-        return view('vaccine::admin.vaccines.create', compact('vaccine', 'categories', 'diseasePreventions', 'origins', 'dosages', 'ageGroups', 'centers', 'selectedCenterId', 'isSuperAdmin', 'isSuperAdminAllCenters', 'adminUser'));
+        return view('vaccine::admin.vaccines.create', compact('vaccine', 'categories', 'diseasePreventions', 'origins', 'dosages', 'ageGroups', 'manufacturers', 'administrationRoutes', 'regimenAgeGroups', 'regimenScheduleDescriptions', 'centers', 'selectedCenterId', 'isSuperAdmin', 'isSuperAdminAllCenters', 'adminUser'));
     }
 
     /**
@@ -348,8 +352,12 @@ class AdminVaccineController extends Controller
         $origins = Vaccine::distinct()->whereNotNull('origin')->where('origin', '!=', '')->pluck('origin')->sort()->values();
         $dosages = Vaccine::distinct()->whereNotNull('dosage')->where('dosage', '!=', '')->pluck('dosage')->sort()->values();
         $ageGroups = Vaccine::distinct()->whereNotNull('age_group')->where('age_group', '!=', '')->pluck('age_group')->sort()->values();
+        $manufacturers = Vaccine::distinct()->whereNotNull('manufacturer')->where('manufacturer', '!=', '')->pluck('manufacturer')->sort()->values();
+        $administrationRoutes = Vaccine::distinct()->whereNotNull('administration_route')->where('administration_route', '!=', '')->pluck('administration_route')->sort()->values();
+        $regimenAgeGroups = \Modules\VaccineRegistration\Models\VaccineRegimen::distinct()->whereNotNull('age_group')->where('age_group', '!=', '')->pluck('age_group')->sort()->values();
+        $regimenScheduleDescriptions = \Modules\VaccineRegistration\Models\VaccineRegimen::distinct()->whereNotNull('schedule_description')->where('schedule_description', '!=', '')->pluck('schedule_description')->sort()->values();
 
-        return view('vaccine::admin.vaccines.edit', compact('vaccine', 'categories', 'diseasePreventions', 'origins', 'dosages', 'ageGroups', 'centers', 'selectedCenterId', 'isSuperAdmin', 'isSuperAdminAllCenters', 'adminUser'));
+        return view('vaccine::admin.vaccines.edit', compact('vaccine', 'categories', 'diseasePreventions', 'origins', 'dosages', 'ageGroups', 'manufacturers', 'administrationRoutes', 'regimenAgeGroups', 'regimenScheduleDescriptions', 'centers', 'selectedCenterId', 'isSuperAdmin', 'isSuperAdminAllCenters', 'adminUser'));
     }
 
     /**
@@ -1002,13 +1010,20 @@ class AdminVaccineController extends Controller
     public function checkMetadataDelete(Request $request)
     {
         $request->validate([
-            'field' => 'required|string|in:category,disease_prevention,origin,dosage,age_group',
+            'field' => 'required|string|in:category,disease_prevention,origin,dosage,age_group,manufacturer,administration_route,regimen_age_group,regimen_schedule_description',
             'value' => 'required|string|max:255',
         ]);
 
         $field = $request->input('field');
         $value = trim($request->input('value'));
-        $vaccines = Vaccine::where($field, $value)->select(['id', 'name'])->get();
+
+        if (str_starts_with($field, 'regimen_')) {
+            $realField = str_replace('regimen_', '', $field);
+            $vaccineIds = \Modules\VaccineRegistration\Models\VaccineRegimen::where($realField, $value)->distinct()->pluck('vaccine_id');
+            $vaccines = Vaccine::whereIn('id', $vaccineIds)->select(['id', 'name'])->get();
+        } else {
+            $vaccines = Vaccine::where($field, $value)->select(['id', 'name'])->get();
+        }
 
         return response()->json([
             'field' => $field,
@@ -1025,7 +1040,7 @@ class AdminVaccineController extends Controller
     public function updateMetadata(Request $request)
     {
         $request->validate([
-            'field' => 'required|string|in:category,disease_prevention,origin,dosage,age_group',
+            'field' => 'required|string|in:category,disease_prevention,origin,dosage,age_group,manufacturer,administration_route,regimen_age_group,regimen_schedule_description',
             'old_value' => 'required|string|max:255',
             'new_value' => 'required|string|max:255',
         ]);
@@ -1034,17 +1049,22 @@ class AdminVaccineController extends Controller
         $oldValue = trim($request->input('old_value'));
         $newValue = trim($request->input('new_value'));
 
-        $count = Vaccine::where($field, $oldValue)->update([$field => $newValue]);
+        if (str_starts_with($field, 'regimen_')) {
+            $realField = str_replace('regimen_', '', $field);
+            $count = \Modules\VaccineRegistration\Models\VaccineRegimen::where($realField, $oldValue)->update([$realField => $newValue]);
+            $values = \Modules\VaccineRegistration\Models\VaccineRegimen::distinct()->whereNotNull($realField)->where($realField, '!=', '')->pluck($realField)->sort()->values();
+        } else {
+            $count = Vaccine::where($field, $oldValue)->update([$field => $newValue]);
+            $values = Vaccine::distinct()->whereNotNull($field)->where($field, '!=', '')->pluck($field)->sort()->values();
+        }
 
         AuditLogger::log(
             'admin.metadata_updated',
             $field,
             $oldValue,
             ['value' => $oldValue],
-            ['value' => $newValue, 'updated_vaccines' => $count]
+            ['value' => $newValue, 'updated_records' => $count]
         );
-
-        $values = Vaccine::distinct()->whereNotNull($field)->where($field, '!=', '')->pluck($field)->sort()->values();
 
         return response()->json([
             'message' => "Đã cập nhật dữ liệu thành công.",
@@ -1059,35 +1079,39 @@ class AdminVaccineController extends Controller
     public function destroyMetadata(Request $request)
     {
         $request->validate([
-            'field' => 'required|string|in:category,disease_prevention,origin,dosage,age_group',
+            'field' => 'required|string|in:category,disease_prevention,origin,dosage,age_group,manufacturer,administration_route,regimen_age_group,regimen_schedule_description',
             'value' => 'required|string|max:255',
         ]);
 
         $field = $request->input('field');
         $value = trim($request->input('value'));
         
-        // Nếu là trường bắt buộc (disease_prevention, age_group, origin) thì không cho phép đặt thành null trống rỗng
-        if (in_array($field, ['disease_prevention', 'age_group', 'origin'])) {
-            $hasAny = Vaccine::where($field, $value)->exists();
-            if ($hasAny) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "Không thể xóa hoàn toàn giá trị này vì đây là trường thông tin bắt buộc của vắc xin. Vui lòng chọn sửa đổi thay thế tên khác."
-                ], 422);
+        if (str_starts_with($field, 'regimen_')) {
+            $realField = str_replace('regimen_', '', $field);
+            $count = \Modules\VaccineRegistration\Models\VaccineRegimen::where($realField, $value)->update([$realField => null]);
+            $values = \Modules\VaccineRegistration\Models\VaccineRegimen::distinct()->whereNotNull($realField)->where($realField, '!=', '')->pluck($realField)->sort()->values();
+        } else {
+            // Nếu là trường bắt buộc (disease_prevention, age_group, origin) thì không cho phép đặt thành null trống rỗng
+            if (in_array($field, ['disease_prevention', 'age_group', 'origin'])) {
+                $hasAny = Vaccine::where($field, $value)->exists();
+                if ($hasAny) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Không thể xóa hoàn toàn giá trị này vì đây là trường thông tin bắt buộc của vắc xin. Vui lòng chọn sửa đổi thay thế tên khác."
+                    ], 422);
+                }
             }
+            $count = Vaccine::where($field, $value)->update([$field => null]);
+            $values = Vaccine::distinct()->whereNotNull($field)->where($field, '!=', '')->pluck($field)->sort()->values();
         }
-
-        $count = Vaccine::where($field, $value)->update([$field => null]);
 
         AuditLogger::log(
             'admin.metadata_deleted',
             $field,
             $value,
-            ['value' => $value, 'affected_vaccines' => $count],
+            ['value' => $value, 'affected_records' => $count],
             null
         );
-
-        $values = Vaccine::distinct()->whereNotNull($field)->where($field, '!=', '')->pluck($field)->sort()->values();
 
         return response()->json([
             'message' => "Đã xóa dữ liệu thành công.",
