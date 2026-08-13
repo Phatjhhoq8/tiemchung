@@ -195,14 +195,13 @@ class AdminVaccineController extends Controller
         $isSuperAdmin = AdminContext::isSuperAdmin() && $selectedCenterId === null;
         $isSuperAdminAllCenters = $isSuperAdmin;
         $adminUser = AdminContext::user();
-        $categories = Vaccine::whereNotNull('category')
-            ->where('category', '!=', '')
-            ->distinct()
-            ->pluck('category')
-            ->sort()
-            ->values();
+        $categories = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->sort()->values();
+        $diseasePreventions = Vaccine::distinct()->whereNotNull('disease_prevention')->where('disease_prevention', '!=', '')->pluck('disease_prevention')->sort()->values();
+        $origins = Vaccine::distinct()->whereNotNull('origin')->where('origin', '!=', '')->pluck('origin')->sort()->values();
+        $dosages = Vaccine::distinct()->whereNotNull('dosage')->where('dosage', '!=', '')->pluck('dosage')->sort()->values();
+        $ageGroups = Vaccine::distinct()->whereNotNull('age_group')->where('age_group', '!=', '')->pluck('age_group')->sort()->values();
 
-        return view('vaccine::admin.vaccines.create', compact('vaccine', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'isSuperAdminAllCenters', 'adminUser'));
+        return view('vaccine::admin.vaccines.create', compact('vaccine', 'categories', 'diseasePreventions', 'origins', 'dosages', 'ageGroups', 'centers', 'selectedCenterId', 'isSuperAdmin', 'isSuperAdminAllCenters', 'adminUser'));
     }
 
     /**
@@ -344,14 +343,13 @@ class AdminVaccineController extends Controller
             $vaccine->is_featured = $centerVaccine->is_featured;
             $vaccine->sort_order = $centerVaccine->sort_order;
         }
-        $categories = Vaccine::whereNotNull('category')
-            ->where('category', '!=', '')
-            ->distinct()
-            ->pluck('category')
-            ->sort()
-            ->values();
+        $categories = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->sort()->values();
+        $diseasePreventions = Vaccine::distinct()->whereNotNull('disease_prevention')->where('disease_prevention', '!=', '')->pluck('disease_prevention')->sort()->values();
+        $origins = Vaccine::distinct()->whereNotNull('origin')->where('origin', '!=', '')->pluck('origin')->sort()->values();
+        $dosages = Vaccine::distinct()->whereNotNull('dosage')->where('dosage', '!=', '')->pluck('dosage')->sort()->values();
+        $ageGroups = Vaccine::distinct()->whereNotNull('age_group')->where('age_group', '!=', '')->pluck('age_group')->sort()->values();
 
-        return view('vaccine::admin.vaccines.edit', compact('vaccine', 'categories', 'centers', 'selectedCenterId', 'isSuperAdmin', 'isSuperAdminAllCenters', 'adminUser'));
+        return view('vaccine::admin.vaccines.edit', compact('vaccine', 'categories', 'diseasePreventions', 'origins', 'dosages', 'ageGroups', 'centers', 'selectedCenterId', 'isSuperAdmin', 'isSuperAdminAllCenters', 'adminUser'));
     }
 
     /**
@@ -995,6 +993,106 @@ class AdminVaccineController extends Controller
             'message' => "Đã xóa nhóm bệnh '{$category}'.",
             'affected_count' => $count,
             'categories' => $categories,
+        ]);
+    }
+
+    /**
+     * Kiểm tra số lượng vắc xin đang dùng giá trị metadata trước khi xóa.
+     */
+    public function checkMetadataDelete(Request $request)
+    {
+        $request->validate([
+            'field' => 'required|string|in:category,disease_prevention,origin,dosage,age_group',
+            'value' => 'required|string|max:255',
+        ]);
+
+        $field = $request->input('field');
+        $value = trim($request->input('value'));
+        $vaccines = Vaccine::where($field, $value)->select(['id', 'name'])->get();
+
+        return response()->json([
+            'field' => $field,
+            'value' => $value,
+            'has_vaccines' => $vaccines->count() > 0,
+            'vaccine_count' => $vaccines->count(),
+            'vaccine_names' => $vaccines->pluck('name')->toArray(),
+        ]);
+    }
+
+    /**
+     * Cập nhật giá trị metadata trên toàn bộ vắc xin liên quan.
+     */
+    public function updateMetadata(Request $request)
+    {
+        $request->validate([
+            'field' => 'required|string|in:category,disease_prevention,origin,dosage,age_group',
+            'old_value' => 'required|string|max:255',
+            'new_value' => 'required|string|max:255',
+        ]);
+
+        $field = $request->input('field');
+        $oldValue = trim($request->input('old_value'));
+        $newValue = trim($request->input('new_value'));
+
+        $count = Vaccine::where($field, $oldValue)->update([$field => $newValue]);
+
+        AuditLogger::log(
+            'admin.metadata_updated',
+            $field,
+            $oldValue,
+            ['value' => $oldValue],
+            ['value' => $newValue, 'updated_vaccines' => $count]
+        );
+
+        $values = Vaccine::distinct()->whereNotNull($field)->where($field, '!=', '')->pluck($field)->sort()->values();
+
+        return response()->json([
+            'message' => "Đã cập nhật dữ liệu thành công.",
+            'updated_count' => $count,
+            'values' => $values,
+        ]);
+    }
+
+    /**
+     * Xóa giá trị metadata (chuyển thành null cho các vắc xin liên quan).
+     */
+    public function destroyMetadata(Request $request)
+    {
+        $request->validate([
+            'field' => 'required|string|in:category,disease_prevention,origin,dosage,age_group',
+            'value' => 'required|string|max:255',
+        ]);
+
+        $field = $request->input('field');
+        $value = trim($request->input('value'));
+        
+        // Nếu là trường bắt buộc (disease_prevention, age_group, origin) thì không cho phép đặt thành null trống rỗng
+        if (in_array($field, ['disease_prevention', 'age_group', 'origin'])) {
+            $hasAny = Vaccine::where($field, $value)->exists();
+            if ($hasAny) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Không thể xóa hoàn toàn giá trị này vì đây là trường thông tin bắt buộc của vắc xin. Vui lòng chọn sửa đổi thay thế tên khác."
+                ], 422);
+            }
+        }
+
+        $count = Vaccine::where($field, $value)->update([$field => null]);
+
+        AuditLogger::log(
+            'admin.metadata_deleted',
+            $field,
+            $value,
+            ['value' => $value, 'affected_vaccines' => $count],
+            null
+        );
+
+        $values = Vaccine::distinct()->whereNotNull($field)->where($field, '!=', '')->pluck($field)->sort()->values();
+
+        return response()->json([
+            'message' => "Đã xóa dữ liệu thành công.",
+            'affected_count' => $count,
+            'values' => $values,
         ]);
     }
 }

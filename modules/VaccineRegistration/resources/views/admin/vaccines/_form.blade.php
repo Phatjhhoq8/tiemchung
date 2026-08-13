@@ -171,15 +171,79 @@
         </div>
 
         <!-- Độ tuổi chỉ định -->
-        <div class="form-group-modern" style="margin-bottom: 0;">
-            <label for="age_group" class="form-label-modern">Độ tuổi chỉ định <span style="color: #ef4444;">*</span></label>
-            <input type="text" name="age_group" id="age_group" value="{{ old('age_group', $vaccine->age_group) }}" placeholder="VD: Trẻ từ 2 tháng tuổi và người lớn" required class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
+        <div class="form-group-modern" style="margin-bottom: 0; position: relative;">
+            <label for="age_group_hidden" class="form-label-modern">Độ tuổi chỉ định <span style="color: #ef4444;">*</span></label>
+            <input type="hidden" name="age_group" id="age_group_hidden" value="{{ old('age_group', $vaccine->age_group) }}">
+            
+            <div id="age_group_dropdown_wrapper" style="position: relative;">
+                <div id="age_group_trigger" class="form-control-modern" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; {{ !($isSuperAdmin ?? false) ? 'background-color: #f1f5f9; cursor: not-allowed;' : '' }}">
+                    <span id="age_group_selected_label" style="{{ old('age_group', $vaccine->age_group) ? 'color: var(--text-primary); font-weight: 500;' : 'color: #94a3b8;' }}">
+                        {{ old('age_group', $vaccine->age_group) ?: '-- Chọn hoặc gõ tìm độ tuổi chỉ định --' }}
+                    </span>
+                    <svg style="width: 14px; height: 14px; color: #64748b; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+
+                @if($isSuperAdmin ?? false)
+                <div id="age_group_menu" class="metadata-menu-box" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12); z-index: 1000; padding: 8px;">
+                    <input type="text" id="age_group_search_input" placeholder="Gõ tìm hoặc thêm độ tuổi mới..." class="form-control-modern" style="margin-bottom: 6px; font-size: 13px; padding: 6px 10px;">
+                    
+                    <div id="age_group_list_container" class="metadata-list-container" style="max-height: 200px; overflow-y: auto;">
+                        @if(isset($ageGroups) && $ageGroups->count())
+                            @foreach($ageGroups as $val)
+                                <div class="metadata-option-item" data-value="{{ $val }}" style="display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; font-size: 13.5px; border-radius: 6px; cursor: pointer; color: #334155; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                    <span class="meta-item-text" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px;">{{ $val }}</span>
+                                    <div class="meta-item-actions" style="display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0;">
+                                        <button type="button" class="btn-meta-edit" data-field="age_group" data-value="{{ $val }}" style="background: none; border: none; color: #475569; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Sửa">Sửa</button>
+                                        <button type="button" class="btn-meta-delete" data-field="age_group" data-value="{{ $val }}" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Xóa">Xóa</button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+                    <div id="age_group_custom_add_btn" class="metadata-custom-add-btn" style="padding: 8px 10px; font-size: 13px; font-weight: 600; color: #c8102e; border-top: 1px solid #f1f5f9; margin-top: 4px; cursor: pointer; display: none;">
+                        + Thêm mới: "<span class="metadata-custom-text"></span>"
+                    </div>
+                </div>
+                @endif
+            </div>
         </div>
 
         <!-- Bệnh phòng ngừa -->
-        <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0;">
-            <label for="disease_prevention" class="form-label-modern">Bệnh phòng ngừa <span style="color: #ef4444;">*</span></label>
-            <input type="text" name="disease_prevention" id="disease_prevention" value="{{ old('disease_prevention', $vaccine->disease_prevention) }}" placeholder="VD: Bạch hầu, Ho gà, Uốn ván, Bại liệt..." required class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
+        <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0; position: relative;">
+            <label for="disease_prevention_hidden" class="form-label-modern">Bệnh phòng ngừa <span style="color: #ef4444;">*</span></label>
+            <input type="hidden" name="disease_prevention" id="disease_prevention_hidden" value="{{ old('disease_prevention', $vaccine->disease_prevention) }}">
+            
+            <div id="disease_prevention_dropdown_wrapper" style="position: relative;">
+                <div id="disease_prevention_trigger" class="form-control-modern" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; {{ !($isSuperAdmin ?? false) ? 'background-color: #f1f5f9; cursor: not-allowed;' : '' }}">
+                    <span id="disease_prevention_selected_label" style="{{ old('disease_prevention', $vaccine->disease_prevention) ? 'color: var(--text-primary); font-weight: 500;' : 'color: #94a3b8;' }}">
+                        {{ old('disease_prevention', $vaccine->disease_prevention) ?: '-- Chọn hoặc gõ tìm bệnh phòng ngừa --' }}
+                    </span>
+                    <svg style="width: 14px; height: 14px; color: #64748b; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+
+                @if($isSuperAdmin ?? false)
+                <div id="disease_prevention_menu" class="metadata-menu-box" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12); z-index: 1000; padding: 8px;">
+                    <input type="text" id="disease_prevention_search_input" placeholder="Gõ tìm hoặc thêm bệnh phòng ngừa mới..." class="form-control-modern" style="margin-bottom: 6px; font-size: 13px; padding: 6px 10px;">
+                    
+                    <div id="disease_prevention_list_container" class="metadata-list-container" style="max-height: 200px; overflow-y: auto;">
+                        @if(isset($diseasePreventions) && $diseasePreventions->count())
+                            @foreach($diseasePreventions as $val)
+                                <div class="metadata-option-item" data-value="{{ $val }}" style="display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; font-size: 13.5px; border-radius: 6px; cursor: pointer; color: #334155; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                    <span class="meta-item-text" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px;">{{ $val }}</span>
+                                    <div class="meta-item-actions" style="display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0;">
+                                        <button type="button" class="btn-meta-edit" data-field="disease_prevention" data-value="{{ $val }}" style="background: none; border: none; color: #475569; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Sửa">Sửa</button>
+                                        <button type="button" class="btn-meta-delete" data-field="disease_prevention" data-value="{{ $val }}" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Xóa">Xóa</button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+                    <div id="disease_prevention_custom_add_btn" class="metadata-custom-add-btn" style="padding: 8px 10px; font-size: 13px; font-weight: 600; color: #c8102e; border-top: 1px solid #f1f5f9; margin-top: 4px; cursor: pointer; display: none;">
+                        + Thêm mới: "<span class="metadata-custom-text"></span>"
+                    </div>
+                </div>
+                @endif
+            </div>
         </div>
     </div>
 </div>
@@ -251,15 +315,79 @@
         </div>
 
         <!-- Quốc gia nguồn gốc -->
-        <div class="form-group-modern" style="margin-bottom: 0;">
-            <label for="origin" class="form-label-modern">Nước sản xuất (Nguồn gốc)</label>
-            <input type="text" name="origin" id="origin" value="{{ old('origin', $vaccine->origin) }}" placeholder="VD: Mỹ, Pháp, Bỉ, Đức..." class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
+        <div class="form-group-modern" style="margin-bottom: 0; position: relative;">
+            <label for="origin_hidden" class="form-label-modern">Nước sản xuất (Nguồn gốc) <span style="color: #ef4444;">*</span></label>
+            <input type="hidden" name="origin" id="origin_hidden" value="{{ old('origin', $vaccine->origin) }}">
+            
+            <div id="origin_dropdown_wrapper" style="position: relative;">
+                <div id="origin_trigger" class="form-control-modern" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; {{ !($isSuperAdmin ?? false) ? 'background-color: #f1f5f9; cursor: not-allowed;' : '' }}">
+                    <span id="origin_selected_label" style="{{ old('origin', $vaccine->origin) ? 'color: var(--text-primary); font-weight: 500;' : 'color: #94a3b8;' }}">
+                        {{ old('origin', $vaccine->origin) ?: '-- Chọn hoặc gõ tìm quốc gia --' }}
+                    </span>
+                    <svg style="width: 14px; height: 14px; color: #64748b; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+
+                @if($isSuperAdmin ?? false)
+                <div id="origin_menu" class="metadata-menu-box" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12); z-index: 1000; padding: 8px;">
+                    <input type="text" id="origin_search_input" placeholder="Gõ tìm hoặc thêm quốc gia mới..." class="form-control-modern" style="margin-bottom: 6px; font-size: 13px; padding: 6px 10px;">
+                    
+                    <div id="origin_list_container" class="metadata-list-container" style="max-height: 200px; overflow-y: auto;">
+                        @if(isset($origins) && $origins->count())
+                            @foreach($origins as $val)
+                                <div class="metadata-option-item" data-value="{{ $val }}" style="display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; font-size: 13.5px; border-radius: 6px; cursor: pointer; color: #334155; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                    <span class="meta-item-text" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px;">{{ $val }}</span>
+                                    <div class="meta-item-actions" style="display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0;">
+                                        <button type="button" class="btn-meta-edit" data-field="origin" data-value="{{ $val }}" style="background: none; border: none; color: #475569; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Sửa">Sửa</button>
+                                        <button type="button" class="btn-meta-delete" data-field="origin" data-value="{{ $val }}" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Xóa">Xóa</button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+                    <div id="origin_custom_add_btn" class="metadata-custom-add-btn" style="padding: 8px 10px; font-size: 13px; font-weight: 600; color: #c8102e; border-top: 1px solid #f1f5f9; margin-top: 4px; cursor: pointer; display: none;">
+                        + Thêm mới: "<span class="metadata-custom-text"></span>"
+                    </div>
+                </div>
+                @endif
+            </div>
         </div>
 
         <!-- Quy cách đóng gói -->
-        <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0;">
-            <label for="dosage" class="form-label-modern">Quy cách liều lượng (Hàm lượng/Đóng gói)</label>
-            <input type="text" name="dosage" id="dosage" value="{{ old('dosage', $vaccine->dosage) }}" placeholder="Ví dụ: Hộp 1 bơm tiêm đóng sẵn, liều 0,5 ml dung dịch..." class="form-control-modern" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
+        <div class="form-group-modern" style="grid-column: span 2; margin-bottom: 0; position: relative;">
+            <label for="dosage_hidden" class="form-label-modern">Quy cách liều lượng (Hàm lượng/Đóng gói)</label>
+            <input type="hidden" name="dosage" id="dosage_hidden" value="{{ old('dosage', $vaccine->dosage) }}">
+            
+            <div id="dosage_dropdown_wrapper" style="position: relative;">
+                <div id="dosage_trigger" class="form-control-modern" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; {{ !($isSuperAdmin ?? false) ? 'background-color: #f1f5f9; cursor: not-allowed;' : '' }}">
+                    <span id="dosage_selected_label" style="{{ old('dosage', $vaccine->dosage) ? 'color: var(--text-primary); font-weight: 500;' : 'color: #94a3b8;' }}">
+                        {{ old('dosage', $vaccine->dosage) ?: '-- Chọn hoặc gõ tìm quy cách --' }}
+                    </span>
+                    <svg style="width: 14px; height: 14px; color: #64748b; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+
+                @if($isSuperAdmin ?? false)
+                <div id="dosage_menu" class="metadata-menu-box" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12); z-index: 1000; padding: 8px;">
+                    <input type="text" id="dosage_search_input" placeholder="Gõ tìm hoặc thêm quy cách mới..." class="form-control-modern" style="margin-bottom: 6px; font-size: 13px; padding: 6px 10px;">
+                    
+                    <div id="dosage_list_container" class="metadata-list-container" style="max-height: 200px; overflow-y: auto;">
+                        @if(isset($dosages) && $dosages->count())
+                            @foreach($dosages as $val)
+                                <div class="metadata-option-item" data-value="{{ $val }}" style="display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; font-size: 13.5px; border-radius: 6px; cursor: pointer; color: #334155; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                    <span class="meta-item-text" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px;">{{ $val }}</span>
+                                    <div class="meta-item-actions" style="display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0;">
+                                        <button type="button" class="btn-meta-edit" data-field="dosage" data-value="{{ $val }}" style="background: none; border: none; color: #475569; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Sửa">Sửa</button>
+                                        <button type="button" class="btn-meta-delete" data-field="dosage" data-value="{{ $val }}" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Xóa">Xóa</button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+                    <div id="dosage_custom_add_btn" class="metadata-custom-add-btn" style="padding: 8px 10px; font-size: 13px; font-weight: 600; color: #c8102e; border-top: 1px solid #f1f5f9; margin-top: 4px; cursor: pointer; display: none;">
+                        + Thêm mới: "<span class="metadata-custom-text"></span>"
+                    </div>
+                </div>
+                @endif
+            </div>
         </div>
     </div>
 </div>
@@ -938,16 +1066,285 @@ function removeRegimenRow(btn) {
                 });
             }
 
-            function selectCategoryValue(val) {
-                if (catHiddenInput) catHiddenInput.value = val;
-                if (catSelectedLabel) {
-                    catSelectedLabel.textContent = val || '-- Chọn hoặc gõ tìm nhóm bệnh --';
-                    catSelectedLabel.style.color = val ? 'var(--text-primary)' : '#94a3b8';
-                    catSelectedLabel.style.fontWeight = val ? '500' : 'normal';
-                }
-                catMenu.style.display = 'none';
             }
         }
+
+        // ===== 0.5. CẤU HÌNH CÁC DROPDOWN METADATA KHÁC =====
+        function initMetadataDropdown(field, labelText) {
+            const wrapper = document.getElementById(field + '_dropdown_wrapper');
+            const trigger = document.getElementById(field + '_trigger');
+            const menu = document.getElementById(field + '_menu');
+            const searchInput = document.getElementById(field + '_search_input');
+            const hiddenInput = document.getElementById(field + '_hidden');
+            const selectedLabel = document.getElementById(field + '_selected_label');
+            const listContainer = document.getElementById(field + '_list_container');
+            const customAddBtn = document.getElementById(field + '_custom_add_btn');
+            const customTextSpan = wrapper ? wrapper.querySelector('.metadata-custom-text') : null;
+
+            if (!trigger || !menu) return;
+
+            trigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isExpanded = menu.style.display === 'block';
+                // Đóng tất cả các menu khác
+                document.querySelectorAll('.custom-select-menu').forEach(m => m.style.display = 'none');
+                document.querySelectorAll('#category_menu').forEach(m => m.style.display = 'none');
+                document.querySelectorAll('.metadata-menu-box').forEach(m => {
+                    if (m !== menu) m.style.display = 'none';
+                });
+
+                menu.style.display = isExpanded ? 'none' : 'block';
+                if (!isExpanded && searchInput) {
+                    searchInput.value = '';
+                    filterMetaItems('');
+                    setTimeout(() => searchInput.focus(), 50);
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (wrapper && !wrapper.contains(e.target)) {
+                    menu.style.display = 'none';
+                }
+            });
+
+            function filterMetaItems(term) {
+                const query = term.toLowerCase().trim();
+                const items = listContainer ? listContainer.querySelectorAll('.metadata-option-item') : [];
+                let exactMatch = false;
+
+                items.forEach(item => {
+                    const val = item.getAttribute('data-value').toLowerCase();
+                    if (val === query) exactMatch = true;
+                    if (val.includes(query)) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                if (query.length > 0 && !exactMatch && customAddBtn && customTextSpan) {
+                    customTextSpan.textContent = term.trim();
+                    customAddBtn.style.display = 'block';
+                } else if (customAddBtn) {
+                    customAddBtn.style.display = 'none';
+                }
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    filterMetaItems(this.value);
+                });
+            }
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            if (listContainer) {
+                listContainer.addEventListener('click', function(e) {
+                    const editBtn = e.target.closest('.btn-meta-edit');
+                    const deleteBtn = e.target.closest('.btn-meta-delete');
+                    const item = e.target.closest('.metadata-option-item');
+
+                    if (editBtn) {
+                        e.stopPropagation();
+                        const val = editBtn.getAttribute('data-value');
+                        openEditMetaModal(field, val, labelText);
+                        return;
+                    }
+
+                    if (deleteBtn) {
+                        e.stopPropagation();
+                        const val = deleteBtn.getAttribute('data-value');
+                        openDeleteMetaModal(field, val, labelText);
+                        return;
+                    }
+
+                    if (item) {
+                        const val = item.getAttribute('data-value');
+                        selectMetaValue(val);
+                    }
+                });
+            }
+
+            if (customAddBtn) {
+                customAddBtn.addEventListener('click', function() {
+                    if (searchInput && searchInput.value.trim()) {
+                        selectMetaValue(searchInput.value.trim());
+                    }
+                });
+            }
+
+            function selectMetaValue(val) {
+                if (hiddenInput) hiddenInput.value = val;
+                if (selectedLabel) {
+                    selectedLabel.textContent = val || '-- Chọn hoặc gõ tìm ' + labelText + ' --';
+                    selectedLabel.style.color = val ? 'var(--text-primary)' : '#94a3b8';
+                    selectedLabel.style.fontWeight = val ? '500' : 'normal';
+                }
+                menu.style.display = 'none';
+            }
+
+            function openEditMetaModal(field, oldValue, labelText) {
+                const editModal = document.getElementById('cat_edit_modal');
+                const editInputName = document.getElementById('cat_edit_input_name');
+                const editOldName = document.getElementById('cat_edit_old_name');
+                const editBtnSave = document.getElementById('cat_edit_btn_save');
+                const editBtnCancel = document.getElementById('cat_edit_btn_cancel');
+                const editTitle = editModal ? editModal.querySelector('h4') : null;
+
+                if (!editModal || !editInputName || !editOldName || !editBtnSave) return;
+
+                if (editTitle) editTitle.textContent = 'Chỉnh sửa ' + labelText;
+                editInputName.value = oldValue;
+                editOldName.value = oldValue;
+                editModal.style.display = 'flex';
+                setTimeout(() => editInputName.focus(), 50);
+
+                editBtnSave.onclick = function() {
+                    const newValue = editInputName.value.trim();
+                    if (!newValue) {
+                        alert('Vui lòng nhập giá trị!');
+                        return;
+                    }
+                    if (newValue === oldValue) {
+                        editModal.style.display = 'none';
+                        return;
+                    }
+
+                    fetch('{{ route("admin.metadata.update") }}', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ field: field, old_value: oldValue, new_value: newValue })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        editModal.style.display = 'none';
+                        if (hiddenInput && hiddenInput.value === oldValue) {
+                            selectMetaValue(newValue);
+                        }
+                        updateMetaOptions(data.values, hiddenInput ? hiddenInput.value : newValue);
+                    })
+                    .catch(err => console.error(err));
+                };
+
+                editBtnCancel.onclick = function() {
+                    editModal.style.display = 'none';
+                };
+            }
+
+            function openDeleteMetaModal(field, value, labelText) {
+                fetch('{{ route("admin.metadata.check-delete") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ field: field, value: value })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    const modal = document.getElementById('cat_delete_modal');
+                    const modalTitle = modal ? modal.querySelector('h4') : null;
+                    const modalText = document.getElementById('cat_delete_modal_text');
+                    const listBox = document.getElementById('cat_vaccine_list_box');
+                    const ul = document.getElementById('cat_vaccine_names_ul');
+                    const confirmBtn = document.getElementById('cat_modal_btn_confirm');
+                    const cancelBtn = document.getElementById('cat_modal_btn_cancel');
+
+                    if (!modal || !confirmBtn) return;
+
+                    if (modalTitle) modalTitle.textContent = 'Xác nhận xóa ' + labelText;
+
+                    if (data.has_vaccines) {
+                        modalText.innerHTML = `Giá trị <strong>"${data.value}"</strong> đang được sử dụng bởi <strong>${data.vaccine_count} vắc xin</strong>. Bạn có chắc chắn muốn xóa không?`;
+                        listBox.style.display = 'block';
+                        ul.innerHTML = data.vaccine_names.map(name => `<li>${name}</li>`).join('');
+                    } else {
+                        modalText.innerHTML = `Bạn có chắc chắn muốn xóa giá trị <strong>"${data.value}"</strong> không?`;
+                        listBox.style.display = 'none';
+                        ul.innerHTML = '';
+                    }
+
+                    modal.style.display = 'flex';
+
+                    confirmBtn.onclick = function() {
+                        fetch('{{ route("admin.metadata.destroy") }}', {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ field: field, value: value })
+                        })
+                        .then(res => {
+                            if (!res.ok) {
+                                return res.json().then(errData => {
+                                    throw new Error(errData.message || "Có lỗi xảy ra.");
+                                });
+                            }
+                            return res.json();
+                        })
+                        .then(resData => {
+                            modal.style.display = 'none';
+                            updateMetaOptions(resData.values, '');
+                        })
+                        .catch(err => {
+                            modal.style.display = 'none';
+                            alert(err.message);
+                        });
+                    };
+
+                    cancelBtn.onclick = function() {
+                        modal.style.display = 'none';
+                    };
+                });
+            }
+
+            function updateMetaOptions(values, selectedVal) {
+                if (!listContainer) return;
+                listContainer.innerHTML = '';
+                values.forEach(val => {
+                    const div = document.createElement('div');
+                    div.className = 'metadata-option-item';
+                    div.setAttribute('data-value', val);
+                    div.style.display = 'flex';
+                    div.style.alignItems = 'center';
+                    div.style.justifyContent = 'space-between';
+                    div.style.padding = '7px 10px';
+                    div.style.fontSize = '13.5px';
+                    div.style.borderRadius = '6px';
+                    div.style.cursor = 'pointer';
+                    div.style.color = '#334155';
+                    div.style.transition = 'background 0.15s';
+                    div.onmouseover = () => div.style.background = '#f1f5f9';
+                    div.onmouseout = () => div.style.background = 'transparent';
+
+                    div.innerHTML = `
+                        <span class="meta-item-text" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px;">${val}</span>
+                        <div class="meta-item-actions" style="display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0;">
+                            <button type="button" class="btn-meta-edit" data-field="${field}" data-value="${val}" style="background: none; border: none; color: #475569; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Sửa">Sửa</button>
+                            <button type="button" class="btn-meta-delete" data-field="${field}" data-value="${val}" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Xóa">Xóa</button>
+                        </div>
+                    `;
+                    listContainer.appendChild(div);
+                });
+
+                if (selectedVal !== undefined) {
+                    selectMetaValue(selectedVal);
+                }
+            }
+        }
+
+        // Khởi tạo các dropdown metadata
+        initMetadataDropdown('disease_prevention', 'bệnh phòng ngừa');
+        initMetadataDropdown('origin', 'quốc gia');
+        initMetadataDropdown('dosage', 'quy cách');
+        initMetadataDropdown('age_group', 'độ tuổi chỉ định');
 
         // ===== 1. CÔNG CỤ TÍNH % GIẢM GIÁ 1 CHIỀU =====
         const priceInput = document.getElementById('price');

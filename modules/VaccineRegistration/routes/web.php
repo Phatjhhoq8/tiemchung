@@ -134,6 +134,9 @@ Route::middleware('web')->group(function () {
         Route::post('/categories/check-delete', [AdminVaccineController::class, 'checkCategoryDelete'])->name('categories.check-delete');
         Route::put('/categories/update', [AdminVaccineController::class, 'updateCategory'])->name('categories.update');
         Route::delete('/categories/destroy', [AdminVaccineController::class, 'destroyCategory'])->name('categories.destroy');
+        Route::post('/metadata/check-delete', [AdminVaccineController::class, 'checkMetadataDelete'])->name('metadata.check-delete');
+        Route::put('/metadata/update', [AdminVaccineController::class, 'updateMetadata'])->name('metadata.update');
+        Route::delete('/metadata/destroy', [AdminVaccineController::class, 'destroyMetadata'])->name('metadata.destroy');
         Route::post('/vaccines/{id}/toggle-featured', [AdminVaccineController::class, 'toggleFeatured'])->name('vaccines.toggle-featured');
         Route::get('/vaccines/{id}/branches-stock', [AdminVaccineController::class, 'branchesStock'])->name('vaccines.branches-stock');
         Route::get('/vaccines/{id}/center-data', [AdminVaccineController::class, 'getCenterData'])->name('vaccines.center-data');
