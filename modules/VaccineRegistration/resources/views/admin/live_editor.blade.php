@@ -388,7 +388,7 @@
 
 <!-- ================= TAB KHUNG CHUNG SYSTEM SHELL ================= -->
 @if($currentPage === 'global')
-    <div class="live-edit-frame" onclick="openSettingModal('global_shell', 'Khung Chung Toàn Hệ Thống & Footer', ['site_name', 'brand_title', 'hotline', 'email', 'footer_text', 'footer_company_name', 'footer_sub_title', 'footer_content_manager', 'footer_info_lines'])">
+    <div class="live-edit-frame" onclick="openSettingModal('global_shell', 'Khung Chung Toàn Hệ Thống & Footer', ['site_name', 'brand_title', 'email', 'footer_text', 'footer_company_name', 'footer_sub_title', 'footer_content_manager', 'footer_info_lines'])">
         <div class="edit-frame-badge">Sửa Cấu Hình Chung & Footer</div>
         <div style="padding: 28px; background: #ffffff; border-radius: 12px;">
             <h4 style="margin: 0 0 16px 0; color: #004b8f; font-size: 13.5px; font-weight: 800;">Thông Tin Dùng Chung Hệ Thống & Footer</h4>
@@ -396,10 +396,6 @@
                 <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
                     <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Tên Thương Hiệu:</strong>
                     <span>{{ $settings['brand_title'] }}</span>
-                </div>
-                <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
-                    <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Hotline Tổng:</strong>
-                    <span>{{ $settings['hotline'] }}</span>
                 </div>
                 <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
                     <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Bản Quyền Footer:</strong>
@@ -472,6 +468,16 @@
 <script>
     const settingsData = @json($settings);
 
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        if (typeof str !== 'string') str = String(str);
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#039;');
+    }
+
     // Schema của các mảng JSON giúp vẽ giao diện nhập liệu trực quan
     const jsonSchemas = {
         'home_safe_process': {
@@ -517,7 +523,20 @@
             fields: [
                 { key: 'title', label: 'Tên dịch vụ', type: 'text', placeholder: 'Ví dụ: Tiêm vắc xin lẻ' },
                 { key: 'desc', label: 'Mô tả chi tiết dịch vụ', type: 'textarea', placeholder: 'Nhập nội dung...' },
-                { key: 'icon', label: 'Tên Icon (Lucide)', type: 'text', placeholder: 'Mặc định: syringe (hoặc package, truck, user-check...)' }
+                { 
+                    key: 'icon', 
+                    label: 'Biểu tượng hiển thị (Icon)', 
+                    type: 'select', 
+                    options: [
+                        { value: 'syringe', label: 'Ống tiêm (Syringe)' },
+                        { value: 'package', label: 'Hộp / Gói vắc xin (Package)' },
+                        { value: 'calendar-check', label: 'Lịch hẹn tiêm (Calendar Check)' },
+                        { value: 'truck', label: 'Xe tiêm chủng lưu động (Truck)' },
+                        { value: 'user-check', label: 'Khám kiểm tra (User Check)' },
+                        { value: 'heart', label: 'Trái tim / Tận tâm (Heart)' },
+                        { value: 'award', label: 'Giải thưởng / Uy tín (Award)' }
+                    ]
+                }
             ]
         },
         'services_promos': {
@@ -540,7 +559,18 @@
             title: 'Dòng thông tin chân trang (Footer)',
             itemTitle: 'Dòng thông tin',
             fields: [
-                { key: 'icon', label: 'Tên Icon (Lucide)', type: 'text', placeholder: 'Ví dụ: shield-check, building, mail, phone-call' },
+                { 
+                    key: 'icon', 
+                    label: 'Biểu tượng hiển thị (Icon)', 
+                    type: 'select', 
+                    options: [
+                        { value: 'shield-check', label: 'Giấy phép (Shield Check)' },
+                        { value: 'building', label: 'Trụ sở / Địa chỉ (Building)' },
+                        { value: 'mail', label: 'Thư điện tử / Email (Mail)' },
+                        { value: 'info', label: 'Thông tin chung (Info)' },
+                        { value: 'globe', label: 'Website / Địa chỉ mạng (Globe)' }
+                    ]
+                },
                 { key: 'text', label: 'Nội dung dòng (hỗ trợ thẻ HTML link)', type: 'text', placeholder: 'Ví dụ: Trụ sở: Cổng Bệnh viện...' }
             ]
         }
@@ -633,14 +663,28 @@
                 fieldsHtml += `
                     <div style="margin-bottom:10px;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">${f.label}</label>
-                        <textarea data-field="${f.key}" class="json-input-${fieldName}" rows="2" style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px;" placeholder="${f.placeholder}">${val}</textarea>
+                        <textarea data-field="${f.key}" class="json-input-${fieldName}" rows="2" style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px;" placeholder="${f.placeholder}">${escapeHtml(val)}</textarea>
+                    </div>
+                `;
+            } else if (f.type === 'select') {
+                let optionsHtml = '';
+                f.options.forEach(opt => {
+                    const selected = val === opt.value ? 'selected' : '';
+                    optionsHtml += `<option value="${opt.value}" ${selected}>${opt.label}</option>`;
+                });
+                fieldsHtml += `
+                    <div style="margin-bottom:10px;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">${f.label}</label>
+                        <select data-field="${f.key}" class="json-input-${fieldName}" style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px; background:#fff;">
+                            ${optionsHtml}
+                        </select>
                     </div>
                 `;
             } else {
                 fieldsHtml += `
                     <div style="margin-bottom:10px;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">${f.label}</label>
-                        <input type="text" data-field="${f.key}" value="${val}" class="json-input-${fieldName}" style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px;" placeholder="${f.placeholder}">
+                        <input type="text" data-field="${f.key}" value="${escapeHtml(val)}" class="json-input-${fieldName}" style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px;" placeholder="${f.placeholder}">
                     </div>
                 `;
             }
