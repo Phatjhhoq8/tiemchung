@@ -249,7 +249,7 @@ class VaccinationWorkflowController extends Controller
                 $centerVaccine = \Modules\VaccineRegistration\Models\CenterVaccine::where('center_id', $registration->center_id)
                     ->where('vaccine_id', $validated['vaccine_id'])
                     ->first();
-                if ($centerVaccine) {
+                if ($centerVaccine && $centerVaccine->stock_quantity > 0) {
                     $centerVaccine->decrement('stock_quantity');
                     $centerVaccine->update([
                         'stock_status' => \App\Services\BranchStockService::statusFor($centerVaccine->stock_quantity)

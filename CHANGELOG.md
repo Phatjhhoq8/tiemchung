@@ -12,6 +12,7 @@
   - Added real-time member loyalty point display on the client-facing booking lookup page when searching registrations by phone number.
   - Linked the footer opening hours text to a dynamic configuration setting `footer_working_hours` that is fully editable from the Live Editor's Global Configuration tab.
   - Fixed a clinical workflow bug in the `Registration` model where administering a single vaccine immediately marked the entire multi-vaccine order as completed, preventing remaining vaccines from being administered.
+  - Added a defensive check `stock_quantity > 0` before decrementing branch vaccine stock in the clinical administration workflow, preventing SQL `Numeric value out of range` exception on `unsignedInteger` columns.
 
 * **Vaccine Regimens Price & All-Branch Option (`AdminVaccineController.php`, `_form.blade.php`, `show.blade.php`, `VaccineRegimen.php`)**:
   - Added new `price` and `sale_price` columns to `vaccine_regimens` table via migration, allowing each age-group regimen to specify its own pricing.
