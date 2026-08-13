@@ -301,7 +301,13 @@ class AdminVaccineController extends Controller
             centerId: $selectedCenterId
         );
 
-        return redirect()->route('admin.vaccines.index', ['center_id' => $selectedCenterId])->with('success', 'Thêm mới vắc xin thành công.');
+        $redirectParams = [];
+        $currentContextCenterId = AdminContext::selectedCenterId();
+        if ($currentContextCenterId !== null) {
+            $redirectParams['center_id'] = $currentContextCenterId;
+        }
+
+        return redirect()->route('admin.vaccines.index', $redirectParams)->with('success', 'Thêm mới vắc xin thành công.');
     }
 
     /**
@@ -529,7 +535,12 @@ class AdminVaccineController extends Controller
             AuditLogger::log('vaccine.updated', 'vaccine', $vaccine->id, $oldAuditValues, $newAuditValues, $selectedCenterId);
         }
 
-        return redirect()->route('admin.vaccines.index', ['center_id' => $selectedCenterId])->with('success', 'Cập nhật thông tin vắc xin thành công.');
+        $redirectParams = [];
+        if ($currentSelectedCenterId !== null) {
+            $redirectParams['center_id'] = $currentSelectedCenterId;
+        }
+
+        return redirect()->route('admin.vaccines.index', $redirectParams)->with('success', 'Cập nhật thông tin vắc xin thành công.');
     }
 
     /**
