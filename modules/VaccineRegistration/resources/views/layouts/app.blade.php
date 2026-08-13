@@ -4,11 +4,19 @@
         'hotline' => '0938 60 38 39',
         'email' => 'cskh@medicare.vn',
         'footer_text' => '© 2026 Medicare - Hệ Thống Tiêm Chủng Vắc Xin Trẻ Em và Người Lớn.',
+        'footer_company_name' => 'CÔNG TY CỔ PHẦN VẮC XIN MEDICARE',
+        'footer_sub_title' => 'HỆ THỐNG TRUNG TÂM TIÊM CHỦNG VẮC XIN CHO TRẺ EM & NGƯỜI LỚN AN TOÀN – UY TÍN – CHẤT LƯỢNG HÀƠ ĐẦU VIỆT NAM',
+        'footer_content_manager' => 'Chịu trách nhiệm nội dung: Ban Giám Đốc HỆ THỐNG TIÊM CHỦNG MEDICARE',
+        'footer_info_lines' => '[{"icon":"shield-check","text":"Giấy chứng nhận ĐKKD số <strong>0107631488</strong> do Sở KH&ĐT TP. Cần Thơ cấp ngày 11/11/2016"},{"icon":"building","text":"Trụ sở: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Thuận, Xã Cờ Đỏ, TP. Cần Thơ"},{"icon":"mail","text":"Email liên hệ: <a href=\"mailto:cskh@medicare.vn\" style=\"color: #ffffff; text-decoration: underline;\">cskh@medicare.vn</a>"},{"icon":"phone-call","text":"Tổng đài Hotline: <a href=\"tel:0938603839\" style=\"color: var(--secondary-color); font-weight: 700; text-decoration: none;\">0938 60 38 39</a>"}]',
     ]);
     $site_name = $globalSettings['site_name'];
     $hotline = $globalSettings['hotline'];
     $email = $globalSettings['email'];
     $footer_text = $globalSettings['footer_text'];
+    $footer_company_name = $globalSettings['footer_company_name'];
+    $footer_sub_title = $globalSettings['footer_sub_title'];
+    $footer_content_manager = $globalSettings['footer_content_manager'];
+    $footer_info_lines = json_decode($globalSettings['footer_info_lines'], true) ?: [];
     $currentCenter = $currentCenter ?? \Modules\VaccineRegistration\Support\CenterContext::current();
     $activeCenters = $activeCenters ?? \Modules\VaccineRegistration\Support\CenterContext::activeCenters();
     if ($currentCenter) {
@@ -720,7 +728,7 @@
                     <a href="{{ route('home') }}" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
                         <img src="{{ asset('images/logo.png') }}" alt="{{ $site_name }}" style="max-height: 40px; width: auto; filter: brightness(0) invert(1);">
                     </a>
-                    <h3>HỆ THỐNG TRUNG TÂM TIÊM CHỦNG VẮC XIN CHO TRẺ EM & NGƯỜI LỚN AN TOÀN – UY TÍN – CHẤT LƯỢNG HÀNG ĐẦU VIỆT NAM</h3>
+                    <h3>{{ $footer_sub_title }}</h3>
                 </div>
                 <div class="footer-top-actions">
                     <a href="{{ route('contact') }}" class="footer-top-item">
@@ -819,32 +827,22 @@
                     </div>
                     <div class="footer-legal-panel">
                         <div class="footer-company-details">
-                            <h3>CÔNG TY CỔ PHẦN VẮC XIN MEDICARE</h3>
+                            <h3>{{ $footer_company_name }}</h3>
+                            @foreach($footer_info_lines as $line)
                             <div class="footer-legal-item">
-                                <i data-lucide="shield-check" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
-                                <span>Giấy chứng nhận ĐKKD số <strong>0107631488</strong> do Sở KH&ĐT TP. Cần Thơ cấp ngày 11/11/2016</span>
+                                <i data-lucide="{{ $line['icon'] ?? 'shield-check' }}" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
+                                <span>{!! $line['text'] ?? '' !!}</span>
                             </div>
-                            <div class="footer-legal-item">
-                                <i data-lucide="building" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
-                                <span>Trụ sở: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Thuận, Xã Cờ Đỏ, TP. Cần Thơ</span>
-                            </div>
-                            <div class="footer-legal-item">
-                                <i data-lucide="mail" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
-                                <span>Email liên hệ: <a href="mailto:{{ $email }}" style="color: #ffffff; text-decoration: underline;">{{ $email }}</a></span>
-                            </div>
-                            <div class="footer-legal-item">
-                                <i data-lucide="phone-call" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
-                                <span>Tổng đài Hotline: <a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}" style="color: var(--secondary-color); font-weight: 700; text-decoration: none;">{{ $hotline }}</a></span>
-                            </div>
+                            @endforeach
                             <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.12); font-size: 0.8rem; color: #94a3b8; line-height: 1.5;">
-                                Chịu trách nhiệm nội dung: Ban Giám Đốc HỆ THỐNG TIÊM CHỦNG MEDICARE
+                                {{ $footer_content_manager }}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="footer-copyright">Bản quyền ©2026 thuộc về CÔNG TY CỔ PHẦN VẮC XIN MEDICARE</div>
+        <div class="footer-copyright">{{ $footer_text }}</div>
 
     </footer>
 

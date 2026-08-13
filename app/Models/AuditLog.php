@@ -237,6 +237,9 @@ class AuditLog extends Model
      */
     public function getActionBadgeClassAttribute(): string
     {
+        if (str_contains($this->action, 'vaccine.deactivated') || str_contains($this->action, 'vaccine.activated')) {
+            return 'badge-modern-success';
+        }
         if (str_contains($this->action, 'deleted') || str_contains($this->action, 'deactivated') || str_contains($this->action, 'failed')) {
             return 'badge-modern-danger';
         }

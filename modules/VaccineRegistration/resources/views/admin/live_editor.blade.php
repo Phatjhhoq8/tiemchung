@@ -388,10 +388,10 @@
 
 <!-- ================= TAB KHUNG CHUNG SYSTEM SHELL ================= -->
 @if($currentPage === 'global')
-    <div class="live-edit-frame" onclick="openSettingModal('global_shell', 'Khung Chung Toàn Hệ Thống', ['site_name', 'brand_title', 'hotline', 'email', 'footer_text'])">
-        <div class="edit-frame-badge">Sửa Cấu Hình Chung</div>
+    <div class="live-edit-frame" onclick="openSettingModal('global_shell', 'Khung Chung Toàn Hệ Thống & Footer', ['site_name', 'brand_title', 'hotline', 'email', 'footer_text', 'footer_company_name', 'footer_sub_title', 'footer_content_manager', 'footer_info_lines'])">
+        <div class="edit-frame-badge">Sửa Cấu Hình Chung & Footer</div>
         <div style="padding: 28px; background: #ffffff; border-radius: 12px;">
-            <h4 style="margin: 0 0 16px 0; color: #004b8f; font-size: 13.5px; font-weight: 800;">Thông Tin Dùng Chung Hệ Thống</h4>
+            <h4 style="margin: 0 0 16px 0; color: #004b8f; font-size: 13.5px; font-weight: 800;">Thông Tin Dùng Chung Hệ Thống & Footer</h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
                 <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
                     <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Tên Thương Hiệu:</strong>
@@ -405,6 +405,33 @@
                     <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Bản Quyền Footer:</strong>
                     <span style="font-size: 12.5px;">{{ $settings['footer_text'] }}</span>
                 </div>
+                <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
+                    <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Tên Công Ty Footer:</strong>
+                    <span>{{ $settings['footer_company_name'] ?? '' }}</span>
+                </div>
+                <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; grid-column: span 2;">
+                    <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Tiêu Đề Phụ Footer:</strong>
+                    <span>{{ $settings['footer_sub_title'] ?? '' }}</span>
+                </div>
+                <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; grid-column: span 2;">
+                    <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Chịu Trách Nhiệm Nội Dung:</strong>
+                    <span>{{ $settings['footer_content_manager'] ?? '' }}</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 16px; background: #fafafa; border: 1px dashed #e2e8f0; border-radius: 8px;">
+                <strong style="color: #475569; display: block; margin-bottom: 8px; font-size: 13px;">Dòng Thông Tin Pháp Lý Chân Trang (Footer Lines):</strong>
+                @php
+                    $infoLines = json_decode($settings['footer_info_lines'] ?? '[]', true) ?: [];
+                @endphp
+                <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 13px; line-height: 1.6;">
+                    @foreach($infoLines as $line)
+                        <li>
+                            <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #0f172a; margin-right: 6px;">{{ $line['icon'] ?? 'shield-check' }}</code>
+                            <span>{!! $line['text'] ?? '' !!}</span>
+                        </li>
+                    @endforeach
+                </ul>
             </div>
         </div>
     </div>
@@ -506,6 +533,14 @@
             fields: [
                 { key: 'title', label: 'Tiêu đề cam kết', type: 'text', placeholder: 'Ví dụ: 100% Vắc xin chính hãng' },
                 { key: 'desc', label: 'Nội dung cam kết chi tiết', type: 'textarea', placeholder: 'Nhập nội dung...' }
+            ]
+        },
+        'footer_info_lines': {
+            title: 'Dòng thông tin chân trang (Footer)',
+            itemTitle: 'Dòng thông tin',
+            fields: [
+                { key: 'icon', label: 'Tên Icon (Lucide)', type: 'text', placeholder: 'Ví dụ: shield-check, building, mail, phone-call' },
+                { key: 'text', label: 'Nội dung dòng (hỗ trợ thẻ HTML link)', type: 'text', placeholder: 'Ví dụ: Trụ sở: Cổng Bệnh viện...' }
             ]
         }
     };
