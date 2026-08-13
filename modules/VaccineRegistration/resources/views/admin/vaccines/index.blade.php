@@ -306,4 +306,84 @@
 
 @section('scripts')
     @include('vaccine::admin.partials._ajax_filter_js')
+    <script>
+        document.addEventListener('submit', async function(e) {
+            const form = e.target;
+            if (!form || !form.classList.contains('delete-vaccine-ajax-form')) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const vaccineId = form.getAttribute('data-id');
+            const vaccineName = form.getAttribute('data-name') || '';
+
+            if (window.AppDialog) {
+                const confirmed = await window.AppDialog.confirm(`Bạn có chắc chắn muốn xóa vắc xin "${vaccineName}" này?`);
+                if (!confirmed) return;
+            } else {
+                if (!confirm(`Bạn có chắc chắn muốn xóa vắc xin "${vaccineName}" này?`)) return;
+            }
+
+            try {
+                const btn = form.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                }
+
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: new FormData(form)
+                });
+
+                const result = await response.json().catch(() => ({}));
+
+                if (response.ok) {
+                    const row = document.getElementById(`vaccine-row-${vaccineId}`);
+                    if (row) {
+                        row.style.transition = 'all 0.4s ease';
+                        row.style.opacity = '0';
+                        row.style.transform = 'translateX(-20px)';
+                        setTimeout(() => {
+                            row.remove();
+                            const tbody = document.querySelector('.table-modern tbody');
+                            if (tbody && tbody.children.length === 0) {
+                                location.reload();
+                            }
+                        }, 400);
+                    }
+                    if (window.AppDialog && window.AppDialog.toast) {
+                        window.AppDialog.toast(`Đã xóa vắc xin "${vaccineName}" thành công!`, 'success');
+                    }
+                } else {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                    }
+                    const errMsg = result.message || 'Không thể xóa vắc xin này.';
+                    if (window.AppDialog && window.AppDialog.alert) {
+                        window.AppDialog.alert(`❌ Lỗi: ${errMsg}`);
+                    } else {
+                        alert(`❌ Lỗi: ${errMsg}`);
+                    }
+                }
+            } catch (error) {
+                console.error('Error deleting vaccine:', error);
+                const btn = form.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+                if (window.AppDialog && window.AppDialog.alert) {
+                    window.AppDialog.alert('❌ Đã xảy ra lỗi kết nối. Vui lòng thử lại.');
+                } else {
+                    alert('❌ Đã xảy ra lỗi kết nối. Vui lòng thử lại.');
+                }
+            }
+        });
+    </script>
 @endsection

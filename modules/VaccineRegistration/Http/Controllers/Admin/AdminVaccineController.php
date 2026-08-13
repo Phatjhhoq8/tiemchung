@@ -635,6 +635,13 @@ class AdminVaccineController extends Controller
             resolveCenter: false
         );
 
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Vô hiệu hóa vắc xin khỏi danh mục thành công.'
+            ]);
+        }
+
         return redirect()->route('admin.vaccines.index')->with('success', 'Vô hiệu hóa vắc xin khỏi danh mục thành công.');
     }
 

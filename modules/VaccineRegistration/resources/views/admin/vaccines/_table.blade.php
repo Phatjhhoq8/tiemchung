@@ -35,7 +35,7 @@
             <tbody>
                 @foreach($vaccines as $index => $vac)
                     @php($rowCenterId = !empty($selectedCenterId) ? (int) $vac->center_id : null)
-                    <tr>
+                    <tr id="vaccine-row-{{ $vac->id }}">
                         <td style="text-align: center; color: var(--text-light); font-weight: 600;">
                             {{ $vaccines->firstItem() + $index }}
                         </td>
@@ -172,7 +172,7 @@
                                     <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 4px 0;">
 
                                     @if($isSuperAdmin ?? false)
-                                    <form action="{{ route('admin.vaccines.destroy', $vac->id) }}" method="POST" data-confirm="Bạn có chắc chắn muốn xóa vắc xin này?" style="margin: 0;">
+                                    <form action="{{ route('admin.vaccines.destroy', $vac->id) }}" method="POST" class="delete-vaccine-ajax-form" data-id="{{ $vac->id }}" data-name="{{ $vac->name }}" style="margin: 0;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="dropdown-item-action danger">
