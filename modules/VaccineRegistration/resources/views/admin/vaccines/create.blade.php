@@ -7,7 +7,7 @@
 @section('page_title', 'Thêm Vắc Xin Vào Danh Mục')
 
 @section('admin_content')
-<div style="max-width: 900px; margin: 0 auto;">
+<div style="max-width: 1280px; margin: 0 auto;">
     <div class="card-modern" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; padding: 20px 24px;">
         <div>
             <h2 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text-primary); margin: 0;">Thêm vắc xin mới</h2>

@@ -1490,15 +1490,36 @@
                 if (!menu) return;
                 const query = term.toLowerCase().trim();
                 const items = menu.querySelectorAll('.medicare-autocomplete-item');
+                let hasVisible = false;
 
                 items.forEach(item => {
                     const val = item.getAttribute('data-value').toLowerCase();
                     if (val.includes(query)) {
                         item.style.display = 'flex';
+                        hasVisible = true;
                     } else {
                         item.style.display = 'none';
                     }
                 });
+
+                let emptyDiv = menu.querySelector('.medicare-autocomplete-empty');
+                if (!hasVisible) {
+                    if (!emptyDiv) {
+                        emptyDiv = document.createElement('div');
+                        emptyDiv.className = 'medicare-autocomplete-empty';
+                        emptyDiv.style.padding = '8px 10px';
+                        emptyDiv.style.fontSize = '12.5px';
+                        emptyDiv.style.color = '#94a3b8';
+                        emptyDiv.style.textAlign = 'center';
+                        emptyDiv.textContent = 'Gõ tự do để nhập mới...';
+                        menu.appendChild(emptyDiv);
+                    }
+                    emptyDiv.style.display = 'block';
+                } else {
+                    if (emptyDiv) {
+                        emptyDiv.style.display = 'none';
+                    }
+                }
             }
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
