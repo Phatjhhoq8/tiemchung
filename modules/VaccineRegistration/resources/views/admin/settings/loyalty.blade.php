@@ -37,6 +37,14 @@
             Thiết lập cơ chế tích điểm - {{ $centerId ? 'Cấu hình chi nhánh' : 'Cấu hình chung hệ thống' }}
         </h2>
 
+        <div style="background: #f0f9ff; border: 1px solid #bae6fd; padding: 18px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px;">
+            <i data-lucide="info" style="color: #0284c7; flex-shrink: 0; width: 20px; height: 20px; margin-top: 2px;"></i>
+            <div style="font-size: 0.9rem; color: #0369a1; line-height: 1.6;">
+                <strong>💡 Đề xuất cơ chế tích điểm:</strong><br>
+                Lấy 0.1% giá trị của đơn để chuyển thành điểm. Ví dụ: đơn hàng <strong>200k</strong> thì tích được <strong>200 đồng</strong>. Khi dùng thì trừ số tiền được giảm và tối đa được dùng là <strong>50%</strong> đơn hàng. <em>(Các số liệu này được quyền tùy chỉnh chi tiết bên dưới).</em>
+            </div>
+        </div>
+
         @if ($errors->any())
             <div class="alert alert-danger" style="margin-bottom: 24px; padding: 16px; border-radius: 8px; background-color: #fde8e8; color: #9b1c1c; border: 1px solid #fbd5d5;">
                 <ul style="margin: 0; padding-left: 20px;">
@@ -156,105 +164,104 @@
                     </div>
                 </div>
 
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 30px 0;">
-
-                <!-- 3. Mốc hạng thành viên -->
-                <div style="margin-bottom: 30px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                        <h3 style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent-color); margin: 0; display: flex; align-items: center; gap: 6px;">
-                            <i data-lucide="award" style="width: 18px; height: 18px;"></i> 3. Mốc tích lũy & Hạng thành viên
-                        </h3>
-                        <button type="button" id="add_tier_btn" class="btn-action-sm btn-action-success">
-                            Thêm hạng mới
-                        </button>
+                {{-- Ẩn các mốc hạng thành viên và chiến dịch để tối giản hóa cơ chế điểm theo yêu cầu --}}
+                <div style="display: none;">
+                    <!-- 3. Mốc hạng thành viên -->
+                    <div style="margin-bottom: 30px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent-color); margin: 0; display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="award" style="width: 18px; height: 18px;"></i> 3. Mốc tích lũy & Hạng thành viên
+                            </h3>
+                            <button type="button" id="add_tier_btn" class="btn-action-sm btn-action-success">
+                                Thêm hạng mới
+                            </button>
+                        </div>
+                        
+                        <div class="table-responsive-modern">
+                            <table class="table-modern" id="tiers_table">
+                                <thead>
+                                    <tr>
+                                        <th>Tên hạng</th>
+                                        <th>Mốc điểm tích lũy tối thiểu</th>
+                                        <th>Hệ số tích điểm</th>
+                                        <th style="width: 100px; text-align: center;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($settings['tiers'] as $index => $tier)
+                                        <tr class="tier-row" data-index="{{ $index }}">
+                                            <td>
+                                                <input type="text" name="tiers[{{ $index }}][name]" value="{{ $tier['name'] }}" required class="form-control-modern" placeholder="Ví dụ: Vàng">
+                                            </td>
+                                            <td>
+                                                <input type="number" name="tiers[{{ $index }}][min_points]" value="{{ $tier['min_points'] }}" min="0" required class="form-control-modern">
+                                            </td>
+                                            <td>
+                                                <input type="number" step="0.01" name="tiers[{{ $index }}][multiplier]" value="{{ $tier['multiplier'] }}" min="1" required class="form-control-modern">
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <button type="button" class="btn-action-sm btn-action-danger remove-row-btn">Xóa</button>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr class="no-tiers-row">
+                                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa cấu hình mốc hạng thành viên. Nhấn nút "Thêm hạng mới" để bắt đầu.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    
-                    <div class="table-responsive-modern">
-                        <table class="table-modern" id="tiers_table">
-                            <thead>
-                                <tr>
-                                    <th>Tên hạng</th>
-                                    <th>Mốc điểm tích lũy tối thiểu</th>
-                                    <th>Hệ số tích điểm</th>
-                                    <th style="width: 100px; text-align: center;">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($settings['tiers'] as $index => $tier)
-                                    <tr class="tier-row" data-index="{{ $index }}">
-                                        <td>
-                                            <input type="text" name="tiers[{{ $index }}][name]" value="{{ $tier['name'] }}" required class="form-control-modern" placeholder="Ví dụ: Vàng">
-                                        </td>
-                                        <td>
-                                            <input type="number" name="tiers[{{ $index }}][min_points]" value="{{ $tier['min_points'] }}" min="0" required class="form-control-modern">
-                                        </td>
-                                        <td>
-                                            <input type="number" step="0.01" name="tiers[{{ $index }}][multiplier]" value="{{ $tier['multiplier'] }}" min="1" required class="form-control-modern">
-                                        </td>
-                                        <td style="text-align: center;">
-                                            <button type="button" class="btn-action-sm btn-action-danger remove-row-btn">Xóa</button>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr class="no-tiers-row">
-                                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa cấu hình mốc hạng thành viên. Nhấn nút "Thêm hạng mới" để bắt đầu.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
 
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 30px 0;">
-
-                <!-- 4. Chiến dịch ưu đãi & Tăng điểm theo dịp -->
-                <div style="margin-bottom: 30px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                        <h3 style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent-color); margin: 0; display: flex; align-items: center; gap: 6px;">
-                            <i data-lucide="calendar" style="width: 18px; height: 18px;"></i> 4. Sự kiện & Chiến dịch tăng điểm ưu đãi
-                        </h3>
-                        <button type="button" id="add_campaign_btn" class="btn-action-sm btn-action-success">
-                            Thêm sự kiện
-                        </button>
-                    </div>
-                    
-                    <div class="table-responsive-modern">
-                        <table class="table-modern" id="campaigns_table">
-                            <thead>
-                                <tr>
-                                    <th>Tên sự kiện</th>
-                                    <th>Ngày bắt đầu</th>
-                                    <th>Ngày kết thúc</th>
-                                    <th>Hệ số nhân ưu đãi</th>
-                                    <th style="width: 100px; text-align: center;">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($settings['campaigns'] as $index => $campaign)
-                                    <tr class="campaign-row" data-index="{{ $index }}">
-                                        <td>
-                                            <input type="text" name="campaigns[{{ $index }}][name]" value="{{ $campaign['name'] }}" required class="form-control-modern" placeholder="Ví dụ: Tết Trung Thu">
-                                        </td>
-                                        <td>
-                                            <input type="date" name="campaigns[{{ $index }}][start_date]" value="{{ $campaign['start_date'] }}" required class="form-control-modern">
-                                        </td>
-                                        <td>
-                                            <input type="date" name="campaigns[{{ $index }}][end_date]" value="{{ $campaign['end_date'] }}" required class="form-control-modern">
-                                        </td>
-                                        <td>
-                                            <input type="number" step="0.01" name="campaigns[{{ $index }}][multiplier]" value="{{ $campaign['multiplier'] }}" min="1" required class="form-control-modern">
-                                        </td>
-                                        <td style="text-align: center;">
-                                            <button type="button" class="btn-action-sm btn-action-danger remove-row-btn">Xóa</button>
-                                        </td>
+                    <!-- 4. Chiến dịch ưu đãi & Tăng điểm theo dịp -->
+                    <div style="margin-bottom: 30px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent-color); margin: 0; display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="calendar" style="width: 18px; height: 18px;"></i> 4. Sự kiện & Chiến dịch tăng điểm ưu đãi
+                            </h3>
+                            <button type="button" id="add_campaign_btn" class="btn-action-sm btn-action-success">
+                                Thêm sự kiện
+                            </button>
+                        </div>
+                        
+                        <div class="table-responsive-modern">
+                            <table class="table-modern" id="campaigns_table">
+                                <thead>
+                                    <tr>
+                                        <th>Tên sự kiện</th>
+                                        <th>Ngày bắt đầu</th>
+                                        <th>Ngày kết thúc</th>
+                                        <th>Hệ số nhân ưu đãi</th>
+                                        <th style="width: 100px; text-align: center;">Thao tác</th>
                                     </tr>
-                                @empty
-                                    <tr class="no-campaigns-row">
-                                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa cấu hình chiến dịch ưu đãi. Nhấn nút "Thêm sự kiện" để bắt đầu.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @forelse($settings['campaigns'] as $index => $campaign)
+                                        <tr class="campaign-row" data-index="{{ $index }}">
+                                            <td>
+                                                <input type="text" name="campaigns[{{ $index }}][name]" value="{{ $campaign['name'] }}" required class="form-control-modern" placeholder="Ví dụ: Tết Trung Thu">
+                                            </td>
+                                            <td>
+                                                <input type="date" name="campaigns[{{ $index }}][start_date]" value="{{ $campaign['start_date'] }}" required class="form-control-modern">
+                                            </td>
+                                            <td>
+                                                <input type="date" name="campaigns[{{ $index }}][end_date]" value="{{ $campaign['end_date'] }}" required class="form-control-modern">
+                                            </td>
+                                            <td>
+                                                <input type="number" step="0.01" name="campaigns[{{ $index }}][multiplier]" value="{{ $campaign['multiplier'] }}" min="1" required class="form-control-modern">
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <button type="button" class="btn-action-sm btn-action-danger remove-row-btn">Xóa</button>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr class="no-campaigns-row">
+                                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa cấu hình chiến dịch ưu đãi. Nhấn nút "Thêm sự kiện" để bắt đầu.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
