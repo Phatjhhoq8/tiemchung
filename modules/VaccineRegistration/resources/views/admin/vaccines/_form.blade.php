@@ -1492,6 +1492,10 @@ function removeRegimenRow(btn) {
 
             let menu = null;
 
+            const closeOnScroll = function() {
+                hideMenu();
+            };
+
             inputEl.addEventListener('focus', function() {
                 showMenu();
             });
@@ -1516,16 +1520,27 @@ function removeRegimenRow(btn) {
                 menu = document.createElement('div');
                 menu.className = 'medicare-autocomplete-menu';
                 
-                const parent = inputEl.parentElement;
+                const rect = inputEl.getBoundingClientRect();
+                menu.style.position = 'absolute';
+                menu.style.top = (rect.bottom + window.scrollY) + 'px';
+                menu.style.left = (rect.left + window.scrollX) + 'px';
+                menu.style.width = rect.width + 'px';
+                menu.style.zIndex = '9999';
+
                 renderItems(values);
-                parent.appendChild(menu);
+                document.body.appendChild(menu);
                 filterItems(inputEl.value);
+
+                window.addEventListener('scroll', closeOnScroll, true);
+                window.addEventListener('resize', closeOnScroll);
             }
 
             function hideMenu() {
                 if (menu) {
                     menu.remove();
                     menu = null;
+                    window.removeEventListener('scroll', closeOnScroll, true);
+                    window.removeEventListener('resize', closeOnScroll);
                 }
             }
 
