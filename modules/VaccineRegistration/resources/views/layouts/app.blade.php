@@ -1,3 +1,6 @@
+
+
+
 @php
     $globalSettings = \Modules\VaccineRegistration\Models\Setting::values([
         'site_name' => 'Medicare',
@@ -759,60 +762,57 @@
                     <div class="footer-branches-title">
                         HỆ THỐNG CHI NHÁNH TIÊM CHỦNG MEDICARE CẦN THƠ
                     </div>
-                    <div class="footer-branch-list">
+                    <div class="footer-branch-list-flat">
                         @php
                             $totalCenters = $activeCenters->count();
                             $displayCenters = $totalCenters > 4 ? $activeCenters->take(3) : $activeCenters->take(4);
                         @endphp
 
                         @foreach($displayCenters as $center)
-                        <div class="footer-branch-item">
-                            <h4>
-                                {{ $center->name }}
+                        <div class="footer-branch-row-flat">
+                            <div class="footer-branch-row-title">
+                                <h4>{{ $center->name }}</h4>
                                 @if($currentCenter?->id === $center->id)
                                     <span class="footer-branch-selected">Đang chọn</span>
                                 @endif
-                            </h4>
-                            <div class="footer-branch-info">
-                                <p><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> {{ $center->address }}</p>
-                                <div class="footer-branch-meta">
-                                    <span><i data-lucide="phone" style="width: 14px; height: 14px;"></i> Hotline: <strong>{{ $center->phone }}</strong></span>
-                                    <span><i data-lucide="clock" style="width: 14px; height: 14px;"></i> {{ $center->working_hours ?: '7:00 – 17:00 (Tất cả các ngày trong tuần kể cả Thứ 7, Chủ Nhật & Ngày Lễ)' }}</span>
+                                <div class="footer-branch-row-actions">
+                                    <a href="{{ route('contact') }}" class="footer-branch-link-map" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Bản đồ
+                                    </a>
+                                    <span style="opacity: 0.3; color: #fff;">|</span>
+                                    <form method="POST" action="{{ route('centers.select') }}" style="margin:0; display: inline;">
+                                        @csrf
+                                        <input type="hidden" name="center_id" value="{{ $center->id }}">
+                                        <input type="hidden" name="redirect_to" value="register">
+                                        <button type="submit" class="footer-branch-link-book" style="border:0; background:transparent; cursor:pointer; font-weight:700; padding:0; display: inline-flex; align-items: center; gap: 4px;">Đặt lịch →</button>
+                                    </form>
                                 </div>
                             </div>
-                            <div class="footer-branch-item-actions">
-                                <a href="{{ route('contact') }}" class="footer-branch-link-map">
-                                    <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Xem bản đồ & chỉ đường
-                                </a>
-                                <form method="POST" action="{{ route('centers.select') }}" style="margin:0;">
-                                    @csrf
-                                    <input type="hidden" name="center_id" value="{{ $center->id }}">
-                                    <input type="hidden" name="redirect_to" value="register">
-                                    <button type="submit" class="footer-branch-link-book" style="border:0; cursor:pointer;">Đặt lịch tại chi nhánh →</button>
-                                </form>
+                            <div class="footer-branch-row-detail">
+                                <span><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color);"></i> {{ $center->address }}</span>
+                                <span><i data-lucide="phone" style="width: 14px; height: 14px; color: var(--secondary-color);"></i> Hotline: <strong>{{ $center->phone }}</strong></span>
+                                <span><i data-lucide="clock" style="width: 14px; height: 14px; color: var(--secondary-color);"></i> {{ $center->working_hours ?: '7:00 – 17:00 (Tất cả các ngày trong tuần kể cả Thứ 7, Chủ Nhật & Ngày Lễ)' }}</span>
                             </div>
                         </div>
                         @endforeach
 
                         @if($totalCenters > 4)
-                        <a href="{{ route('contact') }}" class="footer-branch-item footer-branch-more-card" style="text-decoration: none;">
-                            <h4>
-                                HỆ THỐNG TẤT CẢ CHI NHÁNH
-                            </h4>
-                            <div class="footer-branch-info">
-                                <p><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color); flex-shrink: 0; margin-top: 3px;"></i> Tra cứu địa chỉ, bản đồ và hướng dẫn chỉ đường toàn bộ các trung tâm tiêm chủng Medicare.</p>
-                                <div class="footer-branch-meta">
-                                    <span><i data-lucide="phone" style="width: 14px; height: 14px;"></i> Hotline tư vấn toàn hệ thống: <strong>0938 60 38 39</strong></span>
-                                    <span><i data-lucide="clock" style="width: 14px; height: 14px;"></i> 7:00 – 17:00 (Tất cả các ngày trong tuần kể cả Thứ 7, Chủ Nhật & Ngày Lễ)</span>
+                        <div class="footer-branch-row-flat">
+                            <div class="footer-branch-row-title">
+                                <h4>HỆ THỐNG TẤT CẢ CHI NHÁNH</h4>
+                                <div class="footer-branch-row-actions">
+                                    <a href="{{ route('contact') }}" class="footer-branch-link-map" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Bản đồ
+                                    </a>
+                                    <span style="opacity: 0.3; color: #fff;">|</span>
+                                    <a href="{{ route('contact') }}" class="footer-branch-link-book" style="font-weight:700; display: inline-flex; align-items: center; gap: 4px;">Xem tất cả →</a>
                                 </div>
                             </div>
-                            <div class="footer-branch-item-actions">
-                                <span class="footer-branch-link-map">
-                                    <i data-lucide="navigation" style="width: 13px; height: 13px;"></i> Tra cứu bản đồ
-                                </span>
-                                <span class="footer-branch-link-book">Xem tất cả chi nhánh →</span>
+                            <div class="footer-branch-row-detail">
+                                <span><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--secondary-color);"></i> Tra cứu địa chỉ, bản đồ và hướng dẫn chỉ đường toàn bộ các trung tâm tiêm chủng Medicare.</span>
+                                <span><i data-lucide="phone" style="width: 14px; height: 14px; color: var(--secondary-color);"></i> Hotline tư vấn: <strong>0938 60 38 39</strong></span>
                             </div>
-                        </a>
+                        </div>
                         @endif
                     </div>
                 </div>

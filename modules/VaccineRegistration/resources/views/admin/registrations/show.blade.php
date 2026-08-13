@@ -67,22 +67,24 @@
         </div>
 
         @if($registration->payment_status === \Modules\VaccineRegistration\Models\Registration::PAYMENT_UNPAID && $registration->booking_status !== \Modules\VaccineRegistration\Models\Registration::BOOKING_CANCELLED)
-            <form action="{{ route('admin.registrations.settle', $registration) }}" method="POST" data-confirm="Xác nhận đã thu tiền tại quầy?" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+            <form action="{{ route('admin.registrations.settle', $registration) }}" method="POST" data-confirm="Xác nhận đã thu tiền tại quầy?" style="display:flex; flex-direction:column; gap:8px;">
                 @csrf
-                <div style="flex:1 1 230px;">
-                    <label class="form-label-modern" for="redeem_points">Điểm khách muốn dùng</label>
-                    <input class="form-control-modern" id="redeem_points" type="number" name="redeem_points" min="0" max="{{ $pointQuote['available_points'] ?? 0 }}" value="{{ old('redeem_points', 0) }}">
-                    <small style="display:block; margin-top:5px; color:var(--text-muted);">
-                        Số dư toàn hệ thống: {{ number_format($pointQuote['balance'] ?? 0) }} điểm. 
-                        Có thể dùng tối đa {{ number_format($pointQuote['available_points'] ?? 0) }} điểm 
-                        ({{ $loyaltySettings['max_redeem_percent'] }}% đơn 
-                        @if(isset($loyaltySettings['max_redeem_amount']) && (int)$loyaltySettings['max_redeem_amount'] > 0)
-                            , tối đa {{ number_format($loyaltySettings['max_redeem_amount']) }} đ
-                        @endif
-                        ).
-                    </small>
+                <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; width: 100%;">
+                    <div style="flex:1; min-width:240px; display:flex; flex-direction:column; gap:6px;">
+                        <label class="form-label-modern" for="redeem_points" style="margin: 0; font-weight: 700;">Điểm khách muốn dùng</label>
+                        <input class="form-control-modern" id="redeem_points" type="number" name="redeem_points" min="0" max="{{ $pointQuote['available_points'] ?? 0 }}" value="{{ old('redeem_points', 0) }}" style="height: 42px; margin: 0; box-sizing: border-box; width: 100%;">
+                    </div>
+                    <button type="submit" class="btn-modern btn-modern-primary" style="height: 42px; margin: 0; font-weight: 700; padding: 0 24px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">Xác nhận thanh toán</button>
                 </div>
-                <button type="submit" class="btn-modern btn-modern-primary">Xác nhận thanh toán</button>
+                <small style="display:block; color:var(--text-muted); font-size:12px; margin-top:2px;">
+                    Số dư toàn hệ thống: {{ number_format($pointQuote['balance'] ?? 0) }} điểm. 
+                    Có thể dùng tối đa {{ number_format($pointQuote['available_points'] ?? 0) }} điểm 
+                    ({{ $loyaltySettings['max_redeem_percent'] }}% đơn 
+                    @if(isset($loyaltySettings['max_redeem_amount']) && (int)$loyaltySettings['max_redeem_amount'] > 0)
+                        , tối đa {{ number_format($loyaltySettings['max_redeem_amount']) }} đ
+                    @endif
+                    ).
+                </small>
             </form>
             @if(isset($otherUnpaidCount) && $otherUnpaidCount > 0)
                  <form action="{{ route('admin.registrations.settle-group', $registration) }}" method="POST" data-confirm="Xác nhận thanh toán chung cho toàn bộ {{ $otherUnpaidCount + 1 }} đơn hàng chưa thanh toán trong nhóm này?" style="margin-top: 16px; border-top: 1px dashed #e2e8f0; padding-top: 16px;">

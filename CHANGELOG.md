@@ -1,3 +1,12 @@
+## [v6.5.33] - 2026-08-13
+
+### Footer Layout Optimization
+
+* **Flat Footer Branches & Info Layout (`app.blade.php`, `style.css`)**:
+  - Transformed the footer branches network layout from bulky grid-based cards to a sleek, minimal flat list of rows.
+  - Displayed branch names, status tags, contact details, maps, and appointment links on inline text rows separated by clean borders.
+  - Removed the solid background card panel (`.footer-legal-panel`) from the company info column on the right, displaying text directly on the dark footer background for a unified, modern, and high-end aesthetic.
+
 ## [v6.5.32] - 2026-08-13
 
 ### Production Deployment & PHP Platform Compatibility
