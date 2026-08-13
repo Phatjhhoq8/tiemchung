@@ -8,10 +8,7 @@
         </ul>
 @endif
 
-<div style="background: #f1f5f9; padding: 10px; margin-bottom: 20px; border-radius: 6px; font-family: monospace; color: #0f172a;">
-    DEBUG: isSuperAdmin = {{ var_export($isSuperAdmin ?? false, true) }} | 
-    selectedCenterId = {{ var_export(\Modules\VaccineRegistration\Support\AdminContext::selectedCenterId(), true) }}
-</div>
+
 
 <style>
     /* CSS cho các trường bị disabled/readonly trong form */
