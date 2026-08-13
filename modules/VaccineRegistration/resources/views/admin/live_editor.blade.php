@@ -591,7 +591,7 @@
                         { value: 'globe', label: 'Website / Địa chỉ mạng (Globe)' }
                     ]
                 },
-                { key: 'text', label: 'Nội dung dòng (nhập văn bản thuần túy)', type: 'text', placeholder: 'Ví dụ: Giấy chứng nhận ĐKKD số 0107631488...' }
+                { key: 'text', label: 'Nội dung dòng', type: 'text', placeholder: 'Ví dụ: Giấy chứng nhận ĐKKD số 0107631488...' }
             ]
         }
     };
