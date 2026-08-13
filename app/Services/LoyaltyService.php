@@ -27,7 +27,7 @@ class LoyaltyService
             'min_order_value_to_redeem' => 0,
             'point_expiry_months' => 0, // 0 = Vô hạn
             'redeem_value_type' => 'vnd', // 'vnd' hoặc 'percent'
-            'redeem_vnd_per_point' => 100,
+            'redeem_vnd_per_point' => 1,
             'redeem_percent_bps_per_point' => 10, // 10 basis points = 0.1% đơn hàng
             'max_redeem_percent' => 50,
             'max_redeem_amount' => null,

@@ -47,7 +47,7 @@ class SettingSeeder extends Seeder
             'min_order_value_to_redeem' => 0,
             'point_expiry_months' => 0,
             'redeem_value_type' => 'vnd',
-            'redeem_vnd_per_point' => 100,
+            'redeem_vnd_per_point' => 1,
             'redeem_percent_bps_per_point' => 10,
             'max_redeem_percent' => 50,
             'max_redeem_amount' => null,

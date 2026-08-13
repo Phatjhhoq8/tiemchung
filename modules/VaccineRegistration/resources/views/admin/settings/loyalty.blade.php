@@ -77,10 +77,10 @@
 
             <div id="loyalty_settings_fields" style="{{ ($centerId && $settings['use_system_settings']) ? 'display: none;' : '' }}">
                 <h3 style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent-color); margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
-                    <i data-lucide="info" style="width: 18px; height: 18px;"></i> 1. Cấu hình tích lũy cơ bản
+                    <i data-lucide="info" style="width: 18px; height: 18px;"></i> Cấu hình tích lũy & quy đổi điểm
                 </h3>
-                
-                <div class="form-grid-2" style="margin-bottom: 24px;">
+
+                <div style="margin-bottom: 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
                     <!-- Trạng thái hoạt động -->
                     <div class="form-group-modern">
                         <label for="enabled" class="form-label-modern">Trạng thái tích điểm *</label>
@@ -90,194 +90,69 @@
                         </select>
                     </div>
 
-                    <!-- Hạn dùng điểm -->
+                    <!-- Tỷ lệ tích điểm (%) -->
                     <div class="form-group-modern">
-                        <label for="point_expiry_months" class="form-label-modern">Hạn dùng điểm (Tháng) *</label>
-                        <input type="number" name="point_expiry_months" id="point_expiry_months" value="{{ old('point_expiry_months', $settings['point_expiry_months']) }}" min="0" required class="form-control-modern">
-                        <small style="color: var(--text-muted); display: block; margin-top: 4px;">Đặt bằng <strong>0</strong> để cấu hình điểm có hạn dùng <strong>Vô hạn</strong>.</small>
-                    </div>
-
-                    <!-- VND tương đương 1 điểm -->
-                    <div class="form-group-modern">
-                        <label for="vnd_per_earned_point" class="form-label-modern">Số tiền để tích được 1 điểm (VND) *</label>
-                        <input type="number" name="vnd_per_earned_point" id="vnd_per_earned_point" value="{{ old('vnd_per_earned_point', $settings['vnd_per_earned_point']) }}" min="1" required class="form-control-modern">
-                    </div>
-
-                    <!-- Giá trị đơn hàng tối thiểu để được tích điểm -->
-                    <div class="form-group-modern">
-                        <label for="min_order_value_to_earn" class="form-label-modern">Giá trị đơn tối thiểu để tích điểm (VND) *</label>
-                        <input type="number" name="min_order_value_to_earn" id="min_order_value_to_earn" value="{{ old('min_order_value_to_earn', $settings['min_order_value_to_earn']) }}" min="0" required class="form-control-modern">
-                    </div>
-                </div>
-
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 30px 0;">
-
-                <h3 style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent-color); margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
-                    <i data-lucide="banknote" style="width: 18px; height: 18px;"></i> 2. Cấu hình quy đổi điểm & thanh toán
-                </h3>
-
-                <div class="form-grid-2" style="margin-bottom: 24px;">
-                    <!-- Kiểu quy đổi điểm -->
-                    <div class="form-group-modern">
-                        <label for="redeem_value_type" class="form-label-modern">Phương thức quy đổi điểm *</label>
-                        <select name="redeem_value_type" id="redeem_value_type" class="form-control-modern">
-                            <option value="vnd" {{ old('redeem_value_type', $settings['redeem_value_type']) === 'vnd' ? 'selected' : '' }}>Số tiền cố định (VND)</option>
-                            <option value="percent" {{ old('redeem_value_type', $settings['redeem_value_type']) === 'percent' ? 'selected' : '' }}>Phần trăm đơn hàng (%)</option>
-                        </select>
-                    </div>
-
-                    <!-- Giá trị quy đổi VND -->
-                    <div class="form-group-modern" id="redeem_vnd_container">
-                        <label for="redeem_vnd_per_point" class="form-label-modern">Số tiền quy đổi trên mỗi 1 điểm (VND) *</label>
-                        <input type="number" name="redeem_vnd_per_point" id="redeem_vnd_per_point" value="{{ old('redeem_vnd_per_point', $settings['redeem_vnd_per_point'] ?? 100) }}" min="0" required class="form-control-modern">
-                    </div>
-
-                    <!-- Giá trị quy đổi % (Basis Points) -->
-                    <div class="form-group-modern" id="redeem_percent_container" style="display:none;">
-                        <label for="redeem_percent_display" class="form-label-modern">Phần trăm quy đổi trên mỗi 1 điểm (%) *</label>
-                        <input type="number" step="0.001" id="redeem_percent_display" value="{{ old('redeem_percent_display', isset($settings['redeem_percent_bps_per_point']) ? ($settings['redeem_percent_bps_per_point'] / 100) : 0.1) }}" min="0" class="form-control-modern">
-                        <input type="hidden" name="redeem_percent_bps_per_point" id="redeem_percent_bps_per_point" value="{{ old('redeem_percent_bps_per_point', $settings['redeem_percent_bps_per_point'] ?? 10) }}">
-                        <small style="color: var(--text-muted); display: block; margin-top: 4px;">Ví dụ: Nhập <strong>0.1%</strong> (tương đương 10 điểm cơ bản BPS).</small>
-                    </div>
-
-                    <div style="grid-column: span 2; margin-top: -12px;">
-                        <small id="redeem_value_hint" style="color: var(--primary-color); display: block; font-weight: 600;"></small>
-                    </div>
-
-                    <!-- Đơn hàng tối thiểu sử dụng điểm -->
-                    <div class="form-group-modern">
-                        <label for="min_order_value_to_redeem" class="form-label-modern">Giá trị đơn tối thiểu để dùng điểm (VND) *</label>
-                        <input type="number" name="min_order_value_to_redeem" id="min_order_value_to_redeem" value="{{ old('min_order_value_to_redeem', $settings['min_order_value_to_redeem']) }}" min="0" required class="form-control-modern">
+                        <label for="earn_percent_input" class="form-label-modern">Tỷ lệ tích điểm (%) *</label>
+                        <input type="number" step="0.001" id="earn_percent_input" value="0.1" min="0.001" max="100" required class="form-control-modern">
+                        <small style="color: var(--text-muted); display: block; margin-top: 4px;">Ví dụ: Nhập <strong>0.1</strong> để tích được 0.1% đơn hàng.</small>
                     </div>
 
                     <!-- Phần trăm giảm tối đa -->
                     <div class="form-group-modern">
-                        <label for="max_redeem_percent" class="form-label-modern">Phần trăm giảm tối đa của đơn hàng (%) *</label>
+                        <label for="max_redeem_percent" class="form-label-modern">Phần trăm thanh toán tối đa bằng điểm (%) *</label>
                         <input type="number" name="max_redeem_percent" id="max_redeem_percent" value="{{ old('max_redeem_percent', $settings['max_redeem_percent']) }}" min="1" max="100" required class="form-control-modern">
-                    </div>
-
-                    <!-- Số tiền giảm tối đa -->
-                    <div class="form-group-modern">
-                        <label for="max_redeem_amount" class="form-label-modern">Số tiền giảm giá tối đa (VND - Tùy chọn)</label>
-                        <input type="number" name="max_redeem_amount" id="max_redeem_amount" value="{{ old('max_redeem_amount', $settings['max_redeem_amount']) }}" min="0" class="form-control-modern">
-                        <small style="color: var(--text-muted); display: block; margin-top: 4px;">Để trống để không giới hạn số tiền giảm tối đa.</small>
+                        <small style="color: var(--text-muted); display: block; margin-top: 4px;">Ví dụ: Nhập <strong>50</strong> để được thanh toán tối đa 50% đơn.</small>
                     </div>
                 </div>
 
-                {{-- Ẩn các mốc hạng thành viên và chiến dịch để tối giản hóa cơ chế điểm theo yêu cầu --}}
+                {{-- Khối chứa các input ẩn nhận giá trị mặc định của hệ thống --}}
                 <div style="display: none;">
+                    <!-- VND tương đương 1 điểm (Sẽ do JS tự động cập nhật dựa trên earn_percent_input) -->
+                    <input type="number" name="vnd_per_earned_point" id="vnd_per_earned_point" value="{{ old('vnd_per_earned_point', $settings['vnd_per_earned_point']) }}">
+
+                    <!-- Hạn dùng điểm -->
+                    <input type="number" name="point_expiry_months" id="point_expiry_months" value="{{ old('point_expiry_months', $settings['point_expiry_months']) }}">
+
+                    <!-- Giá trị đơn hàng tối thiểu để được tích điểm -->
+                    <input type="number" name="min_order_value_to_earn" id="min_order_value_to_earn" value="{{ old('min_order_value_to_earn', $settings['min_order_value_to_earn']) }}">
+
+                    <!-- Kiểu quy đổi điểm -->
+                    <select name="redeem_value_type" id="redeem_value_type">
+                        <option value="vnd" selected>Số tiền cố định (VND)</option>
+                    </select>
+
+                    <!-- Giá trị quy đổi VND (Đặt mặc định là 1 VND = 1 Điểm) -->
+                    <input type="number" name="redeem_vnd_per_point" id="redeem_vnd_per_point" value="{{ old('redeem_vnd_per_point', $settings['redeem_vnd_per_point']) }}">
+
+                    <!-- Đơn hàng tối thiểu sử dụng điểm -->
+                    <input type="number" name="min_order_value_to_redeem" id="min_order_value_to_redeem" value="{{ old('min_order_value_to_redeem', $settings['min_order_value_to_redeem']) }}">
+
+                    <!-- Số tiền giảm tối đa -->
+                    <input type="number" name="max_redeem_amount" id="max_redeem_amount" value="{{ old('max_redeem_amount', $settings['max_redeem_amount']) }}">
+
+                    <!-- Hệ số sinh nhật -->
+                    <input type="number" step="0.01" name="birthday_multiplier" id="birthday_multiplier" value="1.0">
+
+                    {{-- Ẩn các mốc hạng thành viên và chiến dịch để tối giản hóa cơ chế điểm theo yêu cầu --}}
                     <!-- 3. Mốc hạng thành viên -->
-                    <div style="margin-bottom: 30px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                            <h3 style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent-color); margin: 0; display: flex; align-items: center; gap: 6px;">
-                                <i data-lucide="award" style="width: 18px; height: 18px;"></i> 3. Mốc tích lũy & Hạng thành viên
-                            </h3>
-                            <button type="button" id="add_tier_btn" class="btn-action-sm btn-action-success">
-                                Thêm hạng mới
-                            </button>
-                        </div>
-                        
-                        <div class="table-responsive-modern">
-                            <table class="table-modern" id="tiers_table">
-                                <thead>
-                                    <tr>
-                                        <th>Tên hạng</th>
-                                        <th>Mốc điểm tích lũy tối thiểu</th>
-                                        <th>Hệ số tích điểm</th>
-                                        <th style="width: 100px; text-align: center;">Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($settings['tiers'] as $index => $tier)
-                                        <tr class="tier-row" data-index="{{ $index }}">
-                                            <td>
-                                                <input type="text" name="tiers[{{ $index }}][name]" value="{{ $tier['name'] }}" required class="form-control-modern" placeholder="Ví dụ: Vàng">
-                                            </td>
-                                            <td>
-                                                <input type="number" name="tiers[{{ $index }}][min_points]" value="{{ $tier['min_points'] }}" min="0" required class="form-control-modern">
-                                            </td>
-                                            <td>
-                                                <input type="number" step="0.01" name="tiers[{{ $index }}][multiplier]" value="{{ $tier['multiplier'] }}" min="1" required class="form-control-modern">
-                                            </td>
-                                            <td style="text-align: center;">
-                                                <button type="button" class="btn-action-sm btn-action-danger remove-row-btn">Xóa</button>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr class="no-tiers-row">
-                                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa cấu hình mốc hạng thành viên. Nhấn nút "Thêm hạng mới" để bắt đầu.</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
+                    <div id="tiers_container">
+                        @foreach($settings['tiers'] ?? [] as $index => $tier)
+                            <input type="hidden" name="tiers[{{ $index }}][name]" value="{{ $tier['name'] }}">
+                            <input type="hidden" name="tiers[{{ $index }}][min_points]" value="{{ $tier['min_points'] }}">
+                            <input type="hidden" name="tiers[{{ $index }}][multiplier]" value="{{ $tier['multiplier'] }}">
+                        @endforeach
                     </div>
 
                     <!-- 4. Chiến dịch ưu đãi & Tăng điểm theo dịp -->
-                    <div style="margin-bottom: 30px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                            <h3 style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent-color); margin: 0; display: flex; align-items: center; gap: 6px;">
-                                <i data-lucide="calendar" style="width: 18px; height: 18px;"></i> 4. Sự kiện & Chiến dịch tăng điểm ưu đãi
-                            </h3>
-                            <button type="button" id="add_campaign_btn" class="btn-action-sm btn-action-success">
-                                Thêm sự kiện
-                            </button>
-                        </div>
-                        
-                        <div class="table-responsive-modern">
-                            <table class="table-modern" id="campaigns_table">
-                                <thead>
-                                    <tr>
-                                        <th>Tên sự kiện</th>
-                                        <th>Ngày bắt đầu</th>
-                                        <th>Ngày kết thúc</th>
-                                        <th>Hệ số nhân ưu đãi</th>
-                                        <th style="width: 100px; text-align: center;">Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($settings['campaigns'] as $index => $campaign)
-                                        <tr class="campaign-row" data-index="{{ $index }}">
-                                            <td>
-                                                <input type="text" name="campaigns[{{ $index }}][name]" value="{{ $campaign['name'] }}" required class="form-control-modern" placeholder="Ví dụ: Tết Trung Thu">
-                                            </td>
-                                            <td>
-                                                <input type="date" name="campaigns[{{ $index }}][start_date]" value="{{ $campaign['start_date'] }}" required class="form-control-modern">
-                                            </td>
-                                            <td>
-                                                <input type="date" name="campaigns[{{ $index }}][end_date]" value="{{ $campaign['end_date'] }}" required class="form-control-modern">
-                                            </td>
-                                            <td>
-                                                <input type="number" step="0.01" name="campaigns[{{ $index }}][multiplier]" value="{{ $campaign['multiplier'] }}" min="1" required class="form-control-modern">
-                                            </td>
-                                            <td style="text-align: center;">
-                                                <button type="button" class="btn-action-sm btn-action-danger remove-row-btn">Xóa</button>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr class="no-campaigns-row">
-                                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa cấu hình chiến dịch ưu đãi. Nhấn nút "Thêm sự kiện" để bắt đầu.</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 30px 0;">
-
-                <!-- 5. Tích điểm sinh nhật -->
-                <h3 style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent-color); margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
-                    <i data-lucide="cake" style="width: 18px; height: 18px;"></i> 5. Ưu đãi dịp sinh nhật bệnh nhân
-                </h3>
-                
-                <div style="display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 30px;">
-                    <div class="form-group-modern" style="max-width: 480px;">
-                        <label for="birthday_multiplier" class="form-label-modern">Hệ số nhân dịp sinh nhật bệnh nhân *</label>
-                        <input type="number" step="0.01" name="birthday_multiplier" id="birthday_multiplier" value="{{ old('birthday_multiplier', $settings['birthday_multiplier']) }}" min="1" required class="form-control-modern">
-                        <small style="color: var(--text-muted); display: block; margin-top: 4px;">Đặt bằng <strong>1.0</strong> để không áp dụng hệ số nhân ưu đãi vào ngày sinh nhật.</small>
+                    <div id="campaigns_container">
+                        @foreach($settings['campaigns'] ?? [] as $index => $campaign)
+                            <input type="hidden" name="campaigns[{{ $index }}][name]" value="{{ $campaign['name'] }}">
+                            <input type="hidden" name="campaigns[{{ $index }}][start_date]" value="{{ $campaign['start_date'] }}">
+                            <input type="hidden" name="campaigns[{{ $index }}][end_date]" value="{{ $campaign['end_date'] }}">
+                            <input type="hidden" name="campaigns[{{ $index }}][multiplier]" value="{{ $campaign['multiplier'] }}">
+                        @endforeach
                     </div>
                 </div>
-            </div>
             </div>
 
             <div style="border-top: 1px solid var(--border-color); padding-top: 24px; display: flex; justify-content: flex-end; margin-top: 30px;">
@@ -384,165 +259,35 @@
             });
         }
 
-        // --- Gợi ý phương thức quy đổi ---
-        const typeSelect = document.getElementById('redeem_value_type');
-        const vndContainer = document.getElementById('redeem_vnd_container');
-        const percentContainer = document.getElementById('redeem_percent_container');
-        const vndInput = document.getElementById('redeem_vnd_per_point');
-        const percentDisplayInput = document.getElementById('redeem_percent_display');
-        const percentBpsInput = document.getElementById('redeem_percent_bps_per_point');
-        const valHint = document.getElementById('redeem_value_hint');
+        // --- JS Tự động tính toán tỷ lệ tích điểm và vnd_per_earned_point ---
+        const earnPercentInput = document.getElementById('earn_percent_input');
+        const vndPerPointInput = document.getElementById('vnd_per_earned_point');
+        const expiryMonthsInput = document.getElementById('point_expiry_months');
+        const minEarnInput = document.getElementById('min_order_value_to_earn');
+        const redeemVndInput = document.getElementById('redeem_vnd_per_point');
+        const minRedeemInput = document.getElementById('min_order_value_to_redeem');
 
-        function updateRedeemFields() {
-            if (!typeSelect || !vndContainer || !percentContainer || !valHint) return;
-            const type = typeSelect.value;
-            if (type === 'percent') {
-                vndContainer.style.display = 'none';
-                percentContainer.style.display = 'block';
-                
-                const pct = parseFloat(percentDisplayInput.value) || 0;
-                const bps = Math.round(pct * 100);
-                percentBpsInput.value = bps;
-                
-                valHint.innerHTML = `Mỗi 1 điểm khách hàng sử dụng sẽ được giảm <strong>${pct}%</strong> tổng giá trị đơn hàng (tương đương ${bps} BPS).`;
-            } else {
-                vndContainer.style.display = 'block';
-                percentContainer.style.display = 'none';
-                
-                const val = parseInt(vndInput.value) || 0;
-                valHint.innerHTML = `Mỗi 1 điểm khách hàng sử dụng sẽ được giảm trực tiếp <strong>${val.toLocaleString()} đ</strong>.`;
-            }
-        }
+        if (earnPercentInput && vndPerPointInput) {
+            // Khi load trang: tính earn_percent dựa trên vnd_per_earned_point
+            const initVnd = parseInt(vndPerPointInput.value) || 1000;
+            const initPercent = Math.round((100 / initVnd) * 1000) / 1000;
+            earnPercentInput.value = initPercent;
 
-        if (typeSelect) {
-            typeSelect.addEventListener('change', updateRedeemFields);
-            if (vndInput) vndInput.addEventListener('input', updateRedeemFields);
-            if (percentDisplayInput) percentDisplayInput.addEventListener('input', updateRedeemFields);
-            updateRedeemFields();
-        }
+            // Đặt các giá trị mặc định hệ thống tối giản
+            if (expiryMonthsInput) expiryMonthsInput.value = 0;
+            if (minEarnInput) minEarnInput.value = 0;
+            if (redeemVndInput) redeemVndInput.value = 1;
+            if (minRedeemInput) minRedeemInput.value = 0;
 
-        // --- JS Thêm/Xóa mốc Rank hạng thành viên ---
-        const addTierBtn = document.getElementById('add_tier_btn');
-        const tiersTable = document.getElementById('tiers_table');
-        const tiersBody = tiersTable ? tiersTable.querySelector('tbody') : null;
-
-        if (addTierBtn && tiersBody) {
-            addTierBtn.addEventListener('click', function() {
-                const noTiersRow = tiersBody.querySelector('.no-tiers-row');
-                if (noTiersRow) {
-                    noTiersRow.remove();
-                }
-
-                const rows = tiersBody.querySelectorAll('.tier-row');
-                let nextIdx = 0;
-                rows.forEach(r => {
-                    const idx = parseInt(r.getAttribute('data-index')) || 0;
-                    if (idx >= nextIdx) {
-                        nextIdx = idx + 1;
-                    }
-                });
-
-                const newRow = document.createElement('tr');
-                newRow.className = 'tier-row';
-                newRow.setAttribute('data-index', nextIdx);
-                newRow.innerHTML = `
-                    <td>
-                        <input type="text" name="tiers[${nextIdx}][name]" required class="form-control-modern" placeholder="Ví dụ: Vàng">
-                    </td>
-                    <td>
-                        <input type="number" name="tiers[${nextIdx}][min_points]" value="0" min="0" required class="form-control-modern">
-                    </td>
-                    <td>
-                        <input type="number" step="0.01" name="tiers[${nextIdx}][multiplier]" value="1.0" min="1" required class="form-control-modern">
-                    </td>
-                    <td style="text-align: center;">
-                        <button type="button" class="btn-action-sm btn-action-danger remove-row-btn">Xóa</button>
-                    </td>
-                `;
-                
-                tiersBody.appendChild(newRow);
-                lucide.createIcons();
-            });
-        }
-
-        // --- JS Thêm/Xóa chiến dịch sự kiện ---
-        const addCampaignBtn = document.getElementById('add_campaign_btn');
-        const campaignsTable = document.getElementById('campaigns_table');
-        const campaignsBody = campaignsTable ? campaignsTable.querySelector('tbody') : null;
-
-        if (addCampaignBtn && campaignsBody) {
-            addCampaignBtn.addEventListener('click', function() {
-                const noCampaignsRow = campaignsBody.querySelector('.no-campaigns-row');
-                if (noCampaignsRow) {
-                    noCampaignsRow.remove();
-                }
-
-                const rows = campaignsBody.querySelectorAll('.campaign-row');
-                let nextIdx = 0;
-                rows.forEach(r => {
-                    const idx = parseInt(r.getAttribute('data-index')) || 0;
-                    if (idx >= nextIdx) {
-                        nextIdx = idx + 1;
-                    }
-                });
-
-                const todayStr = new Date().toISOString().split('T')[0];
-
-                const newRow = document.createElement('tr');
-                newRow.className = 'campaign-row';
-                newRow.setAttribute('data-index', nextIdx);
-                newRow.innerHTML = `
-                    <td>
-                        <input type="text" name="campaigns[${nextIdx}][name]" required class="form-control-modern" placeholder="Ví dụ: Lễ Tết">
-                    </td>
-                    <td>
-                        <input type="date" name="campaigns[${nextIdx}][start_date]" value="${todayStr}" required class="form-control-modern">
-                    </td>
-                    <td>
-                        <input type="date" name="campaigns[${nextIdx}][end_date]" value="${todayStr}" required class="form-control-modern">
-                    </td>
-                    <td>
-                        <input type="number" step="0.01" name="campaigns[${nextIdx}][multiplier]" value="1.0" min="1" required class="form-control-modern">
-                    </td>
-                    <td style="text-align: center;">
-                        <button type="button" class="btn-action-sm btn-action-danger remove-row-btn">Xóa</button>
-                    </td>
-                `;
-                
-                campaignsBody.appendChild(newRow);
-                lucide.createIcons();
-                
-                // Khởi tạo Custom Datepicker cho các ô date mới vừa được thêm
-                if (typeof window.initGlobalMedicareDatePickers === 'function') {
-                    window.initGlobalMedicareDatePickers();
+            // Lắng nghe sự kiện thay đổi tỷ lệ % tích điểm
+            earnPercentInput.addEventListener('input', function() {
+                const pct = parseFloat(earnPercentInput.value) || 0.1;
+                if (pct > 0) {
+                    const vnd = Math.round(100 / pct);
+                    vndPerPointInput.value = vnd;
                 }
             });
         }
-
-        // Lắng nghe sự kiện click nút Xóa dòng ở cả 2 bảng
-        document.addEventListener('click', function(e) {
-            if (e.target && e.target.classList.contains('remove-row-btn')) {
-                const tr = e.target.closest('tr');
-                const tbody = tr.parentNode;
-                tr.remove();
-
-                if (tbody.children.length === 0) {
-                    if (tbody.parentNode.id === 'tiers_table') {
-                        tbody.innerHTML = `
-                            <tr class="no-tiers-row">
-                                <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa cấu hình mốc hạng thành viên. Nhấn nút "Thêm hạng mới" để bắt đầu.</td>
-                            </tr>
-                        `;
-                    } else if (tbody.parentNode.id === 'campaigns_table') {
-                        tbody.innerHTML = `
-                            <tr class="no-campaigns-row">
-                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">Chưa cấu hình chiến dịch ưu đãi. Nhấn nút "Thêm sự kiện" để bắt đầu.</td>
-                            </tr>
-                        `;
-                    }
-                }
-            }
-        });
     });
 </script>
 @endsection
