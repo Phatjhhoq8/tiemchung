@@ -652,65 +652,7 @@
     @endif
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const addBtn = document.getElementById('add-regimen-btn');
-    const tbody = document.getElementById('regimens-tbody');
-    if (!addBtn || !tbody) return;
 
-    let rowIndex = tbody.querySelectorAll('tr[data-index]').length;
-
-    addBtn.addEventListener('click', () => {
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-index', rowIndex);
-        tr.innerHTML = `
-            <td>
-                <div style="position: relative;">
-                    <input type="text" name="regimens[${rowIndex}][age_group]" required class="form-control-modern regimen-age-group-input" placeholder="VD: Trẻ em từ 9-14 tuổi" autocomplete="off">
-                </div>
-            </td>
-            <td style="text-align: center;">
-                <input type="number" name="regimens[${rowIndex}][doses]" value="1" required min="1" class="form-control-modern" style="text-align: center;">
-            </td>
-            <td>
-                <input type="number" name="regimens[${rowIndex}][price]" min="0" class="form-control-modern" placeholder="Mặc định" style="text-align: right;">
-            </td>
-            <td>
-                <input type="number" name="regimens[${rowIndex}][sale_price]" min="0" class="form-control-modern" placeholder="Mặc định" style="text-align: right;">
-            </td>
-            <td>
-                <div style="position: relative;">
-                    <input type="text" name="regimens[${rowIndex}][schedule_description]" class="form-control-modern regimen-schedule-input" placeholder="VD: Cách nhau 6 tháng" autocomplete="off">
-                </div>
-            </td>
-            <td style="text-align: center;">
-                <button type="button" class="btn-action-sm btn-action-danger" onclick="removeRegimenRow(this)" style="background:#fee2e2; color:#b91c1c; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">Xóa</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-
-        const ageInput = tr.querySelector('.regimen-age-group-input');
-        const schedInput = tr.querySelector('.regimen-schedule-input');
-        if (typeof initAutocompleteForInput === 'function') {
-            initAutocompleteForInput(ageInput, 'regimen_age_group', 'độ tuổi phác đồ');
-            initAutocompleteForInput(schedInput, 'regimen_schedule_description', 'lịch tiêm');
-        }
-        
-        // Re-init lucide icons if applicable
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-        rowIndex++;
-    });
-});
-
-function removeRegimenRow(btn) {
-    const tr = btn.closest('tr');
-    if (tr) {
-        tr.remove();
-    }
-}
-</script>
 
 {{-- ===== HÌNH ẢNH & HIỂN THỊ ===== --}}
 <div class="card-modern" style="margin-bottom: 24px; padding: 24px;">
@@ -2212,7 +2154,63 @@ function removeRegimenRow(btn) {
                     selectDate(`${yyyy}-${mm}-${dd}`, `${dd}/${mm}/${yyyy}`);
                 });
             }
+
+            // ===== QUẢN LÝ PHÁC ĐỒ TIÊM CHỦNG =====
+            const addBtn = document.getElementById('add-regimen-btn');
+            const tbody = document.getElementById('regimens-tbody');
+            if (addBtn && tbody) {
+                let rowIndex = tbody.querySelectorAll('tr[data-index]').length;
+
+                addBtn.addEventListener('click', () => {
+                    const tr = document.createElement('tr');
+                    tr.setAttribute('data-index', rowIndex);
+                    tr.innerHTML = `
+                        <td>
+                            <div style="position: relative;">
+                                <input type="text" name="regimens[${rowIndex}][age_group]" required class="form-control-modern regimen-age-group-input" placeholder="VD: Trẻ em từ 9-14 tuổi" autocomplete="off">
+                            </div>
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="number" name="regimens[${rowIndex}][doses]" value="1" required min="1" class="form-control-modern" style="text-align: center;">
+                        </td>
+                        <td>
+                            <input type="number" name="regimens[${rowIndex}][price]" min="0" class="form-control-modern" placeholder="Mặc định" style="text-align: right;">
+                        </td>
+                        <td>
+                            <input type="number" name="regimens[${rowIndex}][sale_price]" min="0" class="form-control-modern" placeholder="Mặc định" style="text-align: right;">
+                        </td>
+                        <td>
+                            <div style="position: relative;">
+                                <input type="text" name="regimens[${rowIndex}][schedule_description]" class="form-control-modern regimen-schedule-input" placeholder="VD: Cách nhau 6 tháng" autocomplete="off">
+                            </div>
+                        </td>
+                        <td style="text-align: center;">
+                            <button type="button" class="btn-action-sm btn-action-danger" onclick="removeRegimenRow(this)" style="background:#fee2e2; color:#b91c1c; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">Xóa</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+
+                    const ageInput = tr.querySelector('.regimen-age-group-input');
+                    const schedInput = tr.querySelector('.regimen-schedule-input');
+                    if (typeof initAutocompleteForInput === 'function') {
+                        initAutocompleteForInput(ageInput, 'regimen_age_group', 'độ tuổi phác đồ');
+                        initAutocompleteForInput(schedInput, 'regimen_schedule_description', 'lịch tiêm');
+                    }
+                    
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                    rowIndex++;
+                });
+            }
         }
     });
+
+    function removeRegimenRow(btn) {
+        const tr = btn.closest('tr');
+        if (tr) {
+            tr.remove();
+        }
+    }
 </script>
 @endsection
