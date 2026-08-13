@@ -248,9 +248,14 @@ class Registration extends Model
             'status' => 'completed',
         ]);
 
-        $this->status = 'completed';
-        $this->booking_status = 'completed';
-        $this->save();
+        $totalVaccinesCount = $this->vaccines()->count();
+        $administeredDosesCount = $this->administeredDoses()->count();
+
+        if ($administeredDosesCount >= $totalVaccinesCount) {
+            $this->status = 'completed';
+            $this->booking_status = 'completed';
+            $this->save();
+        }
 
         return $dose;
     }
