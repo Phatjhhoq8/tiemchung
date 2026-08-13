@@ -9,9 +9,9 @@
 @endif
 
 <div style="display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 30px;">
-    <!-- Tên Trung tâm -->
+    <!-- Tên Chi nhánh -->
     <div class="form-group">
-        <label for="name" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Tên chi nhánh trung tâm *</label>
+        <label for="name" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Tên chi nhánh *</label>
         <input type="text" name="name" id="name" value="{{ old('name', $center->name) }}" placeholder="Ví dụ: Medicare Chi Nhánh 1" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
     </div>
 

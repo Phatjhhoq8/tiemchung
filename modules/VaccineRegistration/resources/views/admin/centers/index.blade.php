@@ -1,12 +1,12 @@
 @extends('vaccine::layouts.admin')
 
-@section('title', 'Quản lý Trung Tâm - Medicare')
-@section('page_title', 'Hệ Thống Trung Tâm Tiêm Chủng')
+@section('title', 'Quản lý Chi Nhánh - Medicare')
+@section('page_title', 'Hệ Thống Chi Nhánh Tiêm Chủng')
 
 @section('admin_content')
 <div class="card-modern">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
-        <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">Danh sách các trung tâm tiêm chủng</h2>
+        <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">Danh sách các chi nhánh tiêm chủng</h2>
         <a href="{{ route('admin.centers.create') }}" class="btn-modern btn-modern-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
             <i data-lucide="plus-circle" style="width: 18px; height: 18px;"></i> Thêm Chi Nhánh Mới
         </a>

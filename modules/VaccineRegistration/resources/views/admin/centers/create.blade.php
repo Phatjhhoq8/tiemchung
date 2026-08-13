@@ -1,7 +1,7 @@
 @extends('vaccine::layouts.admin')
 
-@section('title', 'Thêm Trung Tâm Mới - Medicare')
-@section('page_title', 'Thêm Chi Nhánh Trung Tâm')
+@section('title', 'Thêm Chi Nhánh Mới - Medicare')
+@section('page_title', 'Thêm Chi Nhánh Mới')
 
 @section('admin_content')
 <div style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; padding: 40px; max-width: 700px; margin: 0 auto;">

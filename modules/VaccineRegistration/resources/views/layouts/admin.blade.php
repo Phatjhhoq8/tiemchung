@@ -68,7 +68,7 @@
         
         $subNavigation[] = ['route' => 'admin.settings.loyalty', 'label' => 'Cấu Hình Tích Điểm', 'icon' => 'coins'];
         if ($isSuperAdmin) {
-            $subNavigation[] = ['route' => 'admin.centers.index', 'label' => 'Quản lý Trung Tâm', 'icon' => 'map-pinned'];
+            $subNavigation[] = ['route' => 'admin.centers.index', 'label' => 'Quản lý Chi Nhánh', 'icon' => 'map-pinned'];
             $subNavigation[] = ['route' => 'admin.users.index', 'label' => 'Tài Khoản Chi Nhánh', 'icon' => 'users'];
             $subNavigation[] = ['route' => 'admin.audit-logs.index', 'label' => 'Nhật Ký Hệ Thống', 'icon' => 'scroll-text'];
         }

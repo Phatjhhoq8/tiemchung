@@ -1,7 +1,7 @@
 @if($centers->isEmpty())
     <div style="text-align: center; padding: 40px; color: var(--text-muted);">
         <i data-lucide="inbox" style="width: 48px; height: 48px; margin-bottom: 12px; color: var(--text-light);"></i>
-        <p>Chưa có chi nhánh trung tâm nào trong hệ thống.</p>
+        <p>Chưa có chi nhánh nào trong hệ thống.</p>
     </div>
 @else
     <div class="table-responsive-modern">
@@ -9,7 +9,7 @@
             <thead>
                 <tr>
                     <th style="width: 80px;">ID</th>
-                    <th>Tên trung tâm</th>
+                    <th>Tên chi nhánh</th>
                     <th>Địa chỉ</th>
                     <th>Hotline</th>
                     <th style="text-align: center; width: 140px;">Trạng thái</th>
@@ -37,12 +37,12 @@
                             <div style="display: inline-flex; gap: 6px; justify-content: flex-end;">
                                 <a href="{{ route('admin.centers.edit', $center->id) }}" class="btn-action-sm">Sửa</a>
                                 @if($center->is_active)
-                                    <form action="{{ route('admin.centers.toggle-status', $center->id) }}" method="POST" data-confirm="Bạn có chắc chắn muốn tạm dừng hoạt động trung tâm này?" style="display: inline;">
+                                    <form action="{{ route('admin.centers.toggle-status', $center->id) }}" method="POST" data-confirm="Bạn có chắc chắn muốn tạm dừng hoạt động chi nhánh này?" style="display: inline;">
                                         @csrf
                                         <button type="submit" class="btn-action-sm" style="background-color: var(--secondary-color, #eaaa00); border-color: var(--secondary-color, #eaaa00); color: #fff;">Ngừng</button>
                                     </form>
                                 @else
-                                    <form action="{{ route('admin.centers.toggle-status', $center->id) }}" method="POST" data-confirm="Bạn có chắc chắn muốn kích hoạt lại hoạt động trung tâm này?" style="display: inline;">
+                                    <form action="{{ route('admin.centers.toggle-status', $center->id) }}" method="POST" data-confirm="Bạn có chắc chắn muốn kích hoạt lại hoạt động chi nhánh này?" style="display: inline;">
                                         @csrf
                                         <button type="submit" class="btn-action-sm btn-action-success">Bật lại</button>
                                     </form>
