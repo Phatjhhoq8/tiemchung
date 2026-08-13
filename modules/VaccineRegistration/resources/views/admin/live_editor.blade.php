@@ -422,7 +422,10 @@
             <div style="margin-top: 20px; padding: 16px; background: #fafafa; border: 1px dashed #e2e8f0; border-radius: 8px;">
                 <strong style="color: #475569; display: block; margin-bottom: 8px; font-size: 13px;">Dòng Thông Tin Pháp Lý Chân Trang (Footer Lines):</strong>
                 @php
-                    $infoLines = json_decode($settings['footer_info_lines'] ?? '[]', true) ?: [];
+                    $infoLines = $settings['footer_info_lines'] ?? [];
+                    if (!is_array($infoLines)) {
+                        $infoLines = json_decode($infoLines, true) ?: [];
+                    }
                 @endphp
                 <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 13px; line-height: 1.6;">
                     @foreach($infoLines as $line)
