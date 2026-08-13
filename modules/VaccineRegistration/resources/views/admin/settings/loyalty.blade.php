@@ -263,8 +263,6 @@
                             </table>
                         </div>
                     </div>
-                </div>
-
                 <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 30px 0;">
 
                 <!-- 5. Tích điểm sinh nhật -->
@@ -279,6 +277,7 @@
                         <small style="color: var(--text-muted); display: block; margin-top: 4px;">Đặt bằng <strong>1.0</strong> để không áp dụng hệ số nhân ưu đãi vào ngày sinh nhật.</small>
                     </div>
                 </div>
+            </div>
             </div>
 
             <div style="border-top: 1px solid var(--border-color); padding-top: 24px; display: flex; justify-content: flex-end; margin-top: 30px;">
