@@ -7,7 +7,7 @@
         'footer_company_name' => 'CÔNG TY CỔ PHẦN VẮC XIN MEDICARE',
         'footer_sub_title' => 'HỆ THỐNG TRUNG TÂM TIÊM CHỦNG VẮC XIN CHO TRẺ EM & NGƯỜI LỚN AN TOÀN – UY TÍN – CHẤT LƯỢNG HÀƠ ĐẦU VIỆT NAM',
         'footer_content_manager' => 'Chịu trách nhiệm nội dung: Ban Giám Đốc HỆ THỐNG TIÊM CHỦNG MEDICARE',
-        'footer_info_lines' => '[{"icon":"shield-check","text":"Giấy chứng nhận ĐKKD số <strong>0107631488</strong> do Sở KH&ĐT TP. Cần Thơ cấp ngày 11/11/2016"},{"icon":"building","text":"Trụ sở: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Thuận, Xã Cờ Đỏ, TP. Cần Thơ"},{"icon":"mail","text":"Email liên hệ: <a href=\"mailto:cskh@medicare.vn\" style=\"color: #ffffff; text-decoration: underline;\">cskh@medicare.vn</a>"}]',
+        'footer_info_lines' => '[{"icon":"shield-check","text":"Giấy chứng nhận ĐKKD số <strong>0107631488</strong> do Sở KH&ĐT TP. Cần Thơ cấp ngày 11/11/2016"},{"icon":"building","text":"Trụ sở: Cổng Bệnh viện Quân Dân Y TP Cần Thơ, Ấp Thới Thuận, Xã Cờ Đỏ, TP. Cần Thơ"},{"icon":"mail","text":"Email liên hệ: cskh@medicare.vn"}]',
     ]);
     $site_name = $globalSettings['site_name'];
     $hotline = $globalSettings['hotline'];
@@ -829,9 +829,20 @@
                         <div class="footer-company-details">
                             <h3>{{ $footer_company_name }}</h3>
                             @foreach($footer_info_lines as $line)
+                            @php
+                                $lineText = $line['text'] ?? '';
+                                $lineIcon = $line['icon'] ?? 'shield-check';
+                                if ($lineIcon === 'mail') {
+                                    $lineText = preg_replace(
+                                        '/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/',
+                                        '<a href="mailto:$0" style="color: #ffffff; text-decoration: underline;">$0</a>',
+                                        $lineText
+                                    );
+                                }
+                            @endphp
                             <div class="footer-legal-item">
-                                <i data-lucide="{{ $line['icon'] ?? 'shield-check' }}" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
-                                <span>{!! $line['text'] ?? '' !!}</span>
+                                <i data-lucide="{{ $lineIcon }}" style="width: 16px; height: 16px; color: var(--secondary-color); flex-shrink: 0; margin-top: 2px;"></i>
+                                <span>{!! $lineText !!}</span>
                             </div>
                             @endforeach
                             <div class="footer-legal-item">

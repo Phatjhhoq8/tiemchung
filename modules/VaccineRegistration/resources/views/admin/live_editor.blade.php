@@ -131,6 +131,26 @@
         justify-content: flex-end;
         gap: 12px;
     }
+    .editor-custom-select {
+        width: 100%;
+        padding: 10px 32px 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 13px;
+        background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") no-repeat right 12px center;
+        background-size: 16px;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        cursor: pointer;
+        color: #0f172a;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .editor-custom-select:focus {
+        outline: none;
+        border-color: #004b8f;
+        box-shadow: 0 0 0 3px rgba(0, 75, 143, 0.1);
+    }
 
     /* Dynamic Form Cards for JSON Arrays */
     .json-array-item {
@@ -576,6 +596,16 @@
         }
     };
 
+    const fieldLabels = {
+        'site_name': 'Tên viết tắt hệ thống (Site Name)',
+        'brand_title': 'Tên thương hiệu chính (Brand Title)',
+        'email': 'Email hỗ trợ chung',
+        'footer_text': 'Bản quyền chân trang (Footer Copyright)',
+        'footer_company_name': 'Tên công ty hiển thị ở chân trang (Footer)',
+        'footer_sub_title': 'Tiêu đề phụ / Slogan chân trang (Footer)',
+        'footer_content_manager': 'Thông tin người chịu trách nhiệm nội dung (Footer)'
+    };
+
     function openSettingModal(type, title, fields) {
         document.getElementById('settingModalTitle').innerText = 'Chỉnh Sửa Live: ' + title;
         const container = document.getElementById('settingModalFields');
@@ -602,7 +632,7 @@
 
                 fieldGroup.innerHTML = `
                     <label style="display:block; font-weight:750; font-size:13.5px; margin-bottom:6px; color:#1e293b;">
-                        Nội dung cấu hình [${field}]:
+                        ${fieldLabels[field] || 'Nội dung cấu hình [' + field + ']'}:
                     </label>
                     ${inputHtml}
                 `;
@@ -675,7 +705,7 @@
                 fieldsHtml += `
                     <div style="margin-bottom:10px;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">${f.label}</label>
-                        <select data-field="${f.key}" class="json-input-${fieldName}" style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px; background:#fff;">
+                        <select data-field="${f.key}" class="json-input-${fieldName} editor-custom-select">
                             ${optionsHtml}
                         </select>
                     </div>
