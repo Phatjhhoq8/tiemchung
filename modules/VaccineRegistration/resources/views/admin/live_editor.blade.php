@@ -39,11 +39,7 @@
         color: #ffffff;
         box-shadow: 0 4px 12px rgba(200, 16, 46, 0.25);
     }
-    .live-page-tab.active-global {
-        background: #004b8f;
-        color: #ffffff;
-        box-shadow: 0 4px 12px rgba(0, 75, 143, 0.25);
-    }
+    /* active-global style merged into active for theme color consistency */
 
     /* Visual Overlay Frames */
     .live-edit-frame {
@@ -199,8 +195,8 @@
     <a href="{{ route('admin.live-editor', ['page' => 'contact']) }}" class="live-page-tab {{ $currentPage === 'contact' ? 'active' : '' }}">
         Liên Hệ & Chi Nhánh
     </a>
-    <a href="{{ route('admin.live-editor', ['page' => 'global']) }}" class="live-page-tab {{ $currentPage === 'global' ? 'active-global' : '' }}" style="margin-left: auto;">
-        Cấu Hinh Chung
+    <a href="{{ route('admin.live-editor', ['page' => 'global']) }}" class="live-page-tab {{ $currentPage === 'global' ? 'active' : '' }}" style="margin-left: auto;">
+        Cấu Hình Chung
     </a>
 </div>
 
