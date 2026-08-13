@@ -87,7 +87,7 @@
             @if(isset($otherUnpaidCount) && $otherUnpaidCount > 0)
                  <form action="{{ route('admin.registrations.settle-group', $registration) }}" method="POST" data-confirm="Xác nhận thanh toán chung cho toàn bộ {{ $otherUnpaidCount + 1 }} đơn hàng chưa thanh toán trong nhóm này?" style="margin-top: 16px; border-top: 1px dashed #e2e8f0; padding-top: 16px;">
                      @csrf
-                     <button type="submit" class="btn-modern btn-modern-secondary" style="border-color: var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); display: inline-flex; align-items: center; gap: 8px;">
+                     <button type="submit" class="btn-modern" style="background: #fef2f2; border: 1.5px solid var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); font-weight: 700; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: all 0.25s ease; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(200, 16, 46, 0.05); height: 42px;" onmouseover="this.style.background='var(--primary-color, #c8102e)'; this.style.color='#ffffff';" onmouseout="this.style.background='#fef2f2'; this.style.color='var(--primary-color, #c8102e)';">
                          <i data-lucide="wallet" style="width: 16px; height: 16px;"></i>
                          Thanh toán chung cho cả nhóm ({{ $otherUnpaidCount + 1 }} người)
                      </button>
