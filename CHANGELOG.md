@@ -1,3 +1,15 @@
+## [v6.5.42] - 2026-08-14
+
+### Admin Dashboard Trend Chart Overlapping Fix
+
+* **Optimize X-Axis Label Rendering (`dashboard.blade.php`)**:
+  - Dynamically calculated label step spacing based on the count of days in the trend graph.
+  - Hidden overlapping day labels when displaying dense ranges (like 30 or 60 days) to prevent text collision.
+  
+* **Thin Out Node Values & Dynamic Tooltip Areas (`dashboard.blade.php`)**:
+  - Restricted drawing of static node value text labels above/below chart points when displaying more than 12 days.
+  - Calculated widths of interactive hover slices dynamically to map coordinates accurately without overlaps.
+
 ## [v6.5.41] - 2026-08-14
 
 ### Regimen Selector Restoration & Administrative Tracking

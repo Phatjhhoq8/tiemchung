@@ -547,24 +547,42 @@
             <polyline points="{{ $dailyRegPolyline }}" fill="none" stroke="#004b8f" stroke-width="2.5" stroke-dasharray="5,4" stroke-linecap="round" stroke-linejoin="round" />
 
             <!-- 3. Nodes & X-Axis Labels -->
-            @foreach($dailyNodes as $n)
+            @php
+                $labelStep = 1;
+                if ($dailyCount > 45) {
+                    $labelStep = 5;
+                } elseif ($dailyCount > 30) {
+                    $labelStep = 4;
+                } elseif ($dailyCount > 20) {
+                    $labelStep = 3;
+                } elseif ($dailyCount > 10) {
+                    $labelStep = 2;
+                }
+            @endphp
+            @foreach($dailyNodes as $idx => $n)
                 <!-- X-Axis Date Label -->
-                <text x="{{ $n['x'] }}" y="246" text-anchor="middle" font-size="11.5" fill="#475569" font-weight="600">{{ $n['item']['label'] }}</text>
+                @if($idx % $labelStep === 0)
+                    <text x="{{ $n['x'] }}" y="246" text-anchor="middle" font-size="11.5" fill="#475569" font-weight="600">{{ $n['item']['label'] }}</text>
+                @endif
 
                 <!-- Revenue Node (Red) -->
                 <circle cx="{{ $n['x'] }}" cy="{{ round($n['yRev'], 1) }}" r="5.5" fill="#ffffff" stroke="#c8102e" stroke-width="2.5" />
-                @if($n['item']['revenue'] > 0)
+                @if($n['item']['revenue'] > 0 && $dailyCount <= 12)
                     <text x="{{ $n['x'] }}" y="{{ round($n['yRev'] - 11, 1) }}" text-anchor="middle" font-size="10.5" fill="#c8102e" font-weight="700">{{ number_format($n['item']['revenue'] / 1000, 0) }}k</text>
                 @endif
 
                 <!-- Registration Node (Navy & Gold) -->
                 <circle cx="{{ $n['x'] }}" cy="{{ round($n['yReg'], 1) }}" r="4.5" fill="#eaaa00" stroke="#004b8f" stroke-width="2" />
-                @if($n['item']['registrations'] > 0)
+                @if($n['item']['registrations'] > 0 && $dailyCount <= 12)
                     <text x="{{ $n['x'] }}" y="{{ round($n['yReg'] + 17, 1) }}" text-anchor="middle" font-size="10.5" fill="#004b8f" font-weight="700">{{ $n['item']['registrations'] }}</text>
                 @endif
 
                 <!-- Interactive Slice for Hover Tooltip -->
-                <rect x="{{ $n['x'] - 40 }}" y="40" width="80" height="200" fill="transparent" class="interactive-slice" style="cursor: pointer;"
+                @php
+                    $sliceWidth = $dailyCount === 1 ? 80 : (600 / ($dailyCount - 1));
+                    $sliceOffset = $sliceWidth / 2;
+                @endphp
+                <rect x="{{ $n['x'] - $sliceOffset }}" y="40" width="{{ $sliceWidth }}" height="200" fill="transparent" class="interactive-slice" style="cursor: pointer;"
                     onmouseenter="showChartTooltip(event, 'Ngày {{ $n['item']['label'] }}', {{ $n['item']['revenue'] }}, {{ $n['item']['registrations'] }})"
                     onmousemove="moveChartTooltip(event)"
                     onmouseleave="hideChartTooltip()" />
