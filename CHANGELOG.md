@@ -1,3 +1,11 @@
+## [v6.5.48] - 2026-08-14
+
+### Translate System Audit Logs & Enhance Resource Display
+
+* **Action & Resource Translation (AuditLog.php)**:
+  - Translated all remaining code keys / snake_case actions and resource types to user-friendly Vietnamese.
+  - Enhanced resource display name logic to query Customer model names, settings names, and render direct strings for dynamic metadata.
+
 ## [v6.5.47] - 2026-08-14
 
 ### Automatic Customer Lookup & Form Reordering

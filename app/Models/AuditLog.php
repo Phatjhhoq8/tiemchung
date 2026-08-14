@@ -64,6 +64,7 @@ class AuditLog extends Model
             'auth.login_failed' => 'Đăng nhập thất bại',
             'auth.login' => 'Đăng nhập hệ thống',
             'auth.logout' => 'Đăng xuất',
+            'auth.password_changed' => 'Đổi mật khẩu tài khoản',
 
             // Quy trình tiêm chủng
             'vaccination.checked_in' => 'Check-in tiếp đón',
@@ -80,13 +81,15 @@ class AuditLog extends Model
             'registration.rescheduled' => 'Thay đổi lịch hẹn tiêm',
             'refund_issued' => 'Hoàn tiền đăng ký tiêm',
             'order_status_update' => 'Cập nhật trạng thái đơn hàng',
+            'counter_booking_created' => 'Tạo lịch tiêm tại quầy',
 
             // Bệnh nhân & Khách hàng
             'patient.created' => 'Tạo hồ sơ bệnh nhân',
             'patient.updated' => 'Cập nhật hồ sơ bệnh nhân',
             'patient.deleted' => 'Xóa hồ sơ bệnh nhân',
+            'points_adjusted' => 'Điều chỉnh điểm tích lũy',
 
-            // Vắc xin
+            // Vắc xin & Thuộc tính
             'vaccine.created' => 'Thêm vắc xin',
             'vaccine.updated' => 'Cập nhật vắc xin',
             'vaccine.deleted' => 'Xóa vắc xin',
@@ -94,6 +97,10 @@ class AuditLog extends Model
             'vaccine.activated' => 'Kích hoạt vắc xin',
             'vaccine.featured_changed' => 'Đổi trạng thái vắc xin nổi bật',
             'price_update' => 'Cập nhật giá vắc xin',
+            'admin.category_updated' => 'Cập nhật nhóm bệnh',
+            'admin.category_deleted' => 'Xóa nhóm bệnh',
+            'admin.metadata_updated' => 'Cập nhật thuộc tính vắc xin',
+            'admin.metadata_deleted' => 'Xóa thuộc tính vắc xin',
 
             // Lô vắc xin
             'inventory_lot.created' => 'Tạo lô vắc xin mới',
@@ -102,13 +109,17 @@ class AuditLog extends Model
 
             // Cấu hình & Người dùng
             'loyalty_settings.center_reset_to_system' => 'Khôi phục tích điểm mặc định',
+            'loyalty_settings.center_updated' => 'Cập nhật tích điểm chi nhánh',
+            'loyalty_settings.updated' => 'Cập nhật tích điểm hệ thống',
+            'loyalty_settings.center_synced' => 'Đồng bộ tích điểm chi nhánh',
+            'loyalty_settings_center_updated' => 'Cập nhật tích điểm chi nhánh', // Hỗ trợ dữ liệu cũ trong DB
             'user.created' => 'Tạo tài khoản quản trị',
             'user.updated' => 'Cập nhật tài khoản',
             'user.deleted' => 'Xóa tài khoản',
             'admin_user.created' => 'Tạo tài khoản quản trị',
             'admin_user.updated' => 'Cập nhật tài khoản quản trị',
             'admin_user.deleted' => 'Xóa tài khoản quản trị',
-            'auth.password_changed' => 'Đổi mật khẩu tài khoản',
+            'admin_user.deactivated' => 'Vô hiệu hóa tài khoản quản trị',
             'publish_settings' => 'Xuất bản cấu hình trang web',
             'setting.updated' => 'Cập nhật cấu hình hệ thống',
             'reset_settings' => 'Khôi phục cấu hình mặc định',
@@ -142,6 +153,16 @@ class AuditLog extends Model
             'article' => 'Bài viết tin tức',
             'banner' => 'Biểu ngữ banner',
             'inventory_lot' => 'Lô vắc xin',
+            'customer' => 'Khách hàng',
+            'category' => 'Nhóm bệnh',
+            'disease_prevention' => 'Phòng bệnh',
+            'origin' => 'Xuất xứ',
+            'dosage' => 'Liều lượng',
+            'age_group' => 'Độ tuổi chỉ định',
+            'manufacturer' => 'Nhà sản xuất',
+            'administration_route' => 'Đường tiêm',
+            'regimen_age_group' => 'Độ tuổi phác đồ',
+            'regimen_schedule_description' => 'Lịch tiêm phác đồ',
         ];
     }
 
@@ -222,6 +243,35 @@ class AuditLog extends Model
         if ($this->resource_type === 'banner') {
             $bannerTitle = \Modules\VaccineRegistration\Models\Banner::where('id', $this->resource_id)->value('title');
             return $bannerTitle ? "Banner: {$bannerTitle}" : "Banner (#{$this->resource_id})";
+        }
+
+        // 10. Khách hàng
+        if ($this->resource_type === 'customer') {
+            $customerName = \Modules\VaccineRegistration\Models\Customer::where('id', $this->resource_id)->value('name');
+            return $customerName ? "Khách hàng: {$customerName} (#{$this->resource_id})" : "Khách hàng (#{$this->resource_id})";
+        }
+
+        // 11. Các thuộc tính vắc xin động (hiển thị trực tiếp giá trị text thay vì kèm theo ID số nguyên)
+        if (in_array($this->resource_type, ['category', 'disease_prevention', 'origin', 'dosage', 'age_group', 'manufacturer', 'administration_route', 'regimen_age_group', 'regimen_schedule_description'])) {
+            $typeLabel = $this->resource_type_label;
+            return "{$typeLabel}: {$this->resource_id}";
+        }
+
+        // 12. Cấu hình hệ thống
+        if ($this->resource_type === 'setting') {
+            $settingKeys = [
+                'loyalty' => 'Cấu hình tích điểm toàn hệ thống',
+                'site' => 'Cấu hình chung hệ thống',
+            ];
+            if (isset($settingKeys[$this->resource_id])) {
+                return $settingKeys[$this->resource_id];
+            }
+            if (str_starts_with((string) $this->resource_id, 'loyalty_center_')) {
+                $centerId = str_replace('loyalty_center_', '', $this->resource_id);
+                $centerName = Center::where('id', $centerId)->value('name');
+                return $centerName ? "Cấu hình tích điểm chi nhánh: {$centerName}" : "Cấu hình tích điểm chi nhánh #{$centerId}";
+            }
+            return "Cấu hình: {$this->resource_id}";
         }
 
         // Mặc định
