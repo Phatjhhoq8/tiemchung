@@ -165,6 +165,7 @@ Route::middleware('web')->group(function () {
 
         // Khách hàng household và lịch sử điểm.
         Route::get('/customers', [AdminCustomerController::class, 'index'])->name('customers.index');
+        Route::get('/customers/lookup', [AdminCustomerController::class, 'lookup'])->name('customers.lookup');
         Route::get('/customers/{id}', [AdminCustomerController::class, 'show'])->name('customers.show');
         Route::post('/customers/{id}/points/adjust', [AdminCustomerController::class, 'adjustPoints'])->name('customers.points.adjust');
 

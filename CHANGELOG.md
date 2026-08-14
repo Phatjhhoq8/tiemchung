@@ -1,3 +1,15 @@
+## [v6.5.47] - 2026-08-14
+
+### Automatic Customer Lookup & Form Reordering
+
+* **Customer Lookup Route & Action (`web.php`, `AdminCustomerController.php`)**:
+  - Implemented a secure AJAX `/admin/customers/lookup` endpoint that accepts a phone number, normalizes it, and returns the customer's name if they already exist in the database.
+  
+* **Reorder Form & Auto-fill Owner Name (`create.blade.php`)**:
+  - Moved the **Số điện thoại tài khoản** (Account phone) field to the left (before **Họ tên chủ tài khoản**).
+  - Added a dynamic JS event listener to check the database on-the-fly when a valid phone number is entered.
+  - Automatically fetches the existing customer's name, sets the owner name input to read-only, and grays it out if a match is found. Removes read-only constraints if no match is found.
+
 ## [v6.5.46] - 2026-08-14
 
 ### Google Maps Embed URL Parser & Validation

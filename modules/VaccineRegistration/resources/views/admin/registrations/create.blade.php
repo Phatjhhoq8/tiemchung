@@ -45,12 +45,12 @@
             <small style="display:block; color:var(--text-muted); margin-bottom:12px;">Số dư dùng được tại mọi chi nhánh; người tiêm vẫn được lưu riêng bên dưới.</small>
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
                 <div>
-                    <label class="form-label-modern" for="account_name">Họ tên chủ tài khoản</label>
-                    <input class="form-control-modern" id="account_name" name="account_name" value="{{ old('account_name') }}" required>
+                    <label class="form-label-modern" for="account_phone">Số điện thoại tài khoản</label>
+                    <input class="form-control-modern" id="account_phone" name="account_phone" value="{{ old('account_phone') }}" inputmode="tel" placeholder="Nhập số điện thoại trước..." required>
                 </div>
                 <div>
-                    <label class="form-label-modern" for="account_phone">Số điện thoại tài khoản</label>
-                    <input class="form-control-modern" id="account_phone" name="account_phone" value="{{ old('account_phone') }}" inputmode="tel" required>
+                    <label class="form-label-modern" for="account_name">Họ tên chủ tài khoản</label>
+                    <input class="form-control-modern" id="account_name" name="account_name" value="{{ old('account_name') }}" required>
                 </div>
             </div>
         </div>
@@ -360,6 +360,43 @@
                         slotSelect.value = oldSlotId;
                     }
                 }
+            }
+        }
+
+        // Tự động kiểm tra số điện thoại tích điểm và điền tên chủ tài khoản
+        const accountPhoneInput = document.getElementById('account_phone');
+        const accountNameInput = document.getElementById('account_name');
+
+        if (accountPhoneInput && accountNameInput) {
+            accountPhoneInput.addEventListener('input', function() {
+                const phone = this.value.trim();
+                const cleanPhone = phone.replace(/[^0-9]/g, '');
+                if (cleanPhone.length >= 10) {
+                    fetch(`{{ route('admin.customers.lookup') }}?phone=${encodeURIComponent(phone)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.found) {
+                                accountNameInput.value = data.name;
+                                accountNameInput.readOnly = true;
+                                accountNameInput.style.backgroundColor = '#f1f5f9';
+                                accountNameInput.style.cursor = 'not-allowed';
+                            } else {
+                                accountNameInput.readOnly = false;
+                                accountNameInput.style.backgroundColor = '#ffffff';
+                                accountNameInput.style.cursor = 'text';
+                            }
+                        })
+                        .catch(err => console.error('Error looking up customer:', err));
+                } else {
+                    accountNameInput.readOnly = false;
+                    accountNameInput.style.backgroundColor = '#ffffff';
+                    accountNameInput.style.cursor = 'text';
+                }
+            });
+            
+            // Chạy kiểm tra ngay khi load nếu có sẵn số điện thoại (ví dụ khi redirect về do validation error)
+            if (accountPhoneInput.value.trim().replace(/[^0-9]/g, '').length >= 10) {
+                accountPhoneInput.dispatchEvent(new Event('input'));
             }
         }
     });

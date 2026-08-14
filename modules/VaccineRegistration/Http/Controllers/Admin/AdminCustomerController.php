@@ -139,4 +139,25 @@ class AdminCustomerController extends Controller
 
         return back()->with('success', 'Đã điều chỉnh điểm khách hàng.');
     }
+
+    public function lookup(Request $request)
+    {
+        $phone = trim((string) $request->input('phone'));
+        $normalized = PhoneNormalizer::normalize($phone);
+        
+        if (!$normalized) {
+            return response()->json(['found' => false, 'message' => 'Số điện thoại không hợp lệ.']);
+        }
+        
+        $customer = Customer::where('phone', $normalized)->first();
+        
+        if ($customer) {
+            return response()->json([
+                'found' => true,
+                'name' => $customer->name,
+            ]);
+        }
+        
+        return response()->json(['found' => false]);
+    }
 }
