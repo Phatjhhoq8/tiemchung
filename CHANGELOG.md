@@ -14,7 +14,7 @@
   - Prevented SQL error 1054 on homepage queries and vaccine index page when there are no centers (e.g., in a clean/new production state) by safely returning empty collections/paginators without appending center-only table sort orders to non-joined queries.
 
 * **Dynamic Logo Configuration & Visual Image Uploads (`AdminSettingController.php`, `live_editor.blade.php`, `app.blade.php`, `admin.blade.php`)**:
-  - Replaced all hardcoded website logo assets with a dynamic system setting (`site_logo`), allowing administrators to upload new logo image files directly from the general configuration dashboard.
+  - Replaced all hardcoded website logo assets with a dynamic system setting (`site_logo`), allowing administrators to upload new logo image files directly from either the general configuration dashboard or the "Cấu Hình Chung" (Global Settings) tab in Live Editor.
   - Converted avatar inputs from text paths to interactive file pickers with live image previews in Live Editor for both Customer Testimonials (`home_testimonials`) and Team Members (`about_team_members`), utilizing AJAX to upload files on-the-fly and bind URLs to system settings.
 
 ## [v6.5.47] - 2026-08-14

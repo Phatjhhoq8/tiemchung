@@ -403,10 +403,21 @@
 @endif
 
 @if($currentPage === 'global')
-    <div class="live-edit-frame" onclick="openSettingModal('global_shell', 'Khung Chung Toàn Hệ Thống & Footer', ['site_name', 'brand_title', 'email', 'footer_text', 'footer_company_name', 'footer_sub_title', 'footer_content_manager', 'footer_working_hours', 'footer_info_lines'])">
+    <div class="live-edit-frame" onclick="openSettingModal('global_shell', 'Khung Chung Toàn Hệ Thống & Footer', ['site_logo', 'site_name', 'brand_title', 'email', 'footer_text', 'footer_company_name', 'footer_sub_title', 'footer_content_manager', 'footer_working_hours', 'footer_info_lines'])">
         <div class="edit-frame-badge">Sửa Cấu Hình Chung & Footer</div>
         <div style="padding: 28px; background: #ffffff; border-radius: 12px;">
             <h4 style="margin: 0 0 16px 0; color: #004b8f; font-size: 13.5px; font-weight: 800;">Thông Tin Dùng Chung Hệ Thống & Footer</h4>
+            
+            <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 16px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; max-width: 320px;">
+                <div style="width: 140px; height: 50px; border: 1px dashed #cbd5e1; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #ffffff; padding: 4px; overflow: hidden;">
+                    <img src="{{ asset($settings['site_logo'] ?? 'images/logo.png') }}" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                </div>
+                <div>
+                    <strong style="color: #0f172a; font-size: 13.5px; display: block;">Logo hệ thống</strong>
+                    <span style="font-size: 11px; color: #64748b;">Đang hoạt động</span>
+                </div>
+            </div>
+
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
                 <div style="padding: 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
                     <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Tên Thương Hiệu:</strong>
@@ -596,6 +607,7 @@
     };
 
     const fieldLabels = {
+        'site_logo': 'Logo chính thức hệ thống (site_logo)',
         'site_name': 'Tên viết tắt hệ thống (Site Name)',
         'brand_title': 'Tên thương hiệu chính (Brand Title)',
         'email': 'Email hỗ trợ chung',
@@ -618,13 +630,25 @@
                 // Render giao diện mảng JSON trực quan (Thêm/Xóa dòng)
                 renderJsonArrayField(container, field, jsonSchemas[field], val);
             } else {
-                // Render ô nhập text/textarea thông thường
+                // Render ô nhập text/textarea hoặc logo upload thông thường
                 const isLongText = field.includes('desc') || field.includes('text') || field.includes('address') || field.includes('values');
                 const fieldGroup = document.createElement('div');
                 fieldGroup.style.marginBottom = '18px';
                 
                 let inputHtml = '';
-                if (isLongText) {
+                if (field === 'site_logo') {
+                    inputHtml = `
+                        <div style="display:flex; align-items:center; gap:16px; background:#f8fafc; border:1px solid #cbd5e1; padding:12px; border-radius:8px;">
+                            <div style="width:120px; height:50px; border:1px dashed #cbd5e1; border-radius:6px; background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:4px;">
+                                <img id="logo-preview-live" src="${val ? (val.startsWith('http') ? val : '/' + val) : '/images/logo.png'}" style="max-width:100%; max-height:100%; object-fit:contain;">
+                            </div>
+                            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                                <input type="file" onchange="uploadSingleLogoLive(this)" accept="image/*" style="font-size:12px; width:100%;">
+                                <input type="hidden" name="site_logo" id="site_logo_value_live" value="${val || 'images/logo.png'}">
+                            </div>
+                        </div>
+                    `;
+                } else if (isLongText) {
                     inputHtml = `<textarea name="${field}" class="form-control" rows="4" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; font-size:14px; line-height:1.5;">${val || ''}</textarea>`;
                 } else {
                     inputHtml = `<input type="text" name="${field}" value="${val || ''}" class="form-control" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; font-size:14px;">`;
@@ -918,6 +942,55 @@
                 previewImg.src = data.location;
                 previewImg.style.opacity = '1';
                 hiddenInput.value = data.location;
+            } else {
+                alert('Có lỗi xảy ra: ' + (data.error || 'Không rõ lỗi.'));
+                previewImg.style.opacity = '1';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Lỗi tải ảnh lên máy chủ.');
+            previewImg.style.opacity = '1';
+        });
+    }
+
+    function uploadSingleLogoLive(fileInput) {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const previewImg = document.getElementById('logo-preview-live');
+        const hiddenInput = document.getElementById('site_logo_value_live');
+        
+        previewImg.style.opacity = '0.5';
+
+        fetch("{{ route('admin.articles.upload-image') }}", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Accept": "application/json"
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Tải lên ảnh thất bại.');
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.location) {
+                previewImg.src = data.location;
+                previewImg.style.opacity = '1';
+                // Lấy đường dẫn tương đối để lưu
+                const url = new URL(data.location);
+                let path = url.pathname;
+                if (path.startsWith('/')) {
+                    path = path.substring(1);
+                }
+                hiddenInput.value = path;
             } else {
                 alert('Có lỗi xảy ra: ' + (data.error || 'Không rõ lỗi.'));
                 previewImg.style.opacity = '1';
