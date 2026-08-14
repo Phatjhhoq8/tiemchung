@@ -72,20 +72,30 @@
             </div>
         </div>
 
-        <div>
-            <label class="form-label-modern" for="slot_id">Ngày và khung giờ tại {{ $center->name }}</label>
-            <select class="form-control-modern" id="slot_id" name="slot_id" required>
-                <option value="">-- Chọn khung giờ còn chỗ --</option>
-                @foreach($slots->groupBy(fn ($slot) => $slot->schedule->date->format('d/m/Y')) as $date => $dateSlots)
-                    <optgroup label="{{ $date }}">
-                        @foreach($dateSlots as $slot)
-                            <option value="{{ $slot->id }}" {{ (string) old('slot_id') === (string) $slot->id ? 'selected' : '' }}>{{ $slot->start_at }} - {{ $slot->end_at }} (còn {{ $slot->capacity - $slot->reserved_count }} chỗ)</option>
-                        @endforeach
-                    </optgroup>
-                @endforeach
-            </select>
-            @if($slots->isEmpty())<small style="display:block; margin-top:6px; color:#b91c1c;">Chi nhánh chưa có khung giờ còn chỗ.</small>@endif
+        @php
+            $availableDates = $slots->map(fn($s) => $s->schedule->date->toDateString())->unique()->sort();
+        @endphp
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+            <div>
+                <label class="form-label-modern" for="date_select">Ngày tiêm <span style="color: #ef4444;">*</span></label>
+                <select class="form-control-modern" id="date_select" onchange="onRegistrationDateChange(this.value)" required>
+                    <option value="">-- Chọn ngày tiêm --</option>
+                    @foreach($availableDates as $dateStr)
+                        @php
+                            $d = \Carbon\Carbon::parse($dateStr);
+                        @endphp
+                        <option value="{{ $dateStr }}">{{ $d->format('d/m/Y') }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="form-label-modern" for="slot_id">Khung giờ tiêm <span style="color: #ef4444;">*</span></label>
+                <select class="form-control-modern" id="slot_id" name="slot_id" required disabled>
+                    <option value="">-- Vui lòng chọn ngày --</option>
+                </select>
+            </div>
         </div>
+        @if($slots->isEmpty())<small style="display:block; margin-top:6px; color:#b91c1c;">Chi nhánh chưa có khung giờ còn chỗ.</small>@endif
 
         @php
             $origins = $vaccines->map(fn($cv) => $cv->vaccine->origin)->filter()->unique()->sort();
@@ -171,6 +181,37 @@
 </div>
 
 <script>
+    const adminSlots = @json($slots);
+
+    function onRegistrationDateChange(selectedDate) {
+        const slotSelect = document.getElementById('slot_id');
+        if (!slotSelect) return;
+
+        if (!selectedDate) {
+            slotSelect.innerHTML = '<option value="">-- Vui lòng chọn ngày --</option>';
+            slotSelect.disabled = true;
+            return;
+        }
+
+        // Filter slots by selectedDate
+        const filtered = adminSlots.filter(slot => {
+            const d = new Date(slot.schedule.date);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}` === selectedDate;
+        });
+
+        let options = '<option value="">-- Chọn khung giờ tiêm --</option>';
+        filtered.forEach(slot => {
+            const remaining = slot.capacity - slot.reserved_count;
+            options += `<option value="${slot.id}">${slot.start_at} - ${slot.end_at} (còn ${remaining} chỗ)</option>`;
+        });
+
+        slotSelect.innerHTML = options;
+        slotSelect.disabled = false;
+    }
+
     function onVaccineCheckboxChange(checkbox, id) {
         toggleQtyInput(checkbox, id);
         updateItemHighlight(checkbox);
@@ -298,6 +339,29 @@
             }
         });
         renderSelectedSummary();
+
+        // Khởi tạo lại ngày & khung giờ nếu có old('slot_id')
+        const oldSlotId = "{{ old('slot_id') }}";
+        if (oldSlotId && adminSlots) {
+            const foundSlot = adminSlots.find(s => String(s.id) === oldSlotId);
+            if (foundSlot) {
+                const dateSelect = document.getElementById('date_select');
+                const d = new Date(foundSlot.schedule.date);
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                const dateStr = `${yyyy}-${mm}-${dd}`;
+                
+                if (dateSelect) {
+                    dateSelect.value = dateStr;
+                    onRegistrationDateChange(dateStr);
+                    const slotSelect = document.getElementById('slot_id');
+                    if (slotSelect) {
+                        slotSelect.value = oldSlotId;
+                    }
+                }
+            }
+        }
     });
 </script>
 @endsection

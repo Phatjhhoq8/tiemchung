@@ -178,6 +178,9 @@ class AdminRegistrationController extends Controller
         $registration = DB::transaction(function () use ($validated, $recipientPhone, $accountPhone, $center, $stockService, $idempotencyKey) {
             $nowVn = \Carbon\Carbon::now('Asia/Ho_Chi_Minh');
             $todayDate = $nowVn->toDateString();
+            
+            $slot = Slot::with('schedule')->findOrFail($validated['slot_id']);
+            
             $isPastSlot = $slot->schedule->date->toDateString() === $todayDate 
                 && $slot->start_at <= $nowVn->format('H:i');
 

@@ -1,3 +1,15 @@
+## [v6.5.44] - 2026-08-14
+
+### Admin Quick Registration Date/Time Selector & Bug Fix
+
+* **Fix Undefined Slot Variable Error (`AdminRegistrationController.php`)**:
+  - Resolved a fatal PHP error where `$slot` was referenced prior to being retrieved in the transaction block of `store()`. Added the missing `Slot::findOrFail` statement.
+  
+* **Split Quick Registration Schedule Selectors (`create.blade.php`)**:
+  - Replaced the single time-slot selection dropdown with two-step dropdowns: "Ngày tiêm" (Date Select) and "Khung giờ tiêm" (Hour Select), mimicking the client registration form flow.
+  - Implemented dynamic slot filtering in JavaScript based on the selected date.
+  - Preserved selection values using `old('slot_id')` on validation errors.
+
 ## [v6.5.43] - 2026-08-14
 
 ### Optional Banner Text Overlays & Image Frame
