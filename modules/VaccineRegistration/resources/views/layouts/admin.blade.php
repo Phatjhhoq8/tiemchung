@@ -399,6 +399,11 @@
             box-shadow: var(--shadow-sm);
             background: #ffffff;
         }
+        @media (min-width: 1024px) {
+            .table-responsive-modern {
+                overflow: visible !important;
+            }
+        }
 
         .table-modern {
             display: table !important;
@@ -1248,8 +1253,19 @@
                 if (isActive) {
                     const rect = btn.getBoundingClientRect();
                     const viewportHeight = window.innerHeight;
-                    // If near bottom of the viewport (less than 180px available), display upwards
-                    if (rect.bottom > viewportHeight - 180) {
+                    
+                    // Kiểm tra khoảng cách đến đáy của table wrapper (.table-responsive-modern)
+                    const tableWrapper = btn.closest('.table-responsive-modern');
+                    let isNearContainerBottom = false;
+                    if (tableWrapper) {
+                        const wrapperRect = tableWrapper.getBoundingClientRect();
+                        if (wrapperRect.bottom - rect.bottom < 185) {
+                            isNearContainerBottom = true;
+                        }
+                    }
+                    
+                    // Nếu gần đáy màn hình hoặc gần đáy bảng (khi chỉ có 1-2 dòng), bung menu lên trên (dropup)
+                    if (rect.bottom > viewportHeight - 185 || isNearContainerBottom) {
                         menu.classList.add('dropup');
                     } else {
                         menu.classList.remove('dropup');

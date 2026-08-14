@@ -1,10 +1,14 @@
 ## [v6.5.48] - 2026-08-14
 
-### Translate System Audit Logs & Enhance Resource Display
+### Translate System Audit Logs & Fix Action Dropdown Clipping
 
 * **Action & Resource Translation (AuditLog.php)**:
   - Translated all remaining code keys / snake_case actions and resource types to user-friendly Vietnamese.
   - Enhanced resource display name logic to query Customer model names, settings names, and render direct strings for dynamic metadata.
+
+* **Fix Dropdown Menu Clipping (`admin.blade.php`)**:
+  - Enforced `overflow: visible !important` on table responsive wrappers on desktop screens (min-width: 1024px) to let absolute menus float properly over container boundaries.
+  - Upgraded `toggleActionMenu` JS handler to automatically position menus upwards (`dropup`) when rendering near the bottom of the table container (e.g., when the list has only 1-2 records), preventing vertical scrollbars and clipped items.
 
 ## [v6.5.47] - 2026-08-14
 
