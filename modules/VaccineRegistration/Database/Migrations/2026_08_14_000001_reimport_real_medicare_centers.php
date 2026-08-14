@@ -1,33 +1,23 @@
 <?php
-/**
- * Chức năng: CenterSeeder nạp danh sách 2 chi nhánh trung tâm tiêm chủng chính thức thuộc hệ thống Medicare.
- * Lý do chỉnh sửa: Quản lý 2 chi nhánh hoạt động thực tế theo đúng yêu cầu hệ thống Medicare.
- */
 
-namespace Modules\VaccineRegistration\Database\Seeders;
-
-use Database\Seeders\Concerns\PreventsProductionSeeding;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
+use Illuminate\Database\Migrations\Migration;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
 use Modules\VaccineRegistration\Models\Vaccine;
+use Illuminate\Support\Str;
 
-class CenterSeeder extends Seeder
+return new class extends Migration
 {
-    use PreventsProductionSeeding;
-
     /**
-     * Run the database seeds.
+     * Run the migrations.
      */
-    public function run(): void
+    public function up(): void
     {
-        $this->assertSafeSeedingTarget();
-
-        // Clear existing centers and pricing
+        // 1. Delete all existing centers and center vaccines
         CenterVaccine::query()->delete();
         Center::query()->delete();
 
+        // 2. Insert real centers
         $centers = [
             [
                 'name' => 'Medicare Cờ Đỏ',
@@ -76,21 +66,9 @@ class CenterSeeder extends Seeder
         ];
 
         foreach ($centers as $center) {
-            $center['slug'] = $center['slug'] ?? Str::slug($center['name']);
-            $legacyNames = $center['legacy_names'] ?? [];
-            unset($center['legacy_names']);
+            $savedCenter = Center::create($center);
 
-            $savedCenter = Center::where('slug', $center['slug'])
-                ->orWhere('name', $center['name'])
-                ->when(!empty($legacyNames), fn ($q) => $q->orWhereIn('name', $legacyNames))
-                ->first();
-
-            if ($savedCenter) {
-                $savedCenter->update($center);
-            } else {
-                $savedCenter = Center::create($center);
-            }
-
+            // Seed branch vaccine pricing
             Vaccine::query()->get()->each(function (Vaccine $vaccine) use ($savedCenter) {
                 $multiplier = 1 + (max(0, (int) $savedCenter->sort_order - 1) * 0.01);
                 $branchPrice = (int) (round(($vaccine->price * $multiplier) / 1000) * 1000);
@@ -112,7 +90,13 @@ class CenterSeeder extends Seeder
                 );
             });
         }
-
-        CenterVaccine::whereNotIn('center_id', Center::pluck('id'))->delete();
     }
-}
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        // No rolling back of production data updates to avoid losing new records
+    }
+};

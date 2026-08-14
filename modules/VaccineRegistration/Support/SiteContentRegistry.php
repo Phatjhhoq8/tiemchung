@@ -59,7 +59,7 @@ class SiteContentRegistry
             ],
             'address' => [
                 'type' => 'string',
-                'default' => 'Chi nhánh 1: Cờ Đỏ (Cổng BV Quân Dân Y Cần Thơ) | Chi nhánh 2: Thới Lai (Thị trấn Thới Lai)',
+                'default' => 'Medicare Cờ Đỏ | Medicare Phong Điền | Medicare Trà Nóc | Medicare Vị Thanh',
                 'rules' => 'required|string|max:500',
             ],
             'working_hours' => [
@@ -138,12 +138,12 @@ class SiteContentRegistry
             'about_hero_title' => ['type' => 'string', 'default' => 'Giới Thiệu Hệ Thống Tiêm Chủng Medicare', 'rules' => 'required|string|max:255'],
             'about_hero_desc' => ['type' => 'string', 'default' => 'Đơn vị y tế uy tín hàng đầu cung cấp giải pháp phòng bệnh toàn diện bằng vắc xin chất lượng cao cho trẻ em và người lớn tại Cần Thơ.', 'rules' => 'required|string|max:500'],
             'about_story_title' => ['type' => 'string', 'default' => 'Hành trình Bảo vệ Sức khỏe Cộng đồng', 'rules' => 'required|string|max:255'],
-            'about_story_desc' => ['type' => 'string', 'default' => 'Được thành lập từ năm 2016, Medicare bắt đầu với sứ mệnh mang dịch vụ tiêm chủng an toàn, chất lượng cao và chi phí hợp lý đến gần hơn với người dân tại các huyện ngoại thành Cần Thơ như Cờ Đỏ và Thới Lai. Trải qua gần 10 năm phát triển, chúng tôi tự hào trở thành điểm tựa sức khỏe đáng tin cậy cho hàng chục ngàn gia đình, liên tục cải tiến chất lượng và nâng cao dịch vụ chăm sóc y tế.', 'rules' => 'required|string|max:2000'],
+            'about_story_desc' => ['type' => 'string', 'default' => 'Được thành lập từ năm 2016, Medicare bắt đầu với sứ mệnh mang dịch vụ tiêm chủng an toàn, chất lượng cao và chi phí hợp lý đến gần hơn với người dân tại Cần Thơ và Hậu Giang. Trải qua gần 10 năm phát triển, chúng tôi tự hào trở thành điểm tựa sức khỏe đáng tin cậy cho hàng chục ngàn gia đình, liên tục cải tiến chất lượng và nâng cao dịch vụ chăm sóc y tế.', 'rules' => 'required|string|max:2000'],
             'about_stat_exp' => ['type' => 'string', 'default' => '10+', 'rules' => 'required|string|max:50'],
             'about_stat_exp_lbl' => ['type' => 'string', 'default' => 'Năm Kinh Nghiệm', 'rules' => 'required|string|max:100'],
             'about_stat_clients' => ['type' => 'string', 'default' => '50,000+', 'rules' => 'required|string|max:50'],
             'about_stat_clients_lbl' => ['type' => 'string', 'default' => 'Khách Hàng Hài Lòng', 'rules' => 'required|string|max:100'],
-            'about_stat_branches' => ['type' => 'string', 'default' => '02', 'rules' => 'required|string|max:50'],
+            'about_stat_branches' => ['type' => 'string', 'default' => '04', 'rules' => 'required|string|max:50'],
             'about_stat_branches_lbl' => ['type' => 'string', 'default' => 'Trung Tâm Tiêm Chủng', 'rules' => 'required|string|max:100'],
             'about_mission_title' => ['type' => 'string', 'default' => 'Sứ Mệnh Của Chúng Tôi', 'rules' => 'required|string|max:255'],
             'about_mission_desc' => ['type' => 'string', 'default' => 'Mang lại dịch vụ tiêm chủng an toàn tuyệt đối, vaccine chính hãng chất lượng cao với chi phí hợp lý cho mọi gia đình. Giúp cộng đồng chủ động phòng bệnh truyền nhiễm nguy hiểm.', 'rules' => 'required|string|max:1000'],
@@ -170,7 +170,7 @@ class SiteContentRegistry
             
             'about_val5_icon' => ['type' => 'string', 'default' => 'scale', 'rules' => 'required|string|max:50'],
             'about_val5_title' => ['type' => 'string', 'default' => 'Trách Nhiệm Xã Hội', 'rules' => 'required|string|max:100'],
-            'about_val5_desc' => ['type' => 'string', 'default' => 'Cung cấp vaccine với mức giá bình ổn, hỗ trợ tối đa người dân tại khu vực Cờ Đỏ & Thới Lai tiếp cận với y tế chất lượng cao.', 'rules' => 'required|string|max:255'],
+            'about_val5_desc' => ['type' => 'string', 'default' => 'Cung cấp vaccine với mức giá bình ổn, hỗ trợ tối đa người dân tiếp cận với y tế chất lượng cao.', 'rules' => 'required|string|max:255'],
             
             'about_val6_icon' => ['type' => 'string', 'default' => 'database', 'rules' => 'required|string|max:50'],
             'about_val6_title' => ['type' => 'string', 'default' => 'Sổ Tiêm Điện Tử', 'rules' => 'required|string|max:100'],

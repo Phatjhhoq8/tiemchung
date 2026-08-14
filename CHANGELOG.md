@@ -1,3 +1,16 @@
+## [v6.5.49] - 2026-08-14
+
+### Re-import Real Medicare Centers Data & Update Site Configuration Settings
+
+* **Real Medicare Centers Seeding & Migration (`2026_08_14_000001_reimport_real_medicare_centers.php`, `CenterSeeder.php`, `test_data.sql`)**:
+  - Replaced existing mock/outdated branches with the 4 real branches: Medicare Cờ Đỏ, Medicare Phong Điền, Medicare Trà Nóc, and Medicare Vị Thanh.
+  - Configured actual phone numbers, Zalo hotlines, physical addresses, and interactive Google Maps embed URLs for the cards.
+  - Programmatically mapped old `center_id` values in `test_data.sql` to match the new branch IDs and prevent foreign key validation failures.
+
+* **Dynamic Footer & About Content Alignment (`2026_08_14_000002_update_medicare_site_settings.php`, `SiteContentRegistry.php`)**:
+  - Updated default configurations for branch count (`about_stat_branches`), network addresses (`address`), and description paragraphs (`about_story_desc`, `about_val5_desc`).
+  - Executed a DB update migration to automatically replace live site settings matching the active branches.
+
 ## [v6.5.48] - 2026-08-14
 
 ### Translate System Audit Logs, Fix Dropdown Clipping, Empty DB Crash & Dynamic Logo/Image Uploads

@@ -8,7 +8,7 @@
         <table class="table-modern">
             <thead>
                 <tr>
-                    <th style="width: 80px;">ID</th>
+                    <th style="width: 80px; text-align: center;">STT</th>
                     <th>Tên chi nhánh</th>
                     <th>Địa chỉ</th>
                     <th>Hotline</th>
@@ -19,7 +19,7 @@
             <tbody>
                 @foreach($centers as $center)
                     <tr>
-                        <td style="font-weight: 600;">{{ $center->id }}</td>
+                        <td style="font-weight: 600; text-align: center;">{{ ($centers->currentPage() - 1) * $centers->perPage() + $loop->iteration }}</td>
                         <td style="font-weight: 700; color: var(--text-primary);">
                             {{ $center->name }}
                             @if($center->slug)
