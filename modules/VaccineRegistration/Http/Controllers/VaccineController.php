@@ -35,7 +35,45 @@ class VaccineController extends Controller
     public function index(Request $request)
     {
         $currentCenter = CenterContext::current();
-        $query = Vaccine::forCenter($currentCenter?->id);
+        if (!$currentCenter) {
+            $vaccines = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 12);
+            $cart = [];
+            $featuredCount = 0;
+            $diseaseOptions = [];
+            $diseases = [];
+            $ageGroupOptions = [];
+            $ageGroups = [];
+            $originOptions = [];
+            $origins = [];
+            $doseOptions = [1, 2, 3, 4];
+            $doses = $doseOptions;
+            $productCategories = [];
+
+            if ($request->header('X-Vaccine-Filter') || $request->boolean('filter_spa')) {
+                return response()->json([
+                    'success' => true,
+                    'html' => view('vaccine::partials.grid', compact('vaccines', 'cart'))->render(),
+                    'count' => 0,
+                ]);
+            }
+
+            return view('vaccine::index', compact(
+                'vaccines',
+                'cart',
+                'featuredCount',
+                'diseaseOptions',
+                'diseases',
+                'ageGroupOptions',
+                'ageGroups',
+                'originOptions',
+                'origins',
+                'doseOptions',
+                'doses',
+                'productCategories'
+            ));
+        }
+
+        $query = Vaccine::forCenter($currentCenter->id);
 
         // Tìm kiếm theo tên sản phẩm. Lọc theo bệnh dùng tham số disease riêng.
         if ($request->filled('search')) {

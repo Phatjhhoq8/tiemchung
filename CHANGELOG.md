@@ -1,6 +1,6 @@
 ## [v6.5.48] - 2026-08-14
 
-### Translate System Audit Logs & Fix Action Dropdown Clipping
+### Translate System Audit Logs, Fix Dropdown Clipping & Fix Empty DB Crash
 
 * **Action & Resource Translation (AuditLog.php)**:
   - Translated all remaining code keys / snake_case actions and resource types to user-friendly Vietnamese.
@@ -9,6 +9,9 @@
 * **Fix Dropdown Menu Clipping (`admin.blade.php`)**:
   - Enforced `overflow: visible !important` on table responsive wrappers on desktop screens (min-width: 1024px) to let absolute menus float properly over container boundaries.
   - Upgraded `toggleActionMenu` JS handler to automatically position menus upwards (`dropup`) when rendering near the bottom of the table container (e.g., when the list has only 1-2 records), preventing vertical scrollbars and clipped items.
+
+* **Empty Database Resilience (`HomeController.php`, `VaccineController.php`)**:
+  - Prevented SQL error 1054 on homepage queries and vaccine index page when there are no centers (e.g., in a clean/new production state) by safely returning empty collections/paginators without appending center-only table sort orders to non-joined queries.
 
 ## [v6.5.47] - 2026-08-14
 

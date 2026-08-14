@@ -39,31 +39,36 @@ class HomeController extends Controller
         $banners = Banner::active()->ordered()->get();
 
         // Lấy danh sách vắc xin nổi bật được cấu hình trong Admin (tối đa 8 vắc xin)
-        $featuredVaccines = Vaccine::forCenter($currentCenter?->id)
-            ->featured()
-            ->orderBy('center_vaccines.sort_order', 'asc')
-            ->take(8)
-            ->get();
+        $featuredVaccines = collect();
+        $campaignVaccines = collect();
 
-        if ($featuredVaccines->isEmpty()) {
-            $featuredVaccines = Vaccine::forCenter($currentCenter?->id)
+        if ($currentCenter) {
+            $featuredVaccines = Vaccine::forCenter($currentCenter->id)
+                ->featured()
                 ->orderBy('center_vaccines.sort_order', 'asc')
                 ->take(8)
                 ->get();
-        }
 
-        // Lấy 4 vắc xin nổi bật chiến dịch
-        $campaignVaccines = Vaccine::forCenter($currentCenter?->id)
-            ->featured()
-            ->orderBy('center_vaccines.sort_order', 'asc')
-            ->take(4)
-            ->get();
+            if ($featuredVaccines->isEmpty()) {
+                $featuredVaccines = Vaccine::forCenter($currentCenter->id)
+                    ->orderBy('center_vaccines.sort_order', 'asc')
+                    ->take(8)
+                    ->get();
+            }
 
-        if ($campaignVaccines->isEmpty()) {
-            $campaignVaccines = Vaccine::forCenter($currentCenter?->id)
+            // Lấy 4 vắc xin nổi bật chiến dịch
+            $campaignVaccines = Vaccine::forCenter($currentCenter->id)
+                ->featured()
                 ->orderBy('center_vaccines.sort_order', 'asc')
                 ->take(4)
                 ->get();
+
+            if ($campaignVaccines->isEmpty()) {
+                $campaignVaccines = Vaccine::forCenter($currentCenter->id)
+                    ->orderBy('center_vaccines.sort_order', 'asc')
+                    ->take(4)
+                    ->get();
+            }
         }
 
         // Lấy 4 bài viết tin tức / kiến thức y tế mới nhất từ CSDL (1 bài lớn + 3 bài nhỏ)
