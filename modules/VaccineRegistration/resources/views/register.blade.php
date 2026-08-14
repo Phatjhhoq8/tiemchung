@@ -410,39 +410,13 @@
         @foreach($cart as $id => $item)
             @if(!$item['unavailable_for_center'])
                 {
-                    let selectRegimenHtml = `
-                        <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
-                            <span style="font-size: 12px; color: #64748b;">Hình thức:</span>
-                            <select name="patients[${index}][regimen_choices][{{ $id }}]" class="regimen-selector" data-vaccine-id="{{ $id }}" onchange="recalculateRegisterPrices()" style="font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; max-width: 250px; outline: none;">
-                                <option value="" data-price="{{ $item['price'] }}">Tiêm lẻ (1 mũi) - {{ number_format($item['price'], 0, ',', '.') }} đ</option>
-                    `;
-                    
-                    @foreach($item['regimens'] as $regimen)
-                        @php
-                            if ($regimen->price !== null) {
-                                $regPrice = $regimen->sale_price !== null ? $regimen->sale_price : $regimen->price;
-                            } else {
-                                $regPrice = $item['price'] * $regimen->doses;
-                            }
-                        @endphp
-                        selectRegimenHtml += `
-                                <option value="{{ $regimen->id }}" data-price="{{ $regPrice }}">Trọn gói: {{ $regimen->age_group }} ({{ $regimen->doses }} mũi) - {{ number_format($regPrice, 0, ',', '.') }} đ</option>
-                        `;
-                    @endforeach
-                    
-                    selectRegimenHtml += `
-                            </select>
-                        </div>
-                    `;
-
                     html += `
                         <div style="display: flex; flex-direction: column; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; margin-bottom: 8px; box-sizing: border-box;">
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px;">
-                                <input type="checkbox" name="patients[${index}][vaccine_ids][]" value="{{ $id }}" class="patient-vaccine-checkbox" checked onchange="recalculateRegisterPrices()" style="width: 16px; height: 16px; accent-color: var(--primary-color);">
+                                <input type="checkbox" name="patients[${index}][vaccine_ids][]" value="{{ $id }}" data-price="{{ $item['price'] }}" class="patient-vaccine-checkbox" checked onchange="recalculateRegisterPrices()" style="width: 16px; height: 16px; accent-color: var(--primary-color);">
                                 <span style="flex: 1; text-align: left;"><strong>{{ $item['name'] }}</strong></span>
                                 <strong class="display-price-label-{{ $id }}" style="color: var(--primary-color);">{{ number_format($item['price'], 0, ',', '.') }} đ</strong>
                             </label>
-                            ${selectRegimenHtml}
                         </div>
                     `;
                 }

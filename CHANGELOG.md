@@ -1,3 +1,15 @@
+## [v6.5.40] - 2026-08-14
+
+### Regimen Form Price Column & Booking Regimen Selector Removal
+
+* **Remove Price Fields from Regimen Configuration (`_form.blade.php`)**:
+  - Removed "Giá gốc riêng" and "Giá ưu đãi riêng" input columns from the age-group regimen configuration table in the admin vaccine form, updating the table widths to fit.
+  - Adjusted dynamic JavaScript row template to build rows without price input cells.
+
+* **Remove Regimen Selector from Registration (`register.blade.php`, `app.js`)**:
+  - Removed the regimen selector dropdown field from the patient registration vaccine checklist on both the public booking page and the SPA drawer booking modal.
+  - Ensured checkboxes carry the base vaccine price so checkout calculations remain correct.
+
 ## [v6.5.39] - 2026-08-14
 
 ### Banner & Upload Path Production Fix

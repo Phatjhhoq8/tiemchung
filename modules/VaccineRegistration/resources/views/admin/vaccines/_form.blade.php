@@ -580,12 +580,10 @@
         <table class="table-modern" id="regimens-table">
             <thead>
                 <tr>
-                    <th style="width: 25%;">Độ tuổi (Ví dụ: Trẻ từ 9 - 14 tuổi) <span style="color: #ef4444;">*</span></th>
-                    <th style="width: 10%; text-align: center;">Số mũi tiêm <span style="color: #ef4444;">*</span></th>
-                    <th style="width: 15%; text-align: center;">Giá gốc riêng (VND)</th>
-                    <th style="width: 15%; text-align: center;">Giá ưu đãi riêng (VND)</th>
-                    <th style="width: 25%;">Mô tả phác đồ (Ví dụ: Mũi 1 và Mũi 2 cách nhau 6 tháng)</th>
-                    <th style="width: 10%; text-align: center;">Hành động</th>
+                    <th style="width: 40%;">Độ tuổi (Ví dụ: Trẻ từ 9 - 14 tuổi) <span style="color: #ef4444;">*</span></th>
+                    <th style="width: 15%; text-align: center;">Số mũi tiêm <span style="color: #ef4444;">*</span></th>
+                    <th style="width: 30%;">Mô tả phác đồ (Ví dụ: Mũi 1 và Mũi 2 cách nhau 6 tháng)</th>
+                    <th style="width: 15%; text-align: center;">Hành động</th>
                 </tr>
             </thead>
             <tbody id="regimens-tbody">
@@ -597,8 +595,6 @@
                         $regimenId = is_array($regimen) ? ($regimen['id'] ?? null) : $regimen->id;
                         $ageGroup = is_array($regimen) ? $regimen['age_group'] : $regimen->age_group;
                         $dosesVal = is_array($regimen) ? $regimen['doses'] : $regimen->doses;
-                        $priceVal = is_array($regimen) ? ($regimen['price'] ?? null) : $regimen->price;
-                        $salePriceVal = is_array($regimen) ? ($regimen['sale_price'] ?? null) : $regimen->sale_price;
                         $desc = is_array($regimen) ? ($regimen['schedule_description'] ?? '') : $regimen->schedule_description;
                     @endphp
                     <tr data-index="{{ $index }}">
@@ -612,12 +608,6 @@
                         </td>
                         <td style="text-align: center;">
                             <input type="number" name="regimens[{{ $index }}][doses]" value="{{ $dosesVal }}" required min="1" class="form-control-modern" style="text-align: center;" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
-                        </td>
-                        <td>
-                            <input type="number" name="regimens[{{ $index }}][price]" value="{{ $priceVal }}" min="0" class="form-control-modern" placeholder="Mặc định" style="text-align: right;" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
-                        </td>
-                        <td>
-                            <input type="number" name="regimens[{{ $index }}][sale_price]" value="{{ $salePriceVal }}" min="0" class="form-control-modern" placeholder="Mặc định" style="text-align: right;" {{ !($isSuperAdmin ?? false) ? 'disabled' : '' }}>
                         </td>
                         <td>
                             <div style="position: relative;">
@@ -635,7 +625,7 @@
                 @empty
                     @if(!($isSuperAdmin ?? false))
                         <tr>
-                            <td colspan="6" style="text-align: center; color: var(--text-muted);">Không có phác đồ tiêm chủng nào được định nghĩa.</td>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted);">Không có phác đồ tiêm chủng nào được định nghĩa.</td>
                         </tr>
                     @endif
                 @endforelse
@@ -2193,12 +2183,6 @@
                         </td>
                         <td style="text-align: center;">
                             <input type="number" name="regimens[${rowIndex}][doses]" value="1" required min="1" class="form-control-modern" style="text-align: center;">
-                        </td>
-                        <td>
-                            <input type="number" name="regimens[${rowIndex}][price]" min="0" class="form-control-modern" placeholder="Mặc định" style="text-align: right;">
-                        </td>
-                        <td>
-                            <input type="number" name="regimens[${rowIndex}][sale_price]" min="0" class="form-control-modern" placeholder="Mặc định" style="text-align: right;">
                         </td>
                         <td>
                             <div style="position: relative;">
