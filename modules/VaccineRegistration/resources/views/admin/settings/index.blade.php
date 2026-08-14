@@ -32,8 +32,8 @@
                         <img src="{{ asset($settings['site_logo'] ?? 'images/logo.png') }}" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
                     </div>
                     <div style="flex: 1;">
-                        <input type="file" name="site_logo" id="site_logo" accept="image/*" class="form-control-modern" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; width: auto; font-size: 13px;">
-                        <div style="font-size: 11px; color: #64748b; margin-top: 5px;">Chấp nhận file ảnh định dạng jpeg, png, jpg, webp (Dung lượng tối đa: 2MB)</div>
+                        <input type="file" name="site_logo" id="site_logo" accept="image/*,.svg" class="form-control-modern" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; width: auto; font-size: 13px;">
+                        <div style="font-size: 11px; color: #64748b; margin-top: 5px;">Chấp nhận file ảnh định dạng jpeg, png, jpg, webp, svg (Dung lượng tối đa: 4MB)</div>
                     </div>
                 </div>
             </div>

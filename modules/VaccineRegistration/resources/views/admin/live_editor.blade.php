@@ -497,6 +497,7 @@
 @section('scripts')
 <script>
     const settingsData = @json($settings);
+    const defaultAvatar = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23cbd5e1"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
 
     function escapeHtml(str) {
         if (str === null || str === undefined) return '';
@@ -740,7 +741,7 @@
                         <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">${f.label}</label>
                         <div style="display:flex; align-items:center; gap:12px; background:#fff; border:1px solid #cbd5e1; padding:8px; border-radius:6px;">
                             <div style="width:50px; height:50px; border-radius:6px; border:1px solid #cbd5e1; background:#f8fafc; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:2px;">
-                                <img class="image-preview-${fieldName}-${f.key}" src="${val || '/images/logo.png'}" style="max-width:100%; max-height:100%; object-fit:cover;">
+                                <img class="image-preview-${fieldName}-${f.key}" src="${val || defaultAvatar}" style="max-width:100%; max-height:100%; object-fit:cover;">
                             </div>
                             <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
                                 <input type="file" onchange="uploadLiveEditorImage(this, '${fieldName}', '${f.key}')" accept="image/*" style="font-size:12px; width:100%;">

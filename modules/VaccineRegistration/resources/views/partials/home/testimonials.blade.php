@@ -47,7 +47,7 @@
                     "{{ $item['content'] ?? '' }}"
                 </p>
                 <div class="flex items-center gap-3">
-                    @if(!empty($item['avatar']) && $item['avatar'] !== '/images/logo.png')
+                    @if(!empty($item['avatar']) && $item['avatar'] !== '/images/logo.png' && $item['avatar'] !== 'images/logo.png' && !str_contains($item['avatar'], 'logo.png') && !str_starts_with($item['avatar'], 'data:image/svg+xml'))
                         <img src="{{ $avatar }}" class="w-10 h-10 rounded-full object-cover border-2 border-white/20" alt="{{ $item['name'] }}">
                     @else
                         <div class="w-10 h-10 rounded-full bg-white text-[#c8102e] flex items-center justify-center font-bold text-sm shadow-sm">{{ $initials }}</div>

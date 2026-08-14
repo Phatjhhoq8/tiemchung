@@ -51,7 +51,7 @@ class AdminSettingController extends Controller
             'email' => 'required|email|max:255',
             'address' => 'required|string|max:500',
             'footer_text' => 'required|string|max:500',
-            'site_logo' => 'nullable|file|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'site_logo' => 'nullable|file|max:4096',
         ], [
             'site_name.required' => 'Tên trang web không được để trống.',
             'hotline.required' => 'Số điện thoại đường dây nóng không được để trống.',
@@ -59,9 +59,7 @@ class AdminSettingController extends Controller
             'email.email' => 'Địa chỉ thư điện tử không đúng định dạng.',
             'address.required' => 'Địa chỉ trụ sở chính không được để trống.',
             'footer_text.required' => 'Nội dung chân trang không được để trống.',
-            'site_logo.image' => 'Logo tải lên phải là định dạng hình ảnh.',
-            'site_logo.mimes' => 'Logo chỉ chấp nhận các định dạng: jpeg, png, jpg, webp.',
-            'site_logo.max' => 'Logo dung lượng không được vượt quá 2MB.',
+            'site_logo.max' => 'Logo dung lượng không được vượt quá 4MB.',
         ]);
 
         $oldValues = Setting::whereIn('key', array_keys(array_diff_key($validated, ['site_logo' => ''])))->pluck('value', 'key')->all();
