@@ -3,6 +3,7 @@
         'site_name' => 'Medicare',
         'hotline' => '0938 60 38 39',
         'email' => 'cskh@medicare.vn',
+        'site_logo' => 'images/logo.png',
         'footer_text' => '© 2026 Medicare - Hệ Thống Tiêm Chủng Vắc Xin Trẻ Em và Người Lớn.',
         'footer_company_name' => 'CÔNG TY CỔ PHẦN VẮC XIN MEDICARE',
         'footer_sub_title' => 'HỆ THỐNG TRUNG TÂM TIÊM CHỦNG VẮC XIN CHO TRẺ EM & NGƯỜI LỚN AN TOÀN – UY TÍN – CHẤT LƯỢNG HÀNG ĐẦU VIỆT NAM',
@@ -13,6 +14,7 @@
     $site_name = $globalSettings['site_name'];
     $hotline = $globalSettings['hotline'];
     $email = $globalSettings['email'];
+    $site_logo = $globalSettings['site_logo'];
     $footer_text = $globalSettings['footer_text'];
     $footer_company_name = $globalSettings['footer_company_name'];
     $footer_sub_title = $globalSettings['footer_sub_title'];
@@ -104,7 +106,7 @@
     <header class="app-header">
         <div class="header-container">
             <a href="{{ route('home') }}" class="logo" style="display: flex; align-items: center; padding: 5px 0;">
-                <img src="{{ asset('images/logo.png') }}" alt="{{ $site_name }}" style="max-height: 48px; width: auto; object-fit: contain;">
+                <img src="{{ asset($site_logo) }}" alt="{{ $site_name }}" style="max-height: 48px; width: auto; object-fit: contain;">
             </a>
             
             <nav class="nav-menu" id="nav-menu">
@@ -530,7 +532,7 @@
     <nav class="mobile-drawer" id="mobile-drawer">
         <div class="mobile-drawer-header">
             <a href="{{ route('home') }}" class="logo" style="display: flex; align-items: center;">
-                <img src="{{ asset('images/logo.png') }}" alt="{{ $site_name }}" style="max-height: 40px; width: auto;">
+                <img src="{{ asset($site_logo) }}" alt="{{ $site_name }}" style="max-height: 40px; width: auto;">
             </a>
             <button onclick="toggleMobileMenu()" class="mobile-close-btn" aria-label="Đóng menu">
                 <i data-lucide="x" class="w-6 h-6"></i>
@@ -728,7 +730,7 @@
             <div class="footer-header-container">
                 <div class="footer-brand-title">
                     <a href="{{ route('home') }}" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-                        <img src="{{ asset('images/logo.png') }}" alt="{{ $site_name }}" style="max-height: 40px; width: auto; filter: brightness(0) invert(1);">
+                        <img src="{{ asset($site_logo) }}" alt="{{ $site_name }}" style="max-height: 40px; width: auto; filter: brightness(0) invert(1);">
                     </a>
                     <h3>{{ $footer_sub_title }}</h3>
                 </div>

@@ -1,6 +1,6 @@
 ## [v6.5.48] - 2026-08-14
 
-### Translate System Audit Logs, Fix Dropdown Clipping & Fix Empty DB Crash
+### Translate System Audit Logs, Fix Dropdown Clipping, Empty DB Crash & Dynamic Logo/Image Uploads
 
 * **Action & Resource Translation (AuditLog.php)**:
   - Translated all remaining code keys / snake_case actions and resource types to user-friendly Vietnamese.
@@ -12,6 +12,10 @@
 
 * **Empty Database Resilience (`HomeController.php`, `VaccineController.php`)**:
   - Prevented SQL error 1054 on homepage queries and vaccine index page when there are no centers (e.g., in a clean/new production state) by safely returning empty collections/paginators without appending center-only table sort orders to non-joined queries.
+
+* **Dynamic Logo Configuration & Visual Image Uploads (`AdminSettingController.php`, `live_editor.blade.php`, `app.blade.php`, `admin.blade.php`)**:
+  - Replaced all hardcoded website logo assets with a dynamic system setting (`site_logo`), allowing administrators to upload new logo image files directly from the general configuration dashboard.
+  - Converted avatar inputs from text paths to interactive file pickers with live image previews in Live Editor for both Customer Testimonials (`home_testimonials`) and Team Members (`about_team_members`), utilizing AJAX to upload files on-the-fly and bind URLs to system settings.
 
 ## [v6.5.47] - 2026-08-14
 

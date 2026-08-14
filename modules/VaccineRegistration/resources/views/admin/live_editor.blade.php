@@ -515,7 +515,7 @@
                 { key: 'name', label: 'Họ tên khách hàng', type: 'text', placeholder: 'Ví dụ: Chị Nguyễn Thảo Vy' },
                 { key: 'role', label: 'Mô tả / Vai trò', type: 'text', placeholder: 'Ví dụ: Phụ huynh bé Min (3 tháng)' },
                 { key: 'content', label: 'Ý kiến / Nhận xét', type: 'textarea', placeholder: 'Nhập ý kiến đánh giá...' },
-                { key: 'avatar', label: 'Đường dẫn ảnh đại diện', type: 'text', placeholder: 'Mặc định: /images/logo.png' }
+                { key: 'avatar', label: 'Ảnh đại diện', type: 'image', placeholder: 'Định dạng jpeg, png, jpg, webp' }
             ]
         },
         'home_faqs': {
@@ -532,7 +532,7 @@
             fields: [
                 { key: 'name', label: 'Họ và tên bác sĩ', type: 'text', placeholder: 'Ví dụ: ThS. BS. Nguyễn Minh Đức' },
                 { key: 'role', label: 'Chức vụ / Chuyên khoa', type: 'text', placeholder: 'Ví dụ: Giám đốc chuyên môn tiêm chủng' },
-                { key: 'avatar', label: 'Ảnh đại diện', type: 'text', placeholder: 'Ví dụ: /images/avt_pktn.png' },
+                { key: 'avatar', label: 'Ảnh đại diện', type: 'image', placeholder: 'Định dạng jpeg, png, jpg, webp' },
                 { key: 'zalo', label: 'Số hotline / Zalo liên hệ', type: 'text', placeholder: 'Ví dụ: 0938603839' }
             ]
         },
@@ -710,6 +710,21 @@
                         </select>
                     </div>
                 `;
+            } else if (f.type === 'image') {
+                fieldsHtml += `
+                    <div style="margin-bottom:10px;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">${f.label}</label>
+                        <div style="display:flex; align-items:center; gap:12px; background:#fff; border:1px solid #cbd5e1; padding:8px; border-radius:6px;">
+                            <div style="width:50px; height:50px; border-radius:6px; border:1px solid #cbd5e1; background:#f8fafc; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:2px;">
+                                <img class="image-preview-${fieldName}-${f.key}" src="${val || '/images/logo.png'}" style="max-width:100%; max-height:100%; object-fit:cover;">
+                            </div>
+                            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                                <input type="file" onchange="uploadLiveEditorImage(this, '${fieldName}', '${f.key}')" accept="image/*" style="font-size:12px; width:100%;">
+                                <input type="hidden" data-field="${f.key}" value="${escapeHtml(val)}" class="json-input-${fieldName} image-value-${fieldName}-${f.key}">
+                            </div>
+                        </div>
+                    </div>
+                `;
             } else {
                 fieldsHtml += `
                     <div style="margin-bottom:10px;">
@@ -869,6 +884,50 @@
         if (await window.AppDialog.confirm('Bạn có chắc chắn muốn xuất bản tất cả cấu hình trang chủ/sắp xếp hiện tại lên trang chính thức?')) {
             await actionSettings('publish', true);
         }
+    }
+
+    function uploadLiveEditorImage(fileInput, fieldName, fieldKey) {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const row = fileInput.closest('.json-array-item');
+        const previewImg = row.querySelector(`.image-preview-${fieldName}-${fieldKey}`);
+        const hiddenInput = row.querySelector(`.image-value-${fieldName}-${fieldKey}`);
+        
+        previewImg.style.opacity = '0.5';
+
+        fetch("{{ route('admin.articles.upload-image') }}", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Accept": "application/json"
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Tải lên ảnh thất bại.');
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.location) {
+                previewImg.src = data.location;
+                previewImg.style.opacity = '1';
+                hiddenInput.value = data.location;
+            } else {
+                alert('Có lỗi xảy ra: ' + (data.error || 'Không rõ lỗi.'));
+                previewImg.style.opacity = '1';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Lỗi tải ảnh lên máy chủ.');
+            previewImg.style.opacity = '1';
+        });
     }
 
     function closeModal(id) {

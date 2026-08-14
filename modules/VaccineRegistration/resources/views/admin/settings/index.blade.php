@@ -19,11 +19,25 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.settings.update') }}" method="POST">
+    <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
         
         {{-- Grid 2 cột cho các thông tin ngắn --}}
         <div class="form-grid-2" style="margin-bottom: 24px;">
+            <!-- Logo Hệ Thống -->
+            <div class="form-group-modern" style="grid-column: span 2;">
+                <label class="form-label-modern">Logo hệ thống (Medicare)</label>
+                <div style="display: flex; align-items: center; gap: 20px; background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 16px;">
+                    <div style="width: 140px; height: 50px; border: 1px dashed #cbd5e1; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #ffffff; padding: 4px; overflow: hidden;">
+                        <img src="{{ asset($settings['site_logo'] ?? 'images/logo.png') }}" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                    </div>
+                    <div style="flex: 1;">
+                        <input type="file" name="site_logo" id="site_logo" accept="image/*" class="form-control-modern" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; width: auto; font-size: 13px;">
+                        <div style="font-size: 11px; color: #64748b; margin-top: 5px;">Chấp nhận file ảnh định dạng jpeg, png, jpg, webp (Dung lượng tối đa: 2MB)</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Tên Website -->
             <div class="form-group-modern">
                 <label for="site_name" class="form-label-modern">Tên thương hiệu hệ thống *</label>

@@ -33,6 +33,7 @@ class AdminSettingController extends Controller
             'email' => Setting::get('email', 'cskh@medicarecodo.vn'),
             'address' => Setting::get('address', 'Ấp Thới Hòa, Thị trấn Cờ Đỏ, Huyện Cờ Đỏ, TP. Cần Thơ'),
             'footer_text' => Setting::get('footer_text', '© 2026 Medicare. Hệ thống tiêm chủng uy tín.'),
+            'site_logo' => Setting::get('site_logo', 'images/logo.png'),
         ];
 
         return view('vaccine::admin.settings.index', compact('settings'));
@@ -50,6 +51,7 @@ class AdminSettingController extends Controller
             'email' => 'required|email|max:255',
             'address' => 'required|string|max:500',
             'footer_text' => 'required|string|max:500',
+            'site_logo' => 'nullable|file|image|mimes:jpeg,png,jpg,webp|max:2048',
         ], [
             'site_name.required' => 'Tên trang web không được để trống.',
             'hotline.required' => 'Số điện thoại đường dây nóng không được để trống.',
@@ -57,13 +59,26 @@ class AdminSettingController extends Controller
             'email.email' => 'Địa chỉ thư điện tử không đúng định dạng.',
             'address.required' => 'Địa chỉ trụ sở chính không được để trống.',
             'footer_text.required' => 'Nội dung chân trang không được để trống.',
+            'site_logo.image' => 'Logo tải lên phải là định dạng hình ảnh.',
+            'site_logo.mimes' => 'Logo chỉ chấp nhận các định dạng: jpeg, png, jpg, webp.',
+            'site_logo.max' => 'Logo dung lượng không được vượt quá 2MB.',
         ]);
 
-        $oldValues = Setting::whereIn('key', array_keys($validated))->pluck('value', 'key')->all();
-        foreach ($validated as $key => $value) {
+        $oldValues = Setting::whereIn('key', array_keys(array_diff_key($validated, ['site_logo' => ''])))->pluck('value', 'key')->all();
+        
+        foreach (array_diff_key($validated, ['site_logo' => '']) as $key => $value) {
             Setting::set($key, $value);
         }
-        AuditLogger::log('setting.updated', 'setting', 'site', $oldValues, $validated, resolveCenter: false);
+
+        if ($request->hasFile('site_logo')) {
+            $file = $request->file('site_logo');
+            $ext = strtolower($file->getClientOriginalExtension());
+            $filename = 'logo_' . time() . '.' . $ext;
+            $file->move(public_path('images'), $filename);
+            Setting::set('site_logo', 'images/' . $filename);
+        }
+
+        AuditLogger::log('setting.updated', 'setting', 'site', $oldValues, array_diff_key($validated, ['site_logo' => '']), resolveCenter: false);
 
         return redirect()->route('admin.settings.index')->with('success', 'Cập nhật cấu hình trang web thành công.');
     }

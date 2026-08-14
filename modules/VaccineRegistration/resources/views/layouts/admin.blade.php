@@ -1031,7 +1031,7 @@
         <!-- Sidebar quản trị -->
         <aside class="admin-sidebar">
             <a href="{{ route('admin.dashboard') }}" class="sidebar-brand" style="display: flex; align-items: center; justify-content: center; padding: 24px 20px;">
-                <img src="{{ asset('images/logo.png') }}" alt="Biểu trưng Medicare" style="max-height: 38px; width: auto; object-fit: contain;">
+                <img src="{{ asset(\Modules\VaccineRegistration\Models\Setting::get('site_logo', 'images/logo.png')) }}" alt="Biểu trưng Medicare" style="max-height: 38px; width: auto; object-fit: contain;">
             </a>
             
             <ul class="sidebar-menu">
