@@ -11,8 +11,8 @@
 <div class="form-grid-2" style="margin-bottom: 30px;">
     <!-- Tiêu đề -->
     <div class="form-group" style="grid-column: span 2;">
-        <label for="title" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Tiêu đề banner <span style="color: #ef4444;">*</span></label>
-        <input type="text" name="title" id="title" value="{{ old('title', $banner->title) }}" required placeholder="VD: Tiêm vắc xin – Bảo vệ gia đình bạn" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
+        <label for="title" style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Tiêu đề banner <span style="font-size: 13px; font-weight: 400; color: #64748b;">(Không bắt buộc)</span></label>
+        <input type="text" name="title" id="title" value="{{ old('title', $banner->title) }}" placeholder="VD: Tiêm vắc xin – Bảo vệ gia đình bạn" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none;">
     </div>
 
     <!-- Phụ đề -->

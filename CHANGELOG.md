@@ -1,3 +1,16 @@
+## [v6.5.43] - 2026-08-14
+
+### Optional Banner Text Overlays & Image Frame
+
+* **Make Banner Title Optional (`_form.blade.php`, `AdminBannerController.php`)**:
+  - Allowed blank Banner Title in the creation/editing form, changing validation to nullable and defaulting to empty string to preserve MySQL integrity constraints.
+  
+* **Dynamic Banner Rendering & Background Only Layout (`hero_slider.blade.php`)**:
+  - Made title, subtitle, and foreground image overlays optional in the hero carousel.
+  - Removed the default system image frame completely when no custom banner image is uploaded.
+  - Enabled text to stretch to full width (`col-span-12`) if the foreground image is omitted.
+  - Wrapped the entire banner area inside a link if it contains only a background image.
+
 ## [v6.5.42] - 2026-08-14
 
 ### Admin Dashboard Trend Chart Overlapping Fix

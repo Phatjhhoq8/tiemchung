@@ -64,7 +64,7 @@ class AdminBannerController extends Controller
     {
         abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền tạo biểu ngữ.');
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'subtitle' => 'nullable|string|max:500',
             'image_url' => 'nullable|string|max:500',
             'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new SafeImageFile],
@@ -83,9 +83,9 @@ class AdminBannerController extends Controller
             ],
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'nullable',
-        ], [
-            'title.required' => 'Tiêu đề biểu ngữ không được để trống.',
         ]);
+
+        $validated['title'] = $validated['title'] ?? '';
 
         // Xử lý tải lên hình ảnh từ file
         if ($request->hasFile('image_file')) {
@@ -139,7 +139,7 @@ class AdminBannerController extends Controller
         $banner = Banner::findOrFail($id);
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'subtitle' => 'nullable|string|max:500',
             'image_url' => 'nullable|string|max:500',
             'image_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new SafeImageFile],
@@ -158,9 +158,9 @@ class AdminBannerController extends Controller
             ],
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'nullable',
-        ], [
-            'title.required' => 'Tiêu đề biểu ngữ không được để trống.',
         ]);
+
+        $validated['title'] = $validated['title'] ?? '';
 
         // Xử lý tải lên hình ảnh từ file
         if ($request->hasFile('image_file')) {
