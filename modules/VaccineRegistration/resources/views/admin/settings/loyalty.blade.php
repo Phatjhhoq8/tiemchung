@@ -57,18 +57,18 @@
                     <label class="form-label-modern" style="margin-bottom: 12px; font-weight: 700; color: var(--accent-color);">Lựa chọn cấu hình áp dụng cho chi nhánh này *</label>
                     <div style="display: flex; gap: 24px; align-items: center;">
                         <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; font-weight: 500;">
-                            <input type="radio" name="use_system_settings" value="1" {{ $settings['use_system_settings'] ? 'checked' : '' }} style="accent-color: var(--primary-color); width: 18px; height: 18px;">
+                            <input type="radio" name="use_system_settings" value="1" {{ old('use_system_settings', $settings['use_system_settings'] ? '1' : '0') === '1' ? 'checked' : '' }} style="accent-color: var(--primary-color); width: 18px; height: 18px;">
                             Sử dụng cấu hình chung của toàn hệ thống
                         </label>
                         <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; font-weight: 500;">
-                            <input type="radio" name="use_system_settings" value="0" {{ !$settings['use_system_settings'] ? 'checked' : '' }} style="accent-color: var(--primary-color); width: 18px; height: 18px;">
+                            <input type="radio" name="use_system_settings" value="0" {{ old('use_system_settings', $settings['use_system_settings'] ? '1' : '0') === '0' ? 'checked' : '' }} style="accent-color: var(--primary-color); width: 18px; height: 18px;">
                             Sử dụng cấu hình riêng của chi nhánh
                         </label>
                     </div>
                 </div>
             @endif
 
-            <div id="loyalty_settings_fields" style="{{ ($centerId && $settings['use_system_settings']) ? 'display: none;' : '' }}">
+            <div id="loyalty_settings_fields" style="{{ ($centerId && old('use_system_settings', $settings['use_system_settings'] ? '1' : '0') === '1') ? 'display: none;' : '' }}">
                 <h3 style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent-color); margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
                     <i data-lucide="info" style="width: 18px; height: 18px;"></i> Cấu hình tích lũy & quy đổi điểm
                 </h3>
@@ -116,6 +116,9 @@
 
                     <!-- Giá trị quy đổi VND (Đặt mặc định là 1 VND = 1 Điểm) -->
                     <input type="number" name="redeem_vnd_per_point" id="redeem_vnd_per_point" value="{{ old('redeem_vnd_per_point', $settings['redeem_vnd_per_point']) }}">
+
+                    <!-- Giá trị quy đổi phần trăm BPS (mặc định là 10 BPS = 0.1%) -->
+                    <input type="number" name="redeem_percent_bps_per_point" id="redeem_percent_bps_per_point" value="{{ old('redeem_percent_bps_per_point', $settings['redeem_percent_bps_per_point'] ?? 10) }}">
 
                     <!-- Đơn hàng tối thiểu sử dụng điểm -->
                     <input type="number" name="min_order_value_to_redeem" id="min_order_value_to_redeem" value="{{ old('min_order_value_to_redeem', $settings['min_order_value_to_redeem']) }}">

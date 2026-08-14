@@ -1,3 +1,14 @@
+## [v6.5.45] - 2026-08-14
+
+### Fix Branch Loyalty Settings Validation Bug
+
+* **Add Missing Hidden Input for Percentage Redeem (`loyalty.blade.php`)**:
+  - Inserted the missing `redeem_percent_bps_per_point` hidden field to satisfy Laravel controller validation rules when submitting the form.
+  
+* **Preserve Radio Selection on Validation Error (`loyalty.blade.php`)**:
+  - Restructured the `use_system_settings` radio inputs and field visibility logic to check `old('use_system_settings')`.
+  - Prevented the selection from reverting back to system defaults after validation redirect cycles.
+
 ## [v6.5.44] - 2026-08-14
 
 ### Admin Quick Registration Date/Time Selector & Bug Fix
