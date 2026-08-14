@@ -37,6 +37,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/png" href="{{ asset($site_logo) }}">
     <meta name="description" content="@yield('meta_description', 'Medicare - Hệ thống tiêm chủng vắc xin an toàn, chất lượng hàng đầu tại Cần Thơ cho trẻ em và người lớn.')">
     <title>@yield('title', 'Hệ Thống Tiêm Chủng Medicare')</title>
     

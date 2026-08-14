@@ -27,6 +27,11 @@ class SiteContentRegistry
     {
         return [
             // --- HỆ THỐNG & KHUNG CHUNG (GLOBAL SHELL) ---
+            'site_logo' => [
+                'type' => 'string',
+                'default' => 'images/logo.png',
+                'rules' => 'nullable|string|max:500',
+            ],
             'site_name' => [
                 'type' => 'string',
                 'default' => 'Medicare',
