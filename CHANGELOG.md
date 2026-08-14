@@ -1,3 +1,13 @@
+## [v6.5.50] - 2026-08-14
+
+### Import Real Vaccines & Branch Pricing Catalog
+
+* **Real Vaccines Import Migration (`2026_08_14_000003_import_real_vaccines_catalog.php`)**:
+  - Cleared old seeded mock vaccines from the database.
+  - Parsed and consolidated 44 real vaccine products from the Cờ Đỏ catalog PDF (for Cờ Đỏ, Phong Điền, and Trà Nóc branches) and Vị Thanh excel sheet.
+  - Automatically mapped branch-specific pricing for all 4 centers.
+  - Cleaned whitespaces and newlines in text fields, mapped appropriate categories (e.g., HPV, Tiêu chảy Rota, Vắc xin 6 trong 1), and imported correct disease prevention target strings and age groups.
+
 ## [v6.5.49] - 2026-08-14
 
 ### Re-import Real Medicare Centers Data & Update Site Configuration Settings
