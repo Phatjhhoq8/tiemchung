@@ -93,6 +93,13 @@ class AdminCenterController extends Controller
      */
     public function store(Request $request)
     {
+        if ($request->filled('map_url')) {
+            $mapUrl = $request->input('map_url');
+            if (preg_match('/src="([^"]+)"/', $mapUrl, $matches)) {
+                $request->merge(['map_url' => $matches[1]]);
+            }
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:centers,slug',
@@ -109,8 +116,8 @@ class AdminCenterController extends Controller
 
                         return;
                     }
-                    if (! str_starts_with($value, 'https://www.google.com/maps/embed') && ! str_starts_with($value, 'https://www.google.com/maps/place') && ! str_starts_with($value, 'https://www.google.com/maps/')) {
-                        $fail('Bản đồ phải là đường dẫn Google Maps hợp lệ.');
+                    if (! str_starts_with($value, 'https://www.google.com/maps/embed')) {
+                        $fail('Bản đồ phải là đường dẫn nhúng Google Maps hợp lệ (bắt đầu bằng https://www.google.com/maps/embed hoặc dán toàn bộ mã nhúng iframe từ Google Maps).');
                     }
                 },
             ],
@@ -166,6 +173,13 @@ class AdminCenterController extends Controller
     {
         $center = Center::findOrFail($id);
 
+        if ($request->filled('map_url')) {
+            $mapUrl = $request->input('map_url');
+            if (preg_match('/src="([^"]+)"/', $mapUrl, $matches)) {
+                $request->merge(['map_url' => $matches[1]]);
+            }
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:centers,slug,'.$center->id,
@@ -182,8 +196,8 @@ class AdminCenterController extends Controller
 
                         return;
                     }
-                    if (! str_starts_with($value, 'https://www.google.com/maps/embed') && ! str_starts_with($value, 'https://www.google.com/maps/place') && ! str_starts_with($value, 'https://www.google.com/maps/')) {
-                        $fail('Bản đồ phải là đường dẫn Google Maps hợp lệ.');
+                    if (! str_starts_with($value, 'https://www.google.com/maps/embed')) {
+                        $fail('Bản đồ phải là đường dẫn nhúng Google Maps hợp lệ (bắt đầu bằng https://www.google.com/maps/embed hoặc dán toàn bộ mã nhúng iframe từ Google Maps).');
                     }
                 },
             ],

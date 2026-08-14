@@ -1,3 +1,14 @@
+## [v6.5.46] - 2026-08-14
+
+### Google Maps Embed URL Parser & Validation
+
+* **Support Complete Iframe Embed Code (`AdminCenterController.php`)**:
+  - Automatically detected if the user pasted a full `<iframe>` tag from Google Maps and extracted the `src` attribute URL.
+  
+* **Enforce Safe Embed Link Format (`AdminCenterController.php`)**:
+  - Changed validation to strictly require a URL starting with `https://www.google.com/maps/embed` to prevent non-iframe URLs (like `google.com/maps/place`) from crashing the frontend maps block.
+  - Added a helpful validation message guiding users to copy the share/embed link.
+
 ## [v6.5.45] - 2026-08-14
 
 ### Fix Branch Loyalty Settings Validation Bug
