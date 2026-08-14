@@ -689,6 +689,7 @@ class VaccineController extends Controller
                             'sale_price' => null,
                             'quantity' => 1,
                             'stock_committed_quantity' => 1,
+                            'regimen_id' => $regimenId,
                         ];
                     }
 

@@ -1,3 +1,16 @@
+## [v6.5.41] - 2026-08-14
+
+### Regimen Selector Restoration & Administrative Tracking
+
+* **Restore Regimen Selector Conditionally (`register.blade.php`, `app.js`)**:
+  - Re-introduced the regimen selector dropdown field to the patient registration vaccine checklist on both the public booking page and the SPA drawer booking modal, displaying it only when a vaccine actually has configured regimens.
+  
+* **Save Regimen Choice to Pivot (`VaccineController.php`)**:
+  - Fixed an issue where the selected regimen was not being saved to the database. Added the `regimen_id` column value to the `registration_vaccines` pivot table attach array when registering bookings.
+
+* **Render Regimen Details in Admin View (`show.blade.php`)**:
+  - Updated the admin registration details screen to resolve and display the selected regimen details (age group and doses) under the respective vaccines.
+
 ## [v6.5.40] - 2026-08-14
 
 ### Regimen Form Price Column & Booking Regimen Selector Removal

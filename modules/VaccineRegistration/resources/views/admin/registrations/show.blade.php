@@ -280,6 +280,20 @@
                                             <div style="font-size:12px; color:var(--text-muted);">
                                                 Liều lượng: 1 mũi tiêm
                                             </div>
+                                            @if($vaccine->pivot->regimen_id)
+                                                @php
+                                                    $regimen = \Modules\VaccineRegistration\Models\VaccineRegimen::find($vaccine->pivot->regimen_id);
+                                                @endphp
+                                                @if($regimen)
+                                                    <div style="font-size:12px; color:#1e293b; margin-top: 4px; font-weight: 500;">
+                                                        Phác đồ: <span class="badge-modern" style="background:#e0f2fe; color:#0369a1; padding: 2px 6px; border-radius: 4px; font-size: 11px;">{{ $regimen->age_group }} ({{ $regimen->doses }} mũi)</span>
+                                                    </div>
+                                                @endif
+                                            @else
+                                                <div style="font-size:12px; color:#475569; margin-top: 4px;">
+                                                     Hình thức: <span class="badge-modern" style="background:#f1f5f9; color:#475569; padding: 2px 6px; border-radius: 4px; font-size: 11px;">Tiêm lẻ</span>
+                                                </div>
+                                            @endif
                                             @if($isVaccinated)
                                                 <div style="margin-top:5px; color:#15803d; font-size:12px; font-weight:700;">
                                                     ✓ Đã tiêm lúc {{ $doseRecord->administered_at?->format('d/m/Y H:i') }}@if($doseRecord->inventoryLot?->lot_number) - Lô: {{ $doseRecord->inventoryLot->lot_number }}@endif
@@ -321,7 +335,24 @@
                 <tbody>
                     @foreach($registration->vaccines as $vaccine)
                         <tr>
-                            <td><strong>{{ $vaccine->name }}</strong><small style="display:block; color:var(--text-muted);">{{ $vaccine->origin }}</small></td>
+                            <td>
+                                <strong>{{ $vaccine->name }}</strong>
+                                <small style="display:block; color:var(--text-muted);">{{ $vaccine->origin }}</small>
+                                @if($vaccine->pivot->regimen_id)
+                                    @php
+                                        $regimen = \Modules\VaccineRegistration\Models\VaccineRegimen::find($vaccine->pivot->regimen_id);
+                                    @endphp
+                                    @if($regimen)
+                                        <div style="font-size:12px; color:#1e293b; margin-top: 4px; font-weight: 500;">
+                                            Phác đồ: <span class="badge-modern" style="background:#e0f2fe; color:#0369a1; padding: 2px 6px; border-radius: 4px; font-size: 11px;">{{ $regimen->age_group }} ({{ $regimen->doses }} mũi)</span>
+                                        </div>
+                                    @endif
+                                @else
+                                    <div style="font-size:12px; color:#475569; margin-top: 4px;">
+                                         Hình thức: <span class="badge-modern" style="background:#f1f5f9; color:#475569; padding: 2px 6px; border-radius: 4px; font-size: 11px;">Tiêm lẻ</span>
+                                    </div>
+                                @endif
+                            </td>
                             <td style="text-align:center;">{{ $vaccine->pivot->quantity }}</td>
                             <td style="text-align:right;">{{ number_format($vaccine->pivot->price) }} đ</td>
                             <td style="text-align:right; font-weight:700; color:var(--primary-color);">{{ number_format($vaccine->pivot->price * $vaccine->pivot->quantity) }} đ</td>

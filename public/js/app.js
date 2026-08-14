@@ -1163,6 +1163,35 @@ function addSpaPatientField() {
         const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.price) + ' đ';
         const unavailable = Boolean(item.unavailable_for_center);
         
+        let selectRegimenHtml = '';
+        const regimens = item.regimens || [];
+        if (regimens.length > 0) {
+            selectRegimenHtml = `
+                <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 12px; color: #64748b;">Hình thức:</span>
+                    <select name="patients[${index}][regimen_choices][${id}]" class="spa-regimen-selector" data-vaccine-id="${id}" onchange="recalculateSpaRegisterPrices()" style="font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; max-width: 250px; outline: none;">
+                        <option value="" data-price="${item.price}">Tiêm lẻ (1 mũi) - ${formattedPrice}</option>
+            `;
+            
+            regimens.forEach(reg => {
+                let regPrice = 0;
+                if (reg.price !== null && reg.price !== undefined) {
+                    regPrice = reg.sale_price !== null && reg.sale_price !== undefined ? reg.sale_price : reg.price;
+                } else {
+                    regPrice = item.price * reg.doses;
+                }
+                const formattedRegPrice = new Intl.NumberFormat('vi-VN').format(regPrice) + ' đ';
+                selectRegimenHtml += `
+                    <option value="${reg.id}" data-price="${regPrice}">Trọn gói: ${escapeHtml(reg.age_group)} (${reg.doses} mũi) - ${formattedRegPrice}</option>
+                `;
+            });
+            
+            selectRegimenHtml += `
+                    </select>
+                </div>
+            `;
+        }
+
         vaccineCheckboxes += `
             <div style="display: flex; flex-direction: column; padding: 10px; border: 1px solid ${unavailable ? '#fecaca' : '#e2e8f0'}; border-radius: 8px; background: #f8fafc; margin-bottom: 8px; box-sizing: border-box; ${unavailable ? 'opacity: 0.55;' : ''}">
                 <label style="display: flex; align-items: center; gap: 8px; cursor: ${unavailable ? 'not-allowed' : 'pointer'}; font-size: 13.5px;">
@@ -1173,6 +1202,7 @@ function addSpaPatientField() {
                     </span>
                     <strong class="spa-display-price-label-${id}" style="color: var(--primary-color);">${formattedPrice}</strong>
                 </label>
+                ${unavailable ? '' : selectRegimenHtml}
             </div>
         `;
     });
