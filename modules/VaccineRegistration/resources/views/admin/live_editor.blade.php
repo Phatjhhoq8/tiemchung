@@ -768,6 +768,7 @@
         `;
         container.appendChild(row);
         if (window.lucide) { lucide.createIcons(); }
+        return row;
     }
 
     function addJsonArrayRow(fieldName) {
@@ -776,13 +777,22 @@
         if (!container || !schema) return;
         
         const index = container.children.length;
-        renderJsonRow(container, fieldName, schema, null, index);
+        const newRow = renderJsonRow(container, fieldName, schema, null, index);
+        if (newRow) {
+            newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            const firstInput = newRow.querySelector('input[type="text"], textarea');
+            if (firstInput) {
+                setTimeout(() => firstInput.focus(), 300);
+            }
+        }
     }
 
-    function removeJsonArrayRow(btn) {
+    async function removeJsonArrayRow(btn) {
         const row = btn.closest('.json-array-item');
         if (row) {
-            row.remove();
+            if (await window.AppDialog.confirm('Bạn có chắc chắn muốn xóa dòng này không?')) {
+                row.remove();
+            }
         }
     }
 
