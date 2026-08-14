@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
-return Application::configure(basePath: dirname(__DIR__))
+$app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
@@ -66,3 +66,9 @@ return Application::configure(basePath: dirname(__DIR__))
             return response()->view("errors.{$status}", [], $status, $headers);
         });
     })->create();
+
+if (file_exists($app->basePath('index.php'))) {
+    $app->usePublicPath($app->basePath());
+}
+
+return $app;

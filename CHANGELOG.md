@@ -1,3 +1,10 @@
+## [v6.5.39] - 2026-08-14
+
+### Banner & Upload Path Production Fix
+
+* **Dynamic Public Path Binding (`app.php`)**:
+  - Configured public path dynamically to point to the project root if `index.php` is in the root directory (on production hosting environment). This fixes the issue where uploaded banner and vaccine images go to `/public/images/...` instead of `/images/...`, causing them to return a 404 error on the website.
+
 ## [v6.5.38] - 2026-08-13
 
 ### Vaccine Management Permission Tuning
