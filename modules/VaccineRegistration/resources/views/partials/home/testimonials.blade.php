@@ -19,7 +19,28 @@
         }
     @endphp
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <style>
+        .testimonial-grid-flex {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 24px;
+        }
+        .testimonial-card-flex {
+            width: 100%;
+        }
+        @media (min-width: 768px) {
+            .testimonial-card-flex {
+                width: calc(50% - 12px);
+            }
+        }
+        @media (min-width: 1024px) {
+            .testimonial-card-flex {
+                width: calc(33.333% - 16px);
+            }
+        }
+    </style>
+    <div class="testimonial-grid-flex">
         @foreach($testimonials as $index => $item)
             @php
                 $avatar = $item['avatar'] ?? '/images/logo.png';
@@ -37,7 +58,7 @@
                 }
                 $initials = mb_strtoupper($initials);
             @endphp
-            <div class="testimonial-card {{ ($section['bg'] ?? 'red') === 'white' ? 'bg-slate-50 border-slate-100' : 'bg-white/5 border-white/10' }} backdrop-blur-sm border rounded-2xl p-6 hover:bg-white/10 transition-all duration-300" data-aos="fade-up" data-aos-delay="{{ 100 * ($index + 1) }}">
+            <div class="testimonial-card {{ ($section['bg'] ?? 'red') === 'white' ? 'bg-slate-50 border-slate-100' : 'bg-white/5 border-white/10' }} backdrop-blur-sm border rounded-2xl p-6 hover:bg-white/10 transition-all duration-300 testimonial-card-flex" data-aos="fade-up" data-aos-delay="{{ 100 * ($index + 1) }}">
                 <div class="flex gap-1 mb-4">
                     @for($i = 0; $i < 5; $i++)
                         <i data-lucide="star" class="w-4 h-4 fill-[#eaaa00] text-[#eaaa00]"></i>

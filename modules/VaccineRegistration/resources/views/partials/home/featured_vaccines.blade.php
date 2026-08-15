@@ -33,9 +33,30 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <style>
+            .vaccine-grid-flex {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 24px;
+            }
+            .vaccine-card-flex {
+                width: 100%;
+            }
+            @media (min-width: 640px) {
+                .vaccine-card-flex {
+                    width: calc(50% - 12px);
+                }
+            }
+            @media (min-width: 1024px) {
+                .vaccine-card-flex {
+                    width: calc(25% - 18px);
+                }
+            }
+        </style>
+        <div class="vaccine-grid-flex">
             @foreach($featuredVaccines as $vaccine)
-                <div class="group bg-white rounded-3xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer" onclick="openVaccineDetailModal({{ $vaccine->id }}, event)">
+                <div class="group bg-white rounded-3xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer vaccine-card-flex" onclick="openVaccineDetailModal({{ $vaccine->id }}, event)">
                     <div>
                         <!-- Light grey image container frame -->
                         <div class="relative aspect-[16/10] w-full bg-white rounded-2xl p-4 flex items-center justify-center overflow-hidden mb-3">

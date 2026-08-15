@@ -1,3 +1,12 @@
+## [v6.5.51] - 2026-08-15
+
+### Center Align Featured Vaccines & Testimonials Dynamically
+
+* **Dynamic Grid Centering (featured_vaccines.blade.php, testimonials.blade.php)**:
+  - Converted rigid grid layouts to flexible, wrap-enabled flexbox containers.
+  - Added media-query width calculations inline via `<style>` to prevent dependency on Tailwind JIT compilation in production.
+  - Centered items dynamically when the total count is lower than the column limit, eliminating empty space columns on the right.
+
 ## [v6.5.50] - 2026-08-14
 
 ### Import Real Vaccines & Branch Pricing Catalog
