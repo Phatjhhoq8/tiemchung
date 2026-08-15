@@ -1,3 +1,10 @@
+## [v6.5.54] - 2026-08-15
+
+### Enforce Strict Centering for Single News Article
+
+* **Enforce Single Article Alignment (`news.blade.php`)**:
+  - Implemented the `.news-single-centered` CSS class with `justify-self: center !important` and `margin-left/right: auto !important` to override default grid item stretch behaviors on modern browsers, guaranteeing centering of a single article card.
+
 ## [v6.5.53] - 2026-08-15
 
 ### Restore News Category Pills Layout Alignment

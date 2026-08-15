@@ -38,10 +38,20 @@
                 $mainArticle = $articles->first();
                 $sideArticles = $articles->slice(1, 3);
             @endphp
+            <style>
+                .news-single-centered {
+                    grid-column: span 12 / span 12 !important;
+                    max-width: 768px !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    justify-self: center !important;
+                    width: 100% !important;
+                }
+            </style>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
                 <!-- Left Column: 1 Main Featured Article -->
-                <div class="{{ $sideArticles->isEmpty() ? 'lg:col-span-12 max-w-3xl mx-auto' : 'lg:col-span-6' }} group cursor-pointer" onclick="window.location.href='{{ route('news.show', $mainArticle->slug ?? $mainArticle->id) }}'">
+                <div class="{{ $sideArticles->isEmpty() ? 'news-single-centered' : 'lg:col-span-6' }} group cursor-pointer" onclick="window.location.href='{{ route('news.show', $mainArticle->slug ?? $mainArticle->id) }}'">
                     <div class="aspect-[16/10] w-full bg-slate-100 rounded-2xl overflow-hidden mb-4 shadow-sm border border-slate-100 relative">
                         <img src="{{ asset('images/vaccines/' . ($mainArticle->image ?: 'vaxigrip.jpg')) }}" alt="{{ $mainArticle->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
                         <span class="absolute top-3 left-3 bg-[#c8102e] text-white font-extrabold text-[11px] uppercase px-3.5 py-1 rounded-full shadow-md">
