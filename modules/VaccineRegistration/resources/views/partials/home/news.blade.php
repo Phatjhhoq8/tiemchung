@@ -15,7 +15,7 @@
         </div>
 
         <!-- Category Pills Filter Bar -->
-        <div class="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
+        <div class="flex items-center sm:justify-center gap-3 overflow-x-auto pb-2 scrollbar-none">
             <a href="{{ route('news.index') }}" class="px-5 py-2 rounded-full font-bold text-xs uppercase tracking-wider bg-[#c8102e] text-white shadow-sm shrink-0">
                 Tin nóng trong ngày
             </a>
@@ -41,7 +41,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
                 <!-- Left Column: 1 Main Featured Article -->
-                <div class="lg:col-span-6 group cursor-pointer" onclick="window.location.href='{{ route('news.show', $mainArticle->slug ?? $mainArticle->id) }}'">
+                <div class="{{ $sideArticles->isEmpty() ? 'lg:col-span-12 max-w-3xl mx-auto' : 'lg:col-span-6' }} group cursor-pointer" onclick="window.location.href='{{ route('news.show', $mainArticle->slug ?? $mainArticle->id) }}'">
                     <div class="aspect-[16/10] w-full bg-slate-100 rounded-2xl overflow-hidden mb-4 shadow-sm border border-slate-100 relative">
                         <img src="{{ asset('images/vaccines/' . ($mainArticle->image ?: 'vaxigrip.jpg')) }}" alt="{{ $mainArticle->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
                         <span class="absolute top-3 left-3 bg-[#c8102e] text-white font-extrabold text-[11px] uppercase px-3.5 py-1 rounded-full shadow-md">

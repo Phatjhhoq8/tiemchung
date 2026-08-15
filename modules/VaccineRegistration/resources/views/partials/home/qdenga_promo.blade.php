@@ -4,7 +4,7 @@
         <!-- Unified Centered Header Title -->
         <div class="text-center max-w-3xl mx-auto space-y-3">
             <span class="section-badge">
-                Vắc Xin Tiêu Điểm
+                Vắc Xin Nổi Bật
             </span>
             <h2 class="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 uppercase tracking-tight">
                 Vắc Xin Nổi Bật
@@ -12,6 +12,11 @@
             <p class="text-slate-600 text-sm md:text-base">
                 Medicare chọn lọc những loại vắc xin quan trọng nhất để bảo vệ sức khỏe gia đình bạn.
             </p>
+            <div class="pt-2">
+                <a href="{{ route('vaccine.index', ['featured' => 1]) }}" class="inline-flex items-center gap-1.5 {{ ($section['bg'] ?? 'red') === 'white' ? 'text-amber-700 hover:text-amber-800' : 'text-[#eaaa00] hover:text-[#d49800]' }} font-bold text-sm transition-colors">
+                    <i data-lucide="star" class="w-4 h-4 fill-current text-current"></i> Xem tất cả vắc xin nổi bật
+                </a>
+            </div>
         </div>
 
         <!-- Lưới 2x2 Thẻ Ngang Động -->

@@ -1,3 +1,18 @@
+## [v6.5.52] - 2026-08-15
+
+### Redesign Promo Labels, Relocate Featured Links, Display Top Viewed Vaccines & Adapt News Layout
+
+* **Relocate and Adapt Featured Vaccines Link (`qdenga_promo.blade.php`, `featured_vaccines.blade.php`)**:
+  - Changed yellow badge "Vắc Xin Tiêu Điểm" to "Vắc Xin Nổi Bật".
+  - Moved "Xem tất cả vắc xin nổi bật" link from the catalog header section to the featured vaccine banner, applying dynamic brand coloring matching the background.
+
+* **Top Viewed Vaccines Catalog (`HomeController.php`)**:
+  - Reconfigured homepage product catalog query to select the 8 most viewed vaccines based on `views` count descending.
+
+* **News Section Responsive Adaptability (`news.blade.php`)**:
+  - Adjusted grid columns to automatically span to 12 columns (centered layout) when there are no side articles available.
+  - Centered category filter pills on desktop screen views for cleaner visual harmony.
+
 ## [v6.5.51] - 2026-08-15
 
 ### Center Align Featured Vaccines & Testimonials Dynamically

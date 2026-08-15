@@ -44,17 +44,9 @@ class HomeController extends Controller
 
         if ($currentCenter) {
             $featuredVaccines = Vaccine::forCenter($currentCenter->id)
-                ->featured()
-                ->orderBy('center_vaccines.sort_order', 'asc')
+                ->orderBy('vaccines.views', 'desc')
                 ->take(8)
                 ->get();
-
-            if ($featuredVaccines->isEmpty()) {
-                $featuredVaccines = Vaccine::forCenter($currentCenter->id)
-                    ->orderBy('center_vaccines.sort_order', 'asc')
-                    ->take(8)
-                    ->get();
-            }
 
             // Lấy 4 vắc xin nổi bật chiến dịch
             $campaignVaccines = Vaccine::forCenter($currentCenter->id)

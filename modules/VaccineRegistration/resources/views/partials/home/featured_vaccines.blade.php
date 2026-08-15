@@ -23,10 +23,6 @@
                 </span>
             </div>
             <div class="inline-flex items-center gap-4 ml-auto flex-wrap">
-                <a href="{{ route('vaccine.index', ['featured' => 1]) }}" class="inline-flex items-center gap-1.5 text-amber-700 hover:text-amber-800 font-bold text-sm transition-colors">
-                    <i data-lucide="star" class="w-4 h-4 fill-amber-500 text-amber-500"></i> Xem tất cả vắc xin nổi bật
-                </a>
-                <span class="text-slate-300">•</span>
                 <a href="{{ route('vaccine.index') }}" class="inline-flex items-center gap-1.5 text-[#c8102e] hover:text-[#a00d24] font-bold text-sm transition-colors">
                     Xem tất cả danh mục sản phẩm <i data-lucide="chevron-right" class="w-4 h-4"></i>
                 </a>
