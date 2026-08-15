@@ -1,3 +1,11 @@
+## [v6.5.53] - 2026-08-15
+
+### Restore News Category Pills Layout Alignment
+
+* **News Section Category Pills (`news.blade.php`)**:
+  - Restored original left-aligned layout for the category filter bar by removing the `sm:justify-center` desktop center-align configuration.
+  - Preserved the dynamic column layout that automatically centers the main article when only 1 article is available.
+
 ## [v6.5.52] - 2026-08-15
 
 ### Redesign Promo Labels, Relocate Featured Links, Display Top Viewed Vaccines & Adapt News Layout

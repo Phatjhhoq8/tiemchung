@@ -15,7 +15,7 @@
         </div>
 
         <!-- Category Pills Filter Bar -->
-        <div class="flex items-center sm:justify-center gap-3 overflow-x-auto pb-2 scrollbar-none">
+        <div class="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
             <a href="{{ route('news.index') }}" class="px-5 py-2 rounded-full font-bold text-xs uppercase tracking-wider bg-[#c8102e] text-white shadow-sm shrink-0">
                 Tin nóng trong ngày
             </a>
