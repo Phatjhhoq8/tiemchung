@@ -1,3 +1,17 @@
+## [v6.5.72] - 2026-08-21
+
+### Fix Layout Shifts on Detail Page and Add Select-Cancel Toggle Support
+
+* **Button Label Normalization**:
+  - Replaced transactional shopping terms like "Đặt mua ngay" / "Đã chọn đặt" with medical action terms "Chọn tiêm" / "Đã chọn" in the disease catalog view.
+  - Replaced "Đăng ký tiêm chủng" on the vaccine detail view with "Chọn vắc xin".
+
+* **Layout Shift Prevention**:
+  - Configured the "Đặt lịch tiêm ngay →" button to stay statically rendered with a `0.55 opacity` and `pointer-events: none` when unselected, instead of dynamically applying `display: none` which shifts detail blocks.
+
+* **Selection Cancellation Fix**:
+  - Fixed toggle query inside `app.js` to inspect detail page elements with `.btn-select-detail.btn-selected`, allowing users to toggle select and deselect items from the detail page button.
+
 ## [v6.5.71] - 2026-08-21
 
 ### Implement Category Filtering and Bulk Deletion Across 5 Modules
