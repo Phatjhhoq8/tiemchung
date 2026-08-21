@@ -1,3 +1,15 @@
+## [v6.5.73] - 2026-08-21
+
+### Prevent Currency wrapping and Align Action Buttons in Vaccine Detail
+
+* **Currency Wrapping Fix**:
+  - Added `white-space: nowrap` and `flex-shrink: 0` to the price container div inside `show.blade.php`.
+  - Replaced regular spaces with non-breaking spaces (`&nbsp;đ`) on both original and sale price elements, ensuring the currency symbol never drops to a new line.
+
+* **Action Button Alignment**:
+  - Set `flex-wrap: nowrap` for `.vaccine-action-buttons` flex container to force all three action items (Quay lại, Chọn vắc xin, Đặt lịch tiêm ngay) to stay in a single horizontal row on desktop.
+  - Added `flex-shrink: 0` to all action buttons to ensure text stays fully visible without truncation when container sizes change.
+
 ## [v6.5.72] - 2026-08-21
 
 ### Fix Layout Shifts on Detail Page and Add Select-Cancel Toggle Support
