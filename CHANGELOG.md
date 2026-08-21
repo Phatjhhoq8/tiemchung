@@ -1,3 +1,14 @@
+## [v6.5.87] - 2026-08-21
+
+### Replace Consultation Form with Direct Zalo Official Flow in SPA Booking Modal
+
+* **Remove Redundant Input Form**:
+  - Completely removed the 2nd tab form fields (Consultation Type selector, Contact Name, Contact Phone, Center Selection, and consultation notes text area) from the "Yêu cầu tư vấn Y khoa" view inside `public/js/app.js::renderSpaConsultForm`.
+* **Introduce Premium Zalo Connection Card**:
+  - Implemented a clean, high-impact y khoa layout displaying a dynamically generated Zalo QR Code matching the branch's Zalo configuration.
+  - Added a prominent Zalo Blue (`#0068ff`) call-to-action button ("Mở Zalo Chat Ngay") leading directly to the branch Zalo URL.
+  - Simplified the state management by removing temporary data tracking for consultation fields.
+
 ## [v6.5.86] - 2026-08-21
 
 ### Standardize Front Age Group Filters & Support Overlapping Medical Age Ranges
