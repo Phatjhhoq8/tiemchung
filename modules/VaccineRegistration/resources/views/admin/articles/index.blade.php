@@ -36,10 +36,15 @@
                 <option value="0" {{ request('is_published') === '0' ? 'selected' : '' }}>Ẩn</option>
             </select>
         </div>
-        <button type="submit" class="btn-modern btn-modern-primary" style="height: 42px;">Lọc</button>
-        @if(request()->hasAny(['search', 'category', 'is_published']))
-            <a href="{{ route('admin.articles.index') }}" class="btn-modern btn-modern-secondary" style="height: 42px; display: inline-flex; align-items: center; text-decoration: none;">Xóa lọc</a>
-        @endif
+        <div style="display: flex; gap: 8px; align-items: flex-end;">
+            <button type="submit" class="btn-modern btn-modern-primary" style="height: 42px;">Lọc</button>
+            @if(request()->hasAny(['search', 'category', 'is_published']))
+                <a href="{{ route('admin.articles.index') }}" class="btn-modern btn-modern-secondary" style="height: 42px; display: inline-flex; align-items: center; text-decoration: none;">Xóa lọc</a>
+            @endif
+            <button type="button" id="bulkDeleteArticlesBtn" onclick="handleBulkDeleteArticles()" class="btn-modern" style="display: none; background-color: #dc2626; color: white; border: 1px solid #dc2626; height: 42px; padding: 0 16px; border-radius: 8px; font-weight: 700; gap: 6px; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+                Xóa mục đã chọn (<span id="selectedArticlesCountText">0</span>)
+            </button>
+        </div>
     </form>
 
     @if(session('success'))
@@ -52,6 +57,7 @@
         <table class="table-modern">
             <thead>
                 <tr>
+                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllArticles" onchange="toggleSelectAllArticles(this)" style="width: 16px; height: 16px; cursor: pointer;"></th>
                     <th style="width: 70px; text-align: center;">STT</th>
                     <th style="width: 80px; text-align: center;">#ID</th>
                     <th style="width: 130px; text-align: center;">Hình ảnh</th>
@@ -64,6 +70,7 @@
             <tbody>
                 @forelse($articles as $article)
                     <tr>
+                        <td style="text-align: center;"><input type="checkbox" class="article-select-checkbox" value="{{ $article->id }}" onchange="updateArticleBulkDeleteState()" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary-color);"></td>
                         <td style="text-align: center; font-weight: 700; color: var(--text-muted);">
                             {{ $articles->firstItem() + $loop->index }}
                         </td>
@@ -111,7 +118,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" style="padding: 40px; text-align: center; color: var(--text-light);">Chưa có bài viết nào. Hãy bấm "Thêm bài viết mới" để tạo bài viết đầu tiên.</td>
+                        <td colspan="8" style="padding: 40px; text-align: center; color: var(--text-light);">Chưa có bài viết nào. Hãy bấm "Thêm bài viết mới" để tạo bài viết đầu tiên.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -124,4 +131,79 @@
         </div>
     @endif
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    window.toggleSelectAllArticles = function(selectAllCheckbox) {
+        const checkboxes = document.querySelectorAll('.article-select-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = selectAllCheckbox.checked;
+        });
+        updateArticleBulkDeleteState();
+    };
+
+    window.updateArticleBulkDeleteState = function() {
+        const checkboxes = document.querySelectorAll('.article-select-checkbox:checked');
+        const count = checkboxes.length;
+        const btn = document.getElementById('bulkDeleteArticlesBtn');
+        const countText = document.getElementById('selectedArticlesCountText');
+        const selectAllCheckbox = document.getElementById('selectAllArticles');
+        
+        if (btn) {
+            if (count > 0) {
+                btn.style.display = 'inline-flex';
+                countText.textContent = count;
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+        
+        const allVisible = document.querySelectorAll('.article-select-checkbox');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = allVisible.length > 0 && allVisible.length === count;
+        }
+    };
+
+    window.handleBulkDeleteArticles = async function() {
+        const checkboxes = document.querySelectorAll('.article-select-checkbox:checked');
+        const selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        
+        if (selectedIds.length === 0) return;
+        
+        const msg = `Bạn có chắc chắn muốn XÓA VĨNH VIỄN ${selectedIds.length} bài viết đã chọn khỏi hệ thống?\nHành động này không thể khôi phục.`;
+        if (!await window.AppDialog.confirm(msg)) {
+            return;
+        }
+        
+        const toastId = window.AppDialog.toast('Đang thực hiện xóa bài viết hàng loạt...', 'info');
+        
+        try {
+            const response = await fetch('{{ route("articles.bulk-destroy") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    ids: selectedIds
+                })
+            });
+            
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Lỗi khi xóa bài viết hàng loạt.');
+            }
+            
+            window.AppDialog.toast(data.message || 'Đã xóa hàng loạt bài viết thành công.', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
+            
+        } catch (error) {
+            window.AppDialog.toast(error.message, 'error');
+        }
+    };
+</script>
 @endsection

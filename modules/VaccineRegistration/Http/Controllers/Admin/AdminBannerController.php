@@ -266,4 +266,40 @@ class AdminBannerController extends Controller
 
         return redirect()->route('admin.banners.index')->with('success', "Đã xóa vĩnh viễn biểu ngữ \"{$title}\" thành công!");
     }
+
+    /**
+     * Xóa hàng loạt banner (Hard Delete).
+     */
+    public function bulkDestroy(Request $request)
+    {
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền xóa biểu ngữ.');
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer',
+        ]);
+
+        $ids = $request->input('ids');
+        $banners = Banner::whereIn('id', $ids)->get();
+
+        foreach ($banners as $banner) {
+            if ($banner->image_url && ! in_array($banner->image_url, ['images/banners/banner_family.jpg', 'images/banners/banner2.jpg', '/images/banners/banner_family.jpg', '/images/banners/banner2.jpg'])) {
+                $oldFilename = basename($banner->image_url);
+                $oldPath = public_path('images/banners/'.$oldFilename);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+            $banner->delete();
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Đã xóa thành công " . count($banners) . " biểu ngữ.",
+            ]);
+        }
+
+        return redirect()->route('admin.banners.index')->with('success', "Đã xóa thành công các biểu ngữ được chọn!");
+    }
 }

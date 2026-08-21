@@ -285,4 +285,45 @@ class AdminCenterController extends Controller
 
         return redirect()->route('admin.centers.index')->with('success', 'Đã xóa vĩnh viễn chi nhánh ' . $centerName . ' khỏi hệ thống.');
     }
+
+    /**
+     * Xóa hàng loạt trung tâm (Hard Delete).
+     */
+    public function bulkDestroy(Request $request)
+    {
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền quản lý trung tâm tiêm chủng.');
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer',
+        ]);
+
+        $ids = $request->input('ids');
+        $centers = Center::whereIn('id', $ids)->get();
+
+        foreach ($centers as $center) {
+            $centerName = $center->name;
+            $centerId = $center->id;
+            
+            $center->delete();
+
+            AuditLogger::log(
+                'center.deleted',
+                'center',
+                $centerId,
+                ['name' => $centerName],
+                null,
+                null
+            );
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Đã xóa thành công " . count($centers) . " chi nhánh.",
+            ]);
+        }
+
+        return redirect()->route('admin.centers.index')->with('success', "Đã xóa thành công các chi nhánh được chọn!");
+    }
 }

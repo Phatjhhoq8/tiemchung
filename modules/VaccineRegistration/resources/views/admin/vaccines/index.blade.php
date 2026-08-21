@@ -137,6 +137,12 @@
                 <i data-lucide="x" style="width: 14px; height: 14px;"></i> Xóa lọc
             </a>
             @endif
+            @if($isSuperAdmin && empty($selectedCenterId))
+            <button type="button" id="bulkDeleteVaccinesBtn" onclick="handleBulkDeleteVaccines()" class="btn-modern" style="display: none; background-color: #dc2626; color: white; border: 1px solid #dc2626; padding: 10px 18px; border-radius: 8px; font-weight: 700; gap: 6px; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                Xóa mục đã chọn (<span id="selectedVaccinesCountText">0</span>)
+            </button>
+            @endif
         </div>
     </form>
 
@@ -388,5 +394,77 @@
                 }
             }
         });
+
+        // JS cho bulk delete vaccines
+        window.toggleSelectAllVaccines = function(selectAllCheckbox) {
+            const checkboxes = document.querySelectorAll('.vaccine-select-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+            updateVaccineBulkDeleteState();
+        };
+
+        window.updateVaccineBulkDeleteState = function() {
+            const checkboxes = document.querySelectorAll('.vaccine-select-checkbox:checked');
+            const count = checkboxes.length;
+            const btn = document.getElementById('bulkDeleteVaccinesBtn');
+            const countText = document.getElementById('selectedVaccinesCountText');
+            const selectAllCheckbox = document.getElementById('selectAllVaccines');
+            
+            if (btn) {
+                if (count > 0) {
+                    btn.style.display = 'inline-flex';
+                    countText.textContent = count;
+                } else {
+                    btn.style.display = 'none';
+                }
+            }
+            
+            const allVisible = document.querySelectorAll('.vaccine-select-checkbox');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = allVisible.length > 0 && allVisible.length === count;
+            }
+        };
+
+        window.handleBulkDeleteVaccines = async function() {
+            const checkboxes = document.querySelectorAll('.vaccine-select-checkbox:checked');
+            const selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            
+            if (selectedIds.length === 0) return;
+            
+            const msg = `Bạn có chắc chắn muốn vô hiệu hóa ${selectedIds.length} vắc xin đã chọn?\nCác vắc xin này sẽ không hiển thị trên trang chủ và chi tiết.`;
+            if (!await window.AppDialog.confirm(msg)) {
+                return;
+            }
+            
+            const toastId = window.AppDialog.toast('Đang thực hiện vô hiệu hóa hàng loạt...', 'info');
+            
+            try {
+                const response = await fetch('{{ route("vaccines.bulk-destroy") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ids: selectedIds
+                    })
+                });
+                
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Lỗi khi vô hiệu hóa hàng loạt.');
+                }
+                
+                window.AppDialog.toast(data.message || 'Đã vô hiệu hóa hàng loạt vắc xin thành công.', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 800);
+                
+            } catch (error) {
+                window.AppDialog.toast(error.message, 'error');
+            }
+        };
     </script>
 @endsection

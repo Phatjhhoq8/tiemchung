@@ -211,4 +211,40 @@ class AdminArticleController extends Controller
 
         return response()->json(['error' => 'Không tìm thấy tệp tải lên.'], 400);
     }
+
+    /**
+     * Xóa hàng loạt bài viết (Hard Delete).
+     */
+    public function bulkDestroy(Request $request)
+    {
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền xóa bài viết.');
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer',
+        ]);
+
+        $ids = $request->input('ids');
+        $articles = Article::whereIn('id', $ids)->get();
+
+        foreach ($articles as $article) {
+            // Xóa file ảnh đính kèm nếu không phải ảnh mặc định
+            if ($article->image && ! in_array($article->image, ['default_package.jpg', 'default_vaccine.jpg', 'hexaxim.jpg'])) {
+                $oldPath = public_path('images/vaccines/'.$article->image);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+            $article->delete();
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Đã xóa thành công " . count($articles) . " bài viết.",
+            ]);
+        }
+
+        return redirect()->route('admin.articles.index')->with('success', "Đã xóa thành công các bài viết được chọn!");
+    }
 }

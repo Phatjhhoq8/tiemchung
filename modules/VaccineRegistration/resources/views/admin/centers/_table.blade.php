@@ -8,6 +8,7 @@
         <table class="table-modern">
             <thead>
                 <tr>
+                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllCenters" onchange="toggleSelectAllCenters(this)" style="width: 16px; height: 16px; cursor: pointer;"></th>
                     <th style="width: 80px; text-align: center;">STT</th>
                     <th>Tên chi nhánh</th>
                     <th>Địa chỉ</th>
@@ -19,6 +20,7 @@
             <tbody>
                 @foreach($centers as $center)
                     <tr>
+                        <td style="text-align: center;"><input type="checkbox" class="center-select-checkbox" value="{{ $center->id }}" onchange="updateCenterBulkDeleteState()" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary-color);"></td>
                         <td style="font-weight: 600; text-align: center;">{{ ($centers->currentPage() - 1) * $centers->perPage() + $loop->iteration }}</td>
                         <td style="font-weight: 700; color: var(--text-primary);">
                             {{ $center->name }}

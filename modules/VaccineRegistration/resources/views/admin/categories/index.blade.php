@@ -17,19 +17,36 @@
     </div>
 
     <!-- Filter Branch -->
-    @if(isset($centers) && ($isSuperAdmin ?? false))
-    <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: flex-start; background: #f8fafc; padding: 12px 20px; border-radius: 10px; border: 1px solid #e2e8f0;">
-        <form method="GET" action="{{ route('admin.vaccines.categories') }}" id="centerFilterForm" style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 13.5px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Xem số lượng theo chi nhánh:</span>
-            <select name="center_id" onchange="document.getElementById('centerFilterForm').submit()" class="form-control-modern" style="width: 260px; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; font-size: 13.5px; background: #ffffff; cursor: pointer; font-weight: 600; color: #1e293b;">
+    <!-- Filter Branch & Search Bar -->
+    <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 12px 20px; border-radius: 10px; border: 1px solid #e2e8f0; flex-wrap: wrap; gap: 16px;">
+        @if(isset($centers) && ($isSuperAdmin ?? false))
+        <form method="GET" action="{{ route('admin.vaccines.categories') }}" id="centerFilterForm" style="display: flex; align-items: center; gap: 10px; margin: 0;">
+            <span style="font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Chi nhánh:</span>
+            <select name="center_id" onchange="document.getElementById('centerFilterForm').submit()" class="form-control-modern" style="width: 220px; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; font-size: 13.5px; background: #ffffff; cursor: pointer; font-weight: 600; color: #1e293b;">
                 <option value="" {{ $selectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
                 @foreach($centers as $center)
                     <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
                 @endforeach
             </select>
         </form>
+        @endif
+        
+        <!-- Search Input -->
+        <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; max-width: 320px; position: relative;">
+            <span style="font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">Tìm kiếm:</span>
+            <div style="position: relative; width: 100%;">
+                <input type="text" id="categorySearchInput" onkeyup="filterCategoriesTable()" placeholder="Nhập tên nhóm bệnh cần tìm..." style="width: 100%; padding: 7px 12px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; font-size: 13.5px; background: #ffffff; box-sizing: border-box;">
+            </div>
+        </div>
+        
+        <!-- Bulk Action Button -->
+        <div id="bulkDeleteActionContainer" style="display: none;">
+            <button type="button" onclick="handleBulkDelete()" style="background-color: #dc2626; border: 1px solid #dc2626; color: white; border-radius: 6px; font-weight: 700; padding: 7px 16px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                Xóa mục đã chọn (<span id="selectedCountText">0</span>)
+            </button>
+        </div>
     </div>
-    @endif
 
     <!-- Main Table Card -->
     <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); border: 1px solid #e2e8f0; background: #ffffff;">
@@ -38,19 +55,21 @@
                 <table class="table table-hover align-middle mb-0" style="font-size: 14.5px; width: 100%; border-collapse: collapse;">
                     <thead style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">
                         <tr>
-                            <th style="padding: 16px 20px; font-weight: 700; color: #475569; width: 80px; text-align: center; border-bottom: 1px solid #e2e8f0;">#</th>
+                            <th style="padding: 16px 20px; font-weight: 700; color: #475569; width: 50px; text-align: center; border-bottom: 1px solid #e2e8f0;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" style="width: 16px; height: 16px; cursor: pointer;"></th>
+                            <th style="padding: 16px 20px; font-weight: 700; color: #475569; width: 60px; text-align: center; border-bottom: 1px solid #e2e8f0;">#</th>
                             <th style="padding: 16px 20px; font-weight: 700; color: #475569; text-align: left; border-bottom: 1px solid #e2e8f0;">Tên Nhóm Bệnh</th>
                             <th style="padding: 16px 20px; font-weight: 700; color: #475569; width: 230px; text-align: center; border-bottom: 1px solid #e2e8f0;">Vắc xin tại {{ $displayCenterName }}</th>
                             <th style="padding: 16px 20px; font-weight: 700; color: #475569; width: 210px; text-align: center; border-bottom: 1px solid #e2e8f0;">Vắc xin (Toàn hệ thống)</th>
                             <th style="padding: 16px 20px; font-weight: 700; color: #475569; width: 150px; text-align: center; border-bottom: 1px solid #e2e8f0;">Thao Tác</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="categoriesTableBody">
                         @forelse($categories as $cat)
                             <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;">
+                                <td style="padding: 14px 20px; text-align: center;"><input type="checkbox" class="category-select-checkbox" value="{{ $cat->category }}" onchange="updateBulkDeleteState()" style="width: 16px; height: 16px; cursor: pointer;"></td>
                                 <td style="padding: 14px 20px; color: #64748b; font-weight: 600; text-align: center;">{{ $loop->iteration }}</td>
                                 <td style="padding: 14px 20px; text-align: left;">
-                                    <strong style="color: #0f172a; font-size: 15px;">{{ $cat->category }}</strong>
+                                    <strong style="color: #0f172a; font-size: 15px;" class="category-name-text">{{ $cat->category }}</strong>
                                 </td>
                                 <td style="padding: 14px 20px; text-align: center;">
                                     <span class="badge bg-light text-primary font-bold" style="padding: 6px 12px; border-radius: 20px; font-size: 12.5px; background-color: #eff6ff !important; color: #1d4ed8 !important; font-weight: 700; display: inline-block;">
@@ -452,6 +471,114 @@
             window.AppDialog.toast(error.message, 'error');
             btnDelete.disabled = false;
             btnDelete.innerHTML = 'Thực Hiện Xóa';
+        }
+    }
+
+    // Tìm kiếm nhóm bệnh client-side
+    function filterCategoriesTable() {
+        const query = document.getElementById('categorySearchInput').value.toLowerCase().trim();
+        const rows = document.querySelectorAll('#categoriesTableBody tr');
+        
+        rows.forEach(row => {
+            const nameTextEl = row.querySelector('.category-name-text');
+            if (nameTextEl) {
+                const name = nameTextEl.textContent.toLowerCase();
+                if (name.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                    // Uncheck hidden rows if search hides them
+                    const checkbox = row.querySelector('.category-select-checkbox');
+                    if (checkbox && checkbox.checked) {
+                        checkbox.checked = false;
+                    }
+                }
+            }
+        });
+        updateBulkDeleteState();
+    }
+
+    // Toggle Select All Checkboxes
+    function toggleSelectAll(selectAllCheckbox) {
+        const checkboxes = document.querySelectorAll('.category-select-checkbox');
+        checkboxes.forEach(checkbox => {
+            const row = checkbox.closest('tr');
+            if (row && row.style.display !== 'none') {
+                checkbox.checked = selectAllCheckbox.checked;
+            }
+        });
+        updateBulkDeleteState();
+    }
+
+    // Update Bulk Delete Button State
+    function updateBulkDeleteState() {
+        const checkboxes = document.querySelectorAll('.category-select-checkbox:checked');
+        const count = checkboxes.length;
+        const container = document.getElementById('bulkDeleteActionContainer');
+        const countText = document.getElementById('selectedCountText');
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        
+        if (count > 0) {
+            container.style.display = 'block';
+            countText.textContent = count;
+        } else {
+            container.style.display = 'none';
+        }
+        
+        const allVisible = document.querySelectorAll('.category-select-checkbox');
+        let visibleCount = 0;
+        let checkedVisibleCount = 0;
+        allVisible.forEach(cb => {
+            const row = cb.closest('tr');
+            if (row && row.style.display !== 'none') {
+                visibleCount++;
+                if (cb.checked) checkedVisibleCount++;
+            }
+        });
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = visibleCount > 0 && visibleCount === checkedVisibleCount;
+        }
+    }
+
+    // Handle Bulk Delete Submit
+    async function handleBulkDelete() {
+        const checkboxes = document.querySelectorAll('.category-select-checkbox:checked');
+        const selectedCategories = Array.from(checkboxes).map(cb => cb.value);
+        
+        if (selectedCategories.length === 0) return;
+        
+        const msg = `Bạn có chắc chắn muốn xóa ${selectedCategories.length} nhóm bệnh đã chọn?\nCác vắc xin thuộc nhóm bệnh này sẽ không còn thuộc nhóm bệnh nào.`;
+        if (!await window.AppDialog.confirm(msg)) {
+            return;
+        }
+        
+        const toastId = window.AppDialog.toast('Đang thực hiện xóa hàng loạt...', 'info');
+        
+        try {
+            const response = await fetch('{{ route("categories.bulk-destroy") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    categories: selectedCategories
+                })
+            });
+            
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Lỗi khi xóa hàng loạt nhóm bệnh.');
+            }
+            
+            window.AppDialog.toast(data.message || 'Đã xóa hàng loạt nhóm bệnh thành công.', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
+            
+        } catch (error) {
+            window.AppDialog.toast(error.message, 'error');
         }
     }
 </script>

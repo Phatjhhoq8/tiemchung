@@ -135,10 +135,12 @@ Route::middleware('web')->group(function () {
         Route::post('/categories/check-delete', [AdminVaccineController::class, 'checkCategoryDelete'])->name('categories.check-delete');
         Route::put('/categories/update', [AdminVaccineController::class, 'updateCategory'])->name('categories.update');
         Route::delete('/categories/destroy', [AdminVaccineController::class, 'destroyCategory'])->name('categories.destroy');
+        Route::post('/categories/bulk-destroy', [AdminVaccineController::class, 'bulkDestroyCategories'])->name('categories.bulk-destroy');
         Route::post('/categories/store-ajax', [AdminVaccineController::class, 'storeCategoryAjax'])->name('categories.store-ajax');
         Route::post('/metadata/check-delete', [AdminVaccineController::class, 'checkMetadataDelete'])->name('metadata.check-delete');
         Route::put('/metadata/update', [AdminVaccineController::class, 'updateMetadata'])->name('metadata.update');
         Route::delete('/metadata/destroy', [AdminVaccineController::class, 'destroyMetadata'])->name('metadata.destroy');
+        Route::post('/vaccines/bulk-destroy', [AdminVaccineController::class, 'bulkDestroy'])->name('vaccines.bulk-destroy');
         Route::post('/vaccines/{id}/toggle-featured', [AdminVaccineController::class, 'toggleFeatured'])->name('vaccines.toggle-featured');
         Route::get('/vaccines/{id}/branches-stock', [AdminVaccineController::class, 'branchesStock'])->name('vaccines.branches-stock');
         Route::get('/vaccines/{id}/center-data', [AdminVaccineController::class, 'getCenterData'])->name('vaccines.center-data');
@@ -211,6 +213,7 @@ Route::middleware('web')->group(function () {
 
             // Quản lý Trung tâm
             Route::post('/centers/{id}/toggle-status', [AdminCenterController::class, 'toggleStatus'])->name('centers.toggle-status');
+            Route::post('/centers/bulk-destroy', [AdminCenterController::class, 'bulkDestroy'])->name('centers.bulk-destroy');
             Route::resource('centers', AdminCenterController::class)->except(['show']);
 
             // Quản lý tài khoản chi nhánh
@@ -218,11 +221,13 @@ Route::middleware('web')->group(function () {
 
             // Quản lý Banner trang chủ
             Route::post('/banners/{id}/toggle-status', [AdminBannerController::class, 'toggleStatus'])->name('banners.toggle-status');
+            Route::post('/banners/bulk-destroy', [AdminBannerController::class, 'bulkDestroy'])->name('banners.bulk-destroy');
             Route::resource('banners', AdminBannerController::class)->except(['show']);
 
             // Quản lý Bài viết / Tin tức y tế (Mục 10)
             Route::post('/articles/upload-image', [AdminArticleController::class, 'uploadEditorImage'])->name('articles.upload-image');
             Route::post('/articles/{id}/toggle-status', [AdminArticleController::class, 'toggleStatus'])->name('articles.toggle-status');
+            Route::post('/articles/bulk-destroy', [AdminArticleController::class, 'bulkDestroy'])->name('articles.bulk-destroy');
             Route::resource('articles', AdminArticleController::class)->except(['show']);
         });
     });

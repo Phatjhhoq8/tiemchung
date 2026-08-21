@@ -17,6 +17,9 @@
         <table class="table-modern">
             <thead>
                 <tr>
+                    @if($isSuperAdmin && empty($selectedCenterId))
+                        <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllVaccines" onchange="toggleSelectAllVaccines(this)" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary-color);"></th>
+                    @endif
                     <th style="width: 45px; text-align: center;">#</th>
                     @if(!empty($selectedCenterId))
                         <th style="width: 170px;">Chi nhánh</th>
@@ -39,6 +42,9 @@
                 @foreach($vaccines as $index => $vac)
                     @php($rowCenterId = !empty($selectedCenterId) ? (int) $vac->center_id : null)
                     <tr id="vaccine-row-{{ $vac->id }}">
+                        @if($isSuperAdmin && empty($selectedCenterId))
+                            <td style="text-align: center;"><input type="checkbox" class="vaccine-select-checkbox" value="{{ $vac->id }}" onchange="updateVaccineBulkDeleteState()" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary-color);"></td>
+                        @endif
                         <td style="text-align: center; color: var(--text-light); font-weight: 600;">
                             {{ $vaccines->firstItem() + $index }}
                         </td>

@@ -1269,4 +1269,76 @@ class AdminVaccineController extends Controller
             'categories' => $categories,
         ]);
     }
+
+    /**
+     * Xóa hàng loạt nhóm bệnh.
+     */
+    public function bulkDestroyCategories(Request $request)
+    {
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền quản lý nhóm bệnh.');
+
+        $request->validate([
+            'categories' => 'required|array',
+            'categories.*' => 'required|string|max:100',
+        ]);
+
+        $categories = $request->input('categories');
+        $affectedVaccines = 0;
+
+        foreach ($categories as $category) {
+            $category = trim($category);
+            $count = Vaccine::where('category', $category)->update(['category' => null]);
+            $affectedVaccines += $count;
+
+            // Xóa bài viết mô tả của nhóm bệnh này
+            \Modules\VaccineRegistration\Models\Article::where('category', $category)->delete();
+
+            AuditLogger::log(
+                'admin.category_deleted',
+                'category',
+                $category,
+                ['name' => $category, 'affected_vaccines' => $count],
+                null
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Đã xóa thành công " . count($categories) . " nhóm bệnh.",
+        ]);
+    }
+
+    /**
+     * Vô hiệu hóa hàng loạt vắc xin (Soft deactivation).
+     */
+    public function bulkDestroy(Request $request)
+    {
+        abort_unless(AdminContext::isSuperAdmin() && AdminContext::selectedCenterId() === null, 403, 'Bạn không có quyền vô hiệu hóa vắc xin ở chế độ chi nhánh.');
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer',
+        ]);
+
+        $ids = $request->input('ids');
+        
+        $count = Vaccine::whereIn('id', $ids)->update(['is_active' => false]);
+        CenterVaccine::whereIn('vaccine_id', $ids)->update(['is_active' => false]);
+
+        foreach ($ids as $id) {
+            AuditLogger::log(
+                'vaccine.deactivated',
+                'vaccine',
+                $id,
+                ['is_active' => true],
+                ['is_active' => false],
+                resolveCenter: false
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Đã vô hiệu hóa thành công {$count} vắc xin.",
+        ]);
+    }
 }
