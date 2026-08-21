@@ -1,3 +1,14 @@
+## [v6.5.74] - 2026-08-21
+
+### Implement Red Branding and Lift Hover Animation for Vaccine Detail Booking Button
+
+* **Booking Button Dynamic Display Toggling**:
+  - Restored dynamic hiding logic (`display: none` / `display: inline-flex`) for the "Đặt lịch tiêm ngay →" button inside `show.blade.php` and `app.js` setCartSelection logic.
+
+* **Medicare Red Theme & Hover Lift Animation**:
+  - Configured default background color to brand red (`#c8102e`), white text, and shadow properties on the booking button.
+  - Implemented high-performance CSS transition and inline JS event listeners (`translateY(-3px)` on hover and `translateY(0)` on blur) for the booking button to deliver a premium layout lift and shadow enlargement effect.
+
 ## [v6.5.73] - 2026-08-21
 
 ### Prevent Currency wrapping and Align Action Buttons in Vaccine Detail
