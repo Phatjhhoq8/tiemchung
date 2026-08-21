@@ -1,3 +1,16 @@
+## [v6.5.86] - 2026-08-21
+
+### Standardize Front Age Group Filters & Support Overlapping Medical Age Ranges
+
+* **Clean Up Sidebar Age Filters**:
+  - Replaced the dynamcially plucked database age strings with 4 clean, standardized medical age groups in `VaccineController.php::buildAgeGroupOptions`:
+    1. **Trẻ em (Dưới 2 tuổi)**
+    2. **Trẻ tiền học đường (2 - 6 tuổi)**
+    3. **Trẻ học đường (7 - 12 tuổi)**
+    4. **Tuổi vị thành niên & Người lớn (Trên 12 tuổi)**
+* **Medical Range Logic Query Implementation**:
+  - Upgraded the query filter inside `VaccineController.php` from a strict `like` match. When filtering by "Tuổi vị thành niên & Người lớn (Trên 12 tuổi)", it now correctly queries all vaccines whose target age constraints allow them to be taken by adolescents/adults (e.g., vaccines starting from "1 tuổi trở lên", "2 tháng trở lên" are no longer filtered out, while baby-only vaccines like 6-in-1 are excluded).
+
 ## [v6.5.85] - 2026-08-21
 
 ### Reset and Update All Home Slider Banners
