@@ -1,3 +1,11 @@
+## [v6.5.68] - 2026-08-21
+
+### Display Both Center-Specific and System-Wide Counts Side-by-Side
+
+* **Dual Column Counts on Categories Page**:
+  - Refactored `AdminVaccineController@categoriesIndex` and `admin/categories/index.blade.php` to display two separate count columns side-by-side: "Vắc xin tại [Tên chi nhánh]" and "Vắc xin (Toàn hệ thống)".
+  - This ensures that Super Admins can verify exact 1-to-1 matching values with the active frontend store counts for any selected branch while still tracking database wide totals.
+
 ## [v6.5.67] - 2026-08-21
 
 ### Add Center Filter UI to Admin Categories Page
