@@ -90,7 +90,7 @@
 
 <!-- Modal Thêm/Sửa Nhóm Bệnh (Tự tùy biến, không phụ thuộc Bootstrap JS) -->
 <div id="categoryModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 9999; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px);">
-    <div style="background: #ffffff; border-radius: 16px; max-width: 520px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.15); overflow: hidden; box-sizing: border-box;">
+    <div style="background: #ffffff; border-radius: 16px; max-width: 850px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.15); overflow: hidden; box-sizing: border-box;">
         <!-- Header -->
         <div style="padding: 20px 24px 10px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9;">
             <h5 id="modalTitle" style="font-weight: 800; font-size: 18px; color: #0f172a; margin: 0;">Thêm Nhóm Bệnh</h5>
@@ -192,7 +192,7 @@
         if (typeof tinymce !== 'undefined' && !tinymce.get('categoryContent')) {
             tinymce.init({
                 selector: '#categoryContent',
-                height: 280,
+                height: 420,
                 menubar: false,
                 branding: false,
                 language: 'vi',
