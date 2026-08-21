@@ -56,8 +56,7 @@
                             <tr>
                                 <td colspan="4" style="text-align: center; padding: 48px 20px; color: #94a3b8;">
                                     <i data-lucide="folder-open" style="width: 48px; height: 48px; color: #cbd5e1; margin-bottom: 12px;"></i>
-                                    <p style="margin: 0 0 4px 0; font-weight: 600;">Chưa có nhóm bệnh nào được tạo.</p>
-                                    <small>Vui lòng cập nhật trường Nhóm bệnh ở trang quản lý Vắc xin.</small>
+                                    <p style="margin: 0 0 4px 0; font-weight: 600;">Chưa có nhóm bệnh nào.</p>
                                 </td>
                             </tr>
                         @endforelse
@@ -91,22 +90,13 @@
                 <!-- Custom fields for category descriptions (Edit only) -->
                 <div id="categoryEditDetailsFields" style="display: none; flex-direction: column; gap: 14px;">
                     <div>
-                        <label for="categoryTitle" style="font-weight: 600; font-size: 14px; color: #475569; margin-bottom: 8px; display: block; text-align: left;">Tiêu đề mô tả (Hiển thị ở Client)</label>
+                        <label for="categoryTitle" style="font-weight: 600; font-size: 14px; color: #475569; margin-bottom: 8px; display: block; text-align: left;">Tiêu đề mô tả</label>
                         <input type="text" id="categoryTitle" placeholder="Ví dụ: Chủ động phòng ngừa bệnh Mô cầu B hiệu quả" style="width: 100%; border-radius: 8px; padding: 10px 14px; font-size: 14.5px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none;">
                     </div>
                     <div>
-                        <label for="categoryContent" style="font-weight: 600; font-size: 14px; color: #475569; margin-bottom: 8px; display: block; text-align: left;">Nội dung mô tả chi tiết (Hỗ trợ HTML)</label>
+                        <label for="categoryContent" style="font-weight: 600; font-size: 14px; color: #475569; margin-bottom: 8px; display: block; text-align: left;">Nội dung mô tả</label>
                         <textarea id="categoryContent" placeholder="Nhập nội dung mô tả chi tiết của nhóm bệnh..." rows="6" style="width: 100%; border-radius: 8px; padding: 10px 14px; font-size: 14.5px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none; resize: vertical; font-family: inherit; line-height: 1.5;"></textarea>
                     </div>
-                </div>
-
-                <div id="createHelperText" style="border-radius: 8px; background-color: #f0fdf4; color: #166534; font-size: 12.5px; padding: 10px 12px; display: none; text-align: left; line-height: 1.4;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px; margin-top: -2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="12"></line></svg>
-                    Nhóm bệnh mới sẽ có hiệu lực ngay sau khi lưu và hiển thị trong danh mục vắc xin.
-                </div>
-                <div id="editHelperText" style="border-radius: 8px; background-color: #fffbeb; color: #854d0e; font-size: 12.5px; padding: 10px 12px; display: none; text-align: left; line-height: 1.4;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px; margin-top: -2px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                    Thay đổi tên sẽ cập nhật đồng loạt cho toàn bộ các vắc xin thuộc nhóm này.
                 </div>
             </div>
             <!-- Footer -->
@@ -135,8 +125,8 @@
                 Bạn đang chuẩn bị xóa nhóm bệnh: <strong id="deleteCategoryNameText" style="color: #0f172a; font-weight: 800;">...</strong>
             </p>
             <div id="deleteWarningBox" style="border-radius: 8px; background-color: #fef2f2; color: #991b1b; font-size: 13.5px; padding: 14px; border: 1px solid #fee2e2; margin-bottom: 14px; box-sizing: border-box; line-height: 1.5;">
-                <span style="font-weight: 700; display: block; margin-bottom: 6px;">CẢNH BÁO MỨC ĐỘ NGUY HIỂM:</span>
-                Nhóm bệnh này đang được gán cho <strong id="deleteCategoryVaccineCount">0</strong> vắc xin dưới đây. Việc xóa nhóm bệnh sẽ đưa trường "Nhóm bệnh" của các vắc xin này về trạng thái rỗng (Trống).
+                <span style="font-weight: 700; display: block; margin-bottom: 6px;">Cảnh báo:</span>
+                Nhóm bệnh này đang được gán cho <strong id="deleteCategoryVaccineCount">0</strong> vắc xin dưới đây. Khi xóa nhóm bệnh, các vắc xin này sẽ không còn thuộc nhóm bệnh nào.
                 <ul id="deleteCategoryVaccineList" style="margin: 8px 0 0 16px; padding: 0; font-size: 13px; line-height: 1.5; max-height: 120px; overflow-y: auto;">
                     <!-- JS Render -->
                 </ul>
@@ -181,8 +171,6 @@
         document.getElementById('oldCategoryName').value = '';
         
         document.getElementById('categoryEditDetailsFields').style.display = 'none';
-        document.getElementById('createHelperText').style.display = 'block';
-        document.getElementById('editHelperText').style.display = 'none';
         
         document.getElementById('err_categoryName').style.display = 'none';
         
@@ -210,8 +198,6 @@
         document.getElementById('categoryContent').value = content || '';
         
         document.getElementById('categoryEditDetailsFields').style.display = 'flex';
-        document.getElementById('createHelperText').style.display = 'none';
-        document.getElementById('editHelperText').style.display = 'block';
         
         document.getElementById('err_categoryName').style.display = 'none';
         

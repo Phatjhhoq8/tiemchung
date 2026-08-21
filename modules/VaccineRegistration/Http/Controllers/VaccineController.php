@@ -867,13 +867,13 @@ class VaccineController extends Controller
      */
     public function diseaseDetail(Request $request, $disease)
     {
-        $diseaseDecoded = urldecode($disease);
+        $diseaseDecoded = trim(urldecode($disease));
 
         // Lọc danh sách vắc xin thuộc nhóm bệnh này
         $currentCenter = CenterContext::current();
         $vaccines = Vaccine::forCenter($currentCenter?->id)
             ->where(function ($q) use ($diseaseDecoded) {
-                $q->where('category', 'like', '%'.$diseaseDecoded.'%')
+                $q->where('category', $diseaseDecoded)
                     ->orWhere('disease_prevention', 'like', '%'.$diseaseDecoded.'%');
             })
             ->orderBy('center_vaccines.sort_order', 'asc')
@@ -882,71 +882,14 @@ class VaccineController extends Controller
         $cart = CenterContext::resolveCart($currentCenter?->id)['cart'];
         $centers = Center::active()->get();
 
-        // Mảng dữ liệu tĩnh chứa thông tin sơ bộ chuyên môn cho các bệnh phổ biến
-        $diseaseData = [
-            'hpv' => [
-                'title' => 'Vắc xin phòng Ung thư do HPV',
-                'description' => '<h6>Phòng ngừa ung thư do HPV thế nào cho hiệu quả?</h6><p><strong>HPV (Human Papillomavirus)</strong> là nguyên nhân chính gây ung thư cổ tử cung và các bệnh lý nguy hiểm khác như mụn cóc sinh dục, ung thư hậu môn, dương vật, hầu họng… Bệnh thường lây nhiễm rất nhanh qua đường quan hệ tình dục, diễn tiến âm thầm và cực kỳ khó phát hiện sớm.</p><p>💉 <strong>Tiêm vắc xin đúng lịch, đủ liều</strong> là biện pháp phòng ngừa hiệu quả chủ động các bệnh lý liên quan đến HPV, đặc biệt là ung thư cổ tử cung ở nữ giới.</p><p>🛡️ <strong>Gardasil (Mỹ)</strong>: Bảo vệ cơ thể khỏi 4 chủng virus HPV phổ biến (6, 11, 16, 18), khuyến cáo tiêm cho nữ từ 9 đến 26 tuổi.</p><p>🛡️ <strong>Gardasil 9 (Mỹ)</strong>: Bảo vệ cơ thể khỏi 9 chủng virus HPV phổ biến (6, 11, 16, 18, 31, 33, 45, 52, 58), mở rộng chỉ định tiêm phòng cho cả nam và nữ giới từ 9 đến 45 tuổi.</p>',
-            ],
-            'cúm' => [
-                'title' => 'Vắc xin phòng bệnh Cúm Mùa',
-                'description' => '<h6>Bảo vệ lá phổi khỏe mạnh trước đại dịch Cúm Mùa</h6><p><strong>Cúm mùa</strong> là bệnh nhiễm trùng đường hô hấp cấp tính do virus cúm (Influenza) gây ra. Bệnh lây lan rất nhanh qua giọt bắn và có thể dẫn đến các biến chứng nguy hiểm như viêm phổi nặng, suy hô hấp, viêm cơ tim, thậm chí tử vong ở người cao tuổi và trẻ nhỏ.</p><p>💉 <strong>Tiêm vắc xin cúm hằng năm</strong> giúp giảm đến 90% nguy cơ mắc bệnh và 80% nguy cơ tử vong do các biến chứng nguy hiểm của cúm.</p>',
-            ],
-            'thủy đậu' => [
-                'title' => 'Vắc xin phòng bệnh Thủy Đậu',
-                'description' => '<h6>Chủ động phòng ngừa biến chứng nguy hiểm của Thủy đậu</h6><p><strong>Bệnh thủy đậu</strong> do virus Varicella-Zoster gây ra. Bệnh lây qua đường hô hấp hoặc tiếp xúc trực tiếp với dịch bóng nước. Mặc dù là bệnh lành tính trong nhiều trường hợp, thủy đậu có thể dẫn đến các biến chứng nặng nề như viêm màng não, viêm phổi, nhiễm trùng huyết và để lại sẹo vĩnh viễn trên cơ thể.</p><p>💉 <strong>Tiêm vắc xin thủy đậu</strong> giúp bảo vệ cơ thể khỏi nguy cơ lây nhiễm lên đến 95%. Khuyến cáo tiêm phòng cho trẻ em từ 9 tháng tuổi trở lên và người trưởng thành chưa có kháng thể.</p>',
-            ],
-            'ho gà' => [
-                'title' => 'Vắc xin phòng Bạch hầu - Ho gà - Uốn ván',
-                'description' => '<h6>Bảo vệ gia đình khỏi Bạch hầu - Ho gà - Uốn ván</h6><p><strong>Bạch hầu, Ho gà và Uốn ván</strong> là những bệnh truyền nhiễm nguy hiểm gây ra bởi vi khuẩn, có tỷ lệ tử vong cao đặc biệt ở trẻ sơ sinh dưới 1 tuổi. Bệnh ho gà có thể gây ra những cơn ho rũ rượi kéo dài dẫn đến ngừng thở; bạch hầu gây giả mạc làm tắc đường thở; uốn ván gây co cứng cơ cực kỳ đau đớn.</p><p>💉 <strong>Tiêm vắc xin kết hợp (như 6 trong 1, 5 trong 1, hoặc vắc xin Adacel/Boostrix)</strong> là giải pháp toàn diện để tạo lá chắn vững chắc bảo vệ trẻ nhỏ và người lớn khỏi 3 căn bệnh nguy hiểm này.</p>',
-            ],
-            'phế cầu' => [
-                'title' => 'Vắc xin phòng các bệnh do Phế Cầu Khuẩn',
-                'description' => '<h6>Phòng ngừa Viêm phổi, Viêm màng não do Phế cầu khuẩn</h6><p><strong>Phế cầu khuẩn (Streptococcus pneumoniae)</strong> là tác nhân hàng đầu gây ra các bệnh lý nghiêm trọng đe dọa tính mạng như viêm phổi, viêm màng não, nhiễm trùng huyết và viêm tai giữa cấp tính, đặc biệt ở trẻ nhỏ dưới 5 tuổi và người già trên 65 tuổi hoặc người suy giảm miễn dịch.</p><p>💉 <strong>Vắc xin phế cầu (như Synflorix hoặc Prevenar 13)</strong> giúp bảo vệ cơ thể chủ động chống lại các chủng phế cầu khuẩn phổ biến, làm giảm gánh nặng bệnh tật và ngăn ngừa các di chứng thần kinh vĩnh viễn.</p>',
-            ],
+        // Tìm bài viết mô tả chính xác của nhóm bệnh này
+        $dbArticle = Article::where('category', $diseaseDecoded)->first();
+
+        // "Admin sao thì client vậy": lấy trực tiếp từ bài viết, để trống nếu không có hoặc rỗng.
+        $info = [
+            'title' => ($dbArticle && trim($dbArticle->title) !== '') ? $dbArticle->title : $diseaseDecoded,
+            'description' => $dbArticle ? (string) $dbArticle->content : '',
         ];
-
-        // So khớp thông minh không phân biệt hoa thường
-        $info = null;
-
-        // 1. Tìm bài viết chuyên môn động trong CSDL trước
-        $slug = Str::slug($diseaseDecoded);
-        $dbArticle = Article::where('is_published', true)
-            ->where(function ($q) use ($diseaseDecoded, $slug) {
-                $q->where('category', 'like', '%'.$diseaseDecoded.'%')
-                  ->orWhere('title', 'like', '%'.$diseaseDecoded.'%')
-                  ->orWhere('slug', 'like', '%'.$slug.'%');
-            })
-            ->orderBy('is_featured', 'desc')
-            ->orderBy('id', 'desc')
-            ->first();
-
-        if ($dbArticle) {
-            $info = [
-                'title' => $dbArticle->title,
-                'description' => ($dbArticle->summary ? '<h6>'.$dbArticle->summary.'</h6>' : '') . $dbArticle->content,
-            ];
-        }
-
-        // 2. Nếu không có bài viết động, fallback tìm trong mảng dữ liệu tĩnh hardcode
-        if (!$info) {
-            $searchKey = mb_strtolower($diseaseDecoded, 'UTF-8');
-            foreach ($diseaseData as $key => $data) {
-                if (mb_strpos($searchKey, $key, 0, 'UTF-8') !== false || mb_strpos($key, $searchKey, 0, 'UTF-8') !== false) {
-                    $info = $data;
-                    break;
-                }
-            }
-        }
-
-        // Fallback mặc định nếu không khớp bệnh phổ biến
-        if (! $info) {
-            $safeDisease = htmlspecialchars($diseaseDecoded, ENT_QUOTES, 'UTF-8');
-            $info = [
-                'title' => 'Vắc xin phòng bệnh '.$safeDisease,
-                'description' => '<h6>Chủ động phòng ngừa bệnh '.$safeDisease.' hiệu quả</h6><p>Bệnh <strong>'.$safeDisease.'</strong> là bệnh truyền nhiễm có diễn biến phức tạp và có thể gây ra các biến chứng nguy hiểm đối với sức khỏe. Việc chủ động tiêm ngừa vắc xin là phương pháp phòng bệnh khoa học, an toàn và tiết kiệm nhất cho cả gia đình.</p><p>💉 Hãy liên hệ Medicare để nhận tư vấn chi tiết về phác đồ và lịch tiêm chủng vắc xin phòng bệnh '.$safeDisease.' phù hợp nhất với độ tuổi của bạn.</p>',
-            ];
-        }
 
         return view('vaccine::disease', compact('diseaseDecoded', 'info', 'vaccines', 'cart', 'centers'));
     }

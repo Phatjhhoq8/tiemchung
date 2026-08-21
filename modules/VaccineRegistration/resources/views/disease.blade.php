@@ -365,9 +365,11 @@
     <div class="disease-layout">
         <!-- Cột trái: Thông tin chuyên môn & Vắc xin -->
         <div class="disease-info-column">
-            <div class="disease-article-box">
-                {!! $info['description'] !!}
-            </div>
+            @if(!empty(trim($info['description'])))
+                <div class="disease-article-box">
+                    {!! $info['description'] !!}
+                </div>
+            @endif
             
             <div class="vaccine-list-section">
                 <h3><i data-lucide="syringe"></i> Danh sách vắc xin phòng bệnh ({{ $vaccines->count() }})</h3>
