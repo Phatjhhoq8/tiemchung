@@ -90,9 +90,48 @@ class VaccineController extends Controller
             });
         }
 
-        // Lọc theo nhóm tuổi chỉ định
+        // Lọc theo nhóm tuổi chỉ định thông minh
         if ($request->filled('age_group')) {
-            $query->where('age_group', 'like', '%'.$request->input('age_group').'%');
+            $ageFilter = $request->input('age_group');
+            if ($ageFilter === 'Trẻ em (Dưới 2 tuổi)') {
+                $query->where(function($q) {
+                    $q->where('age_group', 'like', '%tháng%')
+                      ->orWhere('age_group', 'like', '%tuần%')
+                      ->orWhere('age_group', 'like', '%1 tuổi%')
+                      ->orWhere('age_group', 'like', '%2 tuổi%')
+                      ->orWhere('age_group', 'like', '%mọi lứa tuổi%');
+                })->where(function($q) {
+                    $q->where('age_group', 'not like', '%10 tuổi%')
+                      ->where('age_group', 'not like', '%12 tuổi%')
+                      ->where('age_group', 'not like', '%18 tuổi%')
+                      ->where('age_group', 'not like', '%người lớn%')
+                      ->where('age_group', 'not like', '%50 tuổi%');
+                });
+            } elseif ($ageFilter === 'Trẻ tiền học đường (2 - 6 tuổi)') {
+                $query->where(function($q) {
+                    $q->where('age_group', 'not like', '%10 tuổi trở lên%')
+                      ->where('age_group', 'not like', '%12 tuổi trở lên%')
+                      ->where('age_group', 'not like', '%18 tuổi trở lên%')
+                      ->where('age_group', 'not like', '%50 tuổi trở lên%')
+                      ->where('age_group', 'not like', '%người lớn trở lên%');
+                });
+            } elseif ($ageFilter === 'Trẻ học đường (7 - 12 tuổi)') {
+                $query->where(function($q) {
+                    $q->where('age_group', 'not like', '%12 tuổi trở lên%')
+                      ->where('age_group', 'not like', '%18 tuổi trở lên%')
+                      ->where('age_group', 'not like', '%50 tuổi trở lên%')
+                      ->where('age_group', 'not like', '%dưới 2 tuổi%')
+                      ->where('age_group', 'not like', '%đến 2 tuổi%')
+                      ->where('age_group', 'not like', '%đến 24 tháng%');
+                });
+            } elseif ($ageFilter === 'Tuổi vị thành niên & Người lớn (Trên 12 tuổi)') {
+                $query->where(function($q) {
+                    $q->where('age_group', 'not like', '%dưới 2 tuổi%')
+                      ->where('age_group', 'not like', '%đến 2 tuổi%')
+                      ->where('age_group', 'not like', '%đến 24 tháng%')
+                      ->where('age_group', 'not like', '%đến 5 tuổi%');
+                });
+            }
         }
 
         if ($request->filled('origin')) {
@@ -188,13 +227,12 @@ class VaccineController extends Controller
 
     private function buildAgeGroupOptions($vaccines)
     {
-        return $vaccines
-            ->pluck('age_group')
-            ->filter()
-            ->map(fn ($item) => trim($item))
-            ->unique()
-            ->sort()
-            ->values();
+        return collect([
+            'Trẻ em (Dưới 2 tuổi)',
+            'Trẻ tiền học đường (2 - 6 tuổi)',
+            'Trẻ học đường (7 - 12 tuổi)',
+            'Tuổi vị thành niên & Người lớn (Trên 12 tuổi)'
+        ]);
     }
 
     private function buildOriginOptions($vaccines)
