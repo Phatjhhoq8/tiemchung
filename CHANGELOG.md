@@ -1,3 +1,17 @@
+## [v6.5.63] - 2026-08-21
+
+### Implement Dynamic Category Creation & Details Editor in Admin
+
+* **Vaccine Form Category Dropdown**:
+  - Restricted options to selection-only inside the categories dropdown in `admin/vaccines/_form.blade.php` (hidden direct Edit/Delete buttons).
+  - Appended a fixed **"+ Thêm nhóm bệnh mới..."** action option at the bottom of the list.
+  - Bound an async prompt triggering `admin.categories.store-ajax` to create new category placeholders with empty description content dynamically.
+
+* **Category Management Details Editor**:
+  - Unified categories indexing in `AdminVaccineController` by querying distinct values from both `vaccines` and `articles` tables, allowing newly added empty categories to persist.
+  - Extended the Categories Index view modal `categoryModal` to include dedicated **Tiêu đề mô tả** and **Nội dung mô tả chi tiết** input/textarea fields.
+  - Updated `AdminVaccineController@updateCategory` to save/update linked articles dynamically, syncing description headers and HTML text blocks shown on the client-side disease detail page.
+
 ## [v6.5.62] - 2026-08-21
 
 ### Restore Traditional Multi-Page Navigation Routing
