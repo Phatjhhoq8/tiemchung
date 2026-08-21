@@ -1,3 +1,14 @@
+## [v6.5.79] - 2026-08-21
+
+### Replace Static Datepicker Header with Month and Year Select Dropdowns for Rapid Navigation
+
+* **Interactive Datepicker Month & Year Selects**:
+  - Replaced static `.gdp-title` span text in datepicker template with `.gdp-month-select` and `.gdp-year-select` dropdown menus in both `app.js` (client) and `layouts/admin.blade.php` (admin).
+  - Wired change event listeners to month/year selects to update calendar view parameters and trigger `renderGdp()` immediately.
+  - Dynamically populated select options:
+    - Month options range from "Tháng 1" to "Tháng 12".
+    - Year options range from `1900` up to current year plus 5 years, ordered descending, allowing rapid birthdate selection.
+
 ## [v6.5.78] - 2026-08-21
 
 ### Bump CSS Asset Versions for Cache Busting and Instant Browser Styles Updates
