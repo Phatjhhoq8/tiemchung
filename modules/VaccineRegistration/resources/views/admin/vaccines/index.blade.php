@@ -440,7 +440,7 @@
             const toastId = window.AppDialog.toast('Đang thực hiện vô hiệu hóa hàng loạt...', 'info');
             
             try {
-                const response = await fetch('{{ route("vaccines.bulk-destroy") }}', {
+                const response = await fetch('{{ route("admin.vaccines.bulk-destroy") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

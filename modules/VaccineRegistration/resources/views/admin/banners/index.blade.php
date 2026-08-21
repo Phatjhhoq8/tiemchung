@@ -159,7 +159,7 @@
         const toastId = window.AppDialog.toast('Đang thực hiện xóa biểu ngữ hàng loạt...', 'info');
         
         try {
-            const response = await fetch('{{ route("banners.bulk-destroy") }}', {
+            const response = await fetch('{{ route("admin.banners.bulk-destroy") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

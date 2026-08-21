@@ -555,7 +555,7 @@
         const toastId = window.AppDialog.toast('Đang thực hiện xóa hàng loạt...', 'info');
         
         try {
-            const response = await fetch('{{ route("categories.bulk-destroy") }}', {
+            const response = await fetch('{{ route("admin.categories.bulk-destroy") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
