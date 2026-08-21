@@ -494,3 +494,67 @@
         display: none !important;
     }
 }
+
+/* Premium Hover Transitions & Hover Lift Effects for all Action Buttons */
+.desktop-only-back-btn,
+.btn-select-detail,
+.btn-detail-link,
+.btn-select-vaccine {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Hover for Back Button */
+.desktop-only-back-btn:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08) !important;
+    background-color: #f8fafc !important;
+}
+
+/* Hover for Detail Selection Button */
+.btn-select-detail:hover {
+    transform: translateY(-3px) !important;
+}
+.btn-select-detail:not(.btn-selected):hover {
+    box-shadow: 0 6px 20px rgba(200, 16, 46, 0.3) !important;
+    background-color: #a00d24 !important;
+    border-color: #a00d24 !important;
+}
+.btn-select-detail.btn-selected:hover {
+    box-shadow: 0 6px 15px rgba(200, 16, 46, 0.15) !important;
+    background-color: #ffe4e6 !important;
+}
+
+/* Hover for View Detail Link */
+.btn-detail-link:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 15px rgba(200, 16, 46, 0.2) !important;
+    background-color: var(--primary-color, #c8102e) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-color, #c8102e) !important;
+}
+
+/* Hover for Select Vaccine in Slider */
+.btn-select-vaccine {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+}
+.btn-select-vaccine:hover {
+    transform: translateY(-3px) !important;
+}
+.btn-select-vaccine:not(.btn-selected):hover {
+    background-color: var(--primary-color, #c8102e) !important;
+    border-color: var(--primary-color, #c8102e) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 15px rgba(200, 16, 46, 0.2) !important;
+}
+.btn-select-vaccine.btn-selected {
+    background-color: #fff1f2;
+    border: 1px solid var(--primary-color, #c8102e);
+    color: var(--primary-color, #c8102e);
+}
+.btn-select-vaccine.btn-selected:hover {
+    background-color: #ffe4e6 !important;
+    box-shadow: 0 6px 15px rgba(200, 16, 46, 0.15) !important;
+}
+

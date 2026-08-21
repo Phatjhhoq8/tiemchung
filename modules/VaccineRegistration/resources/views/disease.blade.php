@@ -194,31 +194,36 @@
     }
     .vaccine-btn-add {
         width: 100%;
-        background: #ecfdf5;
-        color: #059669;
-        border: 1px solid #10b981;
+        background: #ffffff;
+        color: var(--primary-color, #c8102e);
+        border: 1px solid var(--primary-color, #c8102e);
         padding: 10px;
-        border-radius: 8px;
-        font-weight: 700;
+        border-radius: 30px;
+        font-weight: 800;
         font-size: 14px;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 6px;
-        transition: all 0.2s;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
     }
     .vaccine-btn-add:hover {
-        background: #059669;
+        background: var(--primary-color, #c8102e);
         color: #ffffff;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(200, 16, 46, 0.2);
     }
     .vaccine-btn-add.selected {
-        background: var(--secondary-color, #eaaa00);
-        color: #ffffff;
-        border-color: var(--secondary-color, #eaaa00);
+        background: #fff1f2;
+        color: var(--primary-color, #c8102e);
+        border-color: var(--primary-color, #c8102e);
     }
     .vaccine-btn-add.selected:hover {
-        opacity: 0.9;
+        background: #ffe4e6;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(200, 16, 46, 0.12);
     }
     
     /* Consultant Form Column */
