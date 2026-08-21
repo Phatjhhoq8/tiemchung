@@ -966,46 +966,9 @@ function restoreSpaRegisterFormData() {
     recalculateSpaRegisterPrices();
 }
 
-function saveSpaConsultFormData() {
-    const form = document.getElementById('spaConsultForm');
-    if (!form) return;
+function saveSpaConsultFormData() {}
 
-    window.lastSpaConsultFormData = {
-        consultType: document.getElementById('spaConsultTypeValue')?.value || 'online',
-        customerName: document.getElementById('spaCustomerName')?.value || '',
-        customerPhone: document.getElementById('spaCustomerPhone')?.value || '',
-        center_id: document.getElementById('spaCenterId')?.value || '',
-        customerNote: document.getElementById('spaCustomerNote')?.value || ''
-    };
-}
-
-function restoreSpaConsultFormData() {
-    const data = window.lastSpaConsultFormData;
-    if (!data) return;
-
-    const form = document.getElementById('spaConsultForm');
-    if (!form) return;
-
-    const consultTypeInput = document.getElementById('spaConsultTypeValue');
-    if (consultTypeInput) {
-        consultTypeInput.value = data.consultType;
-        if (typeof setSpaConsultType === 'function') {
-            setSpaConsultType(data.consultType);
-        }
-    }
-
-    const cName = document.getElementById('spaCustomerName');
-    if (cName) cName.value = data.customerName;
-
-    const cPhone = document.getElementById('spaCustomerPhone');
-    if (cPhone) cPhone.value = data.customerPhone;
-
-    const centerSelect = document.getElementById('spaCenterId');
-    if (centerSelect) centerSelect.value = data.center_id;
-
-    const cNote = document.getElementById('spaCustomerNote');
-    if (cNote) cNote.value = data.customerNote;
-}
+function restoreSpaConsultFormData() {}
 
 function switchSpaModalTab(tab) {
     // Save current active tab inputs state before switching
@@ -1086,98 +1049,46 @@ async function renderSpaConsultForm() {
     const rawPhone = currentCenter.zalo_phone || currentCenter.phone || '';
     const cleanPhone = rawPhone.replace(/\D+/g, '');
     const zaloUrl = currentCenter.zalo_url || (cleanPhone ? `https://zalo.me/${cleanPhone}` : 'https://zalo.me');
-
-    let centerOptions = `<option value="">-- Chọn trung tâm Medicare --</option>`;
-    centers.forEach(c => {
-        centerOptions += `<option value="${c.id}" ${currentCenter && Number(c.id) === Number(currentCenter.id) ? 'selected' : ''}>${escapeHtml(c.name)} — ${escapeHtml(c.address)}</option>`;
-    });
+    const qrUrl = currentCenter.zalo_qr_url || `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=10&data=${encodeURIComponent(zaloUrl)}`;
 
     body.innerHTML = `
         ${tabHtml}
-        <div style="background: #ffffff; padding: 0px; max-width: 520px; margin: 0 auto; box-sizing: border-box; text-align: left;">
+        <div style="background: #ffffff; padding: 0px; max-width: 520px; margin: 0 auto; box-sizing: border-box; text-align: center;">
             
-            <div style="text-align: center; margin-bottom: 24px;">
-                <h3 style="font-size: 21px; font-weight: 800; color: #1e293b; margin: 0 0 6px 0; text-align: center; line-height: 1.35;">
-                    Đăng Ký <span style="color: var(--primary-color, #c8102e);">Tư Vấn Miễn Phí</span>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h3 style="font-size: 21px; font-weight: 800; color: #1e293b; margin: 0 0 6px 0; text-align: center; line-height: 1.35; font-family: var(--font-display);">
+                    Tư Vấn Y Khoa <span style="color: #0068ff;">Qua Zalo</span>
                 </h3>
-                <p style="font-size: 13.5px; color: #64748b; text-align: center; margin: 0; line-height: 1.5;">
-                    Vui lòng điền thông tin bên dưới, Bác sĩ Medicare sẽ liên hệ hỗ trợ bạn sớm nhất.
+                <p style="font-size: 13.5px; color: #64748b; text-align: center; margin: 0; line-height: 1.5; max-width: 420px; margin: 0 auto;">
+                    Medicare hỗ trợ giải đáp tức thì các câu hỏi về vắc xin, phác đồ tiêm và đặt lịch hẹn qua kênh Zalo Bác sĩ 24/7.
                 </p>
             </div>
 
-            <form id="spaConsultForm" onsubmit="submitSpaConsult(event)" style="display: flex; flex-direction: column; gap: 16px;">
-                
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <label style="font-size: 13.5px; font-weight: 600; color: #334155;">Hình thức tư vấn <span style="color: #ef4444;">*</span></label>
-                    <div style="display: inline-flex; width: 100%; background: #f1f5f9; border-radius: 30px; padding: 4px; border: 1px solid #cbd5e1; box-sizing: border-box;">
-                        <button type="button" id="btnSpaConsultOnline" onclick="setSpaConsultType('online')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: var(--primary-color, #c8102e); color: #ffffff; text-align: center;">
-                            Tư vấn qua điện thoại
-                        </button>
-                        <button type="button" id="btnSpaConsultOffline" onclick="setSpaConsultType('offline')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: transparent; color: #475569; text-align: center;">
-                            Tư vấn tại trung tâm
-                        </button>
-                        <input type="hidden" name="consultType" id="spaConsultTypeValue" value="online">
-                    </div>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 24px; box-sizing: border-box;">
+                <div style="margin-bottom: 16px; font-weight: 700; color: #334155; font-size: 14.5px;">
+                    Quét mã QR để chat với Bác sĩ ${escapeHtml(currentCenter.name)}
                 </div>
-
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <label for="spaCustomerName" style="font-size: 13.5px; font-weight: 600; color: #334155;">Họ tên người liên hệ <span style="color: #ef4444;">*</span></label>
-                    <input type="text" name="customerName" id="spaCustomerName" placeholder="Nhập họ tên của bạn" required style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14.5px; outline: none; transition: all 0.2s; box-sizing: border-box;">
-                    <div class="text-danger hidden" id="err_spa_customerName" style="font-size: 12.5px; margin-top: 4px; color: #ef4444;"></div>
+                <div style="background: #ffffff; padding: 12px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); margin-bottom: 12px;">
+                    <img src="${qrUrl}" alt="Mã QR Zalo Bác sĩ" style="width: 170px; height: 170px; display: block; border-radius: 6px; margin: 0 auto;">
                 </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <label for="spaCustomerPhone" style="font-size: 13.5px; font-weight: 600; color: #334155;">Số điện thoại liên hệ <span style="color: #ef4444;">*</span></label>
-                    <input type="tel" name="customerPhone" id="spaCustomerPhone" placeholder="Ví dụ: 0912345678" required style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14.5px; outline: none; transition: all 0.2s; box-sizing: border-box;">
-                    <div class="text-danger hidden" id="err_spa_customerPhone" style="font-size: 12.5px; margin-top: 4px; color: #ef4444;"></div>
+                <div style="font-size: 12.5px; color: #64748b; line-height: 1.4;">
+                    Dùng camera điện thoại hoặc tính năng quét mã trên Zalo để bắt đầu trò chuyện trực tuyến
                 </div>
-                
-                <div id="spaCenterSelectGroup" style="display: none; flex-direction: column; gap: 6px;">
-                    <label for="spaCenterId" style="font-size: 13.5px; font-weight: 600; color: #334155;">Chi nhánh Medicare gần bạn nhất <span style="color: #ef4444;">*</span></label>
-                    <select name="center_id" id="spaCenterId" style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14.5px; outline: none; transition: all 0.2s; background-color: #ffffff; box-sizing: border-box;">
-                        ${centerOptions}
-                    </select>
-                    <div class="text-danger hidden" id="err_spa_center_id" style="font-size: 12.5px; margin-top: 4px; color: #ef4444;"></div>
-                </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <label for="spaCustomerNote" style="font-size: 13.5px; font-weight: 600; color: #334155;">Ghi chú yêu cầu tư vấn</label>
-                    <textarea name="customerNote" id="spaCustomerNote" rows="3" placeholder="Ví dụ: Tư vấn lịch tiêm cho bé 2 tháng tuổi, vắc xin phế cầu..." style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14.5px; outline: none; transition: all 0.2s; resize: vertical; box-sizing: border-box;"></textarea>
-                    <div class="text-danger hidden" id="err_spa_customerNote" style="font-size: 12.5px; margin-top: 4px; color: #ef4444;"></div>
-                </div>
-
-                <div style="margin-top: 8px; display: flex; gap: 10px;">
-                    <button type="button" onclick="${hasCart ? "switchSpaModalTab('register')" : "closeSpaRegisterModal()"}" style="flex: 1; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; font-size: 14px; transition: background 0.2s;">
-                        Quay lại
-                    </button>
-                    <button type="submit" id="btnSubmitSpaConsult" style="flex: 2; background: var(--primary-color, #c8102e); color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 14.5px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <i data-lucide="send" style="width: 16px; height: 16px;"></i>
-                        <span>Gửi Yêu Cầu Tư Vấn</span>
-                    </button>
-                </div>
-            </form>
-            
-            <div style="text-align: center; margin-top: 20px; padding-top: 14px; border-top: 1px dashed #e2e8f0; font-size: 13.5px; color: #64748b;">
-                Hoặc bạn muốn liên hệ nhanh? 
-                <a href="${zaloUrl}" target="_blank" rel="noopener noreferrer" style="color: #0068ff; font-weight: 800; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px; margin-left: 2px;">
-                    Chat Zalo với Bác sĩ <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
-                </a>
             </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <a href="${zaloUrl}" target="_blank" rel="noopener noreferrer" style="width: 100%; background: #0068ff; color: #ffffff; padding: 12px 20px; border-radius: 10px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; box-shadow: 0 4px 14px rgba(0, 104, 255, 0.3); transition: all 0.2s; box-sizing: border-box;" onmouseover="this.style.background='#0056d6'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0068ff'; this.style.transform='translateY(0)'">
+                    <i data-lucide="message-square" style="width: 18px; height: 18px;"></i>
+                    <span>Mở Zalo Chat Ngay</span>
+                </a>
+                
+                <button type="button" onclick="${hasCart ? "switchSpaModalTab('register')" : "closeSpaRegisterModal()"}" style="width: 100%; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; font-size: 14.5px; transition: all 0.2s; box-sizing: border-box;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                    Quay lại
+                </button>
+            </div>
+            
         </div>
     `;
-    
-    // Auto focus focus styling inputs
-    const inputs = body.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-        input.addEventListener('focus', () => {
-            input.style.borderColor = 'var(--primary-color, #c8102e)';
-            input.style.boxShadow = '0 0 0 3px rgba(200, 16, 46, 0.15)';
-        });
-        input.addEventListener('blur', () => {
-            input.style.borderColor = '#cbd5e1';
-            input.style.boxShadow = 'none';
-        });
-    });
 
     if (window.lucide) window.lucide.createIcons();
 }
