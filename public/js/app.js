@@ -93,13 +93,7 @@ function setCartSelection(vaccineId, inCart) {
     // Cập nhật nút đặt lịch tiêm ngay mà không làm giật layout
     const proceedBtn = document.getElementById(`btnProceedBooking_${id}`);
     if (proceedBtn) {
-        if (inCart) {
-            proceedBtn.style.opacity = '1';
-            proceedBtn.style.pointerEvents = 'auto';
-        } else {
-            proceedBtn.style.opacity = '0.55';
-            proceedBtn.style.pointerEvents = 'none';
-        }
+        proceedBtn.style.display = inCart ? 'inline-flex' : 'none';
     }
 }
 

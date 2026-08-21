@@ -92,13 +92,15 @@
                             <i data-lucide="{{ isset($cart[$vaccine->id]) ? 'check' : 'plus' }}" style="width: 17px; height: 17px;"></i>
                             <span>{{ isset($cart[$vaccine->id]) ? 'Đã chọn vắc xin' : 'Chọn vắc xin' }}</span>
                         </button>
-                        {{-- Nút đặt lịch ngay — hiển thị mờ khi chưa chọn vắc xin, tránh giật layout --}}
+                        {{-- Nút đặt lịch ngay — xuất hiện sau khi đã chọn vaccine, có hiệu ứng hover dịch lên cao cấp --}}
                         <a href="{{ route('register.show') }}"
                            id="btnProceedBooking_{{ $vaccine->id }}"
                            onclick="openSpaRegisterModal(event)"
-                           style="padding: 12px 20px; border-radius: 30px; border: 2px solid var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); font-weight: 800; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: #fff1f2; transition: all 0.2s ease; white-space: nowrap; flex-shrink: 0; {{ isset($cart[$vaccine->id]) ? '' : 'opacity: 0.55; pointer-events: none;' }}">
-                            <i data-lucide="calendar-check" style="width: 16px; height: 16px;"></i>
-                            <span>Đặt lịch tiêm ngay →</span>
+                           style="padding: 12px 20px; border-radius: 30px; border: 1px solid var(--primary-color, #c8102e); color: #ffffff; font-weight: 800; font-size: 14px; text-decoration: none; display: {{ isset($cart[$vaccine->id]) ? 'inline-flex' : 'none' }}; align-items: center; justify-content: center; gap: 6px; background: var(--primary-color, #c8102e); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap; flex-shrink: 0; box-shadow: 0 4px 14px rgba(200, 16, 46, 0.25);"
+                           onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(200, 16, 46, 0.35)'; this.style.backgroundColor='#a00d24'; this.style.borderColor='#a00d24';"
+                           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(200, 16, 46, 0.25)'; this.style.backgroundColor='var(--primary-color, #c8102e)'; this.style.borderColor='var(--primary-color, #c8102e)';">
+                            <i data-lucide="calendar-check" style="width: 16px; height: 16px; color: #ffffff;"></i>
+                            <span style="color: #ffffff;">Đặt lịch tiêm ngay →</span>
                         </a>
                     </div>
                 </div>
