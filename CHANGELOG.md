@@ -1,3 +1,14 @@
+## [v6.5.65] - 2026-08-21
+
+### Unify Category Product Counts & Detail Content Synchronization
+
+* **Product Category Unification**:
+  - Refactored `VaccineController@buildProductCategories` to group client-side categories strictly by the vaccine's `category` field. This eliminates mismatching virtual categories from the product grid and aligns count results with Admin settings.
+
+* **Modal Content Sync Correction**:
+  - Adjusted AJAX creation in `AdminVaccineController@storeCategoryAjax` to insert the initial boilerplate template text directly into the `content` field of the placeholder article.
+  - Aligned client-side rendering to parse `content` only, ensuring that any pre-filled or edited category texts show up identically in both the Admin edit modal textareas and the Client detail view.
+
 ## [v6.5.64] - 2026-08-21
 
 ### Synchronize Category Details and Simplify Admin Layout for Non-Tech Users
