@@ -784,6 +784,10 @@ async function openSpaRegisterModal(event) {
         event.stopPropagation();
     }
 
+    // Reset saved states on fresh modal open
+    window.lastSpaRegisterFormData = null;
+    window.lastSpaConsultFormData = null;
+
     const modal = document.getElementById('spaRegisterModal');
     const body = document.getElementById('spaRegisterBody');
     if (!modal || !body) return;
@@ -842,15 +846,180 @@ function closeSpaRegisterModal() {
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
     }
+    // Clear saved states on close
+    window.lastSpaRegisterFormData = null;
+    window.lastSpaConsultFormData = null;
+}
+
+// Global variables to store temporary form state between SPA tabs
+window.lastSpaRegisterFormData = null;
+window.lastSpaConsultFormData = null;
+
+function saveSpaRegisterFormData() {
+    const form = document.getElementById('spaFormRegisterSubmit');
+    if (!form) return;
+
+    const patients = [];
+    form.querySelectorAll('.spa-patient-block').forEach((block) => {
+        patients.push({
+            name: block.querySelector('.spa-patient-name')?.value || '',
+            phone: block.querySelector('.spa-patient-phone')?.value || '',
+            dob: block.querySelector('.spa-patient-dob')?.value || '',
+            gender: block.querySelector('.spa-patient-gender')?.value || 'Nam',
+            address: block.querySelector('.spa-patient-address')?.value || '',
+            vaccine_ids: Array.from(block.querySelectorAll('.spa-patient-vaccine-checkbox:checked')).map(cb => cb.value)
+        });
+    });
+
+    window.lastSpaRegisterFormData = {
+        patients: patients,
+        guardian_name: document.getElementById('spa_guardian_name')?.value || '',
+        guardian_phone: document.getElementById('spa_guardian_phone')?.value || '',
+        center_id: document.getElementById('spa_booking_center_id')?.value || '',
+        booking_date: document.getElementById('spa_booking_date')?.value || '',
+        slot_id: document.getElementById('spa_slot_id')?.value || ''
+    };
+}
+
+function restoreSpaRegisterFormData() {
+    const data = window.lastSpaRegisterFormData;
+    if (!data) return;
+
+    const form = document.getElementById('spaFormRegisterSubmit');
+    if (!form) return;
+
+    // 1. Create matching number of patient blocks
+    const currentBlocks = form.querySelectorAll('.spa-patient-block');
+    const neededCount = data.patients.length;
+    
+    for (let i = currentBlocks.length; i < neededCount; i++) {
+        addSpaPatientField();
+    }
+
+    // 2. Populate patient input fields and restore checked states
+    const blocks = form.querySelectorAll('.spa-patient-block');
+    data.patients.forEach((pData, idx) => {
+        const block = blocks[idx];
+        if (block) {
+            const nameInput = block.querySelector('.spa-patient-name');
+            const phoneInput = block.querySelector('.spa-patient-phone');
+            const dobInput = block.querySelector('.spa-patient-dob');
+            const genderInput = block.querySelector('.spa-patient-gender');
+            const addressInput = block.querySelector('.spa-patient-address');
+
+            if (nameInput) nameInput.value = pData.name;
+            if (phoneInput) phoneInput.value = pData.phone;
+            if (dobInput) {
+                dobInput.value = pData.dob;
+                if (typeof dobInput.updateMedicareDisplay === 'function') {
+                    dobInput.updateMedicareDisplay();
+                }
+            }
+            if (genderInput) {
+                genderInput.value = pData.gender;
+                if (typeof genderInput.updateMedicareCustomSelect === 'function') {
+                    genderInput.updateMedicareCustomSelect();
+                }
+            }
+            if (addressInput) addressInput.value = pData.address;
+
+            block.querySelectorAll('.spa-patient-vaccine-checkbox').forEach(cb => {
+                cb.checked = pData.vaccine_ids.includes(cb.value);
+            });
+        }
+    });
+
+    // 3. Restore guardian details
+    const gName = document.getElementById('spa_guardian_name');
+    const gPhone = document.getElementById('spa_guardian_phone');
+    if (gName) gName.value = data.guardian_name;
+    if (gPhone) gPhone.value = data.guardian_phone;
+
+    // 4. Restore booking center, date and slot hour selections
+    const centerSelect = document.getElementById('spa_booking_center_id');
+    if (centerSelect && data.center_id) {
+        centerSelect.value = data.center_id;
+        if (typeof centerSelect.updateMedicareCustomSelect === 'function') {
+            centerSelect.updateMedicareCustomSelect();
+        }
+    }
+
+    const dateSelect = document.getElementById('spa_date_select');
+    if (dateSelect && data.booking_date) {
+        dateSelect.value = data.booking_date;
+        if (typeof dateSelect.updateMedicareCustomSelect === 'function') {
+            dateSelect.updateMedicareCustomSelect();
+        }
+        
+        changeSpaDateFilter(data.booking_date);
+
+        const slotSelect = document.getElementById('spa_slot_id');
+        if (slotSelect && data.slot_id) {
+            slotSelect.value = data.slot_id;
+            if (typeof slotSelect.updateMedicareCustomSelect === 'function') {
+                slotSelect.updateMedicareCustomSelect();
+            }
+        }
+    }
+
+    checkSpaPatientAge();
+    recalculateSpaRegisterPrices();
+}
+
+function saveSpaConsultFormData() {
+    const form = document.getElementById('spaConsultForm');
+    if (!form) return;
+
+    window.lastSpaConsultFormData = {
+        consultType: document.getElementById('spaConsultTypeValue')?.value || 'online',
+        customerName: document.getElementById('spaCustomerName')?.value || '',
+        customerPhone: document.getElementById('spaCustomerPhone')?.value || '',
+        center_id: document.getElementById('spaCenterId')?.value || '',
+        customerNote: document.getElementById('spaCustomerNote')?.value || ''
+    };
+}
+
+function restoreSpaConsultFormData() {
+    const data = window.lastSpaConsultFormData;
+    if (!data) return;
+
+    const form = document.getElementById('spaConsultForm');
+    if (!form) return;
+
+    const consultTypeInput = document.getElementById('spaConsultTypeValue');
+    if (consultTypeInput) {
+        consultTypeInput.value = data.consultType;
+        if (typeof setSpaConsultType === 'function') {
+            setSpaConsultType(data.consultType);
+        }
+    }
+
+    const cName = document.getElementById('spaCustomerName');
+    if (cName) cName.value = data.customerName;
+
+    const cPhone = document.getElementById('spaCustomerPhone');
+    if (cPhone) cPhone.value = data.customerPhone;
+
+    const centerSelect = document.getElementById('spaCenterId');
+    if (centerSelect) centerSelect.value = data.center_id;
+
+    const cNote = document.getElementById('spaCustomerNote');
+    if (cNote) cNote.value = data.customerNote;
 }
 
 function switchSpaModalTab(tab) {
+    // Save current active tab inputs state before switching
+    saveSpaRegisterFormData();
+    saveSpaConsultFormData();
+
     if (tab === 'register') {
         if (window.lastCartData) {
             renderSpaRegisterForm(window.lastCartData);
+            restoreSpaRegisterFormData();
         }
     } else {
         renderSpaConsultForm();
+        restoreSpaConsultFormData();
     }
 }
 
