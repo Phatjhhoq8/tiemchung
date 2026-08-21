@@ -1302,7 +1302,7 @@ function renderSpaRegisterForm(data) {
 
     let dateOptions = '<option value="">-- Chọn ngày tiêm --</option>';
     (data.schedules || []).forEach(sch => {
-        const datePart = (sch.date || '').substring(0, 10);
+        const datePart = (sch.date || '').split('T')[0];
         if (datePart < todayStr) {
             return;
         }
@@ -1748,7 +1748,7 @@ function changeSpaDateFilter(selectedDate) {
     }
 
     const schedules = window.lastSchedules || [];
-    const daySchedule = schedules.find(s => (s.date || '').substring(0, 10) === selectedDate);
+    const daySchedule = schedules.find(s => (s.date || '').split('T')[0] === selectedDate);
     
     const now = new Date();
     const yyyy = now.getFullYear();
@@ -1860,10 +1860,12 @@ async function submitSpaRegistrationForm(event) {
     errEl.style.display = 'none';
     errEl.textContent = '';
 
-    // 1. Validate slot_id selection
+    // 1. Validate date and slot_id selection
+    const dateSelect = document.getElementById('spa_date_select');
     const slotSelect = document.getElementById('spa_slot_id');
+    const dateVal = dateSelect ? dateSelect.value.trim() : '';
     const slotIdVal = slotSelect ? Number(slotSelect.value) : 0;
-    if (!slotIdVal || isNaN(slotIdVal) || slotIdVal <= 0) {
+    if (!dateVal || !slotIdVal || isNaN(slotIdVal) || slotIdVal <= 0) {
         errEl.textContent = 'Vui lòng chọn ngày và khung giờ tiêm chủng.';
         errEl.style.display = 'block';
         errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
