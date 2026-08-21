@@ -1,3 +1,17 @@
+## [v6.5.76] - 2026-08-21
+
+### Extend Premium Hover Lift Transitions to Admin and Consultation Buttons
+
+* **Consultation Banner Button Hover Style**:
+  - Appended hover rules to `style.css` for `.catalog-advice-btn` (Bắt đầu ngay button in advice banners) to trigger a `translateY(-3px)` lift and brand red shadow glow on hover.
+
+* **Admin Modal Action Buttons Hover Style**:
+  - Added global hover transitions for `.fb-modal-footer button`, `.btn-primary`, `.btn-secondary`, and `.btn-secondary-outline` in `style.css`.
+  - Configured hover lift, background transition, and shadow details for admin edit actions:
+    - **Xuất Bản Ngay** (Publish)
+    - **Lưu Bản Nháp** (Draft)
+    - **Hủy** (Cancel)
+
 ## [v6.5.75] - 2026-08-21
 
 ### Implement Hover Transition Lift Effects Across All Vaccine Action Buttons
