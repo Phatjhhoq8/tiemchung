@@ -1,3 +1,15 @@
+## [v6.5.80] - 2026-08-21
+
+### Fix Dropdown Styling of Datepicker Header Selects
+
+* **DatePicker Styling Reset**:
+  - Implemented `.medicare-gdp-select` class rules in `style.css` to clean up native select rendering in datepicker header.
+  - Reset styles:
+    - Disabled default browser arrow indicators (`appearance: none`).
+    - Configured thin custom dropdown chevron SVG icon, right-positioned.
+    - Set font sizing, bold weight, transparent background, and dark slate text color (`#0f172a`).
+  - Added the new class to the selects in `app.js` and `layouts/admin.blade.php` to resolve layout issues.
+
 ## [v6.5.79] - 2026-08-21
 
 ### Replace Static Datepicker Header with Month and Year Select Dropdowns for Rapid Navigation
