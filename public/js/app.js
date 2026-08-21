@@ -82,18 +82,24 @@ function setCartSelection(vaccineId, inCart) {
 
     document.querySelectorAll(`.btn-select-detail[data-id="${id}"], #modalSelectBtn_${id}`).forEach((button) => {
         button.classList.toggle('btn-selected', inCart);
-        button.style.backgroundColor = inCart ? '#fff8e1' : 'var(--primary-color, #c8102e)';
-        button.style.borderColor = inCart ? 'var(--secondary-color, #eaaa00)' : 'var(--primary-color, #c8102e)';
-        button.style.color = inCart ? 'var(--secondary-color, #eaaa00)' : '#ffffff';
+        button.style.backgroundColor = inCart ? '#fff1f2' : 'var(--primary-color, #c8102e)';
+        button.style.borderColor = inCart ? 'var(--primary-color, #c8102e)' : 'var(--primary-color, #c8102e)';
+        button.style.color = inCart ? 'var(--primary-color, #c8102e)' : '#ffffff';
         button.innerHTML = inCart
             ? '<i data-lucide="check"></i><span>Đã chọn vắc xin</span>'
-            : '<i data-lucide="plus"></i><span>Chọn vắc xin này</span>';
+            : '<i data-lucide="plus"></i><span>Chọn vắc xin</span>';
     });
 
-    // Hiện/ẩn nút "Đặt lịch tiêm ngay →" trên trang chi tiết vaccine
+    // Cập nhật nút đặt lịch tiêm ngay mà không làm giật layout
     const proceedBtn = document.getElementById(`btnProceedBooking_${id}`);
     if (proceedBtn) {
-        proceedBtn.style.display = inCart ? 'inline-flex' : 'none';
+        if (inCart) {
+            proceedBtn.style.opacity = '1';
+            proceedBtn.style.pointerEvents = 'auto';
+        } else {
+            proceedBtn.style.opacity = '0.55';
+            proceedBtn.style.pointerEvents = 'none';
+        }
     }
 }
 
@@ -102,7 +108,7 @@ async function toggleCart(vaccineId, forceRemove = false) {
     if (!Number.isSafeInteger(id) || id < 1) return;
 
     const cards = document.querySelectorAll(`.vaccine-card[data-id="${id}"], .catalog-product-card[data-id="${id}"]`);
-    const selected = forceRemove || cards[0]?.classList.contains('selected') || document.getElementById(`modalSelectBtn_${id}`)?.classList.contains('btn-selected');
+    const selected = forceRemove || cards[0]?.classList.contains('selected') || document.getElementById(`modalSelectBtn_${id}`)?.classList.contains('btn-selected') || document.querySelector(`.btn-select-detail[data-id="${id}"]`)?.classList.contains('btn-selected');
 
     try {
         const response = await fetch(getAbsoluteUrl(selected ? '/cart/remove' : '/cart/add'), {

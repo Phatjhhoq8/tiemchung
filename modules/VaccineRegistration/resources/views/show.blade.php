@@ -90,13 +90,13 @@
                         </a>
                         <button class="btn-select-detail {{ isset($cart[$vaccine->id]) ? 'btn-selected' : '' }}" data-id="{{ $vaccine->id }}" onclick="toggleCart({{ $vaccine->id }})" style="padding: 12px 24px; border-radius: 30px; color: {{ isset($cart[$vaccine->id]) ? 'var(--primary-color, #c8102e)' : '#ffffff' }}; font-weight: 800; font-size: 15px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; background-color: {{ isset($cart[$vaccine->id]) ? '#fff1f2' : 'var(--primary-color, #c8102e)' }}; border: 1px solid var(--primary-color, #c8102e); box-shadow: 0 4px 15px rgba(200, 16, 46, 0.22);">
                             <i data-lucide="{{ isset($cart[$vaccine->id]) ? 'check' : 'plus' }}" style="width: 18px; height: 18px;"></i>
-                            <span>{{ isset($cart[$vaccine->id]) ? 'Đã chọn vắc xin' : 'Đăng ký tiêm chủng' }}</span>
+                            <span>{{ isset($cart[$vaccine->id]) ? 'Đã chọn vắc xin' : 'Chọn vắc xin' }}</span>
                         </button>
-                        {{-- Nút đặt lịch ngay — xuất hiện sau khi đã chọn vaccine --}}
+                        {{-- Nút đặt lịch ngay — hiển thị mờ khi chưa chọn vắc xin, tránh giật layout --}}
                         <a href="{{ route('register.show') }}"
                            id="btnProceedBooking_{{ $vaccine->id }}"
                            onclick="openSpaRegisterModal(event)"
-                           style="padding: 12px 22px; border-radius: 30px; border: 2px solid var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); font-weight: 800; font-size: 14px; text-decoration: none; display: {{ isset($cart[$vaccine->id]) ? 'inline-flex' : 'none' }}; align-items: center; justify-content: center; gap: 7px; background: #fff1f2; transition: all 0.2s ease; white-space: nowrap;">
+                           style="padding: 12px 22px; border-radius: 30px; border: 2px solid var(--primary-color, #c8102e); color: var(--primary-color, #c8102e); font-weight: 800; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 7px; background: #fff1f2; transition: all 0.2s ease; white-space: nowrap; {{ isset($cart[$vaccine->id]) ? '' : 'opacity: 0.55; pointer-events: none;' }}">
                             <i data-lucide="calendar-check" style="width: 17px; height: 17px;"></i>
                             <span>Đặt lịch tiêm ngay →</span>
                         </a>

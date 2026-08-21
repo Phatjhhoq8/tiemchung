@@ -399,8 +399,8 @@
                                         <span class="vaccine-price">{{ number_format($vac->price, 0, ',', '.') }} đ</span>
                                     </div>
                                     <button class="vaccine-btn-add {{ isset($cart[$vac->id]) ? 'selected' : '' }}" onclick="toggleCartFromDisease({{ $vac->id }}, this)">
-                                        <i data-lucide="{{ isset($cart[$vac->id]) ? 'check' : 'shopping-cart' }}" style="width: 16px; height: 16px;"></i>
-                                        <span>{{ isset($cart[$vac->id]) ? 'Đã chọn đặt' : 'Đặt mua ngay' }}</span>
+                                        <i data-lucide="{{ isset($cart[$vac->id]) ? 'check' : 'plus' }}" style="width: 16px; height: 16px;"></i>
+                                        <span>{{ isset($cart[$vac->id]) ? 'Đã chọn' : 'Chọn tiêm' }}</span>
                                     </button>
                                 </div>
                             </div>
@@ -474,10 +474,10 @@
                 // Thay đổi trạng thái button
                 if (isSelected) {
                     buttonEl.classList.remove('selected');
-                    buttonEl.innerHTML = '<i data-lucide="shopping-cart" style="width: 16px; height: 16px;"></i> <span>Đặt mua ngay</span>';
+                    buttonEl.innerHTML = '<i data-lucide="plus" style="width: 16px; height: 16px;"></i> <span>Chọn tiêm</span>';
                 } else {
                     buttonEl.classList.add('selected');
-                    buttonEl.innerHTML = '<i data-lucide="check" style="width: 16px; height: 16px;"></i> <span>Đã chọn đặt</span>';
+                    buttonEl.innerHTML = '<i data-lucide="check" style="width: 16px; height: 16px;"></i> <span>Đã chọn</span>';
                 }
                 lucide.createIcons();
                 
