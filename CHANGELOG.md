@@ -1,3 +1,17 @@
+## [v6.5.85] - 2026-08-21
+
+### Reset and Update All Home Slider Banners
+
+* **Database Banner Cleanup & Seeding**:
+  - Truncated the `banners` table in the database.
+  - Inserted 3 new high-converting y khoa banners with medical details:
+    1. **Lá Chắn Vắc Xin Vững Chắc — Bảo Vệ Bé Yêu Toàn Diện** (Targeting infant/children vaccines).
+    2. **Chăm Sóc Sức Khỏe Người Cao Tuổi — Sống Vui Khỏe Mỗi Ngày** (Targeting elderly vaccines).
+    3. **Gói Vắc Xin Gia Đình — Chăm Sóc Sức Khỏe Cho Cả Nhà** (Targeting family & pregnancy packages).
+* **Banner Asset Management**:
+  - Uploaded 3 new square medical image assets directly to the public directory.
+  - Formatted layout using Flowbite Carousel inside `hero_slider.blade.php`, positioning text titles on the left column and floating the 3D-shadowed medical images on the right column for optimal desktop/mobile presentation.
+
 ## [v6.5.84] - 2026-08-21
 
 ### Simplify Layout, Limit Categories to SuperAdmin, and Change Cutoff Time to 18:30
