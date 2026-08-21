@@ -1,3 +1,12 @@
+## [v6.5.62] - 2026-08-21
+
+### Restore Traditional Multi-Page Navigation Routing
+
+* **Menu Routing Restoration**:
+  - Restored original Laravel route links (`home`, `about`, `vaccine.index`, `news.index`, `booking.lookup`) on both the primary desktop nav menu and mobile drawer.
+  - Revoked the smooth scrolling handlers from main menu options to preserve the presence of individual, shareable sub-pages.
+  - Ensured the client booking lookup modal logic remains fully active and accessible asynchronously when accessing `/tra-cuu-lich-hen`.
+
 ## [v6.5.61] - 2026-08-21
 
 ### Implement SPA Navigation Menu & Client Booking Lookup Modal
