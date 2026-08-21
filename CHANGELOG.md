@@ -1,3 +1,10 @@
+## [v6.5.67] - 2026-08-21
+
+### Add Center Filter UI to Admin Categories Page
+
+* **Admin Categories Center Filter Selector**:
+  - Embedded a branch selection dropdown selector in `admin/categories/index.blade.php`, allowing administrators to switch between centers directly on the Manage Disease Categories page. This updates the displayed vaccine counts per category in real-time, matching what the client-side user views on the frontend for each center.
+
 ## [v6.5.66] - 2026-08-21
 
 ### Bind Admin Category Product Count to Selected Center
