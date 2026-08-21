@@ -1448,8 +1448,8 @@
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 4px;">
                         <button type="button" class="gdp-prev" style="background: none; border: none; font-size: 18px; color: #475569; cursor: pointer; padding: 2px 8px; border-radius: 6px;">‹</button>
                         <div style="display: flex; align-items: center; gap: 2px; flex-grow: 1; justify-content: center;">
-                            <select class="gdp-month-select" style="border: none; background: transparent; font-weight: 700; font-size: 13.5px; color: #0f172a; cursor: pointer; outline: none; padding: 2px; font-family: inherit;"></select>
-                            <select class="gdp-year-select" style="border: none; background: transparent; font-weight: 700; font-size: 13.5px; color: #0f172a; cursor: pointer; outline: none; padding: 2px; font-family: inherit;"></select>
+                            <select class="gdp-month-select medicare-gdp-select"></select>
+                            <select class="gdp-year-select medicare-gdp-select"></select>
                         </div>
                         <button type="button" class="gdp-next" style="background: none; border: none; font-size: 18px; color: #475569; cursor: pointer; padding: 2px 8px; border-radius: 6px;">›</button>
                     </div>
