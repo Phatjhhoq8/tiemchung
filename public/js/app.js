@@ -2852,10 +2852,17 @@ document.addEventListener('input', function(e) {
 }, true);
 
 // Global click listener to dismiss active Medicare popups
-document.addEventListener('click', () => {
-    document.querySelectorAll('.medicare-select-wrapper div[style*="position: absolute"]').forEach(p => p.style.display = 'none');
-    document.querySelectorAll('.medicare-datepicker-wrapper div[style*="position: absolute"]').forEach(p => p.style.display = 'none');
-    document.querySelectorAll('.medicare-select-arrow-icon').forEach(icon => icon.style.transform = 'rotate(0deg)');
+document.addEventListener('click', (e) => {
+    const inSelect = e.target.closest('.medicare-select-wrapper');
+    const inDatePicker = e.target.closest('.medicare-datepicker-wrapper');
+    
+    if (!inSelect) {
+        document.querySelectorAll('.medicare-select-wrapper div[style*="position: absolute"]').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.medicare-select-arrow-icon').forEach(icon => icon.style.transform = 'rotate(0deg)');
+    }
+    if (!inDatePicker) {
+        document.querySelectorAll('.medicare-datepicker-wrapper div[style*="position: absolute"]').forEach(p => p.style.display = 'none');
+    }
 });
 
 if (typeof window !== 'undefined') {
