@@ -1,3 +1,10 @@
+## [v6.5.88] - 2026-08-21
+
+### Fix DatePicker Popup Auto-Dismiss on Month/Year Selection
+
+* **Global Click Dismiss Exemption**:
+  - Modified the global document event listener in `public/js/app.js` that auto-hides active popups. Added a check so that if the clicked target lies inside `.medicare-datepicker-wrapper` (which includes Flatpickr/AirDatepicker month and year select fields), the datepicker popup is kept open. This allows users to change months and years via dropdown selections without closing the calendar popup.
+
 ## [v6.5.87] - 2026-08-21
 
 ### Replace Consultation Form with Direct Zalo Official Flow in SPA Booking Modal
