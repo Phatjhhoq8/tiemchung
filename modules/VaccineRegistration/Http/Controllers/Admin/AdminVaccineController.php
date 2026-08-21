@@ -1172,6 +1172,14 @@ class AdminVaccineController extends Controller
         
         $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
         $isSuperAdmin = AdminContext::isSuperAdmin();
+        
+        // Chi nhánh mặc định ( Medicare Cần Thơ)
+        $defaultCenterId = Center::active()->orderBy('sort_order')->orderBy('id')->value('id');
+        $displayCenterId = $selectedCenterId ?: $defaultCenterId;
+        
+        $displayCenterName = $selectedCenterId 
+            ? Center::where('id', $selectedCenterId)->value('name')
+            : (Center::where('id', $defaultCenterId)->value('name') . ' (Mặc định)');
 
         $vaccineCats = Vaccine::select('category')
             ->whereNotNull('category')
@@ -1192,31 +1200,36 @@ class AdminVaccineController extends Controller
         $allCatNames = array_unique(array_merge($vaccineCats, $articleCats));
         sort($allCatNames);
 
-        $selectedCenterId = AdminContext::selectedCenterId();
-
-        $categories = collect($allCatNames)->map(function ($catName) use ($selectedCenterId) {
-            if ($selectedCenterId) {
-                $vaccineCount = Vaccine::forCenter($selectedCenterId)
-                    ->where('category', $catName)
-                    ->count();
-            } else {
-                $vaccineCount = Vaccine::where('category', $catName)
-                    ->where('is_active', true)
-                    ->count();
-            }
+        $categories = collect($allCatNames)->map(function ($catName) use ($displayCenterId) {
+            // 1. Số lượng vắc xin tại chi nhánh đang xem
+            $centerCount = Vaccine::forCenter($displayCenterId)
+                ->where('category', $catName)
+                ->count();
+                
+            // 2. Tổng số lượng vắc xin active trên toàn hệ thống
+            $systemCount = Vaccine::where('category', $catName)
+                ->where('is_active', true)
+                ->count();
             
             // Tìm bài viết mô tả
             $article = \Modules\VaccineRegistration\Models\Article::where('category', $catName)->first();
 
             return (object) [
                 'category' => $catName,
-                'vaccine_count' => $vaccineCount,
+                'center_count' => $centerCount,
+                'system_count' => $systemCount,
                 'article_title' => $article?->title ?? '',
                 'article_content' => $article?->content ?? '',
             ];
         });
 
-        return view('vaccine::admin.categories.index', compact('categories', 'centers', 'selectedCenterId', 'isSuperAdmin'));
+        return view('vaccine::admin.categories.index', compact(
+            'categories', 
+            'centers', 
+            'selectedCenterId', 
+            'isSuperAdmin',
+            'displayCenterName'
+        ));
     }
 
     /**

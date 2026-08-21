@@ -40,8 +40,9 @@
                         <tr>
                             <th style="padding: 16px 20px; font-weight: 700; color: #475569; width: 80px; text-align: center; border-bottom: 1px solid #e2e8f0;">#</th>
                             <th style="padding: 16px 20px; font-weight: 700; color: #475569; text-align: left; border-bottom: 1px solid #e2e8f0;">Tên Nhóm Bệnh</th>
-                            <th style="padding: 16px 20px; font-weight: 700; color: #475569; width: 180px; text-align: center; border-bottom: 1px solid #e2e8f0;">Số Lượng Vắc Xin</th>
-                            <th style="padding: 16px 20px; font-weight: 700; color: #475569; width: 180px; text-align: center; border-bottom: 1px solid #e2e8f0;">Thao Tác</th>
+                            <th style="padding: 16px 20px; font-weight: 700; color: #475569; width: 230px; text-align: center; border-bottom: 1px solid #e2e8f0;">Vắc xin tại {{ $displayCenterName }}</th>
+                            <th style="padding: 16px 20px; font-weight: 700; color: #475569; width: 210px; text-align: center; border-bottom: 1px solid #e2e8f0;">Vắc xin (Toàn hệ thống)</th>
+                            <th style="padding: 16px 20px; font-weight: 700; color: #475569; width: 150px; text-align: center; border-bottom: 1px solid #e2e8f0;">Thao Tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -53,7 +54,12 @@
                                 </td>
                                 <td style="padding: 14px 20px; text-align: center;">
                                     <span class="badge bg-light text-primary font-bold" style="padding: 6px 12px; border-radius: 20px; font-size: 12.5px; background-color: #eff6ff !important; color: #1d4ed8 !important; font-weight: 700; display: inline-block;">
-                                        {{ $cat->vaccine_count }} sản phẩm
+                                        {{ $cat->center_count }} sản phẩm
+                                    </span>
+                                </td>
+                                <td style="padding: 14px 20px; text-align: center;">
+                                    <span class="badge bg-light text-secondary font-bold" style="padding: 6px 12px; border-radius: 20px; font-size: 12.5px; background-color: #f1f5f9 !important; color: #475569 !important; font-weight: 700; display: inline-block;">
+                                        {{ $cat->system_count }} sản phẩm
                                     </span>
                                 </td>
                                 <td style="padding: 14px 20px; text-align: center;">
