@@ -1,3 +1,21 @@
+## [v6.5.71] - 2026-08-21
+
+### Implement Category Filtering and Bulk Deletion Across 5 Modules
+
+* **Categories Filtering & Search UI**:
+  - Integrated client-side JS filter on Categories index, matching text queries against table rows dynamically.
+  - Refactored filter bar to neatly house Center filter select, Search input and Bulk delete action trigger side-by-side.
+
+* **Multi-Select Bulk Deletion**:
+  - Integrated checkboxes in headers and rows for 5 modules: Categories, Vaccines, Articles, Banners, and Centers (Branches).
+  - Implemented back-end controllers and AJAX bulk deletion endpoints:
+    - `AdminVaccineController@bulkDestroyCategories`
+    - `AdminVaccineController@bulkDestroy` (Soft Deactivation for Vaccines)
+    - `AdminArticleController@bulkDestroy`
+    - `AdminBannerController@bulkDestroy`
+    - `AdminCenterController@bulkDestroy`
+  - Integrated sticky action trigger buttons with validation, confirming popups and responsive toast notifications.
+
 ## [v6.5.70] - 2026-08-21
 
 ### Expand Width of Category Edit Modal and Editor Height
