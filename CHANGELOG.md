@@ -1,3 +1,12 @@
+## [v6.5.81] - 2026-08-21
+
+### Exclude Datepicker Selects from Global Custom Dropdown Processing
+
+* **DatePicker Custom Dropdown Exclusions**:
+  - Appended `no-custom-select` and `medicare-gdp-select` exclusion classes to the datepicker Month & Year selects in both `app.js` and `layouts/admin.blade.php`.
+  - Added layout guards inside `initGlobalMedicareCustomDropdowns` in `app.js` to immediately return and bypass custom styling scripts for elements containing datepicker classes or wrappers.
+  - This prevents conflicts with the client-side dropdown rendering script that previously hid the native select elements and replaced them with empty custom wrappers, completely restoring text and options layout.
+
 ## [v6.5.80] - 2026-08-21
 
 ### Fix Dropdown Styling of Datepicker Header Selects
