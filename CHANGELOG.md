@@ -1,3 +1,16 @@
+## [v6.5.58] - 2026-08-21
+
+### Fix Admin Category Management Modals & Refine Table Layout
+
+* **Replace Modals with Pure Custom Modals**:
+  - Replaced Bootstrap-based `categoryModal` and `deleteConfirmModal` with pure custom display-flex modals using inline overlays (`background: rgba(15, 23, 42, 0.6)`).
+  - Bypassed JavaScript dependency on `bootstrap.Modal` to prevent `bootstrap is not defined` runtime reference errors that broke Edit/Delete actions.
+  - Implemented clean inline script handlers (`openCreateModal`, `closeCategoryModal`, `openEditModal`, `closeDeleteConfirmModal`, `handleDeleteCategory`, `confirmDeleteCategory`).
+
+* **Refine Table Layout & Aesthetics**:
+  - Centered table action buttons and adjusted padding/border configurations to match Medicare Brand Theme colors (`#c8102e`, `#dc2626`).
+  - Constrained main table card width to `1000px` for enhanced desktop layout alignment.
+
 ## [v6.5.57] - 2026-08-21
 
 ### Add Category Management in Admin & Refactor SPA Consultation Form
