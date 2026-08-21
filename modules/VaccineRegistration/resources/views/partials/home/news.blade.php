@@ -51,7 +51,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
                 <!-- Left Column: 1 Main Featured Article -->
-                <div class="{{ $sideArticles->isEmpty() ? 'news-single-centered' : 'lg:col-span-6' }} group cursor-pointer" onclick="window.location.href='{{ route('news.show', $mainArticle->slug ?? $mainArticle->id) }}'">
+                <div class="{{ $sideArticles->isEmpty() ? 'news-single-centered' : 'lg:col-span-6' }} group cursor-pointer" onclick="openArticleDetailModal('{{ $mainArticle->slug ?? $mainArticle->id }}', event)">
                     <div class="aspect-[16/10] w-full bg-slate-100 rounded-2xl overflow-hidden mb-4 shadow-sm border border-slate-100 relative">
                         <img src="{{ asset('images/vaccines/' . ($mainArticle->image ?: 'vaxigrip.jpg')) }}" alt="{{ $mainArticle->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
                         <span class="absolute top-3 left-3 bg-[#c8102e] text-white font-extrabold text-[11px] uppercase px-3.5 py-1 rounded-full shadow-md">
@@ -68,7 +68,7 @@
                         <span class="flex items-center gap-1.5 text-slate-400 font-medium shrink-0">
                             <i data-lucide="calendar" class="w-4 h-4 text-slate-400"></i> {{ $mainArticle->created_at ? $mainArticle->created_at->format('d/m/Y') : '23/07/2026' }}
                         </span>
-                        <a href="{{ route('news.show', $mainArticle->slug ?? $mainArticle->id) }}" class="text-[#eaaa00] hover:text-[#d49800] font-bold text-xs hover:underline flex items-center gap-1 shrink-0">
+                        <a href="{{ route('news.show', $mainArticle->slug ?? $mainArticle->id) }}" onclick="openArticleDetailModal('{{ $mainArticle->slug ?? $mainArticle->id }}', event)" class="text-[#eaaa00] hover:text-[#d49800] font-bold text-xs hover:underline flex items-center gap-1 shrink-0">
                             Xem thêm <i data-lucide="arrow-right" class="w-3.5 h-3.5 inline"></i>
                         </a>
                     </div>
@@ -77,7 +77,7 @@
                 <!-- Right Column: 3 Compact Horizontal Articles -->
                 <div class="lg:col-span-6 space-y-6">
                     @foreach($sideArticles as $sideArticle)
-                        <div class="flex flex-col sm:flex-row gap-4 items-start pb-6 border-b border-slate-100 last:border-b-0 last:pb-0 group cursor-pointer" onclick="window.location.href='{{ route('news.show', $sideArticle->slug ?? $sideArticle->id) }}'">
+                        <div class="flex flex-col sm:flex-row gap-4 items-start pb-6 border-b border-slate-100 last:border-b-0 last:pb-0 group cursor-pointer" onclick="openArticleDetailModal('{{ $sideArticle->slug ?? $sideArticle->id }}', event)">
                             <div class="w-full sm:w-44 lg:w-48 aspect-[16/10] rounded-2xl overflow-hidden bg-slate-50 shrink-0 border border-slate-100 relative">
                                 <img src="{{ asset('images/vaccines/' . ($sideArticle->image ?: 'vaxigrip.jpg')) }}" alt="{{ $sideArticle->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
                             </div>
@@ -94,7 +94,7 @@
                                     <span class="flex items-center gap-1.5 text-slate-400 font-medium shrink-0">
                                         <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i> {{ $sideArticle->created_at ? $sideArticle->created_at->format('d/m/Y') : '23/07/2026' }}
                                     </span>
-                                    <a href="{{ route('news.show', $sideArticle->slug ?? $sideArticle->id) }}" class="text-[#eaaa00] hover:text-[#d49800] font-bold text-xs hover:underline flex items-center gap-1 shrink-0 ml-2">
+                                    <a href="{{ route('news.show', $sideArticle->slug ?? $sideArticle->id) }}" onclick="openArticleDetailModal('{{ $sideArticle->slug ?? $sideArticle->id }}', event)" class="text-[#eaaa00] hover:text-[#d49800] font-bold text-xs hover:underline flex items-center gap-1 shrink-0 ml-2">
                                         Xem thêm <i data-lucide="arrow-right" class="w-3.5 h-3.5 inline"></i>
                                     </a>
                                 </div>

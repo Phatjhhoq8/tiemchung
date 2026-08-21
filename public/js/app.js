@@ -246,8 +246,75 @@ function closeVaccineDetailModal() {
     document.body.style.overflow = '';
 }
 
+async function openArticleDetailModal(slug, event) {
+    event?.preventDefault();
+    const modal = document.getElementById('articleDetailModal');
+    const content = document.getElementById('articleModalDetailContent');
+    if (!modal || !content) return;
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    content.innerHTML = '<div style="padding:60px;text-align:center;"><i data-lucide="loader-2" style="width:40px;height:40px;color:var(--primary-color, #c8102e);animation:spin 1s linear infinite;"></i><p style="margin-top:12px;color:#64748b;font-weight:500;">Đang tải nội dung bài viết...</p></div>';
+    renderIcons();
+
+    try {
+        const response = await fetch(getAbsoluteUrl(`/news/${slug}`), {
+            headers: { 'X-CSRF-TOKEN': getCsrfToken(), 'Accept': 'application/json' }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.success) throw new Error('Không thể tải bài viết.');
+
+        const article = data.article;
+        content.innerHTML = `
+            <div style="display:flex;flex-direction:column;gap:20px;padding-bottom:16px;">
+                <!-- Category badge & Title -->
+                <div>
+                    <span style="font-size:12px;font-weight:700;color:var(--primary-color, #c8102e);text-transform:uppercase;background:rgba(200, 16, 46, 0.08);padding:4px 10px;border-radius:20px;">${escapeHtml(article.category)}</span>
+                    <h2 style="font-size:24px;font-weight:800;color:#0f172a;margin:12px 0 8px;line-height:1.3;text-align:justify;">${escapeHtml(article.title)}</h2>
+                    <div style="display:flex;gap:16px;color:#64748b;font-size:13px;">
+                        <span><i data-lucide="calendar" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>${escapeHtml(article.published_at)}</span>
+                        <span><i data-lucide="eye" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>${Number(article.views || 0).toLocaleString('vi-VN')} lượt xem</span>
+                    </div>
+                </div>
+                <!-- Banner Image -->
+                ${article.image ? `
+                <div style="width:100%;border-radius:12px;overflow:hidden;max-height:360px;display:flex;align-items:center;justify-content:center;background:#f8fafc;">
+                    <img src="${escapeHtml(article.image)}" alt="${escapeHtml(article.title)}" style="max-width:100%;max-height:360px;object-fit:cover;">
+                </div>
+                ` : ''}
+                <!-- Summary -->
+                ${article.summary ? `
+                <p style="font-size:15px;color:#475569;font-weight:600;line-height:1.6;margin:0;text-align:justify;border-left:3px solid var(--primary-color, #c8102e);padding-left:12px;">${escapeHtml(article.summary)}</p>
+                ` : ''}
+                <!-- Rich text content -->
+                <div class="article-rich-text-content" style="font-size:14.5px;color:#334155;line-height:1.7;text-align:justify;margin-top:8px;">
+                    ${article.content}
+                </div>
+                <!-- Author credit -->
+                <div style="text-align:right;font-weight:700;color:#0f172a;margin-top:20px;font-size:14px;">
+                    Theo Bác sĩ Chuyên khoa Medicare Cờ Đỏ
+                </div>
+            </div>
+        `;
+        renderIcons();
+    } catch (error) {
+        console.error('Lỗi tải chi tiết bài viết:', error);
+        content.innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;">Không thể tải nội dung bài viết. Vui lòng thử lại.</div>';
+    }
+}
+
+function closeArticleDetailModal() {
+    const modal = document.getElementById('articleDetailModal');
+    if (!modal) return;
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
 document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeVaccineDetailModal();
+    if (event.key === 'Escape') {
+        closeVaccineDetailModal();
+        closeArticleDetailModal();
+    }
 });
 
 let filterTimer;
@@ -2589,6 +2656,8 @@ if (typeof window !== 'undefined') {
     window.clearCartUI = clearCartUI;
     window.openVaccineDetailModal = openVaccineDetailModal;
     window.closeVaccineDetailModal = closeVaccineDetailModal;
+    window.openArticleDetailModal = openArticleDetailModal;
+    window.closeArticleDetailModal = closeArticleDetailModal;
     window.setFeaturedFilter = setFeaturedFilter;
     window.setAgeGroupFilter = setAgeGroupFilter;
     window.setDiseaseFilter = setDiseaseFilter;

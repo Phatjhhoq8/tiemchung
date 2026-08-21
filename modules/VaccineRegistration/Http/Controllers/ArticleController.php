@@ -72,6 +72,22 @@ class ArticleController extends Controller
 
         $article->increment('views');
 
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'article' => [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'summary' => $article->summary,
+                    'content' => $article->content,
+                    'category' => $article->category,
+                    'image' => $article->image ? asset('images/vaccines/' . (!str_contains($article->image, 'logo') ? $article->image : 'vaxigrip.jpg')) : asset('images/logo.png'),
+                    'views' => $article->views,
+                    'published_at' => $article->created_at ? $article->created_at->format('d/m/Y') : '26/07/2026',
+                ]
+            ]);
+        }
+
         // 1. 5 Bài viết cùng chuyên mục ở Sidebar
         $relatedArticles = Article::where('is_published', true)
             ->where('category', $article->category)
