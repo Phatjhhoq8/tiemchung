@@ -1,3 +1,12 @@
+## [v6.5.78] - 2026-08-21
+
+### Bump CSS Asset Versions for Cache Busting and Instant Browser Styles Updates
+
+* **Cache Busting for Client Styles**:
+  - Incremented stylesheet query parameter version inside `layouts/app.blade.php` from `1.0.4` to `1.0.12`.
+  - Added query parameter version `?v=1.0.6` to `vaccines.css` link tag inside `show.blade.php`.
+  - Bumping these versions bypasses heavy browser and CDN caches, forcing clients to instantly download updated style files containing the latest hover animations.
+
 ## [v6.5.77] - 2026-08-21
 
 ### Add Facebook Link Setting for Team Members and Toggle Social Icons Dynamically
