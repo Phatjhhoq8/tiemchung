@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Modules\VaccineRegistration\Models\Article;
 use Modules\VaccineRegistration\Models\Center;
 use Modules\VaccineRegistration\Models\CenterVaccine;
 use Modules\VaccineRegistration\Models\ConsultationLead;
@@ -885,11 +886,34 @@ class VaccineController extends Controller
 
         // So khớp thông minh không phân biệt hoa thường
         $info = null;
-        $searchKey = mb_strtolower($diseaseDecoded, 'UTF-8');
-        foreach ($diseaseData as $key => $data) {
-            if (mb_strpos($searchKey, $key, 0, 'UTF-8') !== false || mb_strpos($key, $searchKey, 0, 'UTF-8') !== false) {
-                $info = $data;
-                break;
+
+        // 1. Tìm bài viết chuyên môn động trong CSDL trước
+        $slug = Str::slug($diseaseDecoded);
+        $dbArticle = Article::where('is_published', true)
+            ->where(function ($q) use ($diseaseDecoded, $slug) {
+                $q->where('category', 'like', '%'.$diseaseDecoded.'%')
+                  ->orWhere('title', 'like', '%'.$diseaseDecoded.'%')
+                  ->orWhere('slug', 'like', '%'.$slug.'%');
+            })
+            ->orderBy('is_featured', 'desc')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if ($dbArticle) {
+            $info = [
+                'title' => $dbArticle->title,
+                'description' => ($dbArticle->summary ? '<h6>'.$dbArticle->summary.'</h6>' : '') . $dbArticle->content,
+            ];
+        }
+
+        // 2. Nếu không có bài viết động, fallback tìm trong mảng dữ liệu tĩnh hardcode
+        if (!$info) {
+            $searchKey = mb_strtolower($diseaseDecoded, 'UTF-8');
+            foreach ($diseaseData as $key => $data) {
+                if (mb_strpos($searchKey, $key, 0, 'UTF-8') !== false || mb_strpos($key, $searchKey, 0, 'UTF-8') !== false) {
+                    $info = $data;
+                    break;
+                }
             }
         }
 
