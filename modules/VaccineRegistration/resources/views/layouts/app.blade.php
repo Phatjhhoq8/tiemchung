@@ -111,11 +111,11 @@
             </a>
             
             <nav class="nav-menu" id="nav-menu">
-                <a href="{{ route('home') }}" onclick="smoothScrollTo('app-top', event)" class="nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}">Trang Chủ</a>
-                <a href="{{ route('home') }}#services-section" onclick="smoothScrollTo('services-section', event)" class="nav-link">Giới Thiệu</a>
-                <a href="{{ route('home') }}#vaccine-catalog" onclick="smoothScrollTo('vaccine-catalog', event)" class="nav-link">Danh Mục Sản Phẩm</a>
-                <a href="{{ route('home') }}#news-section" onclick="smoothScrollTo('news-section', event)" class="nav-link">Tin Tức</a>
-                <a href="#" onclick="openBookingLookupModal(event)" class="nav-link">Tra Cứu Lịch Hẹn</a>
+                <a href="{{ route('home') }}" class="nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}">Trang Chủ</a>
+                <a href="{{ route('about') }}" class="nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}">Giới Thiệu</a>
+                <a href="{{ route('vaccine.index') }}" class="nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}">Danh Mục Sản Phẩm</a>
+                <a href="{{ route('news.index') }}" class="nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}">Tin Tức</a>
+                <a href="{{ route('booking.lookup') }}" class="nav-link {{ Route::currentRouteName() === 'booking.lookup' ? 'active' : '' }}">Tra Cứu Lịch Hẹn</a>
             </nav>
             
             <div class="header-actions" style="display: flex; align-items: center; gap: 10px;">
@@ -540,11 +540,11 @@
             </button>
         </div>
         <div class="mobile-drawer-links">
-            <a href="{{ route('home') }}" onclick="smoothScrollTo('app-top', event); toggleMobileMenu();" class="mobile-nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}"><i data-lucide="home" class="w-5 h-5"></i> Trang Chủ</a>
-            <a href="{{ route('home') }}#services-section" onclick="smoothScrollTo('services-section', event); toggleMobileMenu();" class="mobile-nav-link"><i data-lucide="info" class="w-5 h-5"></i> Giới Thiệu</a>
-            <a href="{{ route('home') }}#vaccine-catalog" onclick="smoothScrollTo('vaccine-catalog', event); toggleMobileMenu();" class="mobile-nav-link"><i data-lucide="syringe" class="w-5 h-5"></i> Danh Mục Sản Phẩm</a>
-            <a href="{{ route('home') }}#news-section" onclick="smoothScrollTo('news-section', event); toggleMobileMenu();" class="mobile-nav-link"><i data-lucide="newspaper" class="w-5 h-5"></i> Tin Tức</a>
-            <a href="#" onclick="openBookingLookupModal(event); toggleMobileMenu();" class="mobile-nav-link"><i data-lucide="search" class="w-5 h-5"></i> Tra Cứu Lịch Hẹn</a>
+            <a href="{{ route('home') }}" onclick="toggleMobileMenu()" class="mobile-nav-link {{ Route::currentRouteName() === 'home' ? 'active' : '' }}"><i data-lucide="home" class="w-5 h-5"></i> Trang Chủ</a>
+            <a href="{{ route('about') }}" onclick="toggleMobileMenu()" class="mobile-nav-link {{ Route::currentRouteName() === 'about' ? 'active' : '' }}"><i data-lucide="info" class="w-5 h-5"></i> Giới Thiệu</a>
+            <a href="{{ route('vaccine.index') }}" onclick="toggleMobileMenu()" class="mobile-nav-link {{ Route::currentRouteName() === 'vaccine.index' ? 'active' : '' }}"><i data-lucide="syringe" class="w-5 h-5"></i> Danh Mục Sản Phẩm</a>
+            <a href="{{ route('news.index') }}" onclick="toggleMobileMenu()" class="mobile-nav-link {{ str_contains(Route::currentRouteName(), 'news') ? 'active' : '' }}"><i data-lucide="newspaper" class="w-5 h-5"></i> Tin Tức</a>
+            <a href="{{ route('booking.lookup') }}" onclick="toggleMobileMenu()" class="mobile-nav-link {{ Route::currentRouteName() === 'booking.lookup' ? 'active' : '' }}"><i data-lucide="search" class="w-5 h-5"></i> Tra Cứu Lịch Hẹn</a>
             <a href="{{ route('contact') }}" onclick="toggleMobileMenu()" class="mobile-nav-link {{ Route::currentRouteName() === 'contact' ? 'active' : '' }}"><i data-lucide="map-pin" class="w-5 h-5"></i> Liên Hệ</a>
         </div>
         <div class="mobile-drawer-branches" style="padding: 14px 20px; border-top: 1px solid var(--border-color);">
