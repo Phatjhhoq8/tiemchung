@@ -1,3 +1,15 @@
+## [v6.5.64] - 2026-08-21
+
+### Synchronize Category Details and Simplify Admin Layout for Non-Tech Users
+
+* **Client/Admin Synchronized Display**:
+  - Rewrote `VaccineController@diseaseDetail` to strictly query linked Category articles without fuzzy text search parameters or hardcoded fallback disease lists.
+  - Configured Client view `disease.blade.php` to hide the description panel entirely when the database has empty content, ensuring that what the Admin configures is exactly what is shown to the end-users.
+
+* **Admin Cleanups for Non-Tech Operations**:
+  - Removed all complex helper instructions and technical warnings from the Categories index modal (`categoryModal`).
+  - Simplified the labels (`Tiêu đề mô tả`, `Nội dung mô tả`) and warning alerts to be friendly and clear for non-technical users.
+
 ## [v6.5.63] - 2026-08-21
 
 ### Implement Dynamic Category Creation & Details Editor in Admin
