@@ -1220,8 +1220,8 @@ class AdminVaccineController extends Controller
             \Modules\VaccineRegistration\Models\Article::create([
                 'title' => 'Chủ động phòng ngừa bệnh ' . $category . ' hiệu quả',
                 'slug' => $slug . '-' . time(),
-                'summary' => 'Bệnh ' . $category . ' là bệnh truyền nhiễm có diễn biến phức tạp và có thể gây ra các biến chứng nguy hiểm đối với sức khỏe.',
-                'content' => '',
+                'summary' => '',
+                'content' => '<p>Bệnh <strong>' . $category . '</strong> là bệnh truyền nhiễm có diễn biến phức tạp và có thể gây ra các biến chứng nguy hiểm đối với sức khỏe. Việc chủ động tiêm ngừa vắc xin là phương pháp phòng bệnh khoa học, an toàn và tiết kiệm nhất cho cả gia đình.</p><p>💉 Hãy liên hệ Medicare để nhận tư vấn chi tiết về phác đồ và lịch tiêm chủng vắc xin phòng bệnh ' . $category . ' phù hợp nhất với độ tuổi của bạn.</p>',
                 'category' => $category,
                 'is_published' => true,
                 'is_featured' => false,

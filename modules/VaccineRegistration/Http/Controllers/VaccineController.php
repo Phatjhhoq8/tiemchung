@@ -211,8 +211,8 @@ class VaccineController extends Controller
     private function buildProductCategories($vaccines)
     {
         return $vaccines
-            ->filter(fn ($vaccine) => ! empty($vaccine->category) || ! empty($vaccine->disease_prevention))
-            ->groupBy(fn ($vaccine) => $vaccine->category ?: $this->buildDiseaseOptions(collect([$vaccine]))->first())
+            ->filter(fn ($vaccine) => ! empty($vaccine->category))
+            ->groupBy('category')
             ->map(function ($items, $name) {
                 $first = $items->first();
 
