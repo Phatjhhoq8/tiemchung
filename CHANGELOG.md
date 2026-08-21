@@ -1,3 +1,13 @@
+## [v6.5.83] - 2026-08-21
+
+### Refactor Live Editor Labels and Action Controls
+
+* **Clean Up Live Editor View & Modal Labels**:
+  - Removed technical key placeholders and developer comments in brackets/parentheses (e.g., `(site_logo)`, `[home_safe_process_title]`, `(FAQ)`) from all input field names, options lists, and JSON schemas inside `live_editor.blade.php`.
+  - Configured fallback text to display as a clean `'Nội dung cấu hình'` instead of `'Nội dung cấu hình [key]'`.
+* **Simplify Dashboard Controls**:
+  - Removed "Khôi Phục Nháp" (Restore Draft) and "Xem Thử (Preview)" buttons from the top action toolbar, keeping only the primary "Xuất Bản Chính Thức" action button to simplify the admin UX.
+
 ## [v6.5.82] - 2026-08-21
 
 ### Prevent Form Data Loss when Switching Tabs in SPA Booking Modal
