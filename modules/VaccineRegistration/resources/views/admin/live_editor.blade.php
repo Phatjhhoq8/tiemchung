@@ -545,7 +545,8 @@
                 { key: 'name', label: 'Họ và tên bác sĩ', type: 'text', placeholder: 'Ví dụ: ThS. BS. Nguyễn Minh Đức' },
                 { key: 'role', label: 'Chức vụ / Chuyên khoa', type: 'text', placeholder: 'Ví dụ: Giám đốc chuyên môn tiêm chủng' },
                 { key: 'avatar', label: 'Ảnh đại diện', type: 'image', placeholder: 'Định dạng jpeg, png, jpg, webp' },
-                { key: 'zalo', label: 'Số hotline / Zalo liên hệ', type: 'text', placeholder: 'Ví dụ: 0938603839' }
+                { key: 'zalo', label: 'Số hotline / Zalo liên hệ', type: 'text', placeholder: 'Ví dụ: 0938603839' },
+                { key: 'facebook', label: 'Link Facebook cá nhân', type: 'text', placeholder: 'Ví dụ: https://facebook.com/username' }
             ]
         },
         'services_list': {

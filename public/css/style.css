@@ -5446,7 +5446,8 @@ div.section-badge,
 .btn-select-detail,
 .btn-detail-link,
 .btn-select-vaccine,
-.vaccine-btn-add {
+.vaccine-btn-add,
+#btnToggleCategories {
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
@@ -5454,7 +5455,8 @@ div.section-badge,
 .fb-modal-footer button:hover,
 .btn-primary:hover,
 .btn-secondary:hover,
-.btn-secondary-outline:hover {
+.btn-secondary-outline:hover,
+#btnToggleCategories:hover {
     transform: translateY(-3px) !important;
 }
 
@@ -5480,5 +5482,12 @@ div.section-badge,
     box-shadow: 0 6px 15px rgba(0, 75, 143, 0.12) !important;
     background-color: #f1f5f9 !important;
     border-color: #cbd5e1 !important;
+}
+
+/* Custom hover invert colors for Category Toggle Button */
+#btnToggleCategories:hover {
+    background-color: var(--primary-color, #c8102e) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 15px rgba(200, 16, 46, 0.2) !important;
 }
 

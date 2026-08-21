@@ -306,9 +306,11 @@
                             <i data-lucide="phone-call" style="width: 16px; height: 16px; stroke-width: 2.5;"></i>
                         </a>
                         @endif
-                        <a href="#" class="team-social-link" title="Facebook">
+                        @if(!empty($member['facebook']))
+                        <a href="{{ $member['facebook'] }}" target="_blank" rel="noopener noreferrer" class="team-social-link" title="Facebook">
                             <span class="team-facebook-letter">f</span>
                         </a>
+                        @endif
                     </div>
                 </div>
             @endforeach
