@@ -1,3 +1,13 @@
+## [v6.5.69] - 2026-08-21
+
+### Integrate TinyMCE Editor to Categories and Vaccine Forms
+
+* **Category Description WYSIWYG integration**:
+  - Replaced the raw HTML textarea in `admin/categories/index.blade.php` modal with TinyMCE 6 editor, matching the styling and Vietnamese locale used in the news publishing forms.
+
+* **Vaccine Description WYSIWYG integration**:
+  - Integrated TinyMCE on the `description` textarea in the Add/Edit Vaccine form `admin/vaccines/_form.blade.php` to prevent non-tech administrators from having to input raw HTML syntax.
+
 ## [v6.5.68] - 2026-08-21
 
 ### Display Both Center-Specific and System-Wide Counts Side-by-Side
