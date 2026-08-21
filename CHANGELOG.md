@@ -1,3 +1,10 @@
+## [v6.5.89] - 2026-08-21
+
+### Fix Stale Booking Schedules Due to Browser AJAX Caching
+
+* **Introduce API Cache Buster**:
+  - Appended a dynamic timestamp query parameter (`?_t=' + Date.now()`) to all AJAX GET requests targeting the `/register` endpoint in `public/js/app.js` (including modal initialization, tab switches, and branch selection changes). This prevents browsers and proxy servers from returning cached schedules and forces a clean database query, ensuring new schedules added by admins (such as weekend dates) are immediately visible.
+
 ## [v6.5.88] - 2026-08-21
 
 ### Fix DatePicker Popup Auto-Dismiss on Month/Year Selection
