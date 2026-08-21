@@ -43,7 +43,7 @@
                                 </td>
                                 <td style="padding: 14px 20px; text-align: center;">
                                     <div style="display: inline-flex; gap: 8px; justify-content: center; align-items: center;">
-                                        <button onclick="openEditModal('{{ e($cat->category) }}')" class="btn-action-edit" title="Sửa tên nhóm bệnh" style="border-radius: 6px; padding: 6px 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; cursor: pointer; transition: all 0.2s;">
+                                        <button onclick="handleOpenEditModal(this)" data-category="{{ $cat->category }}" data-title="{{ $cat->article_title }}" data-content="{{ $cat->article_content }}" class="btn-action-edit" title="Sửa tên nhóm bệnh" style="border-radius: 6px; padding: 6px 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; cursor: pointer; transition: all 0.2s;">
                                             <i data-lucide="edit-3" style="width: 13.5px; height: 13.5px;"></i> Sửa
                                         </button>
                                         <button onclick="handleDeleteCategory('{{ e($cat->category) }}')" class="btn-action-delete" title="Xóa nhóm bệnh" style="border-radius: 6px; padding: 6px 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; border: 1px solid #fecaca; background: #fef2f2; color: #dc2626; cursor: pointer; transition: all 0.2s;">
@@ -70,7 +70,7 @@
 
 <!-- Modal Thêm/Sửa Nhóm Bệnh (Tự tùy biến, không phụ thuộc Bootstrap JS) -->
 <div id="categoryModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 9999; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px);">
-    <div style="background: #ffffff; border-radius: 16px; max-width: 480px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.15); overflow: hidden; box-sizing: border-box;">
+    <div style="background: #ffffff; border-radius: 16px; max-width: 520px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.15); overflow: hidden; box-sizing: border-box;">
         <!-- Header -->
         <div style="padding: 20px 24px 10px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9;">
             <h5 id="modalTitle" style="font-weight: 800; font-size: 18px; color: #0f172a; margin: 0;">Thêm Nhóm Bệnh</h5>
@@ -81,17 +81,30 @@
             <input type="hidden" id="actionType" value="create">
             <input type="hidden" id="oldCategoryName" value="">
             
-            <div style="padding: 20px 24px; box-sizing: border-box;">
-                <div style="margin-bottom: 0;">
-                    <label for="categoryName" style="font-weight: 600; font-size: 14px; color: #475569; margin-bottom: 8px; display: block; text-align: left;">Tên nhóm bệnh mới <span style="color: #dc2626;">*</span></label>
+            <div style="padding: 20px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;">
+                <div>
+                    <label for="categoryName" style="font-weight: 600; font-size: 14px; color: #475569; margin-bottom: 8px; display: block; text-align: left;">Tên nhóm bệnh <span style="color: #dc2626;">*</span></label>
                     <input type="text" id="categoryName" placeholder="Nhập tên nhóm bệnh (Ví dụ: Cúm mùa, HPV...)" required style="width: 100%; border-radius: 8px; padding: 10px 14px; font-size: 14.5px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none; transition: border-color 0.15s;">
                     <div id="err_categoryName" style="font-size: 12.5px; color: #dc2626; margin-top: 6px; display: none; text-align: left;"></div>
                 </div>
-                <div id="createHelperText" style="border-radius: 8px; background-color: #f0fdf4; color: #166534; font-size: 12.5px; padding: 10px 12px; margin-top: 14px; display: none; text-align: left; line-height: 1.4;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px; margin-top: -2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="12"></line></svg>
-                    Nhóm bệnh mới sẽ có hiệu lực ngay sau khi gán cho vắc xin bất kỳ.
+
+                <!-- Custom fields for category descriptions (Edit only) -->
+                <div id="categoryEditDetailsFields" style="display: none; flex-direction: column; gap: 14px;">
+                    <div>
+                        <label for="categoryTitle" style="font-weight: 600; font-size: 14px; color: #475569; margin-bottom: 8px; display: block; text-align: left;">Tiêu đề mô tả (Hiển thị ở Client)</label>
+                        <input type="text" id="categoryTitle" placeholder="Ví dụ: Chủ động phòng ngừa bệnh Mô cầu B hiệu quả" style="width: 100%; border-radius: 8px; padding: 10px 14px; font-size: 14.5px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none;">
+                    </div>
+                    <div>
+                        <label for="categoryContent" style="font-weight: 600; font-size: 14px; color: #475569; margin-bottom: 8px; display: block; text-align: left;">Nội dung mô tả chi tiết (Hỗ trợ HTML)</label>
+                        <textarea id="categoryContent" placeholder="Nhập nội dung mô tả chi tiết của nhóm bệnh..." rows="6" style="width: 100%; border-radius: 8px; padding: 10px 14px; font-size: 14.5px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none; resize: vertical; font-family: inherit; line-height: 1.5;"></textarea>
+                    </div>
                 </div>
-                <div id="editHelperText" style="border-radius: 8px; background-color: #fffbeb; color: #854d0e; font-size: 12.5px; padding: 10px 12px; margin-top: 14px; display: none; text-align: left; line-height: 1.4;">
+
+                <div id="createHelperText" style="border-radius: 8px; background-color: #f0fdf4; color: #166534; font-size: 12.5px; padding: 10px 12px; display: none; text-align: left; line-height: 1.4;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px; margin-top: -2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="12"></line></svg>
+                    Nhóm bệnh mới sẽ có hiệu lực ngay sau khi lưu và hiển thị trong danh mục vắc xin.
+                </div>
+                <div id="editHelperText" style="border-radius: 8px; background-color: #fffbeb; color: #854d0e; font-size: 12.5px; padding: 10px 12px; display: none; text-align: left; line-height: 1.4;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px; margin-top: -2px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                     Thay đổi tên sẽ cập nhật đồng loạt cho toàn bộ các vắc xin thuộc nhóm này.
                 </div>
@@ -167,6 +180,7 @@
         document.getElementById('categoryName').value = '';
         document.getElementById('oldCategoryName').value = '';
         
+        document.getElementById('categoryEditDetailsFields').style.display = 'none';
         document.getElementById('createHelperText').style.display = 'block';
         document.getElementById('editHelperText').style.display = 'none';
         
@@ -179,12 +193,23 @@
         document.getElementById('categoryModal').style.display = 'none';
     }
 
-    function openEditModal(name) {
+    function handleOpenEditModal(btn) {
+        const name = btn.getAttribute('data-category');
+        const title = btn.getAttribute('data-title');
+        const content = btn.getAttribute('data-content');
+        openEditModal(name, title, content);
+    }
+
+    function openEditModal(name, title, content) {
         document.getElementById('modalTitle').textContent = 'Chỉnh Sửa Nhóm Bệnh';
         document.getElementById('actionType').value = 'edit';
         document.getElementById('categoryName').value = name;
         document.getElementById('oldCategoryName').value = name;
         
+        document.getElementById('categoryTitle').value = title || '';
+        document.getElementById('categoryContent').value = content || '';
+        
+        document.getElementById('categoryEditDetailsFields').style.display = 'flex';
         document.getElementById('createHelperText').style.display = 'none';
         document.getElementById('editHelperText').style.display = 'block';
         
@@ -214,13 +239,46 @@
         }
 
         if (actionType === 'create') {
-            window.AppDialog.toast('Nhóm bệnh sẽ được tự động tạo và hiển thị khi bạn thêm vắc xin mới hoặc sửa vắc xin cũ và gán nhóm này.', 'info');
-            closeCategoryModal();
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Đang lưu...';
+            try {
+                const response = await fetch('{{ route("admin.categories.store-ajax") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        category: nameVal
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Lỗi tạo nhóm bệnh mới.');
+                }
+
+                window.AppDialog.toast(data.message || 'Tạo nhóm bệnh mới thành công.', 'success');
+                closeCategoryModal();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 800);
+            } catch (error) {
+                window.AppDialog.toast(error.message, 'error');
+                errEl.textContent = error.message;
+                errEl.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Lưu lại';
+            }
             return;
         }
 
         // Action edit
-        const confirmMsg = `Bạn có thực sự muốn đổi tên nhóm bệnh từ "${oldName}" thành "${nameVal}" không?\nToàn bộ vắc xin liên quan sẽ được cập nhật.`;
+        const titleVal = document.getElementById('categoryTitle').value.trim();
+        const contentVal = document.getElementById('categoryContent').value;
+        
+        const confirmMsg = `Bạn có thực sự muốn lưu thay đổi cho nhóm bệnh "${oldName}" không?\nToàn bộ vắc xin liên quan và nội dung mô tả sẽ được cập nhật.`;
         if (!await window.AppDialog.confirm(confirmMsg)) {
             return;
         }
@@ -238,7 +296,9 @@
                 },
                 body: JSON.stringify({
                     old_name: oldName,
-                    new_name: nameVal
+                    new_name: nameVal,
+                    title: titleVal,
+                    content: contentVal
                 })
             });
 

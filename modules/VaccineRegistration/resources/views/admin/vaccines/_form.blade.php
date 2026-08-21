@@ -162,16 +162,12 @@
                             @foreach($categories as $cat)
                                 <div class="category-option-item" data-value="{{ $cat }}" style="display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; font-size: 13.5px; border-radius: 6px; cursor: pointer; color: #334155; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
                                     <span class="cat-item-text" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px;">{{ $cat }}</span>
-                                    <div class="cat-item-actions" style="display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0;">
-                                        <button type="button" class="btn-cat-edit" data-cat="{{ $cat }}" style="background: none; border: none; color: #475569; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Sửa tên nhóm bệnh">Sửa</button>
-                                        <button type="button" class="btn-cat-delete" data-cat="{{ $cat }}" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Xóa nhóm bệnh">Xóa</button>
-                                    </div>
                                 </div>
                             @endforeach
                         @endif
                     </div>
-                    <div id="category_custom_add_btn" style="padding: 8px 10px; font-size: 13px; font-weight: 600; color: #c8102e; border-top: 1px solid #f1f5f9; margin-top: 4px; cursor: pointer; display: none;">
-                        + Thêm mới: "<span id="category_custom_text"></span>"
+                    <div id="category_custom_add_btn" style="padding: 8px 10px; font-size: 13px; font-weight: 700; color: #c8102e; border-top: 1px solid #cbd5e1; margin-top: 6px; cursor: pointer; display: block; text-align: center; background: #fff5f5; border-radius: 6px;">
+                        + Thêm nhóm bệnh mới...
                     </div>
                 </div>
                 @endif
@@ -930,11 +926,8 @@
                     }
                 });
 
-                if (query.length > 0 && !exactMatch && catCustomAddBtn && catCustomText) {
-                    catCustomText.textContent = term.trim();
+                if (catCustomAddBtn) {
                     catCustomAddBtn.style.display = 'block';
-                } else if (catCustomAddBtn) {
-                    catCustomAddBtn.style.display = 'none';
                 }
             }
 
@@ -1100,10 +1093,6 @@
 
                     div.innerHTML = `
                         <span class="cat-item-text" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px;">${cat}</span>
-                        <div class="cat-item-actions" style="display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0;">
-                            <button type="button" class="btn-cat-edit" data-cat="${cat}" style="background: none; border: none; color: #475569; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Sửa tên nhóm bệnh">Sửa</button>
-                            <button type="button" class="btn-cat-delete" data-cat="${cat}" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: 500; cursor: pointer; padding: 0 4px;" title="Xóa nhóm bệnh">Xóa</button>
-                        </div>
                     `;
                     catListContainer.appendChild(div);
                 });
@@ -1114,9 +1103,36 @@
             }
 
             if (catCustomAddBtn) {
-                catCustomAddBtn.addEventListener('click', function() {
-                    if (catSearchInput && catSearchInput.value.trim()) {
-                        selectCategoryValue(catSearchInput.value.trim());
+                catCustomAddBtn.addEventListener('click', async function(e) {
+                    e.stopPropagation();
+                    const newCatName = prompt('Nhập tên nhóm bệnh mới:');
+                    if (!newCatName || !newCatName.trim()) return;
+                    
+                    try {
+                        const response = await fetch('{{ route("admin.categories.store-ajax") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ category: newCatName.trim() })
+                        });
+                        const data = await response.json();
+                        if (!response.ok || !data.success) {
+                            throw new Error(data.message || 'Lỗi thêm nhóm bệnh mới.');
+                        }
+                        
+                        // Cập nhật lại dropdown list
+                        updateCategoryOptions(data.categories, newCatName.trim());
+                        selectCategoryValue(newCatName.trim());
+                        
+                        // Đóng menu
+                        if (catMenu) catMenu.style.display = 'none';
+                        
+                        window.AppDialog.toast(`Đã thêm nhóm bệnh mới "${newCatName.trim()}"`, 'success');
+                    } catch (err) {
+                        alert(err.message);
                     }
                 });
             }

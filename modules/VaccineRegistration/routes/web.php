@@ -135,6 +135,7 @@ Route::middleware('web')->group(function () {
         Route::post('/categories/check-delete', [AdminVaccineController::class, 'checkCategoryDelete'])->name('categories.check-delete');
         Route::put('/categories/update', [AdminVaccineController::class, 'updateCategory'])->name('categories.update');
         Route::delete('/categories/destroy', [AdminVaccineController::class, 'destroyCategory'])->name('categories.destroy');
+        Route::post('/categories/store-ajax', [AdminVaccineController::class, 'storeCategoryAjax'])->name('categories.store-ajax');
         Route::post('/metadata/check-delete', [AdminVaccineController::class, 'checkMetadataDelete'])->name('metadata.check-delete');
         Route::put('/metadata/update', [AdminVaccineController::class, 'updateMetadata'])->name('metadata.update');
         Route::delete('/metadata/destroy', [AdminVaccineController::class, 'destroyMetadata'])->name('metadata.destroy');

@@ -138,13 +138,10 @@ class AdminVaccineController extends Controller
                 ->withQueryString();
         }
 
-        // Lấy danh sách danh mục để hiển thị dropdown lọc
-        $categories = Vaccine::whereNotNull('category')
-            ->where('category', '!=', '')
-            ->distinct()
-            ->pluck('category')
-            ->sort()
-            ->values();
+        // Lấy danh sách danh mục để hiển thị dropdown lọc (kết hợp cả vắc xin và bài viết)
+        $vaccineCats = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->toArray();
+        $articleCats = \Modules\VaccineRegistration\Models\Article::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->toArray();
+        $categories = collect(array_unique(array_merge($vaccineCats, $articleCats)))->sort()->values();
 
         $isSuperAdmin = AdminContext::isSuperAdmin() && $selectedCenterId === null;
         $isSuperAdminAllCenters = $isSuperAdmin;
@@ -195,7 +192,9 @@ class AdminVaccineController extends Controller
         $isSuperAdmin = AdminContext::isSuperAdmin() && $selectedCenterId === null;
         $isSuperAdminAllCenters = $isSuperAdmin;
         $adminUser = AdminContext::user();
-        $categories = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->sort()->values();
+        $vaccineCats = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->toArray();
+        $articleCats = \Modules\VaccineRegistration\Models\Article::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->toArray();
+        $categories = collect(array_unique(array_merge($vaccineCats, $articleCats)))->sort()->values();
         $diseasePreventions = Vaccine::distinct()->whereNotNull('disease_prevention')->where('disease_prevention', '!=', '')->pluck('disease_prevention')->sort()->values();
         $origins = Vaccine::distinct()->whereNotNull('origin')->where('origin', '!=', '')->pluck('origin')->sort()->values();
         $dosages = Vaccine::distinct()->whereNotNull('dosage')->where('dosage', '!=', '')->pluck('dosage')->sort()->values();
@@ -347,7 +346,9 @@ class AdminVaccineController extends Controller
             $vaccine->is_featured = $centerVaccine->is_featured;
             $vaccine->sort_order = $centerVaccine->sort_order;
         }
-        $categories = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->sort()->values();
+        $vaccineCats = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->toArray();
+        $articleCats = \Modules\VaccineRegistration\Models\Article::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->toArray();
+        $categories = collect(array_unique(array_merge($vaccineCats, $articleCats)))->sort()->values();
         $diseasePreventions = Vaccine::distinct()->whereNotNull('disease_prevention')->where('disease_prevention', '!=', '')->pluck('disease_prevention')->sort()->values();
         $origins = Vaccine::distinct()->whereNotNull('origin')->where('origin', '!=', '')->pluck('origin')->sort()->values();
         $dosages = Vaccine::distinct()->whereNotNull('dosage')->where('dosage', '!=', '')->pluck('dosage')->sort()->values();
@@ -951,12 +952,43 @@ class AdminVaccineController extends Controller
         $request->validate([
             'old_name' => 'required|string|max:100',
             'new_name' => 'required|string|max:100',
+            'title' => 'nullable|string|max:255',
+            'content' => 'nullable|string',
         ]);
 
         $oldName = trim($request->input('old_name'));
         $newName = trim($request->input('new_name'));
+        $title = trim((string) $request->input('title'));
+        $content = trim((string) $request->input('content'));
 
+        // 1. Cập nhật category trong bảng vaccines
         $count = Vaccine::where('category', $oldName)->update(['category' => $newName]);
+
+        // 2. Tìm hoặc tạo mới bài viết mô tả trong bảng articles
+        $article = \Modules\VaccineRegistration\Models\Article::where('category', $oldName)->first();
+        if (!$article) {
+            $article = \Modules\VaccineRegistration\Models\Article::where('category', $newName)->first();
+        }
+
+        if ($article) {
+            $article->category = $newName;
+            if ($title !== '') {
+                $article->title = $title;
+            }
+            $article->content = $content;
+            $article->slug = \Illuminate\Support\Str::slug($newName) . '-' . $article->id;
+            $article->save();
+        } else {
+            \Modules\VaccineRegistration\Models\Article::create([
+                'title' => $title !== '' ? $title : 'Chủ động phòng ngừa bệnh ' . $newName . ' hiệu quả',
+                'slug' => \Illuminate\Support\Str::slug($newName) . '-' . time(),
+                'summary' => 'Bệnh ' . $newName . ' là bệnh truyền nhiễm có diễn biến phức tạp và có thể gây ra các biến chứng nguy hiểm đối với sức khỏe.',
+                'content' => $content,
+                'category' => $newName,
+                'is_published' => true,
+                'is_featured' => false,
+            ]);
+        }
 
         AuditLogger::log(
             'admin.category_updated',
@@ -966,7 +998,9 @@ class AdminVaccineController extends Controller
             ['name' => $newName, 'updated_vaccines' => $count]
         );
 
-        $categories = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category');
+        $vaccineCats = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->toArray();
+        $articleCats = \Modules\VaccineRegistration\Models\Article::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->toArray();
+        $categories = collect(array_unique(array_merge($vaccineCats, $articleCats)))->sort()->values();
 
         return response()->json([
             'message' => "Đã cập nhật nhóm bệnh '{$oldName}' thành '{$newName}'.",
@@ -987,6 +1021,9 @@ class AdminVaccineController extends Controller
         $category = trim($request->input('category'));
         $count = Vaccine::where('category', $category)->update(['category' => null]);
 
+        // Xóa bài viết mô tả của nhóm bệnh này trong bảng articles
+        \Modules\VaccineRegistration\Models\Article::where('category', $category)->delete();
+
         AuditLogger::log(
             'admin.category_deleted',
             'category',
@@ -995,7 +1032,9 @@ class AdminVaccineController extends Controller
             null
         );
 
-        $categories = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category');
+        $vaccineCats = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->toArray();
+        $articleCats = \Modules\VaccineRegistration\Models\Article::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->toArray();
+        $categories = collect(array_unique(array_merge($vaccineCats, $articleCats)))->sort()->values();
 
         return response()->json([
             'message' => "Đã xóa nhóm bệnh '{$category}'.",
@@ -1127,13 +1166,77 @@ class AdminVaccineController extends Controller
     {
         abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền quản lý nhóm bệnh.');
 
-        $categories = Vaccine::select('category', \Illuminate\Support\Facades\DB::raw('count(*) as vaccine_count'))
+        $vaccineCats = Vaccine::select('category')
             ->whereNotNull('category')
             ->where('category', '!=', '')
             ->groupBy('category')
-            ->orderBy('category', 'asc')
-            ->get();
+            ->get()
+            ->pluck('category')
+            ->toArray();
+
+        $articleCats = \Modules\VaccineRegistration\Models\Article::select('category')
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->groupBy('category')
+            ->get()
+            ->pluck('category')
+            ->toArray();
+
+        $allCatNames = array_unique(array_merge($vaccineCats, $articleCats));
+        sort($allCatNames);
+
+        $categories = collect($allCatNames)->map(function ($catName) {
+            $vaccineCount = Vaccine::where('category', $catName)->count();
+            
+            // Tìm bài viết mô tả
+            $article = \Modules\VaccineRegistration\Models\Article::where('category', $catName)->first();
+
+            return (object) [
+                'category' => $catName,
+                'vaccine_count' => $vaccineCount,
+                'article_title' => $article?->title ?? '',
+                'article_content' => $article?->content ?? '',
+            ];
+        });
 
         return view('vaccine::admin.categories.index', compact('categories'));
+    }
+
+    /**
+     * Thêm mới một nhóm bệnh bằng AJAX (tạo bài viết mô tả trống).
+     */
+    public function storeCategoryAjax(Request $request)
+    {
+        $request->validate([
+            'category' => 'required|string|max:100',
+        ]);
+
+        $category = trim($request->input('category'));
+        $slug = \Illuminate\Support\Str::slug($category);
+
+        // Tạo bài viết mô tả trống cho nhóm bệnh này trong bảng articles nếu chưa có
+        $exists = \Modules\VaccineRegistration\Models\Article::where('category', $category)->exists();
+        if (!$exists) {
+            \Modules\VaccineRegistration\Models\Article::create([
+                'title' => 'Chủ động phòng ngừa bệnh ' . $category . ' hiệu quả',
+                'slug' => $slug . '-' . time(),
+                'summary' => 'Bệnh ' . $category . ' là bệnh truyền nhiễm có diễn biến phức tạp và có thể gây ra các biến chứng nguy hiểm đối với sức khỏe.',
+                'content' => '',
+                'category' => $category,
+                'is_published' => true,
+                'is_featured' => false,
+            ]);
+        }
+
+        // Lấy lại toàn bộ categories
+        $vaccineCats = Vaccine::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->toArray();
+        $articleCats = \Modules\VaccineRegistration\Models\Article::distinct()->whereNotNull('category')->where('category', '!=', '')->pluck('category')->toArray();
+        $categories = collect(array_unique(array_merge($vaccineCats, $articleCats)))->sort()->values();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Đã tạo nhóm bệnh '{$category}' thành công.",
+            'categories' => $categories,
+        ]);
     }
 }
