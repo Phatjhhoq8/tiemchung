@@ -1,3 +1,11 @@
+## [v6.5.70] - 2026-08-21
+
+### Expand Width of Category Edit Modal and Editor Height
+
+* **Category Modal UI Expansion**:
+  - Resized the Category Edit Modal container in `admin/categories/index.blade.php` to a width of `850px` (previously `520px`).
+  - Increased TinyMCE editor viewport height to `420px` (previously `280px`) to provide a spacious writing layout for medical content.
+
 ## [v6.5.69] - 2026-08-21
 
 ### Integrate TinyMCE Editor to Categories and Vaccine Forms
