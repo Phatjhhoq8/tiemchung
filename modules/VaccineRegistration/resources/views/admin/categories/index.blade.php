@@ -5,12 +5,12 @@
 @section('admin_content')
 <div class="container-fluid px-4 py-4" style="max-width: 1000px; margin: 0 auto;">
     <!-- Header Page -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-1 text-slate-800 font-bold" style="font-weight: 800; color: #0f172a; font-size: 24px;">Quản lý Nhóm Bệnh</h1>
-            <p class="text-muted mb-0" style="font-size: 14px; color: #64748b;">Danh mục các nhóm bệnh của vắc xin hiện có trên hệ thống.</p>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+        <div style="text-align: left;">
+            <h1 style="font-weight: 800; color: #0f172a; font-size: 24px; margin: 0 0 4px 0;">Quản lý Nhóm Bệnh</h1>
+            <p style="font-size: 14px; color: #64748b; margin: 0;">Danh mục các nhóm bệnh của vắc xin hiện có trên hệ thống.</p>
         </div>
-        <button type="button" class="btn btn-primary" onclick="openCreateModal()" style="background-color: #c8102e; border: 1px solid #c8102e; color: #ffffff; font-weight: 700; border-radius: 8px; padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;">
+        <button type="button" onclick="openCreateModal()" style="background-color: #c8102e; border: 1px solid #c8102e; color: #ffffff; font-weight: 700; border-radius: 8px; padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s; height: fit-content;">
             <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
             Thêm Nhóm Bệnh
         </button>

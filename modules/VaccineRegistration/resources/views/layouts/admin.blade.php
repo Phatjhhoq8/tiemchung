@@ -1131,6 +1131,8 @@
                                             $isItemActive = ($currentRoute === 'admin.settings.index' || $currentRoute === 'admin.settings.update');
                                         } elseif ($item['route'] === 'admin.schedules.index') {
                                             $isItemActive = (str_starts_with($currentRoute, 'admin.schedules.') || str_starts_with($currentRoute, 'admin.default-slots.'));
+                                        } elseif ($item['route'] === 'admin.vaccines.index') {
+                                            $isItemActive = str_starts_with($currentRoute, 'admin.vaccines.') && $currentRoute !== 'admin.vaccines.categories';
                                         } else {
                                             $isItemActive = str_starts_with($currentRoute, $itemPrefix . '.');
                                         }
