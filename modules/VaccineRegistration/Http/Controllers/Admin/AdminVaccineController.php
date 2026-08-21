@@ -1119,4 +1119,21 @@ class AdminVaccineController extends Controller
             'values' => $values,
         ]);
     }
+
+    /**
+     * Hiển thị trang quản lý danh mục nhóm bệnh tập trung.
+     */
+    public function categoriesIndex(Request $request)
+    {
+        abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền quản lý nhóm bệnh.');
+
+        $categories = Vaccine::select('category', \Illuminate\Support\Facades\DB::raw('count(*) as vaccine_count'))
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->groupBy('category')
+            ->orderBy('category', 'asc')
+            ->get();
+
+        return view('vaccine::admin.categories.index', compact('categories'));
+    }
 }

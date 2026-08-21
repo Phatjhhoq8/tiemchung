@@ -1,3 +1,37 @@
+## [v6.5.57] - 2026-08-21
+
+### Add Category Management in Admin & Refactor SPA Consultation Form
+
+* **Add Category Management in Admin**:
+  - Integrated centralized "Quản lý nhóm bệnh" (Category Management) view in Admin under the Vaccine group.
+  - Linked to existing check, update, and delete metadata endpoints (`checkCategoryDelete`, `updateCategory`, `destroyCategory`).
+  - Added "Quản lý nhóm bệnh" item to Admin `subNavigation` bar.
+
+* **Refactor SPA Consultation Form**:
+  - Replaced the direct Zalo redirection with a lead capture form (collecting Name, Phone, and Note) in the SPA empty-cart/consultation drawer.
+  - Form posts data directly to the `/leads` database endpoint to record in CRM (`consultation_leads`).
+  - Upon successful submission, displays the success message alongside the branch's specific Zalo QR Code, hotline, and direct chat link for seamless follow-up.
+
+## [v6.5.56] - 2026-08-21
+
+### Migrate Database to the new host
+
+* **Database Migration & Configuration**:
+  - Dumped structure and data from remote MySQL source (`yvidlapc_tiemchung`) to `tiemchung_backup.sql` local file.
+  - Compressed the local `vendor` library to `vendor.zip` to upload.
+  - Configured `index_hook.php` (placed on server `public_html/index.php`) to automatically unzip `vendor.zip` and import database into local database server (`nwyyoafa_tiemchung`) via PHP PDO when triggered by user access.
+  - Updated local and remote `.env` configuration to use the new database host (`127.0.0.1`), database name (`nwyyoafa_tiemchung`), and credentials.
+
+## [v6.5.55] - 2026-08-21
+
+### Deploy application to the new FTP host
+
+* **FTP Host Transition**:
+  - Updated FTP connection configuration variables in `.env` (`FTP_HOST`, `FTP_PORT`, `FTP_USERNAME`, `FTP_PASSWORD`) to point to the new cPanel host (`hv45-24817.azdigihost.com`).
+  - Compiled latest Vite frontend assets into `public/build`.
+  - Created `deploy_cpanel.ps1` helper script to scan and upload all code resources.
+  - Successfully uploaded all 457 project source and public asset files, routing Laravel core folders (e.g. `app/`, `bootstrap/`, `config/`) outside web root and duplicating/placing public assets directly in `public_html/`.
+
 ## [v6.5.54] - 2026-08-15
 
 ### Enforce Strict Centering for Single News Article

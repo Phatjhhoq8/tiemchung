@@ -131,6 +131,7 @@ Route::middleware('web')->group(function () {
         Route::get('/vaccin', function () {
             return redirect()->route('admin.vaccines.index');
         });
+        Route::get('/categories', [AdminVaccineController::class, 'categoriesIndex'])->name('vaccines.categories');
         Route::post('/categories/check-delete', [AdminVaccineController::class, 'checkCategoryDelete'])->name('categories.check-delete');
         Route::put('/categories/update', [AdminVaccineController::class, 'updateCategory'])->name('categories.update');
         Route::delete('/categories/destroy', [AdminVaccineController::class, 'destroyCategory'])->name('categories.destroy');

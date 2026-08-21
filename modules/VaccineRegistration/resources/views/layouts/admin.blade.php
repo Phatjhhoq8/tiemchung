@@ -13,7 +13,7 @@
     $groupVaccine = [
         'admin.vaccines.index', 'admin.vaccines.create', 'admin.vaccines.edit',
         'admin.schedules.index', 'admin.default-slots.index',
-        'admin.schedule'
+        'admin.schedule', 'admin.vaccines.categories'
     ];
     
     // Nhóm 2: Đăng ký & Khách hàng
@@ -45,6 +45,7 @@
         $activeGroup = 'vaccine';
         $subNavigation = [
             ['route' => 'admin.vaccines.index', 'label' => 'Quản lý Vắc Xin', 'icon' => 'syringe'],
+            ['route' => 'admin.vaccines.categories', 'label' => 'Quản lý Nhóm Bệnh', 'icon' => 'tags'],
             ['route' => 'admin.schedules.index', 'label' => 'Khung Giờ Tiêm', 'icon' => 'clock'],
             ['route' => 'admin.schedule', 'label' => 'Lịch Hẹn Tuần', 'icon' => 'calendar'],
         ];

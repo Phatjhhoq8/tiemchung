@@ -67,7 +67,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
         });
     })->create();
 
-if (file_exists($app->basePath('index.php'))) {
+if (is_dir($app->basePath('public_html'))) {
+    $app->usePublicPath($app->basePath('public_html'));
+} elseif (file_exists($app->basePath('index.php'))) {
     $app->usePublicPath($app->basePath());
 }
 
