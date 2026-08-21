@@ -1185,8 +1185,18 @@ class AdminVaccineController extends Controller
         $allCatNames = array_unique(array_merge($vaccineCats, $articleCats));
         sort($allCatNames);
 
-        $categories = collect($allCatNames)->map(function ($catName) {
-            $vaccineCount = Vaccine::where('category', $catName)->count();
+        $selectedCenterId = AdminContext::selectedCenterId();
+
+        $categories = collect($allCatNames)->map(function ($catName) use ($selectedCenterId) {
+            if ($selectedCenterId) {
+                $vaccineCount = Vaccine::forCenter($selectedCenterId)
+                    ->where('category', $catName)
+                    ->count();
+            } else {
+                $vaccineCount = Vaccine::where('category', $catName)
+                    ->where('is_active', true)
+                    ->count();
+            }
             
             // Tìm bài viết mô tả
             $article = \Modules\VaccineRegistration\Models\Article::where('category', $catName)->first();

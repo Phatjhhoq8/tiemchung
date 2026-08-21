@@ -872,10 +872,7 @@ class VaccineController extends Controller
         // Lọc danh sách vắc xin thuộc nhóm bệnh này
         $currentCenter = CenterContext::current();
         $vaccines = Vaccine::forCenter($currentCenter?->id)
-            ->where(function ($q) use ($diseaseDecoded) {
-                $q->where('category', $diseaseDecoded)
-                    ->orWhere('disease_prevention', 'like', '%'.$diseaseDecoded.'%');
-            })
+            ->where('category', $diseaseDecoded)
             ->orderBy('center_vaccines.sort_order', 'asc')
             ->get();
 
