@@ -182,8 +182,31 @@
 @endsection
 
 @section('scripts')
+<!-- TinyMCE 6 Core -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.jsdelivr.net/npm/tinymce-i18n@23.10.9/langs6/vi.js" onload="window.tinyMceVietnameseLoaded=true" onerror="window.tinyMceVietnameseFailed=true" referrerpolicy="origin"></script>
 <script>
     let categoryToDelete = '';
+
+    function initCategoryContentEditor() {
+        if (typeof tinymce !== 'undefined' && !tinymce.get('categoryContent')) {
+            tinymce.init({
+                selector: '#categoryContent',
+                height: 280,
+                menubar: false,
+                branding: false,
+                language: 'vi',
+                plugins: 'link lists charmap code preview searchreplace autolink directionality visualblocks visualchars image codesample table charmap pagebreak nonbreaking anchor insertdatetime advlist lists wordcount help charmap emoticons quickbars',
+                toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright alignjustify | numlist bullist | link | removeformat | code',
+                content_style: 'body { font-family:Inter,Helvetica,Arial,sans-serif; font-size:14.5px; text-align: justify; line-height: 1.6; color: #0f172a; }',
+                setup: function (editor) {
+                    editor.on('change', function () {
+                        editor.save();
+                    });
+                }
+            });
+        }
+    }
 
     function openCreateModal() {
         document.getElementById('modalTitle').textContent = 'Thêm Nhóm Bệnh';
@@ -191,11 +214,16 @@
         document.getElementById('categoryName').value = '';
         document.getElementById('oldCategoryName').value = '';
         
+        document.getElementById('categoryTitle').value = '';
+        document.getElementById('categoryContent').value = '';
+        
         document.getElementById('categoryEditDetailsFields').style.display = 'none';
-        
         document.getElementById('err_categoryName').style.display = 'none';
-        
         document.getElementById('categoryModal').style.display = 'flex';
+
+        if (typeof tinymce !== 'undefined' && tinymce.get('categoryContent')) {
+            tinymce.get('categoryContent').setContent('');
+        }
     }
 
     function closeCategoryModal() {
@@ -219,10 +247,13 @@
         document.getElementById('categoryContent').value = content || '';
         
         document.getElementById('categoryEditDetailsFields').style.display = 'flex';
-        
         document.getElementById('err_categoryName').style.display = 'none';
-        
         document.getElementById('categoryModal').style.display = 'flex';
+        
+        initCategoryContentEditor();
+        if (typeof tinymce !== 'undefined' && tinymce.get('categoryContent')) {
+            tinymce.get('categoryContent').setContent(content || '');
+        }
     }
 
     function closeDeleteConfirmModal() {
@@ -231,6 +262,10 @@
 
     async function submitCategoryForm(event) {
         event.preventDefault();
+        
+        if (typeof tinymce !== 'undefined' && tinymce.get('categoryContent')) {
+            tinymce.get('categoryContent').triggerSave();
+        }
         
         const actionType = document.getElementById('actionType').value;
         const nameInput = document.getElementById('categoryName');
