@@ -1866,17 +1866,21 @@ async function submitSpaRegistrationForm(event) {
     const dateVal = dateSelect ? dateSelect.value.trim() : '';
     const slotIdVal = slotSelect ? Number(slotSelect.value) : 0;
     if (!dateVal || !slotIdVal || isNaN(slotIdVal) || slotIdVal <= 0) {
-        errEl.textContent = 'Vui lòng chọn ngày và khung giờ tiêm chủng.';
+        const msg = 'Vui lòng chọn ngày và khung giờ tiêm chủng.';
+        errEl.textContent = msg;
         errEl.style.display = 'block';
         errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (typeof showToast === 'function') showToast(msg, 'error');
         return;
     }
 
     // 2. Validate that each patient block has inputs filled and at least one vaccine checked
     const blocks = form.querySelectorAll('.spa-patient-block');
     if (blocks.length === 0) {
-        errEl.textContent = 'Vui lòng thêm ít nhất một người tiêm.';
+        const msg = 'Vui lòng thêm ít nhất một người tiêm.';
+        errEl.textContent = msg;
         errEl.style.display = 'block';
+        if (typeof showToast === 'function') showToast(msg, 'error');
         return;
     }
 
@@ -1889,32 +1893,42 @@ async function submitSpaRegistrationForm(event) {
         const checked = block.querySelectorAll('.spa-patient-vaccine-checkbox:checked');
 
         if (!nameVal) {
-            errEl.textContent = `Vui lòng nhập họ và tên cho Người tiêm #${i + 1}.`;
+            const msg = `Vui lòng nhập họ và tên cho Người tiêm #${i + 1}.`;
+            errEl.textContent = msg;
             errEl.style.display = 'block';
             block.querySelector('.spa-patient-name')?.focus();
+            if (typeof showToast === 'function') showToast(msg, 'error');
             return;
         }
         if (!phoneVal) {
-            errEl.textContent = `Vui lòng nhập số điện thoại cho Người tiêm #${i + 1}.`;
+            const msg = `Vui lòng nhập số điện thoại cho Người tiêm #${i + 1}.`;
+            errEl.textContent = msg;
             errEl.style.display = 'block';
             block.querySelector('.spa-patient-phone')?.focus();
+            if (typeof showToast === 'function') showToast(msg, 'error');
             return;
         }
         if (!dobVal) {
-            errEl.textContent = `Vui lòng chọn ngày sinh cho Người tiêm #${i + 1}.`;
+            const msg = `Vui lòng chọn ngày sinh cho Người tiêm #${i + 1}.`;
+            errEl.textContent = msg;
             errEl.style.display = 'block';
             block.querySelector('.spa-patient-dob')?.focus();
+            if (typeof showToast === 'function') showToast(msg, 'error');
             return;
         }
         if (!addressVal) {
-            errEl.textContent = `Vui lòng nhập địa chỉ thường trú cho Người tiêm #${i + 1}.`;
+            const msg = `Vui lòng nhập địa chỉ thường trú cho Người tiêm #${i + 1}.`;
+            errEl.textContent = msg;
             errEl.style.display = 'block';
             block.querySelector('.spa-patient-address')?.focus();
+            if (typeof showToast === 'function') showToast(msg, 'error');
             return;
         }
         if (checked.length === 0) {
-            errEl.textContent = `Vui lòng chọn ít nhất một loại vắc xin cho Người tiêm #${i + 1}.`;
+            const msg = `Vui lòng chọn ít nhất một loại vắc xin cho Người tiêm #${i + 1}.`;
+            errEl.textContent = msg;
             errEl.style.display = 'block';
+            if (typeof showToast === 'function') showToast(msg, 'error');
             return;
         }
     }
@@ -1925,15 +1939,19 @@ async function submitSpaRegistrationForm(event) {
         const gName = document.getElementById('spa_guardian_name')?.value?.trim();
         const gPhone = document.getElementById('spa_guardian_phone')?.value?.trim();
         if (!gName) {
-            errEl.textContent = 'Vui lòng nhập họ tên người giám hộ (dành cho người tiêm dưới 15 tuổi).';
+            const msg = 'Vui lòng nhập họ tên người giám hộ (dành cho người tiêm dưới 15 tuổi).';
+            errEl.textContent = msg;
             errEl.style.display = 'block';
             document.getElementById('spa_guardian_name')?.focus();
+            if (typeof showToast === 'function') showToast(msg, 'error');
             return;
         }
         if (!gPhone) {
-            errEl.textContent = 'Vui lòng nhập số điện thoại người giám hộ.';
+            const msg = 'Vui lòng nhập số điện thoại người giám hộ.';
+            errEl.textContent = msg;
             errEl.style.display = 'block';
             document.getElementById('spa_guardian_phone')?.focus();
+            if (typeof showToast === 'function') showToast(msg, 'error');
             return;
         }
     }
@@ -1951,8 +1969,10 @@ async function submitSpaRegistrationForm(event) {
 
     if (firstInvalidPhone) {
         firstInvalidPhone.focus();
-        errEl.textContent = 'Vui lòng kiểm tra lại số điện thoại không hợp lệ (gồm 10 số, ví dụ: 0912345678).';
+        const msg = 'Vui lòng kiểm tra lại số điện thoại không hợp lệ (gồm 10 số, ví dụ: 0912345678).';
+        errEl.textContent = msg;
         errEl.style.display = 'block';
+        if (typeof showToast === 'function') showToast(msg, 'error');
         return;
     }
 
