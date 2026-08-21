@@ -1445,9 +1445,12 @@
                 ];
 
                 popup.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 4px;">
                         <button type="button" class="gdp-prev" style="background: none; border: none; font-size: 18px; color: #475569; cursor: pointer; padding: 2px 8px; border-radius: 6px;">‹</button>
-                        <span class="gdp-title" style="font-weight: 700; font-size: 14px; color: #0f172a; font-family: var(--font-display);"></span>
+                        <div style="display: flex; align-items: center; gap: 2px; flex-grow: 1; justify-content: center;">
+                            <select class="gdp-month-select" style="border: none; background: transparent; font-weight: 700; font-size: 13.5px; color: #0f172a; cursor: pointer; outline: none; padding: 2px; font-family: inherit;"></select>
+                            <select class="gdp-year-select" style="border: none; background: transparent; font-weight: 700; font-size: 13.5px; color: #0f172a; cursor: pointer; outline: none; padding: 2px; font-family: inherit;"></select>
+                        </div>
                         <button type="button" class="gdp-next" style="background: none; border: none; font-size: 18px; color: #475569; cursor: pointer; padding: 2px 8px; border-radius: 6px;">›</button>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 6px;">
@@ -1462,15 +1465,36 @@
 
                 wrapper.appendChild(popup);
 
-                const gdpTitle = popup.querySelector('.gdp-title');
+                const gdpMonthSelect = popup.querySelector('.gdp-month-select');
+                const gdpYearSelect = popup.querySelector('.gdp-year-select');
                 const gdpGrid = popup.querySelector('.gdp-grid');
                 const gdpPrev = popup.querySelector('.gdp-prev');
                 const gdpNext = popup.querySelector('.gdp-next');
                 const gdpClear = popup.querySelector('.gdp-clear');
                 const gdpToday = popup.querySelector('.gdp-today');
 
+                gdpMonthSelect.addEventListener('change', function() {
+                    viewMonth = parseInt(this.value, 10);
+                    renderGdp();
+                });
+                gdpYearSelect.addEventListener('change', function() {
+                    viewYear = parseInt(this.value, 10);
+                    renderGdp();
+                });
+
                 function renderGdp() {
-                    gdpTitle.textContent = `${monthNames[viewMonth]}, ${viewYear}`;
+                    gdpMonthSelect.innerHTML = monthNames.map((name, index) => 
+                        `<option value="${index}" ${index === viewMonth ? 'selected' : ''}>${name}</option>`
+                    ).join('');
+
+                    const startYear = 1900;
+                    const endYear = new Date().getFullYear() + 5;
+                    let yearHtml = '';
+                    for (let y = endYear; y >= startYear; y--) {
+                        yearHtml += `<option value="${y}" ${y === viewYear ? 'selected' : ''}>${y}</option>`;
+                    }
+                    gdpYearSelect.innerHTML = yearHtml;
+
                     gdpGrid.innerHTML = '';
 
                     const firstDay = new Date(viewYear, viewMonth, 1);
