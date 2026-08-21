@@ -499,7 +499,10 @@
 
             <div>
                 <label class="form-label-modern">Công suất (số chỗ)</label>
-                <input class="form-control-modern" type="number" id="add_capacity" name="capacity" min="1" value="10" required>
+                <input class="form-control-modern" type="number" id="add_capacity" name="capacity" min="0" value="10" required>
+                <small style="color: var(--text-muted); font-size: 11.5px; display: block; margin-top: 4px;">
+                    Nhập 0 để không giới hạn công suất đặt tiêm.
+                </small>
             </div>
 
             <div style="display: flex; gap: 8px; align-items: center;">
@@ -538,9 +541,9 @@
 
             <div>
                 <label class="form-label-modern">Công suất</label>
-                <input class="form-control-modern" type="number" id="edit_capacity" name="capacity" min="1" required>
+                <input class="form-control-modern" type="number" id="edit_capacity" name="capacity" min="0" required>
                 <small style="color: var(--text-muted); font-size: 11.5px; display: block; margin-top: 4px;">
-                    Số chỗ đã đặt hiện tại: <strong id="edit_reserved_count">0</strong>
+                    Số chỗ đã đặt hiện tại: <strong id="edit_reserved_count">0</strong>. Nhập 0 để không giới hạn công suất.
                 </small>
             </div>
 
@@ -788,7 +791,7 @@
         document.getElementById('edit_start_at').value = startAt;
         document.getElementById('edit_end_at').value = endAt;
         document.getElementById('edit_capacity').value = capacity;
-        document.getElementById('edit_capacity').min = reservedCount;
+        document.getElementById('edit_capacity').min = 0;
         document.getElementById('edit_reserved_count').textContent = reservedCount;
         document.getElementById('edit_is_active').checked = isActive === 1;
         document.getElementById('editSlotModal').style.display = 'flex';
@@ -799,8 +802,14 @@
         const slotId = document.getElementById('edit_slot_id').value;
         const startAt = document.getElementById('edit_start_at').value;
         const endAt = document.getElementById('edit_end_at').value;
-        const capacity = document.getElementById('edit_capacity').value;
+        const capacity = parseInt(document.getElementById('edit_capacity').value, 10);
+        const reservedCount = parseInt(document.getElementById('edit_reserved_count').textContent, 10);
         const isActive = document.getElementById('edit_is_active').checked ? 1 : 0;
+
+        if (capacity > 0 && capacity < reservedCount) {
+            showAlert('Công suất không được thấp hơn số chỗ đã đặt.', 'error');
+            return;
+        }
 
         try {
             const response = await fetch(`/admin/slots/${slotId}`, {
@@ -827,10 +836,15 @@
         const reservedCount = parseInt(document.getElementById('edit_reserved_count').textContent, 10);
 
         if (reservedCount > 0) {
-            if (!await window.AppDialog.confirm(`Khung giờ này đang có ${reservedCount} lượt đặt hẹn. Bạn có chắc chắn muốn xóa?`)) return;
-        } else {
-            if (!await window.AppDialog.confirm('Bạn có chắc chắn muốn xóa khung giờ này?')) return;
+            if (window.AppDialog) {
+                window.AppDialog.alert('Không thể xóa khung giờ đã có người đăng ký tiêm chủng.');
+            } else {
+                alert('Không thể xóa khung giờ đã có người đăng ký tiêm chủng.');
+            }
+            return;
         }
+
+        if (!await window.AppDialog.confirm('Bạn có chắc chắn muốn xóa khung giờ này?')) return;
 
         try {
             const response = await fetch(`/admin/slots/${slotId}`, {

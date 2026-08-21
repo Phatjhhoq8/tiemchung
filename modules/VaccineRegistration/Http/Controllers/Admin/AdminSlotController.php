@@ -46,7 +46,7 @@ class AdminSlotController extends Controller
             'schedule_id' => 'required|exists:schedules,id',
             'start_at' => 'required|string',
             'end_at' => 'required|string',
-            'capacity' => 'required|integer|min:1',
+            'capacity' => 'required|integer|min:0',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -89,8 +89,15 @@ class AdminSlotController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        if (isset($validated['capacity']) && $validated['capacity'] < $slot->reserved_count) {
-            return back()->withErrors(['capacity' => 'Công suất không được thấp hơn số chỗ đã đặt.']);
+        if (isset($validated['capacity']) && $validated['capacity'] > 0 && $validated['capacity'] < $slot->reserved_count) {
+            $errorMsg = 'Công suất không được thấp hơn số chỗ đã đặt.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMsg
+                ], 422);
+            }
+            return back()->withErrors(['capacity' => $errorMsg]);
         }
 
         $slot->update($validated);
@@ -114,6 +121,17 @@ class AdminSlotController extends Controller
         $slot = Slot::with('schedule')->findOrFail($id);
 
         AdminContext::assertCanManageCenter((int) $slot->schedule->center_id);
+
+        if ($slot->reserved_count > 0) {
+            $msg = 'Không thể xóa khung giờ đã có người đăng ký tiêm chủng.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $msg
+                ], 422);
+            }
+            return redirect()->back()->withErrors(['error' => $msg]);
+        }
 
         $slot->delete();
 

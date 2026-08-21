@@ -466,7 +466,10 @@ class VaccineController extends Controller
             ->whereDate('date', '>=', $today)
             ->with(['slots' => function ($query) {
                 $query->where('is_active', true)
-                    ->whereColumn('reserved_count', '<', 'capacity')
+                    ->where(function ($q) {
+                        $q->where('capacity', 0)
+                          ->orWhereColumn('reserved_count', '<', 'capacity');
+                    })
                     ->orderBy('start_at');
             }])
             ->orderBy('date')
@@ -737,7 +740,7 @@ class VaccineController extends Controller
                 }
 
                 $patientCount = count($validated['patients']);
-                if ($slot->reserved_count + $patientCount > $slot->capacity) {
+                if ($slot->capacity > 0 && ($slot->reserved_count + $patientCount > $slot->capacity)) {
                     throw ValidationException::withMessages([
                         'slot_id' => 'Khung giờ này chỉ còn lại '.($slot->capacity - $slot->reserved_count).' chỗ trống.',
                     ]);

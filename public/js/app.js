@@ -1341,7 +1341,7 @@ function renderSpaRegisterForm(data) {
         <div class="spa-register-grid">
             <!-- Form Column -->
             <div style="min-width: 0;">
-                <form id="spaFormRegisterSubmit" onsubmit="submitSpaRegistrationForm(event)" style="display: flex; flex-direction: column; gap: 16px;">
+                <form id="spaFormRegisterSubmit" onsubmit="submitSpaRegistrationForm(event)" novalidate style="display: flex; flex-direction: column; gap: 16px;">
                     <div id="spaFormErrorAlert" style="display: none; background: #fef2f2; border: 1px solid #ef4444; color: #991b1b; padding: 12px 16px; border-radius: 8px; font-size: 13.5px; text-align: left;"></div>
                     
                     <!-- Patients List Container -->
@@ -1867,9 +1867,6 @@ async function submitSpaRegistrationForm(event) {
     const slotIdVal = slotSelect ? Number(slotSelect.value) : 0;
     if (!dateVal || !slotIdVal || isNaN(slotIdVal) || slotIdVal <= 0) {
         const msg = 'Vui lòng chọn ngày và khung giờ tiêm chủng.';
-        errEl.textContent = msg;
-        errEl.style.display = 'block';
-        errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         if (typeof showToast === 'function') showToast(msg, 'error');
         return;
     }
@@ -1878,8 +1875,6 @@ async function submitSpaRegistrationForm(event) {
     const blocks = form.querySelectorAll('.spa-patient-block');
     if (blocks.length === 0) {
         const msg = 'Vui lòng thêm ít nhất một người tiêm.';
-        errEl.textContent = msg;
-        errEl.style.display = 'block';
         if (typeof showToast === 'function') showToast(msg, 'error');
         return;
     }
@@ -1894,40 +1889,30 @@ async function submitSpaRegistrationForm(event) {
 
         if (!nameVal) {
             const msg = `Vui lòng nhập họ và tên cho Người tiêm #${i + 1}.`;
-            errEl.textContent = msg;
-            errEl.style.display = 'block';
             block.querySelector('.spa-patient-name')?.focus();
             if (typeof showToast === 'function') showToast(msg, 'error');
             return;
         }
         if (!phoneVal) {
             const msg = `Vui lòng nhập số điện thoại cho Người tiêm #${i + 1}.`;
-            errEl.textContent = msg;
-            errEl.style.display = 'block';
             block.querySelector('.spa-patient-phone')?.focus();
             if (typeof showToast === 'function') showToast(msg, 'error');
             return;
         }
         if (!dobVal) {
             const msg = `Vui lòng chọn ngày sinh cho Người tiêm #${i + 1}.`;
-            errEl.textContent = msg;
-            errEl.style.display = 'block';
             block.querySelector('.spa-patient-dob')?.focus();
             if (typeof showToast === 'function') showToast(msg, 'error');
             return;
         }
         if (!addressVal) {
             const msg = `Vui lòng nhập địa chỉ thường trú cho Người tiêm #${i + 1}.`;
-            errEl.textContent = msg;
-            errEl.style.display = 'block';
             block.querySelector('.spa-patient-address')?.focus();
             if (typeof showToast === 'function') showToast(msg, 'error');
             return;
         }
         if (checked.length === 0) {
             const msg = `Vui lòng chọn ít nhất một loại vắc xin cho Người tiêm #${i + 1}.`;
-            errEl.textContent = msg;
-            errEl.style.display = 'block';
             if (typeof showToast === 'function') showToast(msg, 'error');
             return;
         }
@@ -1940,16 +1925,12 @@ async function submitSpaRegistrationForm(event) {
         const gPhone = document.getElementById('spa_guardian_phone')?.value?.trim();
         if (!gName) {
             const msg = 'Vui lòng nhập họ tên người giám hộ (dành cho người tiêm dưới 15 tuổi).';
-            errEl.textContent = msg;
-            errEl.style.display = 'block';
             document.getElementById('spa_guardian_name')?.focus();
             if (typeof showToast === 'function') showToast(msg, 'error');
             return;
         }
         if (!gPhone) {
             const msg = 'Vui lòng nhập số điện thoại người giám hộ.';
-            errEl.textContent = msg;
-            errEl.style.display = 'block';
             document.getElementById('spa_guardian_phone')?.focus();
             if (typeof showToast === 'function') showToast(msg, 'error');
             return;
@@ -1970,8 +1951,6 @@ async function submitSpaRegistrationForm(event) {
     if (firstInvalidPhone) {
         firstInvalidPhone.focus();
         const msg = 'Vui lòng kiểm tra lại số điện thoại không hợp lệ (gồm 10 số, ví dụ: 0912345678).';
-        errEl.textContent = msg;
-        errEl.style.display = 'block';
         if (typeof showToast === 'function') showToast(msg, 'error');
         return;
     }

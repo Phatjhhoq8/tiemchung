@@ -1,3 +1,11 @@
+## [v6.5.91] - 2026-08-21
+
+### Implement Prominent Toast Error Alerts on Booking Submission Validation Fails
+
+* **Integrate Toast Notification for All Validation Points**:
+  - Upgraded the form validation logic inside `submitSpaRegistrationForm` in `public/js/app.js`. When a user attempts to submit the form without selecting a date or slot, or leaves required fields empty, a prominent red Toast Notification (`showToast(msg, 'error')`) is now triggered immediately at the top right of the viewport.
+  - Ensures users receive instant, highly visible feedback even if the inline error alert element `#spaFormErrorAlert` is scrolled out of view.
+
 ## [v6.5.90] - 2026-08-21
 
 ### Fix Booking Date Timezone Offset Shift & Strengthen Frontend Submission Validation
