@@ -207,12 +207,6 @@
         <p style="margin: 2px 0 0 0; font-size: 12.5px; color: #64748b;">Mọi chỉnh sửa bên dưới đều được tự động lưu vào bản nháp tạm thời.</p>
     </div>
     <div style="display: flex; gap: 10px;">
-        <button type="button" onclick="actionSettings('reset')" class="btn-secondary" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-            <i data-lucide="rotate-ccw" style="width: 16px; height: 16px;"></i> Khôi Phục Nháp
-        </button>
-        <a href="{{ url('/?preview=1') }}" target="_blank" class="btn-secondary-outline" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; font-weight: 700; color: #0f172a; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-            <i data-lucide="eye" style="width: 16px; height: 16px; color: #ca8a04;"></i> Xem Thử (Preview)
-        </a>
         <button type="button" onclick="publishAllSettings()" class="btn-primary" style="padding: 10px 22px; border-radius: 8px; background: #c8102e; border: none; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 10px rgba(200,16,46,0.15);">
             <i data-lucide="send" style="width: 16px; height: 16px;"></i> Xuất Bản Chính Thức
         </button>
@@ -531,7 +525,7 @@
             ]
         },
         'home_faqs': {
-            title: 'Câu hỏi thường gặp (FAQ)',
+            title: 'Câu hỏi thường gặp',
             itemTitle: 'Câu hỏi',
             fields: [
                 { key: 'q', label: 'Câu hỏi', type: 'text', placeholder: 'Ví dụ: Trẻ bao nhiêu tháng tuổi bắt đầu tiêm chủng?' },
@@ -557,16 +551,16 @@
                 { key: 'desc', label: 'Mô tả chi tiết dịch vụ', type: 'textarea', placeholder: 'Nhập nội dung...' },
                 { 
                     key: 'icon', 
-                    label: 'Biểu tượng hiển thị (Icon)', 
+                    label: 'Biểu tượng hiển thị', 
                     type: 'select', 
                     options: [
-                        { value: 'syringe', label: 'Ống tiêm (Syringe)' },
-                        { value: 'package', label: 'Hộp / Gói vắc xin (Package)' },
-                        { value: 'calendar-check', label: 'Lịch hẹn tiêm (Calendar Check)' },
-                        { value: 'truck', label: 'Xe tiêm chủng lưu động (Truck)' },
-                        { value: 'user-check', label: 'Khám kiểm tra (User Check)' },
-                        { value: 'heart', label: 'Trái tim / Tận tâm (Heart)' },
-                        { value: 'award', label: 'Giải thưởng / Uy tín (Award)' }
+                        { value: 'syringe', label: 'Ống tiêm' },
+                        { value: 'package', label: 'Hộp / Gói vắc xin' },
+                        { value: 'calendar-check', label: 'Lịch hẹn tiêm' },
+                        { value: 'truck', label: 'Xe tiêm chủng lưu động' },
+                        { value: 'user-check', label: 'Khám kiểm tra' },
+                        { value: 'heart', label: 'Trái tim / Tận tâm' },
+                        { value: 'award', label: 'Giải thưởng / Uy tín' }
                     ]
                 }
             ]
@@ -588,36 +582,34 @@
             ]
         },
         'footer_info_lines': {
-            title: 'Dòng thông tin chân trang (Footer)',
+            title: 'Dòng thông tin chân trang',
             itemTitle: 'Dòng thông tin',
             fields: [
                 { 
                     key: 'icon', 
-                    label: 'Biểu tượng hiển thị (Icon)', 
+                    label: 'Biểu tượng hiển thị', 
                     type: 'select', 
                     options: [
-                        { value: 'shield-check', label: 'Giấy phép (Shield Check)' },
-                        { value: 'building', label: 'Trụ sở / Địa chỉ (Building)' },
-                        { value: 'mail', label: 'Thư điện tử / Email (Mail)' },
-                        { value: 'info', label: 'Thông tin chung (Info)' },
-                        { value: 'globe', label: 'Website / Địa chỉ mạng (Globe)' }
+                        { value: 'shield-check', label: 'Giấy phép' },
+                        { value: 'building', label: 'Trụ sở / Địa chỉ' },
+                        { value: 'mail', label: 'Thư điện tử / Email' },
+                        { value: 'info', label: 'Thông tin chung' },
+                        { value: 'globe', label: 'Website / Địa chỉ mạng' }
                     ]
                 },
                 { key: 'text', label: 'Nội dung dòng', type: 'text', placeholder: 'Ví dụ: Giấy chứng nhận ĐKKD số 0107631488...' }
             ]
         }
-    };
-
-    const fieldLabels = {
-        'site_logo': 'Logo chính thức hệ thống (site_logo)',
-        'site_name': 'Tên viết tắt hệ thống (Site Name)',
-        'brand_title': 'Tên thương hiệu chính (Brand Title)',
+    };const fieldLabels = {
+        'site_logo': 'Logo chính thức hệ thống',
+        'site_name': 'Tên viết tắt hệ thống',
+        'brand_title': 'Tên thương hiệu chính',
         'email': 'Email hỗ trợ chung',
-        'footer_text': 'Bản quyền chân trang (Footer Copyright)',
-        'footer_company_name': 'Tên công ty hiển thị ở chân trang (Footer)',
-        'footer_sub_title': 'Tiêu đề phụ / Slogan chân trang (Footer)',
-        'footer_content_manager': 'Thông tin người chịu trách nhiệm nội dung (Footer)',
-        'footer_working_hours': 'Giờ mở cửa hiển thị ở chân trang (Footer)'
+        'footer_text': 'Bản quyền chân trang',
+        'footer_company_name': 'Tên công ty hiển thị ở chân trang',
+        'footer_sub_title': 'Tiêu đề phụ / Slogan chân trang',
+        'footer_content_manager': 'Thông tin người chịu trách nhiệm nội dung',
+        'footer_working_hours': 'Giờ mở cửa hiển thị ở chân trang'
     };
 
     function openSettingModal(type, title, fields) {
@@ -658,7 +650,7 @@
 
                 fieldGroup.innerHTML = `
                     <label style="display:block; font-weight:750; font-size:13.5px; margin-bottom:6px; color:#1e293b;">
-                        ${fieldLabels[field] || 'Nội dung cấu hình [' + field + ']'}:
+                        ${fieldLabels[field] || 'Nội dung cấu hình'}:
                     </label>
                     ${inputHtml}
                 `;
