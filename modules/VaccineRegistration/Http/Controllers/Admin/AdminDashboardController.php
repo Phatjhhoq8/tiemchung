@@ -78,9 +78,9 @@ class AdminDashboardController extends Controller
 
         $soldQuantity = (int) (clone $filteredRegistrationQuery)->where('booking_status', Registration::BOOKING_COMPLETED)->count();
 
-        // R2: Target Date Calculation (Cutoff 20:30) & Vaccine Stock Shortage Analysis
+        // R2: Target Date Calculation (Cutoff 18:30) & Vaccine Stock Shortage Analysis
         $now = now();
-        $isAfterCutoff = $now->format('H:i') >= '20:30';
+        $isAfterCutoff = $now->format('H:i') >= '18:30';
         $targetDate = $isAfterCutoff ? $now->copy()->addDay()->toDateString() : $now->toDateString();
         $targetDateLabel = $isAfterCutoff ? 'Ngày mai (' . $now->copy()->addDay()->format('d/m/Y') . ')' : 'Hôm nay (' . $now->format('d/m/Y') . ')';
 

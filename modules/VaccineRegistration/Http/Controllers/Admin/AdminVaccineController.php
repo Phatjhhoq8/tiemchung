@@ -146,9 +146,9 @@ class AdminVaccineController extends Controller
         $isSuperAdmin = AdminContext::isSuperAdmin() && $selectedCenterId === null;
         $isSuperAdminAllCenters = $isSuperAdmin;
 
-        // Lấy nhu cầu đặt lịch tiêm (20:30 cutoff rule: hôm nay hoặc ngày mai)
+        // Lấy nhu cầu đặt lịch tiêm (18:30 cutoff rule: hôm nay hoặc ngày mai)
         $now = now();
-        $isAfterCutoff = $now->format('H:i') >= '20:30';
+        $isAfterCutoff = $now->format('H:i') >= '18:30';
         $targetDate = $isAfterCutoff ? $now->copy()->addDay()->toDateString() : $now->toDateString();
         $targetDateLabel = $isAfterCutoff ? 'Ngày mai' : 'Hôm nay';
 
@@ -685,7 +685,7 @@ class AdminVaccineController extends Controller
         $vaccine = Vaccine::findOrFail($id);
 
         $now = now();
-        $isAfterCutoff = $now->format('H:i') >= '20:30';
+        $isAfterCutoff = $now->format('H:i') >= '18:30';
         $targetDate = $isAfterCutoff ? $now->copy()->addDay()->toDateString() : $now->toDateString();
 
         $branchDemands = \Illuminate\Support\Facades\DB::table('registration_vaccines')

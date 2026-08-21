@@ -180,14 +180,14 @@
     </div>
 </form>
 
-<!-- R2 Widget: Lịch hẹn tiêm & Cảnh báo tồn kho vắc xin theo chi nhánh (Cutoff 20:30 tối) -->
+<!-- R2 Widget: Lịch hẹn tiêm & Cảnh báo tồn kho vắc xin theo chi nhánh (Cutoff 18:30 tối) -->
 <div class="today-widget-card" style="margin-bottom: 28px; background: linear-gradient(135deg, #00386c 0%, #004b8f 100%); border-radius: 14px; padding: 22px 24px; color: #ffffff; box-shadow: 0 8px 24px rgba(0, 75, 143, 0.18); border: 1px solid rgba(255,255,255,0.1);">
     <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 20px; margin-bottom: {{ !empty($shortageAlerts) && count($shortageAlerts) > 0 ? '18px' : '0' }};">
         <div style="flex: 1 1 500px;">
             <div style="margin-bottom: 8px;">
                 @if($isAfterCutoff ?? false)
                     <span class="today-widget-badge" style="background-color: #eaaa00; color: #002b53; font-weight: 800; padding: 4px 12px; border-radius: 20px; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block;">
-                        Rà Soát Tồn Kho Ngày Mai (Sau 20:30)
+                        Rà Soát Tồn Kho Ngày Mai (Sau 18:30)
                     </span>
                 @else
                     <span class="today-widget-badge" style="background-color: #eaaa00; color: #002b53; font-weight: 800; padding: 4px 12px; border-radius: 20px; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block;">
@@ -204,7 +204,7 @@
                 @if($isAfterCutoff ?? false)
                     Tự động kiểm tra trước nhu cầu vắc xin cho ca tiêm sáng mai để chi nhánh kịp điều chuyển kho.
                 @else
-                    Rà soát vắc xin khả dụng phục vụ các ca tiêm (hệ thống tự động chuyển sang kiểm tra ngày mai sau 20h30).
+                    Rà soát vắc xin khả dụng phục vụ các ca tiêm (hệ thống tự động chuyển sang kiểm tra ngày mai sau 18h30).
                 @endif
             </p>
         </div>

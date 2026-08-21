@@ -195,20 +195,12 @@
     <a href="{{ route('admin.live-editor', ['page' => 'contact']) }}" class="live-page-tab {{ $currentPage === 'contact' ? 'active' : '' }}">
         Liên Hệ & Chi Nhánh
     </a>
-    <a href="{{ route('admin.live-editor', ['page' => 'global']) }}" class="live-page-tab {{ $currentPage === 'global' ? 'active' : '' }}" style="margin-left: auto;">
-        Cấu Hình Chung
-    </a>
-</div>
-
-<!-- ================= TOP ACTION BAR (LƯU TẠM / XEM THỬ / XUẤT BẢN / RESET) ================= -->
-<div style="background: #ffffff; padding: 16px 24px; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-    <div>
-        <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #1e293b;">Bảng Điều Khiển Live Editor</h4>
-        <p style="margin: 2px 0 0 0; font-size: 12.5px; color: #64748b;">Mọi chỉnh sửa bên dưới đều được tự động lưu vào bản nháp tạm thời.</p>
-    </div>
-    <div style="display: flex; gap: 10px;">
-        <button type="button" onclick="publishAllSettings()" class="btn-primary" style="padding: 10px 22px; border-radius: 8px; background: #c8102e; border: none; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 10px rgba(200,16,46,0.15);">
-            <i data-lucide="send" style="width: 16px; height: 16px;"></i> Xuất Bản Chính Thức
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+        <a href="{{ route('admin.live-editor', ['page' => 'global']) }}" class="live-page-tab {{ $currentPage === 'global' ? 'active' : '' }}" style="margin: 0;">
+            Cấu Hình Chung
+        </a>
+        <button type="button" onclick="publishAllSettings()" class="btn-primary" style="padding: 8px 16px; border-radius: 8px; background: #c8102e; border: none; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13.5px; box-shadow: 0 4px 10px rgba(200,16,46,0.15); height: 38px;">
+            <i data-lucide="send" style="width: 14px; height: 14px;"></i> Xuất Bản Chính Thức
         </button>
     </div>
 </div>

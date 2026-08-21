@@ -45,10 +45,12 @@
         $activeGroup = 'vaccine';
         $subNavigation = [
             ['route' => 'admin.vaccines.index', 'label' => 'Quản lý Vắc Xin', 'icon' => 'syringe'],
-            ['route' => 'admin.vaccines.categories', 'label' => 'Quản lý Nhóm Bệnh', 'icon' => 'tags'],
-            ['route' => 'admin.schedules.index', 'label' => 'Khung Giờ Tiêm', 'icon' => 'clock'],
-            ['route' => 'admin.schedule', 'label' => 'Lịch Hẹn Tuần', 'icon' => 'calendar'],
         ];
+        if ($isSuperAdmin) {
+            $subNavigation[] = ['route' => 'admin.vaccines.categories', 'label' => 'Quản lý Nhóm Bệnh', 'icon' => 'tags'];
+        }
+        $subNavigation[] = ['route' => 'admin.schedules.index', 'label' => 'Khung Giờ Tiêm', 'icon' => 'clock'];
+        $subNavigation[] = ['route' => 'admin.schedule', 'label' => 'Lịch Hẹn Tuần', 'icon' => 'calendar'];
     } elseif (in_array($currentRoute, $groupCustomer)) {
         $activeGroup = 'customer';
         $subNavigation = [
