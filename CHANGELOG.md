@@ -1,3 +1,16 @@
+## [v6.5.60] - 2026-08-21
+
+### Implement SPA Article Details Modal on Client Front-end
+
+* **SPA Article Detail Overlay**:
+  - Appended `articleDetailModal` markup to the `modal-detail` partial layout.
+  - Formatted layout text blocks inside the modal with justified typography (`text-align: justify;`) and placed author credit signature at the bottom right.
+  - Implemented client-side JavaScript handlers (`openArticleDetailModal`, `closeArticleDetailModal`) inside `public/js/app.js` to asynchronously fetch article JSON payloads and render them smoothly without reload.
+
+* **Backend JSON Support & View Integration**:
+  - Updated `ArticleController@show` to respond with serialized article JSON structures upon receiving AJAX requests or `Accept: application/json` headers.
+  - Replaced native direct route redirection bindings in `partials/home/news.blade.php` with `openArticleDetailModal` triggers.
+
 ## [v6.5.59] - 2026-08-21
 
 ### Fix Categories Add Button Placement & Admin Active Tab Highlights
