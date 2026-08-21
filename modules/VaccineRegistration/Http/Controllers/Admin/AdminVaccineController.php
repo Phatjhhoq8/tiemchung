@@ -1166,6 +1166,13 @@ class AdminVaccineController extends Controller
     {
         abort_unless(AdminContext::isSuperAdmin(), 403, 'Bạn không có quyền quản lý nhóm bệnh.');
 
+        $selectedCenterId = request()->filled('center_id')
+            ? AdminContext::selectedCenterId(request()->integer('center_id'))
+            : AdminContext::selectedCenterId();
+        
+        $centers = Center::active()->orderBy('sort_order')->orderBy('id')->get();
+        $isSuperAdmin = AdminContext::isSuperAdmin();
+
         $vaccineCats = Vaccine::select('category')
             ->whereNotNull('category')
             ->where('category', '!=', '')
@@ -1209,7 +1216,7 @@ class AdminVaccineController extends Controller
             ];
         });
 
-        return view('vaccine::admin.categories.index', compact('categories'));
+        return view('vaccine::admin.categories.index', compact('categories', 'centers', 'selectedCenterId', 'isSuperAdmin'));
     }
 
     /**

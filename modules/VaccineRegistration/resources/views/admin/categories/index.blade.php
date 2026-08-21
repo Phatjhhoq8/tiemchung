@@ -16,6 +16,21 @@
         </button>
     </div>
 
+    <!-- Filter Branch -->
+    @if(isset($centers) && ($isSuperAdmin ?? false))
+    <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: flex-start; background: #f8fafc; padding: 12px 20px; border-radius: 10px; border: 1px solid #e2e8f0;">
+        <form method="GET" action="{{ route('admin.vaccines.categories') }}" id="centerFilterForm" style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 13.5px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Xem số lượng theo chi nhánh:</span>
+            <select name="center_id" onchange="document.getElementById('centerFilterForm').submit()" class="form-control-modern" style="width: 260px; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; font-size: 13.5px; background: #ffffff; cursor: pointer; font-weight: 600; color: #1e293b;">
+                <option value="" {{ $selectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
+                @foreach($centers as $center)
+                    <option value="{{ $center->id }}" {{ (string) $selectedCenterId === (string) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
+                @endforeach
+            </select>
+        </form>
+    </div>
+    @endif
+
     <!-- Main Table Card -->
     <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); border: 1px solid #e2e8f0; background: #ffffff;">
         <div class="card-body p-0">
