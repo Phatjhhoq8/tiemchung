@@ -63,7 +63,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v=1.0.4">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v=1.0.12">
     @yield('styles')
     
     <!-- Dark Mode Check & Initial Center Context Injection -->

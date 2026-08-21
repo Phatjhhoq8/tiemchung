@@ -3,7 +3,7 @@
 @section('title', $vaccine->name . ' (Chính Hãng) - Thông Tin Vắc Xin - Medicare Cờ Đỏ')
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('css/vaccines.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/vaccines.css') }}?v=1.0.6">
 @endsection
 
 @section('content')
