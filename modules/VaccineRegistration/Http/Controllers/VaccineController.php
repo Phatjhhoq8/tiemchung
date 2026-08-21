@@ -542,6 +542,28 @@ class VaccineController extends Controller
             $points = $loyaltyService->calculateAvailablePoints($customer);
         }
 
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'points' => $points,
+                'phone' => $phone,
+                'registrations' => $registrations->map(function ($reg) {
+                    return [
+                        'registration_code' => $reg->registration_code,
+                        'is_masked' => $reg->is_masked,
+                        'display_code' => $reg->display_code,
+                        'display_name' => $reg->display_name,
+                        'display_price' => $reg->display_price,
+                        'display_vaccines' => $reg->display_vaccines,
+                        'injection_date' => $reg->injection_date ? \Carbon\Carbon::parse($reg->injection_date)->format('d/m/Y') : '',
+                        'slot_time' => $reg->slot && $reg->slot->schedule ? $reg->slot->schedule->start_time . ' - ' . $reg->slot->schedule->end_time : '',
+                        'status' => $reg->status === 'completed' ? 'Đã hoàn thành' : ($reg->status === 'cancelled' ? 'Đã hủy' : ($reg->status === 'confirmed' ? 'Đã xác nhận' : 'Chờ xác nhận')),
+                        'status_color' => $reg->status === 'completed' ? '#166534' : ($reg->status === 'cancelled' ? '#991b1b' : '#854d0e'),
+                    ];
+                })
+            ]);
+        }
+
         return view('vaccine::booking_lookup', [
             'lookedUp' => true,
             'registrations' => $registrations,

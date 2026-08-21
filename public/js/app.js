@@ -310,10 +310,115 @@ function closeArticleDetailModal() {
     document.body.style.overflow = '';
 }
 
+function openBookingLookupModal(event) {
+    event?.preventDefault();
+    const modal = document.getElementById('bookingLookupModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // Reset form & result
+    document.getElementById('lookupPhoneInput').value = '';
+    document.getElementById('lookupCodeInput').value = '';
+    const resultBox = document.getElementById('lookupResultBox');
+    resultBox.style.display = 'none';
+    resultBox.innerHTML = '';
+}
+
+function closeBookingLookupModal() {
+    const modal = document.getElementById('bookingLookupModal');
+    if (!modal) return;
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+async function submitSpaBookingLookup(event) {
+    event.preventDefault();
+    const phone = document.getElementById('lookupPhoneInput').value.trim();
+    const code = document.getElementById('lookupCodeInput').value.trim();
+    const submitBtn = document.getElementById('lookupSubmitBtn');
+    const resultBox = document.getElementById('lookupResultBox');
+    
+    if (!phone) return;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Đang tra cứu...';
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = '<div style="text-align:center;padding:20px 0;"><i data-lucide="loader-2" style="width:28px;height:28px;color:var(--primary-color,#c8102e);animation:spin 1s linear infinite;margin:0 auto;"></i><p style="margin-top:8px;color:#64748b;font-size:13px;">Đang tải lịch hẹn...</p></div>';
+    renderIcons();
+    
+    try {
+        const response = await fetch(getAbsoluteUrl('/tra-cuu-lich-hen'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                phone: phone,
+                registration_code: code
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Lỗi tra cứu thông tin.');
+        }
+        
+        if (!data.registrations || data.registrations.length === 0) {
+            resultBox.innerHTML = '<div style="text-align:center;padding:20px 0;color:#64748b;font-size:14px;"><i data-lucide="calendar-x" style="width:36px;height:36px;color:#cbd5e1;margin:0 auto 8px;"></i>Không tìm thấy lịch hẹn nào đăng ký với số điện thoại này.</div>';
+            renderIcons();
+            return;
+        }
+        
+        let html = '';
+        
+        if (data.points > 0) {
+            html += `<div style="background:#eff6ff;color:#1e40af;padding:12px;border-radius:8px;font-size:13.5px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:6px;">
+                <i data-lucide="award" style="width:16px;height:16px;color:#1e40af;"></i>
+                Điểm tích lũy thành viên khả dụng: <span style="font-weight:800;color:#1d4ed8;">${data.points} điểm</span>
+            </div>`;
+        }
+        
+        html += `<div style="display:flex;flex-direction:column;gap:12px;max-height:300px;overflow-y:auto;padding-right:4px;">`;
+        
+        data.registrations.forEach(reg => {
+            html += `
+                <div style="border:1px solid #e2e8f0;border-radius:10px;padding:14px;background:#ffffff;box-sizing:border-box;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;">
+                        <strong style="color:#0f172a;font-size:14px;">Mã đặt: <span style="color:var(--primary-color,#c8102e);">${escapeHtml(reg.display_code)}</span></strong>
+                        <span style="font-size:11.5px;font-weight:700;color:${reg.status_color};background:${reg.status_color}12;padding:2px 8px;border-radius:20px;">${escapeHtml(reg.status)}</span>
+                    </div>
+                    <div style="font-size:13px;color:#475569;line-height:1.5;">
+                        <p style="margin:2px 0;text-align:left;"><strong>Bệnh nhân:</strong> ${escapeHtml(reg.display_name)}</p>
+                        <p style="margin:2px 0;text-align:left;"><strong>Vắc xin:</strong> ${escapeHtml(reg.display_vaccines)}</p>
+                        <p style="margin:2px 0;text-align:left;"><strong>Lịch tiêm:</strong> ${escapeHtml(reg.injection_date)} ${reg.slot_time ? `(${escapeHtml(reg.slot_time)})` : ''}</p>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `</div>`;
+        
+        resultBox.innerHTML = html;
+        renderIcons();
+        
+    } catch (error) {
+        console.error('Lỗi tra cứu lịch hẹn:', error);
+        resultBox.innerHTML = `<div style="text-align:center;padding:20px 0;color:#dc2626;font-size:14px;">${escapeHtml(error.message || 'Có lỗi xảy ra khi tra cứu. Vui lòng thử lại.')}</div>`;
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Tra Cứu Ngay';
+    }
+}
+
 document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
         closeVaccineDetailModal();
         closeArticleDetailModal();
+        closeBookingLookupModal();
     }
 });
 
@@ -2658,6 +2763,9 @@ if (typeof window !== 'undefined') {
     window.closeVaccineDetailModal = closeVaccineDetailModal;
     window.openArticleDetailModal = openArticleDetailModal;
     window.closeArticleDetailModal = closeArticleDetailModal;
+    window.openBookingLookupModal = openBookingLookupModal;
+    window.closeBookingLookupModal = closeBookingLookupModal;
+    window.submitSpaBookingLookup = submitSpaBookingLookup;
     window.setFeaturedFilter = setFeaturedFilter;
     window.setAgeGroupFilter = setAgeGroupFilter;
     window.setDiseaseFilter = setDiseaseFilter;
