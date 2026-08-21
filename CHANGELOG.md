@@ -1,3 +1,12 @@
+## [v6.5.82] - 2026-08-21
+
+### Prevent Form Data Loss when Switching Tabs in SPA Booking Modal
+
+* **Form State Preservation Logic**:
+  - Implemented `saveSpaRegisterFormData()` and `saveSpaConsultFormData()` functions in `app.js` to serialize and capture input values (including dynamic patient blocks, vaccine selection checkboxes, guardian details, and booking times) before tabs are destroyed.
+  - Implemented `restoreSpaRegisterFormData()` and `restoreSpaConsultFormData()` to dynamically recreate additional patient blocks and populate input elements after tab redraws.
+  - Reset cached data on fresh modal openings or closings to ensure clean session states.
+
 ## [v6.5.81] - 2026-08-21
 
 ### Exclude Datepicker Selects from Global Custom Dropdown Processing
