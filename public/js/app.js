@@ -804,7 +804,7 @@ async function openSpaRegisterModal(event) {
     if (window.lucide) window.lucide.createIcons();
 
     try {
-        const response = await fetch(getAbsoluteUrl('/register'), {
+        const response = await fetch(getAbsoluteUrl('/register?_t=' + Date.now()), {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
@@ -999,7 +999,7 @@ async function renderSpaConsultForm() {
             </div>
         `;
         try {
-            const response = await fetch(getAbsoluteUrl('/register'), {
+            const response = await fetch(getAbsoluteUrl('/register?_t=' + Date.now()), {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'
@@ -1489,7 +1489,7 @@ async function changeSpaRegisterCenter(centerId) {
         });
 
         // 2. Fetch new center specific schedules and cart states
-        const response = await fetch(getAbsoluteUrl('/register'), {
+        const response = await fetch(getAbsoluteUrl('/register?_t=' + Date.now()), {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
@@ -2070,7 +2070,7 @@ async function openSpaConsultationModal(event) {
         if (window.lucide) window.lucide.createIcons();
 
         try {
-            const response = await fetch(getAbsoluteUrl('/register'), {
+            const response = await fetch(getAbsoluteUrl('/register?_t=' + Date.now()), {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'
