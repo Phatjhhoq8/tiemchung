@@ -1,3 +1,15 @@
+## [v6.5.59] - 2026-08-21
+
+### Fix Categories Add Button Placement & Admin Active Tab Highlights
+
+* **Categories Header Alignment**:
+  - Replaced the Bootstrap flex wrapper with direct inline styles (`display: flex; justify-content: space-between; align-items: center;`) in the category management view header.
+  - Resolved the layout overflow/wrapping issue that forced the "Thêm Nhóm Bệnh" button to display below the title.
+
+* **Admin Active Tab Highlights**:
+  - Fixed active tab highlight duplication by updating sub-navigation active tab detection in the admin layout file.
+  - Excluded the `admin.vaccines.categories` route from triggering active state highlighting on the parent `admin.vaccines.index` tab.
+
 ## [v6.5.58] - 2026-08-21
 
 ### Fix Admin Category Management Modals & Refine Table Layout
