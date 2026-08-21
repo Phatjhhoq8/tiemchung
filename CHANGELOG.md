@@ -1,3 +1,13 @@
+## [v6.5.90] - 2026-08-21
+
+### Fix Booking Date Timezone Offset Shift & Strengthen Frontend Submission Validation
+
+* **Solve Date Timezone Offset Lệch Ngày**:
+  - Configured explicit Y-m-d JSON casting for the Schedule model `date` attribute (`'date' => 'date:Y-m-d'`) in `Schedule.php` to prevent Laravel from automatically serializing dates into ISO-8601 UTC strings which caused timezone shifts (e.g. lùi 1 ngày).
+  - Hardened the frontend JS parser in `public/js/app.js` to split date strings by the `'T'` character (`.split('T')[0]`) instead of cutting exactly 10 characters thô to prevent offset shifts.
+* **Strict Date & Slot Field Validation**:
+  - Updated `submitSpaRegistrationForm` in `public/js/app.js` to strictly validate that both the Date Selection (`spa_date_select`) and Time Slot Selection (`spa_slot_id`) are chosen. Shows a clear alert error and blocks form submission if either field is left at its default placeholder value.
+
 ## [v6.5.89] - 2026-08-21
 
 ### Fix Stale Booking Schedules Due to Browser AJAX Caching
