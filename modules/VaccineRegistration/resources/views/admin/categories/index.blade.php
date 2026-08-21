@@ -2,7 +2,7 @@
 
 @section('title', 'Quản lý Nhóm Bệnh - Medicare Admin')
 
-@section('content')
+@section('admin_content')
 <div class="container-fluid px-4 py-4">
     <!-- Header Page -->
     <div class="d-flex justify-content-between align-items-center mb-4">
