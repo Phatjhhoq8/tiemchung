@@ -1,3 +1,14 @@
+## [v6.5.84] - 2026-08-21
+
+### Simplify Layout, Limit Categories to SuperAdmin, and Change Cutoff Time to 18:30
+
+* **Live Editor Publish Button Relocation**:
+  - Moved the "Xuất Bản Chính Thức" button directly into the main navigation tabs line (right-aligned next to "Cấu Hình Chung") and deleted the redundant "Bảng Điều Khiển Live Editor" bar, optimizing page vertical space.
+* **Hide Categories from Branch Admins**:
+  - Configured `layouts/admin.blade.php` to conditionally display the "Quản lý Nhóm Bệnh" sub-navigation item only if the active user is a Super Admin (`$isSuperAdmin === true`).
+* **Update Vaccine Preparation Cutoff to 18:30**:
+  - Changed the daily vaccine inventory check cutoff time globally from `20:30` to `18:30` in both frontend view displays (`dashboard.blade.php`) and backend control logic (`AdminDashboardController.php`, `AdminVaccineController.php`).
+
 ## [v6.5.83] - 2026-08-21
 
 ### Refactor Live Editor Labels and Action Controls
