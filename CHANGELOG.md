@@ -1,3 +1,13 @@
+## [v6.5.66] - 2026-08-21
+
+### Bind Admin Category Product Count to Selected Center
+
+* **Center-based Category Count in Admin**:
+  - Updated `AdminVaccineController@categoriesIndex` to count category vaccines using `scopeForCenter` when a specific center is selected on the top header bar, matching the center-filtered display shown to client-side users.
+
+* **Client Detail Page Query Alignment**:
+  - Streamlined `VaccineController@diseaseDetail` to strictly retrieve center vaccines matching the category field exactly, eliminating the broad `disease_prevention` fallback query to ensure exact 1-to-1 sync of counts.
+
 ## [v6.5.65] - 2026-08-21
 
 ### Unify Category Product Counts & Detail Content Synchronization
