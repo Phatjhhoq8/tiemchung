@@ -5435,3 +5435,50 @@ div.section-badge,
     width: 0 !important;
     height: 0 !important;
 }
+
+/* Premium Hover Transition & Lift Effects for All Action Buttons */
+.catalog-advice-btn,
+.fb-modal-footer button,
+.btn-primary,
+.btn-secondary,
+.btn-secondary-outline,
+.desktop-only-back-btn,
+.btn-select-detail,
+.btn-detail-link,
+.btn-select-vaccine,
+.vaccine-btn-add {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.catalog-advice-btn:hover,
+.fb-modal-footer button:hover,
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-secondary-outline:hover {
+    transform: translateY(-3px) !important;
+}
+
+/* Shadow details for Primary / Red Buttons (Medicare Red) */
+.catalog-advice-btn:hover,
+.fb-modal-footer button.btn-primary:hover,
+.btn-primary:hover {
+    box-shadow: 0 6px 18px rgba(200, 16, 46, 0.3) !important;
+    background-color: #a00d24 !important;
+    border-color: #a00d24 !important;
+}
+
+/* Shadow details for Secondary / Outline / White Buttons */
+.fb-modal-footer button.btn-secondary:hover,
+.btn-secondary:hover {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08) !important;
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+}
+
+.fb-modal-footer button.btn-secondary-outline:hover,
+.btn-secondary-outline:hover {
+    box-shadow: 0 6px 15px rgba(0, 75, 143, 0.12) !important;
+    background-color: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+}
+
