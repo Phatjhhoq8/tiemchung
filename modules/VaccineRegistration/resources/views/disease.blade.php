@@ -1,3 +1,12 @@
+@php
+    $currentCenter = \Modules\VaccineRegistration\Support\CenterContext::current();
+    $hotline = $settings['hotline'] ?? '0938 60 38 39';
+    $currentCenterZalo = \Modules\VaccineRegistration\Support\CenterContext::phoneHref($currentCenter?->zalo_phone ?: $hotline);
+    $cleanPhone = preg_replace('/\D+/', '', $currentCenterZalo);
+    $zaloUrl = $currentCenter?->zalo_url ?: ($cleanPhone ? "https://zalo.me/{$cleanPhone}" : "https://zalo.me");
+    $qrUrl = $currentCenter?->zalo_qr_url ?: "https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=10&data=" . urlencode($zaloUrl);
+    $rawPhone = $currentCenter?->zalo_phone ?: $currentCenter?->phone ?: $hotline;
+@endphp
 @extends('vaccine::layouts.app')
 
 @section('title', $info['title'] . ' - Medicare')
@@ -399,61 +408,39 @@
             </div>
         </div>
         
-        <!-- Cột phải: Form tư vấn -->
+        <!-- Cột phải: QR Zalo tư vấn -->
         <div class="consult-column">
-            <div class="consult-card" id="consultFormCard">
-                <h3>Yêu cầu tư vấn <span>miễn phí</span></h3>
-                <p>Medicare sẽ liên hệ lại ngay để tư vấn phác đồ tiêm chủng vắc xin phòng bệnh {{ $diseaseDecoded }} thích hợp nhất cho bạn.</p>
-                
-                <form id="diseaseConsultForm" onsubmit="submitDiseaseConsult(event)">
-                    @csrf
-                    <div class="consult-form-group">
-                        <label>Hình thức tư vấn <span>*</span></label>
-                        <div class="consult-type-toggle" style="display: inline-flex; width: 100%; background: #f1f5f9; border-radius: 30px; padding: 4px; border: 1px solid #cbd5e1; margin-top: 6px; box-sizing: border-box;">
-                            <button type="button" id="btnConsultOnline" onclick="setConsultType('online')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: var(--primary-color, #c8102e); color: #ffffff; text-align: center;">
-                                Tư vấn qua điện thoại (trực tuyến)
-                            </button>
-                            <button type="button" id="btnConsultOffline" onclick="setConsultType('offline')" style="flex: 1; border: none; padding: 10px 12px; border-radius: 26px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: transparent; color: #475569; text-align: center;">
-                                Tư vấn tại trung tâm
-                            </button>
-                            <input type="hidden" name="consultType" id="consultTypeValue" value="online">
-                        </div>
+            <div class="consult-card" id="consultFormCard" style="border: 2px solid var(--primary-color, #c8102e);">
+                @if($currentCenter)
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(200,16,46,0.08); color: var(--primary-color, #c8102e); padding: 5px 14px; border-radius: 20px; font-weight: 800; font-size: 12.5px; margin-bottom: 16px;">
+                        <i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--primary-color, #c8102e);"></i>
+                        <span>Chi nhánh {{ $currentCenter->name }}</span>
+                    </div>
+                @endif
+
+                <h3 style="font-size: 20px; font-weight: 800; color: #1e293b; margin: 0 0 8px 0;">Tư Vấn Y Khoa <span style="color: var(--primary-color, #c8102e);">Qua Zalo</span></h3>
+                <p style="font-size: 13.5px; color: #64748b; line-height: 1.5; margin-bottom: 20px;">Quét mã QR hoặc nhấn nút để chat Zalo tư vấn phác đồ tiêm chủng phòng bệnh {{ $diseaseDecoded }} miễn phí với Bác sĩ Medicare.</p>
+
+                <div style="background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #cbd5e1; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.03); box-sizing: border-box;">
+                    <div style="background: #ffffff; padding: 10px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: inline-block;">
+                        <img src="{{ $qrUrl }}" alt="Mã QR Zalo Bác sĩ {{ $currentCenter?->name ?? 'Medicare' }}" style="width: 180px; height: 180px; display: block; border-radius: 6px; margin: 0 auto;">
                     </div>
 
-                    <div class="consult-form-group">
-                        <label for="customerName">Họ tên người liên hệ <span>*</span></label>
-                        <input type="text" name="customerName" id="customerName" placeholder="Nhập họ tên của bạn" required>
-                        <span class="error-msg" id="err_customerName"></span>
+                    <div style="width: 100%; font-size: 14px; color: #0f172a; font-weight: 700; text-align: center;">
+                        Hotline / Zalo: <a href="{{ $zaloUrl }}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-color, #c8102e); text-decoration: none; font-weight: 800; font-size: 15px;">{{ $rawPhone }}</a>
                     </div>
-                    
-                    <div class="consult-form-group">
-                        <label for="customerPhone">Số điện thoại liên hệ <span>*</span></label>
-                        <input type="tel" name="customerPhone" id="customerPhone" placeholder="Ví dụ: 0912345678" required>
-                        <span class="error-msg" id="err_customerPhone"></span>
+
+                    @if($currentCenter && $currentCenter->address)
+                    <div style="width: 100%; font-size: 12px; color: #64748b; text-align: center; line-height: 1.4; word-break: break-word;">
+                        <strong>Địa chỉ:</strong> {{ $currentCenter->address }}
                     </div>
-                    
-                    <div class="consult-form-group" id="centerSelectGroup" style="display: none;">
-                        <label for="centerName">Chi nhánh tư vấn gần nhất <span>*</span></label>
-                        <select name="centerName" id="centerName">
-                            <option value="">-- Chọn trung tâm Medicare --</option>
-                            @foreach($centers as $c)
-                                <option value="{{ $c->name }}">{{ $c->name }} — {{ $c->address }}</option>
-                            @endforeach
-                        </select>
-                        <span class="error-msg" id="err_centerName"></span>
-                    </div>
-                    
-                    <div class="consult-form-group">
-                        <label for="customerNote">Ghi chú yêu cầu tư vấn</label>
-                        <textarea name="customerNote" id="customerNote" rows="3" placeholder="Nhập độ tuổi người tiêm hoặc câu hỏi của bạn (nếu có)..."></textarea>
-                        <span class="error-msg" id="err_customerNote"></span>
-                    </div>
-                    
-                    <button type="submit" class="consult-btn-submit" id="btnSubmitConsult">
-                        <i data-lucide="send" style="width: 16px; height: 16px;"></i>
-                        <span>Gửi yêu cầu ngay</span>
-                    </button>
-                </form>
+                    @endif
+
+                    <a href="{{ $zaloUrl }}" target="_blank" rel="noopener noreferrer" style="width: 100%; background: #0068ff; color: #ffffff; padding: 11px 16px; border-radius: 8px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; box-shadow: 0 4px 12px rgba(0, 104, 255, 0.25); margin-top: 4px; transition: all 0.2s;" onmouseover="this.style.background='#0056d6'" onmouseout="this.style.background='#0068ff'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        <span>Mở Zalo Chat Ngay</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -538,110 +525,6 @@
             console.error('Lỗi giỏ hàng:', e);
         } finally {
             buttonEl.disabled = false;
-        }
-    }
-
-    // Submit form tư vấn bằng AJAX
-    async function submitDiseaseConsult(event) {
-        event.preventDefault();
-        if (!await window.AppDialog.confirm('Bạn có thực sự muốn gửi yêu cầu tư vấn tiêm chủng này không?')) {
-            return;
-        }
-        
-        const form = document.getElementById('diseaseConsultForm');
-        const submitBtn = document.getElementById('btnSubmitConsult');
-        const cardContainer = document.getElementById('consultFormCard');
-        
-        // Reset errors
-        document.querySelectorAll('.error-msg').forEach(el => {
-            el.textContent = '';
-            el.style.display = 'none';
-        });
-        
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i data-lucide="loader-2" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i> <span>Đang gửi...</span>';
-        lucide.createIcons();
-        
-        const formData = new FormData(form);
-        const url = '{{ route("vaccine.disease.consult", ["disease" => urlencode($diseaseDecoded)]) }}';
-        
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json'
-                },
-                body: formData
-            });
-            
-            const data = await response.json();
-            
-            if (response.status === 422) {
-                // Validation error
-                Object.entries(data.errors).forEach(([field, messages]) => {
-                    const errEl = document.getElementById('err_' + field);
-                    if (errEl) {
-                        errEl.textContent = messages[0];
-                        errEl.style.display = 'block';
-                    }
-                });
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i data-lucide="send" style="width: 16px; height: 16px;"></i> <span>Gửi yêu cầu ngay</span>';
-                lucide.createIcons();
-            } else if (!response.ok) {
-                throw new Error(data.message || 'Lỗi hệ thống');
-            } else {
-                // Success
-                cardContainer.innerHTML = `
-                    <div class="success-overlay">
-                        <div class="success-icon-wrapper">
-                            <i data-lucide="check-circle-2" style="width: 32px; height: 32px;"></i>
-                        </div>
-                        <h4>Gửi Yêu Cầu Thành Công</h4>
-                        <p style="margin-bottom: 8px;"><strong>Mã tư vấn: ${data.registration_code}</strong></p>
-                        <p>${data.message}</p>
-                        <button onclick="window.location.reload()" class="consult-btn-submit" style="background: #10b981; max-width: 160px; margin-top: 16px;">Xác nhận</button>
-                    </div>
-                `;
-                lucide.createIcons();
-            }
-        } catch (e) {
-            window.AppDialog.toast('Có lỗi xảy ra: ' + e.message, 'error');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i data-lucide="send" style="width: 16px; height: 16px;"></i> <span>Gửi yêu cầu ngay</span>';
-            lucide.createIcons();
-        }
-    }
-
-    function setConsultType(value) {
-        const input = document.getElementById('consultTypeValue');
-        const btnOnline = document.getElementById('btnConsultOnline');
-        const btnOffline = document.getElementById('btnConsultOffline');
-        const group = document.getElementById('centerSelectGroup');
-        const select = document.getElementById('centerName');
-        
-        if (!input || !btnOnline || !btnOffline || !group || !select) return;
-        
-        input.value = value;
-        
-        if (value === 'online') {
-            btnOnline.style.background = 'var(--primary-color, #c8102e)';
-            btnOnline.style.color = '#ffffff';
-            btnOffline.style.background = 'transparent';
-            btnOffline.style.color = '#475569';
-            
-            group.style.display = 'none';
-            select.removeAttribute('required');
-            select.value = '';
-        } else {
-            btnOffline.style.background = 'var(--primary-color, #c8102e)';
-            btnOffline.style.color = '#ffffff';
-            btnOnline.style.background = 'transparent';
-            btnOnline.style.color = '#475569';
-            
-            group.style.display = 'flex';
-            select.setAttribute('required', 'required');
         }
     }
 </script>

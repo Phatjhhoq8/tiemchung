@@ -212,7 +212,7 @@
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang lưu...';
 
         try {
-            const response = await fetch('{{ route("categories.update") }}', {
+            const response = await fetch('{{ route("admin.categories.update") }}', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -256,7 +256,7 @@
         const checkingToast = window.AppDialog.toast('Đang kiểm tra dữ liệu vắc xin liên quan...', 'info');
         
         try {
-            const response = await fetch('{{ route("categories.check-delete") }}', {
+            const response = await fetch('{{ route("admin.categories.check-delete") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -306,7 +306,7 @@
         btnDelete.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xóa...';
 
         try {
-            const response = await fetch('{{ route("categories.destroy") }}', {
+            const response = await fetch('{{ route("admin.categories.destroy") }}', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
