@@ -1,3 +1,17 @@
+## [v6.5.77] - 2026-08-21
+
+### Add Facebook Link Setting for Team Members and Toggle Social Icons Dynamically
+
+* **Visual Editor updates**:
+  - Appended `{ key: 'facebook', label: 'Link Facebook cá nhân', type: 'text', placeholder: 'Ví dụ: https://facebook.com/username' }` to the `about_team_members` section schema in `live_editor.blade.php`.
+
+* **Client Social Icons Dynamic Toggling**:
+  - Wrapped Facebook profile anchor tag inside `about.blade.php` in a dynamic `@if(!empty($member['facebook']))` block, ensuring it only appears if configured.
+  - Social phone icon already correctly respects the `@if(!empty($member['zalo']))` wrapper to hide empty details.
+
+* **Category Toggle Button Hover transition**:
+  - Added `#btnToggleCategories` (Xem thêm danh mục) to the global transition and hover lift lists in `style.css`, and configured a premium color inversion (red background, white text) on hover.
+
 ## [v6.5.76] - 2026-08-21
 
 ### Extend Premium Hover Lift Transitions to Admin and Consultation Buttons
