@@ -1,3 +1,16 @@
+## [v6.5.75] - 2026-08-21
+
+### Implement Hover Transition Lift Effects Across All Vaccine Action Buttons
+
+* **Unified Action Button Hover Style**:
+  - Appended global hover rules to `vaccines.css` and `disease.blade.php` style block.
+  - Implemented the `translateY(-3px)` upward lift, shadow expansion, and brand color transition on hover for all major client action buttons:
+    - **Quay lại** (Back button on detail page)
+    - **Chọn vắc xin** / **Đã chọn vắc xin** (Selection button on detail page)
+    - **Xem chi tiết** (Detail page slider cards)
+    - **Chọn tiêm** / **Hủy chọn** (Slider cards select trigger)
+    - **Chọn tiêm** / **Đã chọn** (Disease catalog list view buttons)
+
 ## [v6.5.74] - 2026-08-21
 
 ### Implement Red Branding and Lift Hover Animation for Vaccine Detail Booking Button
