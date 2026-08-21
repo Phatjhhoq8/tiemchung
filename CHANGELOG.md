@@ -1,3 +1,17 @@
+## [v6.5.61] - 2026-08-21
+
+### Implement SPA Navigation Menu & Client Booking Lookup Modal
+
+* **SPA Client Navigation**:
+  - Restructured both the main desktop menu and mobile drawer links in `layouts/app.blade.php`.
+  - Replaced the direct route href links for "Trang Chủ", "Giới Thiệu", "Danh Mục Sản Phẩm", and "Tin Tức" with custom `smoothScrollTo` handlers referencing section wrappers.
+  - Linked the "Tra Cứu Lịch Hẹn" item to open a dynamic booking lookup modal instead of triggering full-page browser reloads.
+
+* **Dynamic Booking Lookup Modal & Backend**:
+  - Added a dedicated `#bookingLookupModal` overlay within `modal-detail` layout partial.
+  - Implemented async handlers (`openBookingLookupModal`, `submitSpaBookingLookup`) fetching endpoint `/tra-cuu-lich-hen` with JSON headers.
+  - Extended `VaccineController@lookupBookingsByPhone` to respond with serialized booking and loyalty point records dynamically.
+
 ## [v6.5.60] - 2026-08-21
 
 ### Implement SPA Article Details Modal on Client Front-end
