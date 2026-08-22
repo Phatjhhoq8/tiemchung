@@ -1,6 +1,11 @@
 <!-- 1. Flowbite Hero Slider Banner (FULL WIDTH - TRÀN VIỀN 100%) -->
 <section class="banner-slider relative w-full overflow-hidden shadow-xl snap-section" id="hero-banner" data-aos="fade-up" data-aos-duration="600">
     <style>
+        @media (max-width: 1023px) {
+            .hero-carousel-wrapper {
+                height: 540px !important;
+            }
+        }
         @media (max-width: 480px) {
             .hero-carousel-wrapper {
                 height: 560px !important;
@@ -42,7 +47,7 @@
         }
     </style>
     @if($banners->isEmpty())
-        <div class="hero-carousel-wrapper text-white w-full h-[490px] sm:h-[500px] lg:h-[520px] border-y border-red-800/40 shadow-xl overflow-hidden relative flex items-center" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%);">
+        <div class="hero-carousel-wrapper text-white w-full h-[490px] sm:h-[500px] lg:h-[520px] border-y border-red-800/40 shadow-xl overflow-hidden relative flex items-start lg:items-center" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%);">
             <!-- Background ambient glow effect -->
             <div class="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-red-400/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -113,7 +118,7 @@
                     @else
                         <!-- Banner with text or image -->
                         <div class="{{ $index === 0 ? '' : 'hidden' }} duration-700 ease-in-out h-full w-full" data-carousel-item="{{ $index === 0 ? 'active' : '' }}">
-                            <div class="text-white w-full h-full border-y border-red-800/40 shadow-xl overflow-hidden relative flex items-center" style="{{ $banner->background_url ? 'background-image: url(' . asset($banner->background_url) . '); background-size: cover; background-position: center;' : 'background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%);' }}">
+                            <div class="text-white w-full h-full border-y border-red-800/40 shadow-xl overflow-hidden relative flex items-start lg:items-center" style="{{ $banner->background_url ? 'background-image: url(' . asset($banner->background_url) . '); background-size: cover; background-position: center;' : 'background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%);' }}">
                                 <!-- Background ambient glow effect -->
                                 <div class="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
                                 <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-red-400/10 rounded-full blur-3xl pointer-events-none"></div>
