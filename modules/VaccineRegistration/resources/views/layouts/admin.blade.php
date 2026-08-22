@@ -840,14 +840,14 @@
             .admin-user .welcome-txt {
                 display: none !important;
             }
-            .admin-user span {
+            .admin-user-name {
                 max-width: 120px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 display: inline-block;
             }
-            .admin-user:has(select) span {
+            .admin-user:has(select) .admin-user-name {
                 display: none !important;
             }
             .admin-user select {
@@ -883,14 +883,14 @@
                 font-size: 11px;
                 padding: 4px 6px;
             }
-            .admin-user span {
+            .admin-user-name {
                 max-width: 85px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 display: inline-block;
             }
-            .admin-user:has(select) span {
+            .admin-user:has(select) .admin-user-name {
                 display: none !important;
             }
             .admin-body {
@@ -1134,7 +1134,7 @@
                         <i data-lucide="moon" class="moon-icon" style="width: 16px; height: 16px;"></i>
                     </button>
                     <i data-lucide="circle-user"></i>
-                    <span><span class="welcome-txt">Xin chào, </span>{{ $adminUser?->name ?? 'Quản trị viên' }}{{ $adminUser?->isBranchAdmin() && $adminUser?->center ? ' · ' . $adminUser->center->name : '' }}</span>
+                    <span class="admin-user-name"><span class="welcome-txt">Xin chào, </span>{{ $adminUser?->name ?? 'Quản trị viên' }}{{ $adminUser?->isBranchAdmin() && $adminUser?->center ? ' · ' . $adminUser->center->name : '' }}</span>
                     @if($isSuperAdmin ?? false)
                         <form method="POST" action="{{ route('admin.context.center') }}" style="margin:0;">
                             @csrf
