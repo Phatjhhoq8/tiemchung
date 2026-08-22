@@ -24,7 +24,7 @@
             <div class="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-red-400/10 rounded-full blur-3xl pointer-events-none"></div>
 
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-6 pt-20 lg:pt-6">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center relative z-10">
                     <!-- Left Text & Actions -->
                     <div class="lg:col-span-7 space-y-4">
@@ -95,7 +95,7 @@
                                 <div class="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
                                 <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-red-400/10 rounded-full blur-3xl pointer-events-none"></div>
 
-                                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-6">
+                                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-6 pt-20 lg:pt-6">
                                     <div class="grid grid-cols-1 {{ $hasImage && $hasText ? 'lg:grid-cols-12' : '' }} gap-6 lg:gap-8 items-center relative z-10">
                                         
                                         @if($hasText)
