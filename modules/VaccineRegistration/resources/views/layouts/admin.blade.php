@@ -832,6 +832,21 @@
             .admin-body {
                 padding: 24px 20px;
             }
+            .admin-title {
+                font-size: 1.1rem !important;
+                max-width: 240px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+            .admin-user span {
+                display: none !important;
+            }
+            .admin-user select {
+                max-width: 140px !important;
+                font-size: 11.5px;
+                padding: 4px 6px;
+            }
         }
 
         @media (max-width: 639px) {

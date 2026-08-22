@@ -208,10 +208,14 @@
                     }
                     @media (max-width: 1200px) {
                         #branchDropdown {
-                            left: auto !important;
-                            right: 0 !important;
+                            position: fixed !important;
+                            top: 75px !important;
+                            left: 12px !important;
+                            right: 12px !important;
+                            width: auto !important;
+                            max-width: calc(100vw - 24px) !important;
                             transform: none !important;
-                            width: min(340px, 85vw) !important;
+                            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
                         }
                     }
                     @media (max-width: 1200px) {
