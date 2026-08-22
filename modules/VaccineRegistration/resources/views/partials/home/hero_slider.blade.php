@@ -3,7 +3,7 @@
     <style>
         @media (max-width: 480px) {
             .hero-carousel-wrapper {
-                height: 520px !important;
+                height: 560px !important;
             }
             .hero-image-frame {
                 height: 180px !important;
@@ -11,7 +11,7 @@
         }
         @media (max-width: 360px) {
             .hero-carousel-wrapper {
-                height: 490px !important;
+                height: 530px !important;
             }
             .hero-image-frame {
                 height: 150px !important;
@@ -25,9 +25,24 @@
                 padding-top: 1.5rem !important;
             }
         }
+        @media (max-width: 639px) {
+            .banner-slider h1, .banner-slider h2 {
+                font-size: 1.4rem !important;
+                line-height: 1.25 !important;
+            }
+            .banner-slider p {
+                font-size: 13.5px !important;
+                line-height: 1.45 !important;
+            }
+            .banner-slider .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+                --tw-space-y-reverse: 0 !important;
+                margin-top: 0.75rem !important;
+                margin-bottom: 0 !important;
+            }
+        }
     </style>
     @if($banners->isEmpty())
-        <div class="hero-carousel-wrapper text-white w-full h-[460px] sm:h-[500px] lg:h-[520px] border-y border-red-800/40 shadow-xl overflow-hidden relative flex items-center" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%);">
+        <div class="hero-carousel-wrapper text-white w-full h-[490px] sm:h-[500px] lg:h-[520px] border-y border-red-800/40 shadow-xl overflow-hidden relative flex items-center" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%);">
             <!-- Background ambient glow effect -->
             <div class="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-red-400/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -68,7 +83,7 @@
     @else
         <div id="flowbite-hero-carousel" class="relative w-full" data-carousel="slide">
             <!-- Carousel wrapper with EXPLICIT height -->
-            <div class="hero-carousel-wrapper relative h-[460px] sm:h-[500px] lg:h-[520px] overflow-hidden">
+            <div class="hero-carousel-wrapper relative h-[490px] sm:h-[500px] lg:h-[520px] overflow-hidden">
                 @foreach($banners as $index => $banner)
                     @php
                         $hasTitle = !empty(trim($banner->title));
