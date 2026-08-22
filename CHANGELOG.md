@@ -1,3 +1,12 @@
+## [v6.5.92] - 2026-08-22
+
+### Fix Mobile Layout Clipping for Branch Dropdown & Banner Tag Overflow
+
+* **Align Branch Dropdown on Mobile Viewports**:
+  - Added CSS media query in `app.blade.php` targeting screen widths `<= 768px` to align `#branchDropdown` to the right (`left: auto; right: 0; transform: none; width: min(340px, 85vw);`). This prevents the dropdown from shifting off-screen to the left on small screens and resolves the clipping issue.
+* **Prevent Header Sticky Overlay on Hero Slider Tags**:
+  - Increased mobile and tablet padding-top on the Hero Slider carousel container class inside `hero_slider.blade.php` (`pt-20 lg:pt-6`) to push the slides down, ensuring tag badges like "Medicare Standard" are fully visible and not covered by the sticky header.
+
 ## [v6.5.91] - 2026-08-21
 
 ### Implement Prominent Toast Error Alerts on Booking Submission Validation Fails
