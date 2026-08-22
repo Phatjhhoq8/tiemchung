@@ -1,4 +1,16 @@
+## [v6.5.93] - 2026-08-22
+
+### Fix Admin Header Mobile Branch Switcher Layout
+
+* **Optimize Branch Switcher select inside Admin Header**:
+  - Added `no-custom-select` and `.admin-center-select` class to the branch select to prevent it from being converted by the global custom select JS wrapper.
+  - Styled the select element to be transparent and borderless, making it blend seamlessly as a unified select pill inside the `.admin-user` element.
+  - Added CSS rule to dynamically add `.admin-user-has-select` class to hide user name on mobile devices for Super Admin viewports, preventing text overlap and title squishing.
+  - Wrapped the `circle-user` icon in a `<label>` linked to `id="adminCenterSelect"` and added an `onclick` handler calling `showPicker()` to programmatically open the branch dropdown selection when clicking on the icon.
+  - Configured strict fixed widths for the select element (`120px` on desktop, `100px` on tablet, `85px` on mobile) to guarantee a compact, clean look and prevent empty layout gaps, giving back max space to show the main header title.
+
 ## [v6.5.92] - 2026-08-22
+
 
 ### Fix Mobile Layout Clipping for Branch Dropdown & Banner Tag Overflow
 

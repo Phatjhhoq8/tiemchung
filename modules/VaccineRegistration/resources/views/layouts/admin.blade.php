@@ -321,6 +321,30 @@
         .admin-user i {
             color: var(--accent-color);
         }
+        .admin-center-select {
+            width: 120px !important;
+            padding: 2px 20px 2px 4px !important;
+            border-radius: 6px;
+            border: none !important;
+            background: transparent !important;
+            color: var(--text-primary) !important;
+            font-family: var(--font-display) !important;
+            font-size: 0.875rem !important;
+            font-weight: 600 !important;
+            outline: none !important;
+            cursor: pointer;
+            box-shadow: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right center !important;
+            background-size: 11px !important;
+            margin: 0 !important;
+            height: auto !important;
+            line-height: inherit !important;
+        }
         .admin-body {
             padding: 32px 36px 44px;
             flex-grow: 1;
@@ -847,13 +871,14 @@
                 white-space: nowrap;
                 display: inline-block;
             }
-            .admin-user:has(select) .admin-user-name {
+            .admin-user-has-select .admin-user-name {
                 display: none !important;
             }
-            .admin-user select {
-                max-width: 140px !important;
-                font-size: 11.5px;
-                padding: 4px 6px;
+            .admin-center-select {
+                width: 100px !important;
+                font-size: 12px !important;
+                padding-right: 16px !important;
+                background-size: 10px !important;
             }
         }
  
@@ -878,10 +903,11 @@
                 padding: 4px 8px;
                 gap: 6px;
             }
-            .admin-user select {
-                max-width: 110px !important;
-                font-size: 11px;
-                padding: 4px 6px;
+            .admin-center-select {
+                width: 85px !important;
+                font-size: 11px !important;
+                padding-right: 14px !important;
+                background-size: 9px !important;
             }
             .admin-user-name {
                 max-width: 85px;
@@ -890,7 +916,7 @@
                 white-space: nowrap;
                 display: inline-block;
             }
-            .admin-user:has(select) .admin-user-name {
+            .admin-user-has-select .admin-user-name {
                 display: none !important;
             }
             .admin-body {
@@ -1128,17 +1154,23 @@
                     </button>
                     <div class="admin-title" style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@yield('page_title', 'Bảng Điều Khiển')</div>
                 </div>
-                <div class="admin-user" style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                <div class="admin-user {{ ($isSuperAdmin ?? false) ? 'admin-user-has-select' : '' }}" style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
                     <button id="theme-toggle" class="theme-toggle-btn" aria-label="Bật hoặc tắt chế độ tối" style="display: none !important; background: none; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; padding: 6px; border-radius: 6px; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.2s;">
                         <i data-lucide="sun" class="sun-icon" style="width: 16px; height: 16px; display: none; color: #eaaa00;"></i>
                         <i data-lucide="moon" class="moon-icon" style="width: 16px; height: 16px;"></i>
                     </button>
-                    <i data-lucide="circle-user"></i>
+                    @if($isSuperAdmin ?? false)
+                        <label for="adminCenterSelect" style="cursor: pointer; display: inline-flex; align-items: center; margin: 0; padding: 0;" onclick="try { document.getElementById('adminCenterSelect')?.showPicker(); } catch(e) {}">
+                            <i data-lucide="circle-user"></i>
+                        </label>
+                    @else
+                        <i data-lucide="circle-user"></i>
+                    @endif
                     <span class="admin-user-name"><span class="welcome-txt">Xin chào, </span>{{ $adminUser?->name ?? 'Quản trị viên' }}{{ $adminUser?->isBranchAdmin() && $adminUser?->center ? ' · ' . $adminUser->center->name : '' }}</span>
                     @if($isSuperAdmin ?? false)
-                        <form method="POST" action="{{ route('admin.context.center') }}" style="margin:0;">
+                        <form method="POST" action="{{ route('admin.context.center') }}" style="margin:0; display: inline-flex; align-items: center;">
                             @csrf
-                            <select name="center_id" onchange="this.form.submit()" aria-label="Ngữ cảnh chi nhánh" style="max-width:240px; padding:6px 8px; border-radius:6px; border:1px solid var(--border-color);">
+                            <select id="adminCenterSelect" name="center_id" class="no-custom-select admin-center-select" onchange="this.form.submit()" aria-label="Ngữ cảnh chi nhánh">
                                 <option value="" {{ $adminSelectedCenterId === null ? 'selected' : '' }}>Tất cả chi nhánh</option>
                                 @foreach($adminCenters as $center)
                                     <option value="{{ $center->id }}" {{ (int) $adminSelectedCenterId === (int) $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
@@ -1203,6 +1235,8 @@
     <script>
         // Khởi tạo các Lucide Icons
         lucide.createIcons();
+
+
 
         // Mobile Sidebar Toggle Logic
         const sidebarToggle = document.getElementById('sidebarToggle');
