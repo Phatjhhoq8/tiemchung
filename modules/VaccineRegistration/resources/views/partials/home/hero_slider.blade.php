@@ -17,14 +17,22 @@
                 height: 150px !important;
             }
         }
+        .hero-slider-content-container {
+            padding-top: 4.5rem !important;
+        }
+        @media (min-width: 1024px) {
+            .hero-slider-content-container {
+                padding-top: 1.5rem !important;
+            }
+        }
     </style>
     @if($banners->isEmpty())
         <div class="hero-carousel-wrapper text-white w-full h-[460px] sm:h-[500px] lg:h-[520px] border-y border-red-800/40 shadow-xl overflow-hidden relative flex items-center" style="background: linear-gradient(135deg, rgba(200, 16, 46, 0.93) 0%, rgba(145, 10, 33, 0.90) 100%);">
             <!-- Background ambient glow effect -->
             <div class="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-red-400/10 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-6 pt-20 lg:pt-6">
+ 
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-6 hero-slider-content-container">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center relative z-10">
                     <!-- Left Text & Actions -->
                     <div class="lg:col-span-7 space-y-4">
@@ -95,7 +103,7 @@
                                 <div class="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
                                 <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-red-400/10 rounded-full blur-3xl pointer-events-none"></div>
 
-                                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-6 pt-20 lg:pt-6">
+                                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-6 hero-slider-content-container">
                                     <div class="grid grid-cols-1 {{ $hasImage && $hasText ? 'lg:grid-cols-12' : '' }} gap-6 lg:gap-8 items-center relative z-10">
                                         
                                         @if($hasText)
