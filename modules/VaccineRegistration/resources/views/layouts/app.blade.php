@@ -243,6 +243,30 @@
                             flex-shrink: 0 !important;
                         }
                     }
+                    @media (max-width: 768px) {
+                        #headerBranchText {
+                            max-width: 90px !important;
+                            overflow: hidden !important;
+                            text-overflow: ellipsis !important;
+                            white-space: nowrap !important;
+                            display: inline-block !important;
+                            vertical-align: middle;
+                        }
+                    }
+                    @media (max-width: 480px) {
+                        .header-actions {
+                            gap: 4px !important;
+                        }
+                        .header-action-pill {
+                            padding: 0 6px !important;
+                        }
+                        #headerBranchText {
+                            max-width: 65px !important;
+                        }
+                        .header-actions a[href^="tel:"] {
+                            display: none !important;
+                        }
+                    }
                     /* Hide floating contact buttons when mobile drawer menu is open */
                     body.mobile-drawer-open .floating-chat-widget,
                     .mobile-drawer.open ~ .floating-chat-widget,
