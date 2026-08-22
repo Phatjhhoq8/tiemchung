@@ -829,17 +829,25 @@
             .admin-header {
                 padding: 0 20px;
             }
-            .admin-body {
-                padding: 24px 20px;
-            }
             .admin-title {
                 font-size: 1.1rem !important;
-                max-width: 240px !important;
                 white-space: nowrap !important;
                 overflow: hidden !important;
                 text-overflow: ellipsis !important;
+                min-width: 0;
+                flex: 1;
+            }
+            .admin-user .welcome-txt {
+                display: none !important;
             }
             .admin-user span {
+                max-width: 120px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                display: inline-block;
+            }
+            .admin-user:has(select) span {
                 display: none !important;
             }
             .admin-user select {
@@ -848,7 +856,7 @@
                 padding: 4px 6px;
             }
         }
-
+ 
         @media (max-width: 639px) {
             .admin-header {
                 padding: 0 12px;
@@ -863,7 +871,8 @@
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                max-width: 140px;
+                min-width: 0;
+                flex: 1;
             }
             .admin-user {
                 padding: 4px 8px;
@@ -875,7 +884,14 @@
                 padding: 4px 6px;
             }
             .admin-user span {
-                display: none;
+                max-width: 85px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                display: inline-block;
+            }
+            .admin-user:has(select) span {
+                display: none !important;
             }
             .admin-body {
                 padding: 16px 12px;
@@ -1106,19 +1122,19 @@
         <!-- Khung nội dung bên phải -->
         <div class="admin-content">
             <header class="admin-header">
-                <div style="display: flex; align-items: center;">
-                    <button id="sidebarToggle" class="mobile-sidebar-toggle" aria-label="Bật hoặc tắt thanh điều hướng">
+                <div style="display: flex; align-items: center; min-width: 0; flex: 1; gap: 8px;">
+                    <button id="sidebarToggle" class="mobile-sidebar-toggle" aria-label="Bật hoặc tắt thanh điều hướng" style="flex-shrink: 0;">
                         <i data-lucide="menu"></i>
                     </button>
-                    <div class="admin-title">@yield('page_title', 'Bảng Điều Khiển')</div>
+                    <div class="admin-title" style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@yield('page_title', 'Bảng Điều Khiển')</div>
                 </div>
-                <div class="admin-user" style="display: flex; align-items: center; gap: 15px;">
+                <div class="admin-user" style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
                     <button id="theme-toggle" class="theme-toggle-btn" aria-label="Bật hoặc tắt chế độ tối" style="display: none !important; background: none; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; padding: 6px; border-radius: 6px; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.2s;">
                         <i data-lucide="sun" class="sun-icon" style="width: 16px; height: 16px; display: none; color: #eaaa00;"></i>
                         <i data-lucide="moon" class="moon-icon" style="width: 16px; height: 16px;"></i>
                     </button>
                     <i data-lucide="circle-user"></i>
-                    <span>Xin chào, {{ $adminUser?->name ?? 'Quản trị viên' }}{{ $adminUser?->isBranchAdmin() && $adminUser?->center ? ' · ' . $adminUser->center->name : '' }}</span>
+                    <span><span class="welcome-txt">Xin chào, </span>{{ $adminUser?->name ?? 'Quản trị viên' }}{{ $adminUser?->isBranchAdmin() && $adminUser?->center ? ' · ' . $adminUser->center->name : '' }}</span>
                     @if($isSuperAdmin ?? false)
                         <form method="POST" action="{{ route('admin.context.center') }}" style="margin:0;">
                             @csrf
